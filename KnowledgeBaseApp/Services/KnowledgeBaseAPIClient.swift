@@ -284,3 +284,64 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return data
     }
 }
+
+// MARK: - Changed files (KB App API)
+
+extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
+    func fetchChangedFiles() async throws -> [KBChangedFile] {
+        let url = baseURL.appendingPathComponent("api/files/changes")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        if let authToken {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (data, response) = try await urlSession.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw FilesAPIError.invalidResponse(statusCode: -1)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            throw FilesAPIError.invalidResponse(statusCode: http.statusCode)
+        }
+
+        let decoder = JSONDecoder()
+
+        struct Page: Codable {
+            let items: [KBChangedFile]?
+            let files: [KBChangedFile]?
+            let changes: [KBChangedFile]?
+        }
+
+        if let list = try? decoder.decode([KBChangedFile].self, from: data) {
+            return list
+        }
+        if let page = try? decoder.decode(Page.self, from: data) {
+            return page.items ?? page.files ?? page.changes ?? []
+        }
+        throw FilesAPIError.decodingFailed
+    }
+
+    func revertFile(id: String) async throws {
+        let url = baseURL.appendingPathComponent("api/files/revert")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let authToken {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        struct Body: Encodable {
+            let file_id: String
+        }
+
+        request.httpBody = try JSONEncoder().encode(Body(file_id: id))
+
+        let (_, response) = try await urlSession.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw FilesAPIError.invalidResponse(statusCode: -1)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            throw FilesAPIError.invalidResponse(statusCode: http.statusCode)
+        }
+    }
+}

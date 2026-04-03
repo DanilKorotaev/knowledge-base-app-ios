@@ -1,5 +1,6 @@
 import PhotosUI
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 
 struct ChatView: View {
@@ -7,6 +8,7 @@ struct ChatView: View {
     @State private var scrollSpace = UUID()
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showFileImporter = false
+    @State private var showCamera = false
 
     init(session: KBSession, chatClient: ChatAPIClientProtocol) {
         _viewModel = State(
@@ -83,6 +85,16 @@ struct ChatView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPicker(
+                onImage: { image in
+                    showCamera = false
+                    Task { await handleCameraImage(image) }
+                },
+                onCancel: { showCamera = false }
+            )
+            .ignoresSafeArea()
+        }
     }
 
     private var inputBar: some View {
@@ -95,6 +107,16 @@ struct ChatView: View {
                         .font(.title3)
                 }
                 .disabled(viewModel.isSending)
+
+                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    Button {
+                        showCamera = true
+                    } label: {
+                        Image(systemName: "camera.fill")
+                            .font(.title3)
+                    }
+                    .disabled(viewModel.isSending)
+                }
 
                 Button {
                     showFileImporter = true
@@ -136,6 +158,24 @@ struct ChatView: View {
             await viewModel.sendAttachment(
                 fileURL: path,
                 filename: "photo.jpg",
+                mimeType: "image/jpeg"
+            )
+        } catch {
+            viewModel.reportError(error.localizedDescription)
+        }
+    }
+
+    private func handleCameraImage(_ image: UIImage) async {
+        guard let data = image.jpegData(compressionQuality: 0.85) else {
+            viewModel.reportError("Could not encode photo.")
+            return
+        }
+        let path = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
+        do {
+            try data.write(to: path)
+            await viewModel.sendAttachment(
+                fileURL: path,
+                filename: "camera.jpg",
                 mimeType: "image/jpeg"
             )
         } catch {

@@ -3,6 +3,8 @@ import SwiftUI
 struct MainView: View {
     private let apiClient: KnowledgeBaseAPIClientProtocol
     private let chatClient: ChatAPIClientProtocol
+    private let filesClient: FilesAPIClientProtocol
+    @Binding var deepLinkVoiceRecording: Bool
     @State private var sessions: [KBSession] = []
     @State private var loadError: String?
     @State private var isLoading = false
@@ -12,10 +14,14 @@ struct MainView: View {
 
     init(
         apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeSessionClient(),
-        chatClient: ChatAPIClientProtocol = MainView.makeChatClient()
+        chatClient: ChatAPIClientProtocol = MainView.makeChatClient(),
+        filesClient: FilesAPIClientProtocol = MainView.makeFilesClient(),
+        deepLinkVoiceRecording: Binding<Bool> = .constant(false)
     ) {
         self.apiClient = apiClient
         self.chatClient = chatClient
+        self.filesClient = filesClient
+        self._deepLinkVoiceRecording = deepLinkVoiceRecording
     }
 
     var body: some View {
@@ -62,6 +68,17 @@ struct MainView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Knowledge Base")
+            .safeAreaInset(edge: .top, spacing: 0) {
+                if deepLinkVoiceRecording {
+                    Text("Tap the microphone below to start a voice request.")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                        .background(.yellow.opacity(0.38))
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -81,6 +98,13 @@ struct MainView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
+                        ChangedFilesView(filesClient: filesClient)
+                    } label: {
+                        Label("Changed files", systemImage: "doc.text.magnifyingglass")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
                         SettingsView()
                     } label: {
                         Label("Settings", systemImage: "gearshape")
@@ -96,6 +120,15 @@ struct MainView: View {
             }
             .task {
                 await loadSessions()
+            }
+            .onChange(of: deepLinkVoiceRecording) { _, newValue in
+                guard newValue else { return }
+                Task {
+                    try? await Task.sleep(for: .seconds(12))
+                    await MainActor.run {
+                        deepLinkVoiceRecording = false
+                    }
+                }
             }
             .sheet(isPresented: Binding(
                 get: { voiceViewModel.showPostRecordReview },
@@ -169,6 +202,13 @@ struct MainView: View {
         }
         return StubChatAPIClient(store: stubStore)
     }
+
+    private static func makeFilesClient() -> FilesAPIClientProtocol {
+        if let remote = remoteBundle() {
+            return remote
+        }
+        return StubFilesAPIClient()
+    }
 }
 
 private struct MicBar: View {
@@ -184,6 +224,8 @@ private struct MicBar: View {
 #Preview {
     MainView(
         apiClient: StubKnowledgeBaseAPIClient(store: InMemoryKBStore()),
-        chatClient: StubChatAPIClient(store: InMemoryKBStore())
+        chatClient: StubChatAPIClient(store: InMemoryKBStore()),
+        filesClient: StubFilesAPIClient(),
+        deepLinkVoiceRecording: .constant(false)
     )
 }

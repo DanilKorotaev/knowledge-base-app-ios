@@ -20,6 +20,9 @@ targets:
     platform: iOS
     sources:
       - path: KnowledgeBaseApp
+    dependencies:
+      - target: KnowledgeBaseWidgetExtension
+        embed: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.KnowledgeBaseApp
@@ -38,3 +41,14 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+  KnowledgeBaseWidgetExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: KnowledgeBaseWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.KnowledgeBaseApp.KnowledgeBaseWidget
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: KnowledgeBaseWidget/Info.plist
