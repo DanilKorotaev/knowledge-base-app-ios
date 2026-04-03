@@ -5,6 +5,7 @@ struct MainView: View {
     @State private var sessions: [KBSession] = []
     @State private var loadError: String?
     @State private var isLoading = false
+    @State private var voiceViewModel = VoiceRecordingViewModel()
 
     init(apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeDefaultClient()) {
         self.apiClient = apiClient
@@ -62,6 +63,37 @@ struct MainView: View {
             }
             .task {
                 await loadSessions()
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                @Bindable var voice = voiceViewModel
+                MicRecordControl(viewModel: voice)
+                    .padding(.horizontal)
+                    .background(.bar)
+            }
+            .sheet(isPresented: Binding(
+                get: { voiceViewModel.showPostRecordReview },
+                set: { newValue in
+                    if !newValue {
+                        voiceViewModel.dismissPostRecordReview()
+                    }
+                }
+            )) {
+                @Bindable var voice = voiceViewModel
+                PostRecordingReviewSheet(viewModel: voice)
+            }
+            .alert("Recording", isPresented: Binding(
+                get: { voiceViewModel.errorMessage != nil },
+                set: { newValue in
+                    if !newValue {
+                        voiceViewModel.clearError()
+                    }
+                }
+            )) {
+                Button("OK", role: .cancel) {
+                    voiceViewModel.clearError()
+                }
+            } message: {
+                Text(voiceViewModel.errorMessage ?? "")
             }
         }
     }

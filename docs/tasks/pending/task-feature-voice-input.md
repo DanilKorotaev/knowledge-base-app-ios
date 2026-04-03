@@ -1,15 +1,20 @@
 # Voice input (hold + lock)
 
-**Status:** Pending  
-**Depends on:** KB App API endpoint for audio upload + transcription (see Nextcloud backend tasks folder).
+**Status:** In progress — **client MVP done**; real upload + Whisper pending KB App API.
 
-## Scope
+## Done (iOS)
 
-- AVFoundation capture.
-- Hold-to-record and lock-to-record UX (Telegram-style).
-- Haptics and waveform/timer UI.
-- Edit transcription before send.
+- AVFoundation capture (`VoiceRecordingService`).
+- Hold-to-record, swipe left cancel, swipe up lock (`MicRecordControl` + `RecordingGestureLogic` tests).
+- Haptics; timer + level-based waveform strip.
+- Post-record sheet with editable transcription draft; `StubVoiceUploadClient` until API exists.
+
+## Remaining
+
+- KB App API: audio upload + Whisper → fill transcription before send.
+- Optional UI tests / gesture polish.
 
 ## Acceptance
 
-- Unit tests for recording state machine where feasible; UI tests optional.
+- [x] Unit tests for gesture thresholds.
+- [ ] Integration test or manual QA checklist on device (mic permission).

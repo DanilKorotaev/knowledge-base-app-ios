@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		00543EEFFC3C42A06BC4D2A0 /* KnowledgeBaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120ACA3751D4BA6BA15A924B /* KnowledgeBaseApp.swift */; };
+		222DDA3B8ECB24833B90E1EF /* MicRecordControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C4A1C8B0EB9EF78C2E6290 /* MicRecordControl.swift */; };
+		28A4888D6859F54ABC6161AF /* PostRecordingReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7A58BA42C2DB8F386813EF /* PostRecordingReviewSheet.swift */; };
+		2E16D743B43AD8D367AAA963 /* VoiceUploadClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F21DD8DB001BE97A78800EDF /* VoiceUploadClient.swift */; };
 		4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E8507F60F3F1F8BE4CB3FB /* MainView.swift */; };
 		53FDB826E259B0CFCD14E27F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35BC1DA99AD0F7B6E33E63C5 /* Assets.xcassets */; };
 		56BC350D0E5F60915D5AA1B1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1053C5FEB26E0AF6E9DCB7 /* SettingsView.swift */; };
@@ -15,7 +18,11 @@
 		604753B483CA60050D55F984 /* KBSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1F215090174ACE1EABAB6E /* KBSession.swift */; };
 		6C77F92D9F5B6C0DD921490D /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA439013BC5F2B88B399380 /* AppConfiguration.swift */; };
 		8004370EA925020A01F7EA9B /* KBSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C5519EDDBC09972FCA9E51 /* KBSessionTests.swift */; };
+		96AB135CDA6C32BF2CE59E4D /* RecordingGestureLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BD102BF4E88BE964430B5A /* RecordingGestureLogicTests.swift */; };
+		C239465AC4EB1605D28DC768 /* VoiceRecordingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905A0A0C1BC5E8DF3DE1F685 /* VoiceRecordingViewModel.swift */; };
+		C741F7963179EB0F5079CC6E /* VoiceRecordingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F668021DEF209B16CAEAF9 /* VoiceRecordingService.swift */; };
 		CE2C5AF5E090B2902797E2F0 /* KnowledgeBaseAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1FCCA0BB3CACBD1682EDF80 /* KnowledgeBaseAPIClientTests.swift */; };
+		E24048BDA7ED8393E7A223EA /* RecordingGestureLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 525C51AE342E067C1846E135 /* RecordingGestureLogic.swift */; };
 		FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,16 +42,23 @@
 		160117490E0F8809EC811C14 /* KnowledgeBaseApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = KnowledgeBaseApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		35BC1DA99AD0F7B6E33E63C5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		467CF93A5C5C1E490410CEFA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		525C51AE342E067C1846E135 /* RecordingGestureLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingGestureLogic.swift; sourceTree = "<group>"; };
 		7C1053C5FEB26E0AF6E9DCB7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		7E7A58BA42C2DB8F386813EF /* PostRecordingReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostRecordingReviewSheet.swift; sourceTree = "<group>"; };
+		81F668021DEF209B16CAEAF9 /* VoiceRecordingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingService.swift; sourceTree = "<group>"; };
+		905A0A0C1BC5E8DF3DE1F685 /* VoiceRecordingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingViewModel.swift; sourceTree = "<group>"; };
 		9193CB5D05F676D78DC1F959 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A5C4A1C8B0EB9EF78C2E6290 /* MicRecordControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicRecordControl.swift; sourceTree = "<group>"; };
 		A6034236759483DAE494A376 /* AppConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigurationTests.swift; sourceTree = "<group>"; };
 		CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAPIClient.swift; sourceTree = "<group>"; };
 		D1FCCA0BB3CACBD1682EDF80 /* KnowledgeBaseAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAPIClientTests.swift; sourceTree = "<group>"; };
+		D4BD102BF4E88BE964430B5A /* RecordingGestureLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingGestureLogicTests.swift; sourceTree = "<group>"; };
 		E256BEA838E1C097EDA85500 /* KnowledgeBaseAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KnowledgeBaseAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7C5519EDDBC09972FCA9E51 /* KBSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSessionTests.swift; sourceTree = "<group>"; };
 		E9075BD95C6FBBD783C0D5AD /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		EB1F215090174ACE1EABAB6E /* KBSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSession.swift; sourceTree = "<group>"; };
 		EBA439013BC5F2B88B399380 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		F21DD8DB001BE97A78800EDF /* VoiceUploadClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceUploadClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -69,6 +83,7 @@
 		0F01226846A17028E040F279 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				43F4D61856BF31659F96758C /* Recording */,
 				13E8507F60F3F1F8BE4CB3FB /* MainView.swift */,
 				7C1053C5FEB26E0AF6E9DCB7 /* SettingsView.swift */,
 			);
@@ -83,9 +98,19 @@
 				881ADDF7AC7899BE07308580 /* Models */,
 				0E725834AA024D5F28745DDB /* Resources */,
 				C42918D3A4CFCAD7A0F3604C /* Services */,
+				5584D26FDEE9B7C887E4D55D /* ViewModels */,
 				0F01226846A17028E040F279 /* Views */,
 			);
 			path = KnowledgeBaseApp;
+			sourceTree = "<group>";
+		};
+		43F4D61856BF31659F96758C /* Recording */ = {
+			isa = PBXGroup;
+			children = (
+				A5C4A1C8B0EB9EF78C2E6290 /* MicRecordControl.swift */,
+				7E7A58BA42C2DB8F386813EF /* PostRecordingReviewSheet.swift */,
+			);
+			path = Recording;
 			sourceTree = "<group>";
 		};
 		4F17E5E52EC85DD5760A4318 /* App */ = {
@@ -96,12 +121,21 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		5584D26FDEE9B7C887E4D55D /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				905A0A0C1BC5E8DF3DE1F685 /* VoiceRecordingViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		61E6FE726E79E36BD03D3698 /* KnowledgeBaseAppTests */ = {
 			isa = PBXGroup;
 			children = (
 				A6034236759483DAE494A376 /* AppConfigurationTests.swift */,
 				E7C5519EDDBC09972FCA9E51 /* KBSessionTests.swift */,
 				D1FCCA0BB3CACBD1682EDF80 /* KnowledgeBaseAPIClientTests.swift */,
+				D4BD102BF4E88BE964430B5A /* RecordingGestureLogicTests.swift */,
 			);
 			path = KnowledgeBaseAppTests;
 			sourceTree = "<group>";
@@ -128,6 +162,9 @@
 			isa = PBXGroup;
 			children = (
 				CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */,
+				525C51AE342E067C1846E135 /* RecordingGestureLogic.swift */,
+				81F668021DEF209B16CAEAF9 /* VoiceRecordingService.swift */,
+				F21DD8DB001BE97A78800EDF /* VoiceUploadClient.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -246,7 +283,13 @@
 				FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */,
 				00543EEFFC3C42A06BC4D2A0 /* KnowledgeBaseApp.swift in Sources */,
 				4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */,
+				222DDA3B8ECB24833B90E1EF /* MicRecordControl.swift in Sources */,
+				28A4888D6859F54ABC6161AF /* PostRecordingReviewSheet.swift in Sources */,
+				E24048BDA7ED8393E7A223EA /* RecordingGestureLogic.swift in Sources */,
 				56BC350D0E5F60915D5AA1B1 /* SettingsView.swift in Sources */,
+				C741F7963179EB0F5079CC6E /* VoiceRecordingService.swift in Sources */,
+				C239465AC4EB1605D28DC768 /* VoiceRecordingViewModel.swift in Sources */,
+				2E16D743B43AD8D367AAA963 /* VoiceUploadClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +300,7 @@
 				59737C4E43C4BB2892D2A3D5 /* AppConfigurationTests.swift in Sources */,
 				8004370EA925020A01F7EA9B /* KBSessionTests.swift in Sources */,
 				CE2C5AF5E090B2902797E2F0 /* KnowledgeBaseAPIClientTests.swift in Sources */,
+				96AB135CDA6C32BF2CE59E4D /* RecordingGestureLogicTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

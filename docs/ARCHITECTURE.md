@@ -21,9 +21,17 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 | `URLSessionKnowledgeBaseAPIClient` | `GET /api/sessions` placeholder; response shapes TBD with backend |
 | `KBSession` | Model aligned with future REST |
 
+## Voice (partial)
+
+| Piece | Status |
+|-------|--------|
+| `VoiceRecordingService` | AAC to temp file, metering |
+| `VoiceRecordingViewModel` + `MicRecordControl` | Hold / cancel / lock, review sheet |
+| `VoiceUploadClientProtocol` | Stub only; real HTTP when KB App API exists |
+
 ## Planned modules (from product plan)
 
-- **Voice** — AVFoundation, hold-to-record + lock mode, upload for transcription.
+- **Voice (remaining)** — multipart upload + Whisper-backed transcription text.
 - **Chat** — message list, text input, attachments.
 - **Files** — changed files / diff via API.
 - **Widgets** — WidgetKit + App Intents.

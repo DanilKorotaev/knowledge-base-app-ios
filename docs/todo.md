@@ -8,7 +8,7 @@ _(none)_
 
 ### Product
 
-- [ ] [Voice recording UI + upload pipeline](tasks/pending/task-feature-voice-input.md)
+- [🚧] [Voice: gestures + AVFoundation + review sheet; backend upload later](tasks/pending/task-feature-voice-input.md)
 - [ ] [Chat history and message send (text)](tasks/pending/task-feature-chat.md)
 
 ### Ops / CI
