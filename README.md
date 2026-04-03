@@ -9,6 +9,7 @@ Native SwiftUI client for the personal knowledge base stack: same PostgreSQL ses
 - Xcode 16+
 - iOS 17+ deployment target
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) — regenerate `KnowledgeBaseApp.xcodeproj` from `project.yml` after structural changes
+- Ruby **3.3.x** + Bundler — for **Fastlane** (`bundle install`)
 
 ## Quick start
 
@@ -16,6 +17,14 @@ Native SwiftUI client for the personal knowledge base stack: same PostgreSQL ses
 2. Run `xcodegen generate` (or open the committed `.xcodeproj` after it exists).
 3. Open `KnowledgeBaseApp.xcodeproj`.
 4. Set your **team** in Signing when you have an Apple Developer account; simulator builds work without it.
+5. Optional: `bundle install` then `bundle exec fastlane test` — same path as CI (tests + coverage gate).
+
+## Fastlane & TestFlight
+
+- **Tests:** `bundle exec fastlane test` (optional: `SCAN_DEVICE="iPhone 15"`).
+- **TestFlight:** `bundle exec fastlane beta` after Match + App Store Connect API key setup.
+- Full checklist: [docs/FASTLANE.md](docs/FASTLANE.md).
+- Manual CI upload: GitHub Actions workflow **Deploy TestFlight** (`workflow_dispatch`).
 
 ## Configuration
 
@@ -36,6 +45,7 @@ Details: [docs/SETUP.md](docs/SETUP.md).
 | [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md) | Protocol-first + tests |
 | [docs/todo.md](docs/todo.md) | Active tasks |
 | [docs/completed.md](docs/completed.md) | Completed tasks |
+| [docs/FASTLANE.md](docs/FASTLANE.md) | Match, `fastlane test`, TestFlight |
 
 ## Related projects
 

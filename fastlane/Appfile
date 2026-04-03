@@ -1,0 +1,10 @@
+# App identifiers and team — override with env when sharing CI/local setups.
+# See docs/FASTLANE.md
+
+app_identifier(ENV.fetch("APP_IDENTIFIER", "com.example.KnowledgeBaseApp"))
+
+# Optional until you use lanes that talk to Apple ID directly (e.g. some match flows):
+# apple_id("you@example.com")
+
+# Apple Developer Team ID (10 characters) — set locally or in CI for signing:
+# team_id(ENV.fetch("TEAM_ID", "XXXXXXXXXX"))

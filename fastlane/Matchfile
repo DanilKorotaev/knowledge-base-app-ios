@@ -1,0 +1,17 @@
+# Match: encrypted certs/profiles in a private Git repo.
+# First-time setup: create an empty private repo, set MATCH_GIT_URL, then run locally:
+#   export MATCH_PASSWORD='...'
+#   bundle exec fastlane match appstore
+#
+# CI uses the same repo with MATCH_GIT_BASIC_AUTHORIZATION (base64 of "x-access-token:PAT").
+
+git_url(ENV.fetch("MATCH_GIT_URL", "https://github.com/CHANGE_ME/knowledge-base-app-certificates.git"))
+
+storage_mode("git")
+
+type("appstore")
+
+app_identifier(ENV.fetch("APP_IDENTIFIER", "com.example.KnowledgeBaseApp"))
+
+# Uncomment after you add push notifications / other capabilities:
+# readonly(true)  # prefer passing readonly: in Fastfile per lane

@@ -14,3 +14,13 @@ Config/Secrets.xcconfig
 # SwiftPM (if added later)
 .build/
 .swiftpm/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+fastlane/build_logs
+
+# Ruby / Bundler
+vendor/bundle/

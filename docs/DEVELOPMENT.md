@@ -24,12 +24,24 @@ xcodebuild -scheme KnowledgeBaseApp -destination 'generic/platform=iOS Simulator
 
 ## Testing
 
+Recommended (matches CI):
+
 ```bash
-xcodebuild test -scheme KnowledgeBaseApp -destination 'platform=iOS Simulator,name=iPhone 16'
+bundle install
+bundle exec fastlane test
 ```
+
+Optional explicit simulator:
+
+```bash
+SCAN_DEVICE="iPhone 15" bundle exec fastlane test
+```
+
+Raw `xcodebuild test` still works if you prefer.
 
 ## CI
 
-- Workflow: `.github/workflows/ci.yml`.
+- Workflow: `.github/workflows/ci.yml` — Ruby + **`bundle exec fastlane test`**.
 - **No XcodeGen on CI:** the `.xcodeproj` is committed. After changing `project.yml`, run `xcodegen generate` locally and commit the project.
-- Coverage threshold: `MIN_COVERAGE` in the workflow (baseline starts at 25% for the skeleton; raise as the codebase grows).
+- Coverage gate: **`MIN_COVERAGE`** env (default **35%**), enforced in `fastlane/Fastfile` after scan.
+- Manual TestFlight: `.github/workflows/deploy-testflight.yml` — see [FASTLANE.md](FASTLANE.md).

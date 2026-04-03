@@ -13,7 +13,7 @@ _(none)_
 
 ### Ops / CI
 
-- [ ] [Apple Developer, Fastlane, Match, TestFlight](tasks/pending/task-ops-fastlane-testflight.md) — mirror HealthSync playbook
+- [🚧] [Match + ASC secrets + первый TestFlight](tasks/pending/task-ops-fastlane-testflight.md) — Fastlane уже в репо; осталось завести сертификаты и секреты
 - [ ] [Choose OSS license](tasks/pending/task-doc-license.md)
 
 ### Documentation

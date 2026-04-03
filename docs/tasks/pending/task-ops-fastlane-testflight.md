@@ -1,15 +1,20 @@
 # Fastlane + Match + TestFlight
 
-**Status:** Pending
+**Status:** In progress (Fastlane in repo; Match + ASC secrets — вручную)
 
-## Reference
+## Done in repo
 
-Mirror the HealthSync / Apple Health plan section on CI/CD:
+- `Gemfile` / `Gemfile.lock`, `fastlane/Fastfile` lanes `test` + `beta`, `Appfile`, `Matchfile`
+- CI runs `bundle exec fastlane test`
+- Manual workflow: `.github/workflows/deploy-testflight.yml` (`workflow_dispatch`)
 
-- Private certificates repo (Match).
-- App Store Connect API key in GitHub Secrets.
-- Workflow lane: tests → archive → TestFlight (internal).
+## Осталось сделать (ты)
+
+- Apple Developer + App Store Connect app record (реальный bundle ID вместо `com.example.KnowledgeBaseApp`)
+- Приватный GitHub-репо для Match + `fastlane match appstore` локально
+- GitHub Secrets: `MATCH_*`, `ASC_*` (см. [docs/FASTLANE.md](../../FASTLANE.md))
+- Первый успешный **Deploy TestFlight** из Actions
 
 ## Notes
 
-- Reuse the same Apple Developer Program account as HealthSync.
+- Тот же Apple Developer Program, что и для HealthSync; сертификаты **отдельные** под bundle ID этого приложения.

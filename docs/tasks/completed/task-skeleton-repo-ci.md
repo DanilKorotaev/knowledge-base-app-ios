@@ -11,5 +11,5 @@
 
 ## Follow-up
 
-- Raise `MIN_COVERAGE` in CI as features land.
-- Add Fastlane when ready for TestFlight.
+- Raise `MIN_COVERAGE` in the Fastfile as features land.
+- Configure Match + TestFlight secrets (see `docs/FASTLANE.md`).

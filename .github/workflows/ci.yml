@@ -12,7 +12,6 @@ jobs:
   test-and-coverage:
     runs-on: macos-latest
     env:
-      SCHEME: KnowledgeBaseApp
       MIN_COVERAGE: "35"
     steps:
       - name: Checkout
@@ -46,26 +45,17 @@ jobs:
           PY
           )
           echo "DEVICE_NAME=$DEVICE_NAME" >> "$GITHUB_ENV"
+          echo "SCAN_DEVICE=$DEVICE_NAME" >> "$GITHUB_ENV"
           echo "Using simulator: $DEVICE_NAME"
 
-      - name: Run tests with coverage
-        run: |
-          xcodebuild test \
-            -scheme "$SCHEME" \
-            -destination "platform=iOS Simulator,name=$DEVICE_NAME" \
-            -enableCodeCoverage YES \
-            -resultBundlePath TestResults.xcresult
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
 
-      - name: Enforce coverage threshold
-        run: |
-          COVERAGE=$(xcrun xccov view --report --json TestResults.xcresult | python3 -c 'import json,sys; print(json.load(sys.stdin)["lineCoverage"] * 100)')
-          echo "Line coverage: ${COVERAGE}%"
-          python3 - "$COVERAGE" "$MIN_COVERAGE" <<'PY'
-          import sys
-          current = float(sys.argv[1])
-          threshold = float(sys.argv[2])
-          if current < threshold:
-              print(f"Coverage check failed: {current:.2f}% < {threshold:.2f}%")
-              raise SystemExit(1)
-          print(f"Coverage check passed: {current:.2f}% >= {threshold:.2f}%")
-          PY
+      - name: Install gems
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Run tests (Fastlane scan + coverage gate)
+        run: bundle exec fastlane test

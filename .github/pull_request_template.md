@@ -9,7 +9,7 @@
 ## Test plan
 
 - [ ] Added/updated tests for behavior changes
-- [ ] Ran local tests: `xcodebuild test -scheme KnowledgeBaseApp -destination 'platform=iOS Simulator,name=iPhone 15'`
+- [ ] Ran local tests: `bundle exec fastlane test` (or `xcodebuild test` with the same scheme)
 - [ ] No secrets or personal data added to git
 
 ## Engineering checklist (required)

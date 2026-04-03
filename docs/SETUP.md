@@ -7,6 +7,15 @@
 3. From the repo root: `xcodegen generate`
 4. Open `KnowledgeBaseApp.xcodeproj`.
 
+## Ruby & Fastlane
+
+1. Install Ruby **3.3.x** (see `.ruby-version`), e.g. via [rbenv](https://github.com/rbenv/rbenv) or [mise](https://mise.jdx.dev/).
+2. `gem install bundler`
+3. `bundle install`
+4. Run tests like CI: `bundle exec fastlane test`
+
+Signing, Match, and TestFlight: [FASTLANE.md](FASTLANE.md).
+
 ## Signing
 
 1. Select the **KnowledgeBaseApp** target → **Signing & Capabilities**.

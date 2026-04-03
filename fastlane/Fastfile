@@ -1,0 +1,88 @@
+# frozen_string_literal: true
+
+require "json"
+require "shellwords"
+
+opt_out_usage
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Run unit tests (KnowledgeBaseApp) with coverage; fails if line coverage < MIN_COVERAGE (default 35)."
+  lane :test do
+    setup_ci if ENV["CI"]
+
+    device = ENV.fetch("SCAN_DEVICE", "iPhone 15")
+    output_dir = File.expand_path("test_output", __dir__)
+
+    scan(
+      scheme: "KnowledgeBaseApp",
+      device: device,
+      clean: true,
+      code_coverage: true,
+      result_bundle: true,
+      output_directory: output_dir,
+      buildlog_path: File.expand_path("build_logs", __dir__)
+    )
+
+    enforce_line_coverage_threshold(output_dir)
+  end
+
+  desc "Build App Store IPA and upload to TestFlight. Requires Match repo, ASC API key, and real bundle ID + team."
+  lane :beta do
+    setup_ci if ENV["CI"]
+
+    app_id = ENV["APP_IDENTIFIER"].to_s.strip
+    app_id = "com.example.KnowledgeBaseApp" if app_id.empty?
+
+    app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_CONTENT"),
+      is_key_content_base64: false
+    )
+
+    match_params = {
+      type: "appstore",
+      readonly: is_ci,
+      app_identifier: app_id
+    }
+    if ENV["MATCH_GIT_URL"] && !ENV["MATCH_GIT_URL"].empty?
+      match_params[:git_url] = ENV["MATCH_GIT_URL"]
+    end
+    if ENV["MATCH_GIT_BASIC_AUTHORIZATION"] && !ENV["MATCH_GIT_BASIC_AUTHORIZATION"].empty?
+      match_params[:git_basic_authorization] = ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+    end
+    match(**match_params)
+
+    increment_build_number(
+      xcodeproj: "KnowledgeBaseApp.xcodeproj",
+      build_number: ENV["GITHUB_RUN_NUMBER"]
+    ) if ENV["CI"] && ENV["GITHUB_RUN_NUMBER"]
+
+    build_app(
+      scheme: "KnowledgeBaseApp",
+      export_method: "app-store"
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
+
+def enforce_line_coverage_threshold(output_dir)
+  xcresult = Dir.glob(File.join(output_dir, "*.xcresult")).first
+  UI.user_error!("No .xcresult in #{output_dir}; scan may have failed silently") unless xcresult
+
+  min = ENV.fetch("MIN_COVERAGE", "35").to_f
+  json = `xcrun xccov view --report --json #{Shellwords.escape(xcresult)}`
+  unless $?.success?
+    UI.user_error!("xccov failed: #{json}")
+  end
+
+  coverage = (JSON.parse(json)["lineCoverage"].to_f * 100).round(4)
+  UI.success("Line coverage: #{coverage}% (minimum #{min}%)")
+
+  UI.user_error!("Coverage #{coverage}% is below minimum #{min}%") if coverage < min
+end

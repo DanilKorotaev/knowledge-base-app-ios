@@ -3,6 +3,7 @@
 ## Contents
 
 - [SETUP.md](SETUP.md) — Xcode, signing, environment variables, secrets policy
+- [FASTLANE.md](FASTLANE.md) — Bundler, `fastlane test`, Match, TestFlight
 - [DEVELOPMENT.md](DEVELOPMENT.md) — daily development workflow and XcodeGen
 - [ARCHITECTURE.md](ARCHITECTURE.md) — folders, API boundary, and future backend
 - [CODING_STANDARDS.md](CODING_STANDARDS.md) — protocol-first + tests
