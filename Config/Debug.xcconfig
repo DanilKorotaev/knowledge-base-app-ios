@@ -1,0 +1,4 @@
+// Local overrides: copy Secrets.xcconfig.example to Secrets.xcconfig (gitignored).
+#include? "Secrets.xcconfig"
+
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) DEBUG=1

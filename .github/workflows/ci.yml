@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  test-and-coverage:
+    runs-on: macos-latest
+    env:
+      SCHEME: KnowledgeBaseApp
+      MIN_COVERAGE: "35"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Pick iOS Simulator
+        run: |
+          DEVICE_NAME=$(python3 - <<'PY'
+          import subprocess, re, sys
+          r = subprocess.run(
+              ["xcodebuild", "-showdestinations", "-scheme", "KnowledgeBaseApp"],
+              capture_output=True,
+              text=True,
+              cwd=".",
+          )
+          if r.returncode != 0:
+              print("iPhone 15", end="")
+              sys.exit(0)
+          for line in r.stdout.splitlines():
+              if "platform:iOS Simulator" in line and "iPhone" in line:
+                  m = re.search(r"name:([^,}]+)", line)
+                  if m:
+                      print(m.group(1).strip(), end="")
+                      sys.exit(0)
+          print("iPhone 15", end="")
+          PY
+          )
+          echo "DEVICE_NAME=$DEVICE_NAME" >> "$GITHUB_ENV"
+          echo "Using simulator: $DEVICE_NAME"
+
+      - name: Run tests with coverage
+        run: |
+          xcodebuild test \
+            -scheme "$SCHEME" \
+            -destination "platform=iOS Simulator,name=$DEVICE_NAME" \
+            -enableCodeCoverage YES \
+            -resultBundlePath TestResults.xcresult
+
+      - name: Enforce coverage threshold
+        run: |
+          COVERAGE=$(xcrun xccov view --report --json TestResults.xcresult | python3 -c 'import json,sys; print(json.load(sys.stdin)["lineCoverage"] * 100)')
+          echo "Line coverage: ${COVERAGE}%"
+          python3 - "$COVERAGE" "$MIN_COVERAGE" <<'PY'
+          import sys
+          current = float(sys.argv[1])
+          threshold = float(sys.argv[2])
+          if current < threshold:
+              print(f"Coverage check failed: {current:.2f}% < {threshold:.2f}%")
+              raise SystemExit(1)
+          print(f"Coverage check passed: {current:.2f}% >= {threshold:.2f}%")
+          PY

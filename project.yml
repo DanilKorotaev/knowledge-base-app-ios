@@ -1,0 +1,40 @@
+name: KnowledgeBaseApp
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    CURRENT_PROJECT_VERSION: "1"
+    MARKETING_VERSION: "0.1.0"
+    DEVELOPMENT_TEAM: ""
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+targets:
+  KnowledgeBaseApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: KnowledgeBaseApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.KnowledgeBaseApp
+        INFOPLIST_KEY_CFBundleDisplayName: Knowledge Base
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        TARGETED_DEVICE_FAMILY: "1"
+    info:
+      path: KnowledgeBaseApp/Resources/Info.plist
+  KnowledgeBaseAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: KnowledgeBaseAppTests
+    dependencies:
+      - target: KnowledgeBaseApp
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
