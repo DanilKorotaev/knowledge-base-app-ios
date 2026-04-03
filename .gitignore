@@ -24,3 +24,4 @@ fastlane/build_logs
 
 # Ruby / Bundler
 vendor/bundle/
+.bundle/
