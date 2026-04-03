@@ -18,5 +18,24 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
+	<key>UILaunchScreen</key>
+	<dict/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Voice requests are recorded and sent to your knowledge base after transcription.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Attach photos from your library to send with a query to the knowledge base.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take a photo to attach to a knowledge base query.</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
 </dict>
 </plist>
