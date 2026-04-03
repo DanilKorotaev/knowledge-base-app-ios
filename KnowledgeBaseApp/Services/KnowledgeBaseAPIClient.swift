@@ -3,6 +3,7 @@ import Foundation
 /// HTTP client for the future **KB App API** (FastAPI). Telegram bot and this app share the same services on the server.
 protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func fetchSessions() async throws -> [KBSession]
+    func createSession(title: String) async throws -> KBSession
 }
 
 enum KnowledgeBaseAPIError: Error, Equatable {
@@ -21,6 +22,10 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
 
     func fetchSessions() async throws -> [KBSession] {
         store.sessionsSnapshot()
+    }
+
+    func createSession(title: String) async throws -> KBSession {
+        store.createSession(title: title)
     }
 }
 
@@ -72,6 +77,46 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         }
         if let page = try? decoder.decode(Page.self, from: data) {
             return page.items ?? page.sessions ?? []
+        }
+        throw KnowledgeBaseAPIError.decodingFailed
+    }
+
+    func createSession(title: String) async throws -> KBSession {
+        let url = baseURL.appendingPathComponent("api/sessions")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let authToken {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        struct Body: Encodable {
+            let title: String
+        }
+
+        let encoder = JSONEncoder()
+        request.httpBody = try encoder.encode(Body(title: title))
+
+        let (data, response) = try await urlSession.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
+        }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        struct Envelope: Codable {
+            let session: KBSession?
+        }
+
+        if let session = try? decoder.decode(KBSession.self, from: data) {
+            return session
+        }
+        if let env = try? decoder.decode(Envelope.self, from: data), let session = env.session {
+            return session
         }
         throw KnowledgeBaseAPIError.decodingFailed
     }
@@ -160,5 +205,82 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             return list
         }
         return try await fetchMessages(sessionId: sessionId)
+    }
+
+    func sendAttachment(
+        sessionId: String,
+        fileURL: URL,
+        filename: String,
+        mimeType: String,
+        useKnowledgeBase: Bool
+    ) async throws -> [KBMessage] {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(sessionId)
+            .appendingPathComponent("attachments")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        if let authToken {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        let fileData = try Data(contentsOf: fileURL)
+        request.httpBody = Self.multipartAttachmentBody(
+            boundary: boundary,
+            fileData: fileData,
+            filename: filename,
+            mimeType: mimeType,
+            useKnowledgeBase: useKnowledgeBase
+        )
+
+        let (data, response) = try await urlSession.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
+        }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        struct Envelope: Codable {
+            let messages: [KBMessage]?
+        }
+
+        if let env = try? decoder.decode(Envelope.self, from: data), let messages = env.messages {
+            return messages
+        }
+        if let list = try? decoder.decode([KBMessage].self, from: data) {
+            return list
+        }
+        return try await fetchMessages(sessionId: sessionId)
+    }
+
+    private static func multipartAttachmentBody(
+        boundary: String,
+        fileData: Data,
+        filename: String,
+        mimeType: String,
+        useKnowledgeBase: Bool
+    ) -> Data {
+        var data = Data()
+        let crlf = "\r\n"
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append("\(useKnowledgeBase)\(crlf)".data(using: .utf8)!)
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(
+            "Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+        )
+        data.append("Content-Type: \(mimeType)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(fileData)
+        data.append(crlf.data(using: .utf8)!)
+        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        return data
     }
 }

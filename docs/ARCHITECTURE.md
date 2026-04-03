@@ -20,7 +20,8 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 | `StubKnowledgeBaseAPIClient` + `InMemoryKBStore` | Demo session when no base URL |
 | `URLSessionKnowledgeBaseAPIClient` | `GET /api/sessions` |
 | `ChatAPIClientProtocol` | Messages + send text (stub + `URLSession` same host) |
-| `ChatView` / `ChatViewModel` | Thread + composer |
+| `ChatView` / `ChatViewModel` | Thread + composer + photo/file attachments (stub / multipart HTTP) |
+| `NewSessionSheet` | Create session (stub / `POST /api/sessions`) |
 | `KBSession`, `KBMessage` | REST-oriented models |
 
 ## Voice (partial)

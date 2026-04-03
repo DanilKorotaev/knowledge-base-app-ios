@@ -7,6 +7,8 @@ struct MainView: View {
     @State private var loadError: String?
     @State private var isLoading = false
     @State private var voiceViewModel = VoiceRecordingViewModel()
+    @State private var showNewSession = false
+    @State private var newSessionTitle = ""
 
     init(
         apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeSessionClient(),
@@ -70,12 +72,27 @@ struct MainView: View {
                     .disabled(isLoading)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        newSessionTitle = ""
+                        showNewSession = true
+                    } label: {
+                        Label("New session", systemImage: "plus.circle.fill")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         SettingsView()
                     } label: {
                         Label("Settings", systemImage: "gearshape")
                     }
                 }
+            }
+            .sheet(isPresented: $showNewSession) {
+                NewSessionSheet(
+                    title: $newSessionTitle,
+                    onCancel: { showNewSession = false },
+                    onCreate: { Task { await createSessionAndDismiss() } }
+                )
             }
             .task {
                 await loadSessions()
@@ -115,6 +132,18 @@ struct MainView: View {
         defer { isLoading = false }
         do {
             sessions = try await apiClient.fetchSessions()
+        } catch {
+            loadError = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func createSessionAndDismiss() async {
+        do {
+            _ = try await apiClient.createSession(title: newSessionTitle)
+            newSessionTitle = ""
+            showNewSession = false
+            await loadSessions()
         } catch {
             loadError = error.localizedDescription
         }

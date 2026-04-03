@@ -50,4 +50,31 @@ final class ChatViewModel {
     func clearError() {
         errorMessage = nil
     }
+
+    func reportError(_ message: String) {
+        errorMessage = message
+    }
+
+    func sendAttachment(fileURL: URL, filename: String, mimeType: String) async {
+        isSending = true
+        errorMessage = nil
+        defer { isSending = false }
+        let scoped = fileURL.startAccessingSecurityScopedResource()
+        defer {
+            if scoped {
+                fileURL.stopAccessingSecurityScopedResource()
+            }
+        }
+        do {
+            messages = try await client.sendAttachment(
+                sessionId: session.id,
+                fileURL: fileURL,
+                filename: filename,
+                mimeType: mimeType,
+                useKnowledgeBase: useKnowledgeBase
+            )
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 }

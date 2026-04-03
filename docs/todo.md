@@ -14,7 +14,7 @@ _(none)_
 ### Ops / CI _(отложено — код и фичи в приоритете)_
 
 - [ ] [Match + ASC + TestFlight](tasks/pending/task-ops-fastlane-testflight.md)
-- [ ] [Choose OSS license](tasks/pending/task-doc-license.md)
+- [x] [MIT LICENSE](tasks/completed/task-sessions-attachments-license.md) _(was task-doc-license)_
 
 ### Documentation
 

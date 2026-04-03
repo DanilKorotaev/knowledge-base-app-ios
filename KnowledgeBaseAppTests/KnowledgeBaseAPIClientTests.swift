@@ -16,6 +16,16 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         XCTAssertEqual(sessions.first?.id, "demo-session")
     }
 
+    func testStubCreateSessionAppendsToStore() async throws {
+        let store = InMemoryKBStore(demoSession: false)
+        let client = StubKnowledgeBaseAPIClient(store: store)
+        let created = try await client.createSession(title: "Alpha")
+        XCTAssertEqual(created.title, "Alpha")
+        let sessions = try await client.fetchSessions()
+        XCTAssertEqual(sessions.count, 1)
+        XCTAssertEqual(sessions.first?.title, "Alpha")
+    }
+
     func testRemoteClientSuccessDecodesArray() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]

@@ -54,4 +54,4 @@ Details: [docs/SETUP.md](docs/SETUP.md).
 
 ## License
 
-TBD (add `LICENSE` when you choose a license for the public repo).
+[MIT](LICENSE)

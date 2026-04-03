@@ -37,4 +37,17 @@ final class InMemoryKBStore: @unchecked Sendable {
         defer { lock.unlock() }
         _messages[sessionId] = messages
     }
+
+    /// Appends a new session (stub / offline).
+    @discardableResult
+    func createSession(title: String) -> KBSession {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let name = trimmed.isEmpty ? "New session" : trimmed
+        lock.lock()
+        defer { lock.unlock() }
+        let id = "local-\(UUID().uuidString)"
+        let session = KBSession(id: id, title: name, messageCount: 0, updatedAt: Date())
+        _sessions.insert(session, at: 0)
+        return session
+    }
 }

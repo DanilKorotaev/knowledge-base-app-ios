@@ -1,8 +1,12 @@
+import PhotosUI
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ChatView: View {
     @State private var viewModel: ChatViewModel
     @State private var scrollSpace = UUID()
+    @State private var photoPickerItem: PhotosPickerItem?
+    @State private var showFileImporter = false
 
     init(session: KBSession, chatClient: ChatAPIClientProtocol) {
         _viewModel = State(
@@ -47,6 +51,28 @@ struct ChatView: View {
         .task {
             await viewModel.load()
         }
+        .onChange(of: photoPickerItem) { _, newItem in
+            Task { await handlePhotoPicked(newItem) }
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.item],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                Task {
+                    await viewModel.sendAttachment(
+                        fileURL: url,
+                        filename: url.lastPathComponent,
+                        mimeType: url.kbPreferredMIMEType
+                    )
+                }
+            case .failure(let error):
+                viewModel.reportError(error.localizedDescription)
+            }
+        }
         .alert("Chat", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.clearError() } }
@@ -63,7 +89,21 @@ struct ChatView: View {
         VStack(alignment: .leading, spacing: 8) {
             Toggle("Use knowledge base", isOn: $viewModel.useKnowledgeBase)
                 .font(.subheadline)
-            HStack(alignment: .bottom, spacing: 8) {
+            HStack(alignment: .bottom, spacing: 6) {
+                PhotosPicker(selection: $photoPickerItem, matching: .images) {
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.title3)
+                }
+                .disabled(viewModel.isSending)
+
+                Button {
+                    showFileImporter = true
+                } label: {
+                    Image(systemName: "paperclip")
+                        .font(.title3)
+                }
+                .disabled(viewModel.isSending)
+
                 TextField("Message", text: $viewModel.draft, axis: .vertical)
                     .lineLimit(1 ... 6)
                     .textFieldStyle(.roundedBorder)
@@ -81,6 +121,26 @@ struct ChatView: View {
         }
         .padding()
         .background(.bar)
+    }
+
+    private func handlePhotoPicked(_ item: PhotosPickerItem?) async {
+        guard let item else { return }
+        defer { photoPickerItem = nil }
+        guard let data = try? await item.loadTransferable(type: Data.self) else {
+            viewModel.reportError("Could not read photo.")
+            return
+        }
+        let path = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
+        do {
+            try data.write(to: path)
+            await viewModel.sendAttachment(
+                fileURL: path,
+                filename: "photo.jpg",
+                mimeType: "image/jpeg"
+            )
+        } catch {
+            viewModel.reportError(error.localizedDescription)
+        }
     }
 }
 

@@ -40,4 +40,24 @@ final class ChatAPIClientTests: XCTestCase {
         let fetched = try await client.fetchMessages(sessionId: "demo-session")
         XCTAssertEqual(fetched.count, 2)
     }
+
+    func testSendAttachmentAppendsStubMessages() async throws {
+        let store = InMemoryKBStore(demoSession: true)
+        let client = StubChatAPIClient(store: store)
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("kb-test-\(UUID().uuidString).txt")
+        try "hello".write(to: temp, atomically: true, encoding: .utf8)
+        defer { try? FileManager.default.removeItem(at: temp) }
+
+        let list = try await client.sendAttachment(
+            sessionId: "demo-session",
+            fileURL: temp,
+            filename: "note.txt",
+            mimeType: "text/plain",
+            useKnowledgeBase: true
+        )
+
+        XCTAssertEqual(list.count, 2)
+        XCTAssertTrue(list[0].content.contains("note.txt"))
+        XCTAssertEqual(list[1].role, .assistant)
+    }
 }
