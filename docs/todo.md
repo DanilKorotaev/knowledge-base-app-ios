@@ -8,12 +8,12 @@ _(none)_
 
 ### Product
 
-- [🚧] [Voice: gestures + AVFoundation + review sheet; backend upload later](tasks/pending/task-feature-voice-input.md)
-- [ ] [Chat history and message send (text)](tasks/pending/task-feature-chat.md)
+- [x] [Voice MVP](tasks/pending/task-feature-voice-input.md) — см. [completed](tasks/completed/task-feature-voice-input-mvp.md); Whisper/upload — когда будет API
+- [x] [Чат: история + текст](tasks/pending/task-feature-chat.md) — см. [completed](tasks/completed/task-feature-chat-mvp.md); стриминг ответа — позже
 
-### Ops / CI
+### Ops / CI _(отложено — код и фичи в приоритете)_
 
-- [🚧] [Match + ASC secrets + первый TestFlight](tasks/pending/task-ops-fastlane-testflight.md) — Fastlane уже в репо; осталось завести сертификаты и секреты
+- [ ] [Match + ASC + TestFlight](tasks/pending/task-ops-fastlane-testflight.md)
 - [ ] [Choose OSS license](tasks/pending/task-doc-license.md)
 
 ### Documentation

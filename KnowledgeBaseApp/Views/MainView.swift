@@ -2,13 +2,18 @@ import SwiftUI
 
 struct MainView: View {
     private let apiClient: KnowledgeBaseAPIClientProtocol
+    private let chatClient: ChatAPIClientProtocol
     @State private var sessions: [KBSession] = []
     @State private var loadError: String?
     @State private var isLoading = false
     @State private var voiceViewModel = VoiceRecordingViewModel()
 
-    init(apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeDefaultClient()) {
+    init(
+        apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeSessionClient(),
+        chatClient: ChatAPIClientProtocol = MainView.makeChatClient()
+    ) {
         self.apiClient = apiClient
+        self.chatClient = chatClient
     }
 
     var body: some View {
@@ -27,18 +32,29 @@ struct MainView: View {
                         "No sessions",
                         systemImage: "bubble.left.and.bubble.right",
                         description: Text(
-                            "Configure the API in Settings. Until the KB App API is deployed, the list stays empty."
+                            "Configure the API in Settings, or use a stub build with a demo session when no server is set."
                         )
                     )
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        MicBar(viewModel: voiceViewModel)
+                    }
                 } else {
                     List(sessions) { session in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(session.title)
-                                .font(.headline)
-                            Text("\(session.messageCount) messages")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                        NavigationLink(value: session) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(session.title)
+                                    .font(.headline)
+                                Text("\(session.messageCount) messages")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                    }
+                    .navigationDestination(for: KBSession.self) { session in
+                        ChatView(session: session, chatClient: chatClient)
+                    }
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        MicBar(viewModel: voiceViewModel)
                     }
                 }
             }
@@ -63,12 +79,6 @@ struct MainView: View {
             }
             .task {
                 await loadSessions()
-            }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                @Bindable var voice = voiceViewModel
-                MicRecordControl(viewModel: voice)
-                    .padding(.horizontal)
-                    .background(.bar)
             }
             .sheet(isPresented: Binding(
                 get: { voiceViewModel.showPostRecordReview },
@@ -110,14 +120,41 @@ struct MainView: View {
         }
     }
 
-    private static func makeDefaultClient() -> KnowledgeBaseAPIClientProtocol {
-        if let remote = URLSessionKnowledgeBaseAPIClient() {
+    /// Shared with `StubChatAPIClient` so demo session messages stay in sync without a server.
+    private static let stubStore = InMemoryKBStore()
+
+    private static func remoteBundle() -> URLSessionKnowledgeBaseAPIClient? {
+        URLSessionKnowledgeBaseAPIClient()
+    }
+
+    private static func makeSessionClient() -> KnowledgeBaseAPIClientProtocol {
+        if let remote = remoteBundle() {
             return remote
         }
-        return StubKnowledgeBaseAPIClient()
+        return StubKnowledgeBaseAPIClient(store: stubStore)
+    }
+
+    private static func makeChatClient() -> ChatAPIClientProtocol {
+        if let remote = remoteBundle() {
+            return remote
+        }
+        return StubChatAPIClient(store: stubStore)
+    }
+}
+
+private struct MicBar: View {
+    @Bindable var viewModel: VoiceRecordingViewModel
+
+    var body: some View {
+        MicRecordControl(viewModel: viewModel)
+            .padding(.horizontal)
+            .background(.bar)
     }
 }
 
 #Preview {
-    MainView(apiClient: StubKnowledgeBaseAPIClient())
+    MainView(
+        apiClient: StubKnowledgeBaseAPIClient(store: InMemoryKBStore()),
+        chatClient: StubChatAPIClient(store: InMemoryKBStore())
+    )
 }

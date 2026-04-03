@@ -1,7 +1,7 @@
 import Foundation
 
 /// Mirrors a knowledge-base chat session from the shared PostgreSQL store (future: KB App API).
-struct KBSession: Identifiable, Codable, Equatable, Sendable {
+struct KBSession: Identifiable, Codable, Equatable, Hashable, Sendable {
     let id: String
     let title: String
     let messageCount: Int

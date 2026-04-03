@@ -1,14 +1,13 @@
 # Chat: text send + history
 
-**Status:** Pending  
-**Depends on:** KB App API message/session endpoints.
+**Status:** Client MVP готов (stub + HTTP заготовка); ответы ассистента по сети — когда API готов.
 
-## Scope
+## Done
 
-- Load session messages.
-- Send text query; display assistant replies (streaming TBD).
-- Empty vs knowledge-base mode when API supports it.
+- `ChatAPIClientProtocol`, stub с демо-сессией, `URLSession` для messages.
+- Экран чата, переключатель use KB, пузырьки user/assistant.
 
-## Acceptance
+## Remaining
 
-- Client uses `KnowledgeBaseAPIClientProtocol` extensions or dedicated `ChatAPIClientProtocol` as the surface grows.
+- Streaming assistant tokens (SSE/WebSocket — TBD).
+- Режимы «с БЗ» / «пустой чат» на стороне сервера (клиент уже шлёт флаг).

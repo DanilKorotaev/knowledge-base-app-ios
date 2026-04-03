@@ -16,10 +16,12 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 |------|--------|
 | SwiftUI shell (`MainView`, `SettingsView`) | Initial |
 | `AppConfiguration` | `KBAPP_*` env + UserDefaults |
-| `KnowledgeBaseAPIClientProtocol` | Defined |
-| `StubKnowledgeBaseAPIClient` | Empty sessions (default when no base URL) |
-| `URLSessionKnowledgeBaseAPIClient` | `GET /api/sessions` placeholder; response shapes TBD with backend |
-| `KBSession` | Model aligned with future REST |
+| `KnowledgeBaseAPIClientProtocol` | Sessions list |
+| `StubKnowledgeBaseAPIClient` + `InMemoryKBStore` | Demo session when no base URL |
+| `URLSessionKnowledgeBaseAPIClient` | `GET /api/sessions` |
+| `ChatAPIClientProtocol` | Messages + send text (stub + `URLSession` same host) |
+| `ChatView` / `ChatViewModel` | Thread + composer |
+| `KBSession`, `KBMessage` | REST-oriented models |
 
 ## Voice (partial)
 

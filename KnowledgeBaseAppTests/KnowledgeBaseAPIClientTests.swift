@@ -2,10 +2,18 @@ import XCTest
 @testable import KnowledgeBaseApp
 
 final class KnowledgeBaseAPIClientTests: XCTestCase {
-    func testStubReturnsEmptySessions() async throws {
-        let client = StubKnowledgeBaseAPIClient()
+    func testStubReturnsEmptySessionsWhenStoreHasNoSessions() async throws {
+        let store = InMemoryKBStore(demoSession: false)
+        let client = StubKnowledgeBaseAPIClient(store: store)
         let sessions = try await client.fetchSessions()
         XCTAssertTrue(sessions.isEmpty)
+    }
+
+    func testStubDefaultStoreIncludesDemoSession() async throws {
+        let client = StubKnowledgeBaseAPIClient()
+        let sessions = try await client.fetchSessions()
+        XCTAssertEqual(sessions.count, 1)
+        XCTAssertEqual(sessions.first?.id, "demo-session")
     }
 
     func testRemoteClientSuccessDecodesArray() async throws {
