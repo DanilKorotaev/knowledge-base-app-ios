@@ -27,7 +27,7 @@ Signing, Match, and TestFlight: [FASTLANE.md](FASTLANE.md).
 ### Rules
 
 - Do **not** commit hostnames with embedded credentials, API keys, or personal payloads.
-- Prefer **Keychain** for bearer tokens before any shared or production use; the skeleton stores the token in UserDefaults only for local development.
+- **Bearer tokens:** saved from in-app **Settings** go to the **Keychain**; legacy values in UserDefaults are migrated once on read. Scheme env `KBAPP_AUTH_TOKEN` still overrides for local runs.
 
 ### Environment variables (prefix `KBAPP_`)
 

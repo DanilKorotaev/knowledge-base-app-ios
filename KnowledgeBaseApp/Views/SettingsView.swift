@@ -16,7 +16,7 @@ struct SettingsView: View {
                 Text("KB App API")
             } footer: {
                 Text(
-                    "Matches env vars KBAPP_API_BASE_URL and KBAPP_AUTH_TOKEN. Store tokens in Keychain before production."
+                    "Matches env vars KBAPP_API_BASE_URL and KBAPP_AUTH_TOKEN. The bearer token is stored in the Keychain when you tap Save."
                 )
             }
 

@@ -36,6 +36,7 @@
 		8F4C100202455246536B8F5A /* KnowledgeBaseWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD644C3B0F531601E4EDA40 /* KnowledgeBaseWidgets.swift */; };
 		93711AF124F474A24679631C /* FilesAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E234A59CC512EFB706BC6C3F /* FilesAPIClientTests.swift */; };
 		96AB135CDA6C32BF2CE59E4D /* RecordingGestureLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BD102BF4E88BE964430B5A /* RecordingGestureLogicTests.swift */; };
+		9EA32402A5214BDB1D13D253 /* KeychainTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE4E4D9362430D07F2BA5687 /* KeychainTokenStore.swift */; };
 		9F6D9B7AD98C90038D1D8BA9 /* ChangedFilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD568F54C1C600A517DBB3FE /* ChangedFilesView.swift */; };
 		A01B7FCDD414058317EEBD3C /* FileDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD741F0013503264A426AC27 /* FileDiffView.swift */; };
 		A3E55D43F150612FC94BAAB4 /* KBAppAPIErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A06F8FFB7BA92925DF5D9AA /* KBAppAPIErrorMessage.swift */; };
@@ -43,6 +44,7 @@
 		BD428F46D03C041F283BCEE6 /* StartVoiceRecordingIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */; };
 		C239465AC4EB1605D28DC768 /* VoiceRecordingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905A0A0C1BC5E8DF3DE1F685 /* VoiceRecordingViewModel.swift */; };
 		C289097273DFB29965CB21D0 /* KnowledgeBaseWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3A4EA6DF116DD5766350E873 /* KnowledgeBaseWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C5C4BA21D89CFF1BBF1ADB4D /* KeychainTokenStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEBC7766D9D4E4562104FDF6 /* KeychainTokenStoreTests.swift */; };
 		C698E2635E07120D294CFE42 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F402A7D191773857BCD1B01 /* CameraPicker.swift */; };
 		C741F7963179EB0F5079CC6E /* VoiceRecordingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81F668021DEF209B16CAEAF9 /* VoiceRecordingService.swift */; };
 		C7D14550E88AD115692E4137 /* SSEventParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D62608F5BAFCE297F72239 /* SSEventParserTests.swift */; };
@@ -119,6 +121,8 @@
 		BFE66E36D575D6879DC9F0F6 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		C1BDEE39C2A096C09D9AEB7A /* ChatAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAPIClientTests.swift; sourceTree = "<group>"; };
 		CD741F0013503264A426AC27 /* FileDiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDiffView.swift; sourceTree = "<group>"; };
+		CE4E4D9362430D07F2BA5687 /* KeychainTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStore.swift; sourceTree = "<group>"; };
+		CEBC7766D9D4E4562104FDF6 /* KeychainTokenStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStoreTests.swift; sourceTree = "<group>"; };
 		CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAPIClient.swift; sourceTree = "<group>"; };
 		CFD644C3B0F531601E4EDA40 /* KnowledgeBaseWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseWidgets.swift; sourceTree = "<group>"; };
 		D1FCCA0BB3CACBD1682EDF80 /* KnowledgeBaseAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAPIClientTests.swift; sourceTree = "<group>"; };
@@ -247,6 +251,7 @@
 				E234A59CC512EFB706BC6C3F /* FilesAPIClientTests.swift */,
 				8B9045AD9F3D838066801585 /* KBMessageTests.swift */,
 				E7C5519EDDBC09972FCA9E51 /* KBSessionTests.swift */,
+				CEBC7766D9D4E4562104FDF6 /* KeychainTokenStoreTests.swift */,
 				D1FCCA0BB3CACBD1682EDF80 /* KnowledgeBaseAPIClientTests.swift */,
 				D4BD102BF4E88BE964430B5A /* RecordingGestureLogicTests.swift */,
 				51D62608F5BAFCE297F72239 /* SSEventParserTests.swift */,
@@ -323,6 +328,7 @@
 			isa = PBXGroup;
 			children = (
 				EBA439013BC5F2B88B399380 /* AppConfiguration.swift */,
+				CE4E4D9362430D07F2BA5687 /* KeychainTokenStore.swift */,
 			);
 			path = Configuration;
 			sourceTree = "<group>";
@@ -473,6 +479,7 @@
 				0A8E9020A7CBD087E2AC07B8 /* KBChangedFile.swift in Sources */,
 				EA2393A388948467B487C016 /* KBMessage.swift in Sources */,
 				604753B483CA60050D55F984 /* KBSession.swift in Sources */,
+				9EA32402A5214BDB1D13D253 /* KeychainTokenStore.swift in Sources */,
 				FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */,
 				00543EEFFC3C42A06BC4D2A0 /* KnowledgeBaseApp.swift in Sources */,
 				3E3686DD8A6345F55E307ADD /* KnowledgeBaseAppShortcuts.swift in Sources */,
@@ -502,6 +509,7 @@
 				93711AF124F474A24679631C /* FilesAPIClientTests.swift in Sources */,
 				47777CEED86925B6495E3520 /* KBMessageTests.swift in Sources */,
 				8004370EA925020A01F7EA9B /* KBSessionTests.swift in Sources */,
+				C5C4BA21D89CFF1BBF1ADB4D /* KeychainTokenStoreTests.swift in Sources */,
 				CE2C5AF5E090B2902797E2F0 /* KnowledgeBaseAPIClientTests.swift in Sources */,
 				96AB135CDA6C32BF2CE59E4D /* RecordingGestureLogicTests.swift in Sources */,
 				C7D14550E88AD115692E4137 /* SSEventParserTests.swift in Sources */,

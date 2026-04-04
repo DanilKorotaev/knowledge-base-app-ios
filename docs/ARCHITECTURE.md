@@ -15,7 +15,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 | Area | Status |
 |------|--------|
 | SwiftUI shell (`MainView`, `SettingsView`) | Initial |
-| `AppConfiguration` | `KBAPP_*` env + UserDefaults |
+| `AppConfiguration` | `KBAPP_*` env; URL в UserDefaults; **токен** — Keychain (+ миграция с UserDefaults) |
 | `KnowledgeBaseAPIClientProtocol` | Sessions list + create session |
 | `StubKnowledgeBaseAPIClient` + `InMemoryKBStore` | Demo session when no base URL |
 | `URLSessionKnowledgeBaseAPIClient` | `GET/POST /api/sessions`, messages, attachments, files |

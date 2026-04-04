@@ -42,20 +42,20 @@ final class ChatViewModel {
             streamingAssistantText = nil
         }
         do {
+            draft = ""
+            let optimisticUser = KBMessage(
+                id: "kb-optimistic-\(UUID().uuidString)",
+                role: .user,
+                content: trimmed,
+                createdAt: Date()
+            )
+            messages.append(optimisticUser)
+
             let stream = try await client.streamTextMessage(
                 sessionId: session.id,
                 text: trimmed,
                 useKnowledgeBase: useKnowledgeBase
             )
-            draft = ""
-
-            var thread = try await client.fetchMessages(sessionId: session.id)
-            if let last = thread.last, last.role == .assistant {
-                thread.removeLast()
-                messages = thread
-            } else {
-                messages = thread
-            }
 
             var accumulated = ""
             for try await chunk in stream {
