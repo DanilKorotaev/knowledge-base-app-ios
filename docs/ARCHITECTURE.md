@@ -10,19 +10,23 @@ Alternative **iOS client** to the same knowledge base infrastructure as the Tele
 
 The app talks only to **HTTPS APIs**; it does not run Cursor or touch the database directly.
 
-## Current skeleton
+## Current implementation
 
 | Area | Status |
 |------|--------|
 | SwiftUI shell (`MainView`, `SettingsView`) | Initial |
 | `AppConfiguration` | `KBAPP_*` env + UserDefaults |
-| `KnowledgeBaseAPIClientProtocol` | Sessions list |
+| `KnowledgeBaseAPIClientProtocol` | Sessions list + create session |
 | `StubKnowledgeBaseAPIClient` + `InMemoryKBStore` | Demo session when no base URL |
-| `URLSessionKnowledgeBaseAPIClient` | `GET /api/sessions` |
-| `ChatAPIClientProtocol` | Messages + send text (stub + `URLSession` same host) |
-| `ChatView` / `ChatViewModel` | Thread + composer + photo/file attachments (stub / multipart HTTP) |
+| `URLSessionKnowledgeBaseAPIClient` | `GET/POST /api/sessions`, messages, attachments, files |
+| `ChatAPIClientProtocol` | Messages + send text + attachments (stub + `URLSession` same host) |
+| `ChatView` / `ChatViewModel` | Thread + composer + gallery + **camera** + file importer |
 | `NewSessionSheet` | Create session (stub / `POST /api/sessions`) |
 | `KBSession`, `KBMessage` | REST-oriented models |
+| `FilesAPIClientProtocol` | Changed files + revert (stub + `GET/POST …/api/files/…`) |
+| `ChangedFilesView` / `FileDiffView` | List, before/after, revert |
+| Widget extension | Small / medium / lock screen; `knowledgebase://record` |
+| Deep link | Opens app, shows voice hint banner on main screen |
 
 ## Voice (partial)
 
@@ -32,12 +36,11 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 | `VoiceRecordingViewModel` + `MicRecordControl` | Hold / cancel / lock, review sheet |
 | `VoiceUploadClientProtocol` | Stub only; real HTTP when KB App API exists |
 
-## Planned modules (from product plan)
+## Next (product / backend)
 
-- **Voice (remaining)** — multipart upload + Whisper-backed transcription text.
-- **Chat** — message list, text input, attachments.
-- **Files** — changed files / diff via API.
-- **Widgets** — WidgetKit + App Intents.
+- **Voice (remaining)** — multipart upload + Whisper-backed transcription text (KB App API + bot services).
+- **Chat** — streaming assistant tokens (SSE/WebSocket TBD).
+- **Widgets** — App Intents for interactive controls (optional follow-up).
 
 ## Backend boundary
 

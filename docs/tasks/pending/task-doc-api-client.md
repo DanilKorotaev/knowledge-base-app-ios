@@ -1,6 +1,6 @@
 # Document API client vs OpenAPI
 
-**Status:** Pending
+**Status:** Pending — coordinate with [task-backend-kb-app-api-sync.md](task-backend-kb-app-api-sync.md) and Nextcloud «Архитектура и бэкенд API».
 
 When KB App API is implemented, document:
 
