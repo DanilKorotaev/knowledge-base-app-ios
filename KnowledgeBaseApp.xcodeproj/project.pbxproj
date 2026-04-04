@@ -15,6 +15,7 @@
 		28A4888D6859F54ABC6161AF /* PostRecordingReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7A58BA42C2DB8F386813EF /* PostRecordingReviewSheet.swift */; };
 		2E5EFC151911E88B15FA7337 /* FilesAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 749B674A93832F603A6199D9 /* FilesAPIClient.swift */; };
 		343498C2DB528E4809E9DCCE /* URLMIMETypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABACE67AA14AB98FB6859D /* URLMIMETypeTests.swift */; };
+		3E3686DD8A6345F55E307ADD /* KnowledgeBaseAppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD8B85391698AF8E13EE6F4 /* KnowledgeBaseAppShortcuts.swift */; };
 		46E9F085C5E58735D88D47D2 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE66E36D575D6879DC9F0F6 /* ChatView.swift */; };
 		4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E8507F60F3F1F8BE4CB3FB /* MainView.swift */; };
 		47777CEED86925B6495E3520 /* KBMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9045AD9F3D838066801585 /* KBMessageTests.swift */; };
@@ -28,12 +29,14 @@
 		8004370EA925020A01F7EA9B /* KBSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C5519EDDBC09972FCA9E51 /* KBSessionTests.swift */; };
 		811C58AA56C0A8DCEE7F967D /* URL+MIME.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5844BC95580DD7DD2FE6F31 /* URL+MIME.swift */; };
 		82FB060EF8C9C6959928DCAA /* ChatAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1BDEE39C2A096C09D9AEB7A /* ChatAPIClientTests.swift */; };
+		8ACC4B7D0E9CA6959AB13AF3 /* StartVoiceRecordingIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */; };
 		8F4C100202455246536B8F5A /* KnowledgeBaseWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD644C3B0F531601E4EDA40 /* KnowledgeBaseWidgets.swift */; };
 		93711AF124F474A24679631C /* FilesAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E234A59CC512EFB706BC6C3F /* FilesAPIClientTests.swift */; };
 		96AB135CDA6C32BF2CE59E4D /* RecordingGestureLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BD102BF4E88BE964430B5A /* RecordingGestureLogicTests.swift */; };
 		9F6D9B7AD98C90038D1D8BA9 /* ChangedFilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD568F54C1C600A517DBB3FE /* ChangedFilesView.swift */; };
 		A01B7FCDD414058317EEBD3C /* FileDiffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD741F0013503264A426AC27 /* FileDiffView.swift */; };
 		B898112C8C35C80F2743527D /* VoiceRoutingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3D74ABBD9649D407F7500B7 /* VoiceRoutingContext.swift */; };
+		BD428F46D03C041F283BCEE6 /* StartVoiceRecordingIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */; };
 		C239465AC4EB1605D28DC768 /* VoiceRecordingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905A0A0C1BC5E8DF3DE1F685 /* VoiceRecordingViewModel.swift */; };
 		C289097273DFB29965CB21D0 /* KnowledgeBaseWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3A4EA6DF116DD5766350E873 /* KnowledgeBaseWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C698E2635E07120D294CFE42 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F402A7D191773857BCD1B01 /* CameraPicker.swift */; };
@@ -88,6 +91,8 @@
 		3A4EA6DF116DD5766350E873 /* KnowledgeBaseWidgetExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = KnowledgeBaseWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		467CF93A5C5C1E490410CEFA /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		525C51AE342E067C1846E135 /* RecordingGestureLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingGestureLogic.swift; sourceTree = "<group>"; };
+		65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartVoiceRecordingIntent.swift; sourceTree = "<group>"; };
+		6FD8B85391698AF8E13EE6F4 /* KnowledgeBaseAppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAppShortcuts.swift; sourceTree = "<group>"; };
 		749B674A93832F603A6199D9 /* FilesAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesAPIClient.swift; sourceTree = "<group>"; };
 		7C1053C5FEB26E0AF6E9DCB7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7E7A58BA42C2DB8F386813EF /* PostRecordingReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostRecordingReviewSheet.swift; sourceTree = "<group>"; };
@@ -196,10 +201,19 @@
 			path = Recording;
 			sourceTree = "<group>";
 		};
+		471AADBB89749458FF3B8B2B /* SharedIntents */ = {
+			isa = PBXGroup;
+			children = (
+				65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */,
+			);
+			path = SharedIntents;
+			sourceTree = "<group>";
+		};
 		4F17E5E52EC85DD5760A4318 /* App */ = {
 			isa = PBXGroup;
 			children = (
 				120ACA3751D4BA6BA15A924B /* KnowledgeBaseApp.swift */,
+				6FD8B85391698AF8E13EE6F4 /* KnowledgeBaseAppShortcuts.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -236,6 +250,7 @@
 				1AC9680746CD7C19EBFF5C1B /* KnowledgeBaseApp */,
 				61E6FE726E79E36BD03D3698 /* KnowledgeBaseAppTests */,
 				1A5CB232D6F0E1302C39B802 /* KnowledgeBaseWidget */,
+				471AADBB89749458FF3B8B2B /* SharedIntents */,
 				00C02605A379D5F26A8DA592 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -435,6 +450,7 @@
 				604753B483CA60050D55F984 /* KBSession.swift in Sources */,
 				FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */,
 				00543EEFFC3C42A06BC4D2A0 /* KnowledgeBaseApp.swift in Sources */,
+				3E3686DD8A6345F55E307ADD /* KnowledgeBaseAppShortcuts.swift in Sources */,
 				4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */,
 				222DDA3B8ECB24833B90E1EF /* MicRecordControl.swift in Sources */,
 				214D3EC25914BB171DBD1E87 /* NewSessionSheet.swift in Sources */,
@@ -442,6 +458,7 @@
 				28A4888D6859F54ABC6161AF /* PostRecordingReviewSheet.swift in Sources */,
 				E24048BDA7ED8393E7A223EA /* RecordingGestureLogic.swift in Sources */,
 				56BC350D0E5F60915D5AA1B1 /* SettingsView.swift in Sources */,
+				8ACC4B7D0E9CA6959AB13AF3 /* StartVoiceRecordingIntent.swift in Sources */,
 				811C58AA56C0A8DCEE7F967D /* URL+MIME.swift in Sources */,
 				C741F7963179EB0F5079CC6E /* VoiceRecordingService.swift in Sources */,
 				C239465AC4EB1605D28DC768 /* VoiceRecordingViewModel.swift in Sources */,
@@ -469,6 +486,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8F4C100202455246536B8F5A /* KnowledgeBaseWidgets.swift in Sources */,
+				BD428F46D03C041F283BCEE6 /* StartVoiceRecordingIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -538,7 +556,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -685,7 +703,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

@@ -7,7 +7,7 @@ Native SwiftUI client for the personal knowledge base stack: same PostgreSQL ses
 ## Requirements
 
 - Xcode 16+
-- iOS 17+ deployment target
+- iOS 18+ deployment target (App Intents + `OpenURLIntent` for widget / Shortcuts)
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen) — regenerate `KnowledgeBaseApp.xcodeproj` from `project.yml` after structural changes
 - Ruby **3.3.x** + Bundler — for **Fastlane** (`bundle install`)
 

@@ -2,7 +2,7 @@ name: KnowledgeBaseApp
 options:
   bundleIdPrefix: com.example
   deploymentTarget:
-    iOS: "17.0"
+    iOS: "18.0"
   createIntermediateGroups: true
   groupSortPosition: top
 settings:
@@ -20,6 +20,7 @@ targets:
     platform: iOS
     sources:
       - path: KnowledgeBaseApp
+      - path: SharedIntents
     dependencies:
       - target: KnowledgeBaseWidgetExtension
         embed: true
@@ -46,6 +47,7 @@ targets:
     platform: iOS
     sources:
       - path: KnowledgeBaseWidget
+      - path: SharedIntents
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.KnowledgeBaseApp.KnowledgeBaseWidget

@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -28,10 +29,9 @@ struct QuickRecordWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: QuickRecordProvider()) { entry in
             QuickRecordWidgetEntryView(entry: entry)
-                .widgetURL(URL(string: "knowledgebase://record"))
         }
         .configurationDisplayName("Быстрая запись")
-        .description("Открыть приложение для голосового запроса.")
+        .description("Открыть приложение для голосового запроса (App Intent + URL).")
         .supportedFamilies([.systemSmall, .accessoryCircular])
     }
 }
@@ -44,18 +44,24 @@ struct QuickRecordWidgetEntryView: View {
         Group {
             switch family {
             case .accessoryCircular:
-                Image(systemName: "mic.fill")
+                Button(intent: StartVoiceRecordingIntent()) {
+                    Image(systemName: "mic.fill")
+                }
+                .buttonStyle(.plain)
             default:
-                ZStack {
-                    ContainerRelativeShape()
-                        .fill(Color.accentColor.opacity(0.38))
-                    VStack(spacing: 6) {
-                        Image(systemName: "mic.fill")
-                            .font(.title2)
-                        Text("Record")
-                            .font(.caption2)
+                Button(intent: StartVoiceRecordingIntent()) {
+                    ZStack {
+                        ContainerRelativeShape()
+                            .fill(Color.accentColor.opacity(0.38))
+                        VStack(spacing: 6) {
+                            Image(systemName: "mic.fill")
+                                .font(.title2)
+                            Text("Record")
+                                .font(.caption2)
+                        }
                     }
                 }
+                .buttonStyle(.plain)
             }
         }
         .containerBackground(for: .widget) {
@@ -91,7 +97,6 @@ struct CurrentSessionWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: SessionProvider()) { entry in
             SessionWidgetEntryView(entry: entry)
-                .widgetURL(URL(string: "knowledgebase://record"))
         }
         .configurationDisplayName("Текущая сессия")
         .description("Ярлык сессии и быстрый доступ к записи.")
@@ -113,9 +118,12 @@ struct SessionWidgetEntryView: View {
                     .lineLimit(2)
             }
             Spacer(minLength: 0)
-            Image(systemName: "mic.circle.fill")
-                .font(.system(size: 36))
-                .symbolRenderingMode(.hierarchical)
+            Button(intent: StartVoiceRecordingIntent()) {
+                Image(systemName: "mic.circle.fill")
+                    .font(.system(size: 36))
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .buttonStyle(.plain)
         }
         .padding()
         .containerBackground(for: .widget) {

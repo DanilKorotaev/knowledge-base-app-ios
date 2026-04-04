@@ -25,7 +25,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 | `KBSession`, `KBMessage` | REST-oriented models |
 | `FilesAPIClientProtocol` | Changed files + revert (stub + `GET/POST …/api/files/…`) |
 | `ChangedFilesView` / `FileDiffView` | List, before/after, revert |
-| Widget extension | Small / medium / lock screen; `knowledgebase://record` |
+| Widget extension | Small / medium / lock screen; mic via **`StartVoiceRecordingIntent`** → `knowledgebase://record` |
 | Deep link | Opens app, shows voice hint banner on main screen |
 
 ## Voice (partial)
@@ -42,8 +42,6 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 
 - **Voice (remaining)** — multipart upload + Whisper-backed transcription text (KB App API + bot services).
 - **Chat** — streaming assistant tokens (SSE/WebSocket TBD).
-- **Widgets** — App Intents for interactive controls (optional follow-up).
-
 ## Backend boundary
 
 Until **KB App API** is implemented, the app uses the stub client. When the API is live, align URL paths and JSON with the spec in the knowledge base document «Архитектура и бэкенд API».
