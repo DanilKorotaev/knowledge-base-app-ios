@@ -20,7 +20,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 | `StubKnowledgeBaseAPIClient` + `InMemoryKBStore` | Demo session when no base URL |
 | `URLSessionKnowledgeBaseAPIClient` | `GET/POST /api/sessions`, messages, attachments, files |
 | `ChatAPIClientProtocol` | Messages + `streamTextMessage` / send + attachments (stub + `URLSession` same host) |
-| `SSEventParser` | Парсинг `data:` для будущего SSE-стриминга чата |
+| `SSEventParser` / `ChatSSEEvent` | SSE `data:` + JSON `delta`/`done` для `POST …/messages` с `Accept: text/event-stream` |
 | `ChatView` / `ChatViewModel` | Thread + composer + gallery + **camera** + file importer |
 | `NewSessionSheet` | Create session (stub / `POST /api/sessions`) |
 | `KBSession`, `KBMessage` | REST-oriented models |
@@ -42,7 +42,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 ## Next (product / backend)
 
 - **Voice (remaining)** — multipart upload + Whisper-backed transcription text (KB App API + bot services).
-- **Chat** — streaming assistant tokens from the server (SSE/WebSocket; see `docs/tasks/pending/task-feature-chat.md`).
+- **Chat** — серверный стрим по `text/event-stream` (клиент готов; см. `task-feature-chat.md`); WebSocket — только если понадобится отдельно от SSE.
 
 ## Backend boundary
 

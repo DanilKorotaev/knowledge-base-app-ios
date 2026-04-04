@@ -13,7 +13,7 @@ _(none)_
 - [x] [Voice MVP](tasks/pending/task-feature-voice-input.md) — см. [completed](tasks/completed/task-feature-voice-input-mvp.md); Whisper/upload — когда будет API
 - [x] [Чат: история + текст](tasks/pending/task-feature-chat.md) — см. [completed](tasks/completed/task-feature-chat-mvp.md); стриминг ответа — позже
 - [ ] [Голос: реальный upload](tasks/pending/task-feature-voice-input.md) — после KB App API
-- [ ] [Чат: SSE с сервера](tasks/pending/task-feature-chat.md)
+- [ ] [Чат: серверный SSE на FastAPI](tasks/pending/task-feature-chat.md) — клиент уже шлёт `Accept: text/event-stream` и парсит `delta`/`done`
 
 ### Backend (вне репо)
 

@@ -193,11 +193,75 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             return AsyncThrowingStream { $0.finish() }
         }
 
-        let messages = try await sendTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(sessionId)
+            .appendingPathComponent("messages")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("text/event-stream, application/json;q=0.9", forHTTPHeaderField: "Accept")
+        if let authToken {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        struct Body: Encodable {
+            let content: String
+            let use_knowledge_base: Bool
+        }
+
+        request.httpBody = try JSONEncoder().encode(Body(content: trimmed, use_knowledge_base: useKnowledgeBase))
+
+        let (bytes, response) = try await urlSession.bytes(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: nil)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            let errData = try await collectAsyncBytes(bytes)
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: http.statusCode,
+                apiMessage: KBAppAPIErrorMessage.parse(from: errData)
+            )
+        }
+
+        let mime = http.value(forHTTPHeaderField: "Content-Type")?.lowercased() ?? ""
+        if mime.contains("text/event-stream") {
+            return streamAssistantChunksFromSSE(bytes: bytes)
+        }
+
+        let data = try await collectAsyncBytes(bytes)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        struct Envelope: Codable {
+            let messages: [KBMessage]?
+        }
+
+        let messages: [KBMessage]
+        if let env = try? decoder.decode(Envelope.self, from: data), let m = env.messages {
+            messages = m
+        } else if let list = try? decoder.decode([KBMessage].self, from: data) {
+            messages = list
+        } else {
+            messages = try await fetchMessages(sessionId: sessionId)
+        }
+
         guard let assistant = messages.last(where: { $0.role == .assistant }) else {
             return AsyncThrowingStream { $0.finish() }
         }
-        let full = assistant.content
+        return streamAssistantByWord(assistant.content)
+    }
+
+    private func collectAsyncBytes(_ bytes: URLSession.AsyncBytes) async throws -> Data {
+        var data = Data()
+        for try await byte in bytes {
+            data.append(byte)
+        }
+        return data
+    }
+
+    private func streamAssistantByWord(_ full: String) -> AsyncThrowingStream<String, Error> {
         let parts = full.components(separatedBy: " ")
         return AsyncThrowingStream { continuation in
             Task {
@@ -207,6 +271,42 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
                     try? await Task.sleep(nanoseconds: 8_000_000)
                 }
                 continuation.finish()
+            }
+        }
+    }
+
+    private func streamAssistantChunksFromSSE(bytes: URLSession.AsyncBytes) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    var pending = Data()
+                    for try await byte in bytes {
+                        pending.append(byte)
+                        while let r = pending.range(of: Data([10, 10])) {
+                            let eventBytes = pending[..<r.lowerBound]
+                            pending = Data(pending[r.upperBound...])
+                            let block = String(decoding: eventBytes, as: UTF8.self)
+                            guard let payload = SSEventParser.dataPayload(fromSingleEventBlock: block) else { continue }
+                            let trimmed = payload.trimmingCharacters(in: .whitespacesAndNewlines)
+                            guard !trimmed.isEmpty else { continue }
+                            if let jsonData = trimmed.data(using: .utf8),
+                               let evt = try? JSONDecoder().decode(ChatSSEEvent.self, from: jsonData) {
+                                if let d = evt.delta, !d.isEmpty {
+                                    continuation.yield(d)
+                                }
+                                if evt.done == true {
+                                    continuation.finish()
+                                    return
+                                }
+                            } else {
+                                continuation.yield(trimmed)
+                            }
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
             }
         }
     }

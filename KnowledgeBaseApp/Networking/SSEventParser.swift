@@ -53,4 +53,9 @@ enum SSEventParser {
         guard !dataLines.isEmpty else { return nil }
         return dataLines.joined(separator: "\n")
     }
+
+    /// One SSE event block (lines between blank lines), without the trailing blank line.
+    static func dataPayload(fromSingleEventBlock block: String) -> String? {
+        extractDataBlock(from: block)
+    }
 }

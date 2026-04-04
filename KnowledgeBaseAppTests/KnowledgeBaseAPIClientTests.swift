@@ -172,6 +172,82 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
 
         MockURLProtocol.requestHandler = nil
     }
+
+    func testStreamTextMessageParsesSSEDeltaEvents() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        let sse = """
+        data: {"delta":"Hi"}
+
+
+        data: {"delta":"!"}
+
+
+        data: {"done":true}
+
+
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/s1/messages") == true)
+            XCTAssertTrue(request.value(forHTTPHeaderField: "Accept")?.contains("text/event-stream") == true)
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream; charset=utf-8"]
+            )!
+            return (response, sse)
+        }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: "tok", urlSession: URLSession(configuration: config))
+        let stream = try await client.streamTextMessage(sessionId: "s1", text: "hello", useKnowledgeBase: true)
+
+        var parts: [String] = []
+        for try await chunk in stream {
+            parts.append(chunk)
+        }
+
+        XCTAssertEqual(parts, ["Hi", "!"])
+
+        MockURLProtocol.requestHandler = nil
+    }
+
+    func testStreamTextMessageJSONResponseYieldsWordChunks() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        let json = """
+        {"messages":[{"id":"a","role":"assistant","content":"One two","created_at":"2026-01-01T00:00:00Z"}]}
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, json)
+        }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: nil, urlSession: URLSession(configuration: config))
+        let stream = try await client.streamTextMessage(sessionId: "s1", text: "x", useKnowledgeBase: true)
+
+        var accumulated = ""
+        for try await chunk in stream {
+            accumulated += chunk
+        }
+
+        XCTAssertEqual(accumulated, "One two")
+
+        MockURLProtocol.requestHandler = nil
+    }
 }
 
 // MARK: - Test URLProtocol

@@ -28,6 +28,7 @@
 		651DAAB8E396335F30EEF0E5 /* NotificationName+KB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0446D0911187C57A67AF311A /* NotificationName+KB.swift */; };
 		6C77F92D9F5B6C0DD921490D /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA439013BC5F2B88B399380 /* AppConfiguration.swift */; };
 		764D152A8A192C4FD5D122BB /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8266D45CC6CCD2AA7CEDE43E /* ChatViewModel.swift */; };
+		7A1625DF58CFDBDF226CA234 /* ChatSSEEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC51017B814D106D4029E5FB /* ChatSSEEvent.swift */; };
 		8004370EA925020A01F7EA9B /* KBSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7C5519EDDBC09972FCA9E51 /* KBSessionTests.swift */; };
 		811C58AA56C0A8DCEE7F967D /* URL+MIME.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5844BC95580DD7DD2FE6F31 /* URL+MIME.swift */; };
 		82FB060EF8C9C6959928DCAA /* ChatAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1BDEE39C2A096C09D9AEB7A /* ChatAPIClientTests.swift */; };
@@ -129,6 +130,7 @@
 		EB1F215090174ACE1EABAB6E /* KBSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSession.swift; sourceTree = "<group>"; };
 		EB8AE7FD6B7E7A644A425D13 /* NewSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewSessionSheet.swift; sourceTree = "<group>"; };
 		EBA439013BC5F2B88B399380 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		EC51017B814D106D4029E5FB /* ChatSSEEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatSSEEvent.swift; sourceTree = "<group>"; };
 		F8CEF44EAD6C02EC094CD944 /* InMemoryKBStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryKBStore.swift; sourceTree = "<group>"; };
 		FD0611FC2D2B4E9E04730DD9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		FD568F54C1C600A517DBB3FE /* ChangedFilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangedFilesView.swift; sourceTree = "<group>"; };
@@ -279,6 +281,7 @@
 		8E4B0AABC9506F35809EC69B /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				EC51017B814D106D4029E5FB /* ChatSSEEvent.swift */,
 				4A06F8FFB7BA92925DF5D9AA /* KBAppAPIErrorMessage.swift */,
 				A1C441DF9F316A2290DDE40A /* SSEventParser.swift */,
 			);
@@ -460,6 +463,7 @@
 				C698E2635E07120D294CFE42 /* CameraPicker.swift in Sources */,
 				9F6D9B7AD98C90038D1D8BA9 /* ChangedFilesView.swift in Sources */,
 				DE04AF9EBC2951F6F7946483 /* ChatAPIClient.swift in Sources */,
+				7A1625DF58CFDBDF226CA234 /* ChatSSEEvent.swift in Sources */,
 				46E9F085C5E58735D88D47D2 /* ChatView.swift in Sources */,
 				764D152A8A192C4FD5D122BB /* ChatViewModel.swift in Sources */,
 				A01B7FCDD414058317EEBD3C /* FileDiffView.swift in Sources */,
