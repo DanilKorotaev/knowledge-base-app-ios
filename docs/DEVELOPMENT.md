@@ -3,6 +3,7 @@
 ## Layout
 
 - `KnowledgeBaseApp/` — Swift sources (App, Configuration, Models, Services, Views, Resources)
+- `KnowledgeBaseWidget/` — WidgetKit extension; **`Info.plist` must keep `NSExtension` / `widgetkit-extension`** (simulator install fails otherwise).
 - `project.yml` — XcodeGen specification
 - `Config/` — shared `xcconfig` files for Debug/Release
 

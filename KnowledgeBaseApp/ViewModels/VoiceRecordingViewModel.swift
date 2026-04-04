@@ -125,6 +125,11 @@ final class VoiceRecordingViewModel {
                     transcriptionHint: transcriptionDraft,
                     useKnowledgeBase: useKnowledgeBase
                 )
+                NotificationCenter.default.post(
+                    name: .kbSessionThreadDidChange,
+                    object: nil,
+                    userInfo: [KBNotificationUserInfoKey.sessionId: sessionId]
+                )
                 try? FileManager.default.removeItem(at: url)
                 lastRecordedFileURL = nil
                 transcriptionDraft = ""

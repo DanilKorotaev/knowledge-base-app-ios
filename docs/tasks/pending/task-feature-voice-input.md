@@ -9,6 +9,7 @@
 - Haptics; timer + level-based waveform strip.
 - Post-record sheet; send через `ChatAPIClientProtocol.sendVoiceRecording` (stub или `POST /api/query/voice`).
 - `VoiceRoutingContext`: сессия и toggle «с БЗ» с открытого чата; иначе fallback на первую сессию в списке.
+- После успешной отправки — `Notification.Name.kbSessionThreadDidChange`: открытый чат и список сессий подтягивают данные.
 
 ## Remaining
 

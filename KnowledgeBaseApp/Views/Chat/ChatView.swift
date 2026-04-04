@@ -54,6 +54,11 @@ struct ChatView: View {
         .task {
             await viewModel.load()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { notification in
+            guard let sid = notification.userInfo?[KBNotificationUserInfoKey.sessionId] as? String,
+                  sid == viewModel.session.id else { return }
+            Task { await viewModel.load() }
+        }
         .onAppear {
             voiceRouting.activeSessionId = viewModel.session.id
             voiceRouting.useKnowledgeBase = viewModel.useKnowledgeBase

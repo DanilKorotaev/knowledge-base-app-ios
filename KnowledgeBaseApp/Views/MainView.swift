@@ -123,6 +123,9 @@ struct MainView: View {
             .task {
                 await loadSessions()
             }
+            .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { _ in
+                Task { await loadSessions() }
+            }
             .onChange(of: deepLinkVoiceRecording) { _, newValue in
                 guard newValue else { return }
                 Task {
