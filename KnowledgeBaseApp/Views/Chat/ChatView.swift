@@ -4,6 +4,7 @@ import UIKit
 import UniformTypeIdentifiers
 
 struct ChatView: View {
+    @Environment(VoiceRoutingContext.self) private var voiceRouting
     @State private var viewModel: ChatViewModel
     @State private var scrollSpace = UUID()
     @State private var photoPickerItem: PhotosPickerItem?
@@ -52,6 +53,16 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             await viewModel.load()
+        }
+        .onAppear {
+            voiceRouting.activeSessionId = viewModel.session.id
+            voiceRouting.useKnowledgeBase = viewModel.useKnowledgeBase
+        }
+        .onDisappear {
+            voiceRouting.activeSessionId = nil
+        }
+        .onChange(of: viewModel.useKnowledgeBase) { _, newValue in
+            voiceRouting.useKnowledgeBase = newValue
         }
         .onChange(of: photoPickerItem) { _, newItem in
             Task { await handlePhotoPicked(newItem) }
@@ -216,4 +227,5 @@ struct MessageBubbleView: View {
             chatClient: StubChatAPIClient(store: InMemoryKBStore())
         )
     }
+    .environment(VoiceRoutingContext())
 }

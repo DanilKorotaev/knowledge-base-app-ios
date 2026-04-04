@@ -8,7 +8,8 @@ struct MainView: View {
     @State private var sessions: [KBSession] = []
     @State private var loadError: String?
     @State private var isLoading = false
-    @State private var voiceViewModel = VoiceRecordingViewModel()
+    @State private var voiceViewModel: VoiceRecordingViewModel
+    @State private var voiceRouting = VoiceRoutingContext()
     @State private var showNewSession = false
     @State private var newSessionTitle = ""
 
@@ -22,6 +23,7 @@ struct MainView: View {
         self.chatClient = chatClient
         self.filesClient = filesClient
         self._deepLinkVoiceRecording = deepLinkVoiceRecording
+        _voiceViewModel = State(initialValue: VoiceRecordingViewModel(chatClient: chatClient))
     }
 
     var body: some View {
@@ -139,7 +141,12 @@ struct MainView: View {
                 }
             )) {
                 @Bindable var voice = voiceViewModel
-                PostRecordingReviewSheet(viewModel: voice)
+                @Bindable var routing = voiceRouting
+                PostRecordingReviewSheet(
+                    viewModel: voice,
+                    sessions: sessions,
+                    voiceRouting: routing
+                )
             }
             .alert("Recording", isPresented: Binding(
                 get: { voiceViewModel.errorMessage != nil },
@@ -155,6 +162,7 @@ struct MainView: View {
             } message: {
                 Text(voiceViewModel.errorMessage ?? "")
             }
+            .environment(voiceRouting)
         }
     }
 

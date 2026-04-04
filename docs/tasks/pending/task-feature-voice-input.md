@@ -1,18 +1,20 @@
 # Voice input (hold + lock)
 
-**Status:** In progress — **client MVP done**; real upload + Whisper pending KB App API.
+**Status:** In progress — **client wired to chat API**; Whisper + server pipeline — задача в репо бота.
 
 ## Done (iOS)
 
 - AVFoundation capture (`VoiceRecordingService`).
 - Hold-to-record, swipe left cancel, swipe up lock (`MicRecordControl` + `RecordingGestureLogic` tests).
 - Haptics; timer + level-based waveform strip.
-- Post-record sheet with editable transcription draft; `StubVoiceUploadClient` until API exists.
+- Post-record sheet; send через `ChatAPIClientProtocol.sendVoiceRecording` (stub или `POST /api/query/voice`).
+- `VoiceRoutingContext`: сессия и toggle «с БЗ» с открытого чата; иначе fallback на первую сессию в списке.
 
 ## Remaining
 
-- KB App API: audio upload + Whisper → fill transcription before send.
-- Optional UI tests / gesture polish.
+- Сервер: `POST /api/query/voice` — см. `knowledge-base-bot/docs/tasks/pending/task-api-kb-app-voice-query-ios.md`.
+- Опционально: pre-fill `transcriptionDraft` из поля `transcription` в ответе API.
+- Optional UI tests / gesture polish on device (mic permission).
 
 ## Acceptance
 

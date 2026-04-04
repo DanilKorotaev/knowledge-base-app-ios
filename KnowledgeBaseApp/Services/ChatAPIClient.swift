@@ -13,6 +13,14 @@ protocol ChatAPIClientProtocol: Sendable {
         mimeType: String,
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage]
+
+    /// Voice note: multipart to `POST /api/query/voice` (KB App API); stub appends thread like other sends.
+    func sendVoiceRecording(
+        sessionId: String,
+        audioFileURL: URL,
+        transcriptionHint: String,
+        useKnowledgeBase: Bool
+    ) async throws -> [KBMessage]
 }
 
 struct StubChatAPIClient: ChatAPIClientProtocol {
@@ -76,6 +84,38 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
             id: UUID().uuidString,
             role: .assistant,
             content: "Stub attachment (\(kb)): would upload \(filename) (\(mimeType)) to KB App API.",
+            createdAt: Date()
+        )
+        list.append(assistant)
+        store.replaceMessages(list, sessionId: sessionId)
+        return list
+    }
+
+    func sendVoiceRecording(
+        sessionId: String,
+        audioFileURL: URL,
+        transcriptionHint: String,
+        useKnowledgeBase: Bool
+    ) async throws -> [KBMessage] {
+        let size = (try? FileManager.default.attributesOfItem(atPath: audioFileURL.path)[.size] as? NSNumber)?.int64Value ?? 0
+        var list = store.messages(for: sessionId)
+        let hint = transcriptionHint.trimmingCharacters(in: .whitespacesAndNewlines)
+        let userLine = hint.isEmpty
+            ? "🎤 Voice (\(size) bytes)"
+            : "🎤 Voice: \(hint)"
+        let user = KBMessage(
+            id: UUID().uuidString,
+            role: .user,
+            content: userLine,
+            createdAt: Date()
+        )
+        list.append(user)
+
+        let kb = useKnowledgeBase ? "with KB" : "empty chat"
+        let assistant = KBMessage(
+            id: UUID().uuidString,
+            role: .assistant,
+            content: "Stub voice reply (\(kb)): would call POST /api/query/voice for this session.",
             createdAt: Date()
         )
         list.append(assistant)

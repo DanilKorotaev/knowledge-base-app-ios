@@ -7,10 +7,10 @@
 - `VoiceRecordingService` + `VoiceRecordingServiceProtocol` (AVAudioRecorder, AAC, metering).
 - `RecordingGestureLogic` (pure thresholds) + unit tests.
 - `VoiceRecordingViewModel` — hold / swipe left cancel / swipe up lock; haptics; post-record sheet with editable “transcription” draft.
-- `StubVoiceUploadClient` — placeholder until KB App API accepts multipart audio + Whisper.
+- Отправка после записи идёт через `ChatAPIClientProtocol.sendVoiceRecording` (раньше был отдельный `VoiceUploadClient`; удалён).
 - UI: `MicRecordControl`, `PostRecordingReviewSheet`, integrated in `MainView`.
 
 ## Follow-up
 
-- Wire `VoiceUploadClient` to real endpoint + pre-fill `transcriptionDraft` from Whisper response.
+- Серверный `POST /api/query/voice` + pre-fill `transcriptionDraft` из ответа при необходимости.
 - Polish animations (lock icon proximity), accessibility, longer recordings on device.

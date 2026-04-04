@@ -25,5 +25,5 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-feature-chat.md` | Streaming assistant replies (SSE/WS TBD) |
 | `task-feature-widgets-app-intents.md` | App Intents for interactive widgets |
 | `task-doc-api-client.md` | Document paths/envelopes when OpenAPI is fixed |
-| `task-backend-kb-app-api-sync.md` | Contract alignment iOS ↔ KB App API ↔ bot services |
+| `task-backend-kb-app-api-sync.md` | Contract alignment iOS ↔ KB App API ↔ bot services (voice: `task-api-kb-app-voice-query-ios.md` в репо бота) |
 | `task-ops-fastlane-testflight.md` | Match, ASC, TestFlight |

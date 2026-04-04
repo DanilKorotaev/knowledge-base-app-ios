@@ -60,4 +60,24 @@ final class ChatAPIClientTests: XCTestCase {
         XCTAssertTrue(list[0].content.contains("note.txt"))
         XCTAssertEqual(list[1].role, .assistant)
     }
+
+    func testSendVoiceRecordingAppendsStubMessages() async throws {
+        let store = InMemoryKBStore(demoSession: true)
+        let client = StubChatAPIClient(store: store)
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("kb-voice-\(UUID().uuidString).m4a")
+        try Data([0, 1]).write(to: temp)
+        defer { try? FileManager.default.removeItem(at: temp) }
+
+        let list = try await client.sendVoiceRecording(
+            sessionId: "demo-session",
+            audioFileURL: temp,
+            transcriptionHint: "hello voice",
+            useKnowledgeBase: true
+        )
+
+        XCTAssertEqual(list.count, 2)
+        XCTAssertTrue(list[0].content.contains("🎤"))
+        XCTAssertTrue(list[0].content.contains("hello voice"))
+        XCTAssertTrue(list[1].content.contains("Stub voice"))
+    }
 }

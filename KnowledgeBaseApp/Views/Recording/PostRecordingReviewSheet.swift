@@ -2,6 +2,12 @@ import SwiftUI
 
 struct PostRecordingReviewSheet: View {
     @Bindable var viewModel: VoiceRecordingViewModel
+    let sessions: [KBSession]
+    @Bindable var voiceRouting: VoiceRoutingContext
+
+    private var resolvedSessionId: String? {
+        voiceRouting.activeSessionId ?? sessions.first?.id
+    }
 
     var body: some View {
         NavigationStack {
@@ -29,7 +35,10 @@ struct PostRecordingReviewSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Send") {
-                        viewModel.confirmPostRecordUpload()
+                        viewModel.confirmPostRecordUpload(
+                            sessionId: resolvedSessionId,
+                            useKnowledgeBase: voiceRouting.useKnowledgeBase
+                        )
                     }
                 }
             }
@@ -38,5 +47,9 @@ struct PostRecordingReviewSheet: View {
 }
 
 #Preview {
-    PostRecordingReviewSheet(viewModel: VoiceRecordingViewModel())
+    PostRecordingReviewSheet(
+        viewModel: VoiceRecordingViewModel(chatClient: StubChatAPIClient(store: InMemoryKBStore())),
+        sessions: [KBSession(id: "demo-session", title: "Demo", messageCount: 0, updatedAt: nil)],
+        voiceRouting: VoiceRoutingContext()
+    )
 }

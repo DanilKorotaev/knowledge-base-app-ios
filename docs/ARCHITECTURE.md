@@ -34,7 +34,8 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 |-------|--------|
 | `VoiceRecordingService` | AAC to temp file, metering |
 | `VoiceRecordingViewModel` + `MicRecordControl` | Hold / cancel / lock, review sheet |
-| `VoiceUploadClientProtocol` | Stub only; real HTTP when KB App API exists |
+| `ChatAPIClientProtocol.sendVoiceRecording` | Stub + `POST /api/query/voice` (multipart: `audio`, `session_id`, `use_knowledge_base`, `transcription_hint`) |
+| `VoiceRoutingContext` | Active chat session + KB toggle for voice send |
 
 ## Next (product / backend)
 

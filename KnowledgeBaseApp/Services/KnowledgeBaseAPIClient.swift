@@ -261,6 +261,95 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return try await fetchMessages(sessionId: sessionId)
     }
 
+    func sendVoiceRecording(
+        sessionId: String,
+        audioFileURL: URL,
+        transcriptionHint: String,
+        useKnowledgeBase: Bool
+    ) async throws -> [KBMessage] {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("query")
+            .appendingPathComponent("voice")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        if let authToken {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        let fileData = try Data(contentsOf: audioFileURL)
+        let filename = audioFileURL.lastPathComponent
+        request.httpBody = Self.multipartVoiceQueryBody(
+            boundary: boundary,
+            sessionId: sessionId,
+            useKnowledgeBase: useKnowledgeBase,
+            transcriptionHint: transcriptionHint,
+            fileData: fileData,
+            filename: filename
+        )
+
+        let (data, response) = try await urlSession.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
+        }
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        struct Envelope: Codable {
+            let messages: [KBMessage]?
+        }
+
+        if let env = try? decoder.decode(Envelope.self, from: data), let messages = env.messages {
+            return messages
+        }
+        if let list = try? decoder.decode([KBMessage].self, from: data) {
+            return list
+        }
+        return try await fetchMessages(sessionId: sessionId)
+    }
+
+    private static func multipartVoiceQueryBody(
+        boundary: String,
+        sessionId: String,
+        useKnowledgeBase: Bool,
+        transcriptionHint: String,
+        fileData: Data,
+        filename: String
+    ) -> Data {
+        var data = Data()
+        let crlf = "\r\n"
+        let mime = "audio/mp4"
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"session_id\"\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append("\(sessionId)\(crlf)".data(using: .utf8)!)
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append("\(useKnowledgeBase)\(crlf)".data(using: .utf8)!)
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"transcription_hint\"\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append("\(transcriptionHint)\(crlf)".data(using: .utf8)!)
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(
+            "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+        )
+        data.append("Content-Type: \(mime)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(fileData)
+        data.append(crlf.data(using: .utf8)!)
+        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        return data
+    }
+
     private static func multipartAttachmentBody(
         boundary: String,
         fileData: Data,

@@ -21,7 +21,7 @@ final class VoiceRecordingViewModel {
     private(set) var displayedMeterLevel: Float = 0
 
     private let recordingService: VoiceRecordingServiceProtocol
-    private let uploadClient: VoiceUploadClientProtocol
+    private let chatClient: ChatAPIClientProtocol
 
     private var recordingStartedForGesture = false
     private var cancelledByGesture = false
@@ -34,10 +34,10 @@ final class VoiceRecordingViewModel {
 
     init(
         recordingService: VoiceRecordingServiceProtocol = VoiceRecordingService(),
-        uploadClient: VoiceUploadClientProtocol = StubVoiceUploadClient()
+        chatClient: ChatAPIClientProtocol
     ) {
         self.recordingService = recordingService
-        self.uploadClient = uploadClient
+        self.chatClient = chatClient
         impactLight.prepare()
         impactMedium.prepare()
     }
@@ -110,11 +110,21 @@ final class VoiceRecordingViewModel {
         Task { await finishHoldAndSend() }
     }
 
-    func confirmPostRecordUpload() {
+    /// Sends via `ChatAPIClientProtocol.sendVoiceRecording` (stub or `POST /api/query/voice`). Requires a session.
+    func confirmPostRecordUpload(sessionId: String?, useKnowledgeBase: Bool) {
         Task {
             guard let url = lastRecordedFileURL else { return }
+            guard let sessionId else {
+                errorMessage = "Open a chat or create a session to send voice."
+                return
+            }
             do {
-                try await uploadClient.uploadRecording(audioFileURL: url, transcription: transcriptionDraft)
+                _ = try await chatClient.sendVoiceRecording(
+                    sessionId: sessionId,
+                    audioFileURL: url,
+                    transcriptionHint: transcriptionDraft,
+                    useKnowledgeBase: useKnowledgeBase
+                )
                 try? FileManager.default.removeItem(at: url)
                 lastRecordedFileURL = nil
                 transcriptionDraft = ""

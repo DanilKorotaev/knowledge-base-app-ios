@@ -125,5 +125,7 @@ private struct RecordingWaveformView: View {
 }
 
 #Preview {
-    MicRecordControl(viewModel: VoiceRecordingViewModel())
+    MicRecordControl(
+        viewModel: VoiceRecordingViewModel(chatClient: StubChatAPIClient(store: InMemoryKBStore()))
+    )
 }
