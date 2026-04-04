@@ -6,6 +6,8 @@ _(none)_
 
 ## Planned
 
+**Рекомендуемый порядок:** 1) поднять **KB App API** по [task-backend-kb-app-api-mvp.md](tasks/pending/task-backend-kb-app-api-mvp.md) (сессии → сообщения → голос → файлы → SSE); 2) в iOS переключить чат на **реальный SSE** поверх `SSEventParser` ([task-feature-chat.md](tasks/pending/task-feature-chat.md)); 3) **TestFlight** ([task-ops-fastlane-testflight.md](tasks/pending/task-ops-fastlane-testflight.md)) параллельно или после стабильного API.
+
 ### Product
 
 - [x] [Voice MVP](tasks/pending/task-feature-voice-input.md) — см. [completed](tasks/completed/task-feature-voice-input-mvp.md); Whisper/upload — когда будет API

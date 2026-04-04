@@ -10,5 +10,9 @@
 
 ## Remaining
 
-- Настоящий поток токенов с сервера (SSE или WebSocket — контракт KB App API).
+- Подключить **`URLSession.bytes`** + `SSEventParser.StreamBuffer` к ответу `text/event-stream` после фиксации endpoint и формата `data:` в KB App API.
 - Режимы «с БЗ» / «пустой чат» на стороне сервера (клиент уже шлёт флаг).
+
+## Done (client prep)
+
+- `SSEventParser` / `StreamBuffer` — разбор SSE `data:` для будущего стриминга ([KB_APP_API_CONTRACT.md](../KB_APP_API_CONTRACT.md) § стриминг).
