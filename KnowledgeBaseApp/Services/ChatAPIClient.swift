@@ -21,6 +21,9 @@ protocol ChatAPIClientProtocol: Sendable {
         transcriptionHint: String,
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage]
+
+    /// Assistant reply as token chunks. Implementations add the user message before the first yield (stub); HTTP runs `POST …/messages` first, then yields assistant text (until SSE exists).
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error>
 }
 
 struct StubChatAPIClient: ChatAPIClientProtocol {
@@ -121,5 +124,46 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         list.append(assistant)
         store.replaceMessages(list, sessionId: sessionId)
         return list
+    }
+
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+
+        var list = store.messages(for: sessionId)
+        let user = KBMessage(
+            id: UUID().uuidString,
+            role: .user,
+            content: trimmed,
+            createdAt: Date()
+        )
+        list.append(user)
+        store.replaceMessages(list, sessionId: sessionId)
+
+        let kbNote = useKnowledgeBase ? "with KB" : "empty chat"
+        let fullReply = "Stub reply (\(kbNote)): \(trimmed.prefix(120))"
+
+        return AsyncThrowingStream { continuation in
+            Task {
+                let parts = fullReply.components(separatedBy: " ")
+                for (index, part) in parts.enumerated() {
+                    let chunk = index == 0 ? part : " " + part
+                    continuation.yield(chunk)
+                    try? await Task.sleep(nanoseconds: 25_000_000)
+                }
+                var updated = store.messages(for: sessionId)
+                let assistant = KBMessage(
+                    id: UUID().uuidString,
+                    role: .assistant,
+                    content: fullReply,
+                    createdAt: Date()
+                )
+                updated.append(assistant)
+                store.replaceMessages(updated, sessionId: sessionId)
+                continuation.finish()
+            }
+        }
     }
 }

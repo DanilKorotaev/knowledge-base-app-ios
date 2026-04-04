@@ -10,6 +10,8 @@ final class ChatViewModel {
     var isLoading = false
     var isSending = false
     var errorMessage: String?
+    /// Growing assistant text while `streamTextMessage` is active (hidden once final thread is loaded).
+    var streamingAssistantText: String?
 
     private let client: ChatAPIClientProtocol
 
@@ -34,16 +36,37 @@ final class ChatViewModel {
         guard !trimmed.isEmpty else { return }
         isSending = true
         errorMessage = nil
-        defer { isSending = false }
+        streamingAssistantText = nil
+        defer {
+            isSending = false
+            streamingAssistantText = nil
+        }
         do {
-            messages = try await client.sendTextMessage(
+            let stream = try await client.streamTextMessage(
                 sessionId: session.id,
                 text: trimmed,
                 useKnowledgeBase: useKnowledgeBase
             )
             draft = ""
+
+            var thread = try await client.fetchMessages(sessionId: session.id)
+            if let last = thread.last, last.role == .assistant {
+                thread.removeLast()
+                messages = thread
+            } else {
+                messages = thread
+            }
+
+            var accumulated = ""
+            for try await chunk in stream {
+                accumulated += chunk
+                streamingAssistantText = accumulated
+            }
+
+            messages = try await client.fetchMessages(sessionId: session.id)
         } catch {
             errorMessage = error.localizedDescription
+            await load()
         }
     }
 

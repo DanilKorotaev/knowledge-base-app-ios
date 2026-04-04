@@ -207,6 +207,30 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return try await fetchMessages(sessionId: sessionId)
     }
 
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+
+        let messages = try await sendTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+        guard let assistant = messages.last(where: { $0.role == .assistant }) else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+        let full = assistant.content
+        let parts = full.components(separatedBy: " ")
+        return AsyncThrowingStream { continuation in
+            Task {
+                for (index, part) in parts.enumerated() {
+                    let chunk = index == 0 ? part : " " + part
+                    continuation.yield(chunk)
+                    try? await Task.sleep(nanoseconds: 8_000_000)
+                }
+                continuation.finish()
+            }
+        }
+    }
+
     func sendAttachment(
         sessionId: String,
         fileURL: URL,

@@ -30,6 +30,17 @@ struct ChatView: View {
                                 MessageBubbleView(message: message)
                                     .id(message.id)
                             }
+                            if let streaming = viewModel.streamingAssistantText, !streaming.isEmpty {
+                                MessageBubbleView(
+                                    message: KBMessage(
+                                        id: "__kb_streaming__",
+                                        role: .assistant,
+                                        content: streaming,
+                                        createdAt: Date()
+                                    )
+                                )
+                                .id("__kb_streaming__")
+                            }
                             Color.clear
                                 .frame(height: 1)
                                 .id(scrollSpace)
@@ -37,6 +48,11 @@ struct ChatView: View {
                         .padding()
                     }
                     .onChange(of: viewModel.messages.count) { _, _ in
+                        withAnimation {
+                            proxy.scrollTo(scrollSpace, anchor: .bottom)
+                        }
+                    }
+                    .onChange(of: viewModel.streamingAssistantText) { _, _ in
                         withAnimation {
                             proxy.scrollTo(scrollSpace, anchor: .bottom)
                         }

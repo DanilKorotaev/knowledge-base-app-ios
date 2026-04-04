@@ -19,7 +19,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 | `KnowledgeBaseAPIClientProtocol` | Sessions list + create session |
 | `StubKnowledgeBaseAPIClient` + `InMemoryKBStore` | Demo session when no base URL |
 | `URLSessionKnowledgeBaseAPIClient` | `GET/POST /api/sessions`, messages, attachments, files |
-| `ChatAPIClientProtocol` | Messages + send text + attachments (stub + `URLSession` same host) |
+| `ChatAPIClientProtocol` | Messages + `streamTextMessage` / send + attachments (stub + `URLSession` same host) |
 | `ChatView` / `ChatViewModel` | Thread + composer + gallery + **camera** + file importer |
 | `NewSessionSheet` | Create session (stub / `POST /api/sessions`) |
 | `KBSession`, `KBMessage` | REST-oriented models |

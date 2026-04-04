@@ -61,6 +61,42 @@ final class ChatAPIClientTests: XCTestCase {
         XCTAssertEqual(list[1].role, .assistant)
     }
 
+    func testStubStreamAccumulatesToFinalAssistantMessage() async throws {
+        let store = InMemoryKBStore(demoSession: true)
+        let client = StubChatAPIClient(store: store)
+        let stream = try await client.streamTextMessage(
+            sessionId: "demo-session",
+            text: "hello",
+            useKnowledgeBase: true
+        )
+        var accumulated = ""
+        for try await chunk in stream {
+            accumulated += chunk
+        }
+        let list = try await client.fetchMessages(sessionId: "demo-session")
+        XCTAssertEqual(list.count, 2)
+        XCTAssertEqual(list[1].role, .assistant)
+        XCTAssertEqual(list[1].content, accumulated)
+        XCTAssertTrue(accumulated.contains("Stub reply"))
+    }
+
+    func testStubStreamEmptyTextFinishesWithoutMessages() async throws {
+        let store = InMemoryKBStore(demoSession: true)
+        let client = StubChatAPIClient(store: store)
+        let stream = try await client.streamTextMessage(
+            sessionId: "demo-session",
+            text: "   ",
+            useKnowledgeBase: false
+        )
+        var count = 0
+        for try await _ in stream {
+            count += 1
+        }
+        XCTAssertEqual(count, 0)
+        let list = try await client.fetchMessages(sessionId: "demo-session")
+        XCTAssertTrue(list.isEmpty)
+    }
+
     func testSendVoiceRecordingAppendsStubMessages() async throws {
         let store = InMemoryKBStore(demoSession: true)
         let client = StubChatAPIClient(store: store)
