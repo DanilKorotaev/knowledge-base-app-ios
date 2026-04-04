@@ -4,8 +4,8 @@
 
 ## Scope (this repo)
 
-- Keep `URLSessionKnowledgeBaseAPIClient` paths and JSON decoding aligned with the spec in Nextcloud «Архитектура и бэкенд API» and `docs/tasks/pending/task-doc-api-client.md`.
-- When the backend adds or changes endpoints, update models and tests here in the same PR or follow-up.
+- Keep `URLSessionKnowledgeBaseAPIClient` paths and JSON decoding aligned with **`docs/KB_APP_API_CONTRACT.md`** and `docs/openapi/kb-app-api.yaml`.
+- When the backend adds or changes endpoints, update models, OpenAPI subset, and tests here in the same PR or follow-up.
 
 ## Scope (backend / bot)
 

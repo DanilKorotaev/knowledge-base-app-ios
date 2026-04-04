@@ -6,7 +6,7 @@ protocol FilesAPIClientProtocol: Sendable {
 }
 
 enum FilesAPIError: Error, Equatable {
-    case invalidResponse(statusCode: Int)
+    case invalidResponse(statusCode: Int, apiMessage: String? = nil)
     case decodingFailed
 }
 

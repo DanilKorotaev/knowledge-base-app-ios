@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: KB App API
+  version: 1.0.0
+  description: Subset aligned with knowledge-base-app-ios URLSession client. Extend with auth and streaming as implemented.
+servers:
+  - url: https://example.com
+paths:
+  /api/sessions:
+    get:
+      summary: List sessions
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items: { $ref: "#/components/schemas/Session" }
+                  - type: object
+                    properties:
+                      sessions:
+                        type: array
+                        items: { $ref: "#/components/schemas/Session" }
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/Session" }
+                      total: { type: integer }
+    post:
+      summary: Create session
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/Session" }
+                  - type: object
+                    properties:
+                      session: { $ref: "#/components/schemas/Session" }
+  /api/sessions/{session_id}/messages:
+    parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      summary: List messages
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items: { $ref: "#/components/schemas/Message" }
+                  - type: object
+                    properties:
+                      messages:
+                        type: array
+                        items: { $ref: "#/components/schemas/Message" }
+                      items:
+                        type: array
+                        items: { $ref: "#/components/schemas/Message" }
+    post:
+      summary: Send text message
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content, use_knowledge_base]
+              properties:
+                content: { type: string }
+                use_knowledge_base: { type: boolean }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items: { $ref: "#/components/schemas/Message" }
+                  - type: object
+                    properties:
+                      messages:
+                        type: array
+                        items: { $ref: "#/components/schemas/Message" }
+  /api/files/changes:
+    get:
+      summary: Changed files
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: OK
+  /api/files/revert:
+    post:
+      summary: Revert change
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file_id]
+              properties:
+                file_id: { type: string }
+      responses:
+        "200":
+          description: OK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Session:
+      type: object
+      required: [id, title, message_count]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        message_count: { type: integer }
+        updated_at: { type: string, format: date-time }
+    Message:
+      type: object
+      required: [id, role, content]
+      properties:
+        id: { type: string }
+        role: { type: string, enum: [user, assistant, system] }
+        content: { type: string }
+        created_at: { type: string, format: date-time }
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            detail: { type: string }

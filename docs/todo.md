@@ -10,6 +10,13 @@ _(none)_
 
 - [x] [Voice MVP](tasks/pending/task-feature-voice-input.md) — см. [completed](tasks/completed/task-feature-voice-input-mvp.md); Whisper/upload — когда будет API
 - [x] [Чат: история + текст](tasks/pending/task-feature-chat.md) — см. [completed](tasks/completed/task-feature-chat-mvp.md); стриминг ответа — позже
+- [ ] [Голос: реальный upload](tasks/pending/task-feature-voice-input.md) — после KB App API
+- [ ] [Чат: SSE с сервера](tasks/pending/task-feature-chat.md)
+
+### Backend (вне репо)
+
+- [ ] [KB App API MVP (FastAPI)](tasks/pending/task-backend-kb-app-api-mvp.md) — по [KB_APP_API_CONTRACT.md](KB_APP_API_CONTRACT.md)
+- [ ] [Синхронизация контракта](tasks/pending/task-backend-kb-app-api-sync.md)
 
 ### Ops / CI _(отложено — код и фичи в приоритете)_
 
@@ -18,7 +25,7 @@ _(none)_
 
 ### Documentation
 
-- [ ] [Expand API client docs when KB App API is frozen](tasks/pending/task-doc-api-client.md)
+- [x] [Контракт KB App API в репо](tasks/completed/task-doc-kb-app-api-contract.md)
 
 ## Completed
 

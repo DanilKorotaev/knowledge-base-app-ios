@@ -8,7 +8,7 @@ protocol KnowledgeBaseAPIClientProtocol: Sendable {
 
 enum KnowledgeBaseAPIError: Error, Equatable {
     case missingBaseURL
-    case invalidResponse(statusCode: Int)
+    case invalidResponse(statusCode: Int, apiMessage: String? = nil)
     case decodingFailed
 }
 
@@ -30,7 +30,7 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
 }
 
 /// Placeholder remote client: calls `GET {baseURL}/api/sessions` with `Authorization: Bearer` when configured.
-/// Adjust paths to match the final KB App API contract (see knowledge base doc «Архитектура и бэкенд API»).
+/// Paths and JSON: `docs/KB_APP_API_CONTRACT.md` (OpenAPI subset in `docs/openapi/kb-app-api.yaml`).
 final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @unchecked Sendable {
     private let baseURL: URL
     private let authToken: String?
@@ -57,12 +57,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         }
 
         let (data, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
-        }
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
-        }
+        try ensureSuccessHTTP(response, data: data)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -98,12 +93,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         request.httpBody = try encoder.encode(Body(title: title))
 
         let (data, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
-        }
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
-        }
+        try ensureSuccessHTTP(response, data: data)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -138,12 +128,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         }
 
         let (data, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
-        }
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
-        }
+        try ensureSuccessHTTP(response, data: data)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -184,12 +169,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         request.httpBody = try encoder.encode(Body(content: text, use_knowledge_base: useKnowledgeBase))
 
         let (data, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
-        }
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
-        }
+        try ensureSuccessHTTP(response, data: data)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -262,12 +242,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         )
 
         let (data, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
-        }
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
-        }
+        try ensureSuccessHTTP(response, data: data)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -316,12 +291,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         )
 
         let (data, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1)
-        }
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: http.statusCode)
-        }
+        try ensureSuccessHTTP(response, data: data)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -410,12 +380,7 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
         }
 
         let (data, response) = try await urlSession.data(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw FilesAPIError.invalidResponse(statusCode: -1)
-        }
-        guard (200 ... 299).contains(http.statusCode) else {
-            throw FilesAPIError.invalidResponse(statusCode: http.statusCode)
-        }
+        try ensureSuccessFiles(response, data: data)
 
         let decoder = JSONDecoder()
 
@@ -449,12 +414,33 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
 
         request.httpBody = try JSONEncoder().encode(Body(file_id: id))
 
-        let (_, response) = try await urlSession.data(for: request)
+        let (data, response) = try await urlSession.data(for: request)
+        try ensureSuccessFiles(response, data: data)
+    }
+}
+
+private extension URLSessionKnowledgeBaseAPIClient {
+    func ensureSuccessHTTP(_ response: URLResponse, data: Data) throws {
         guard let http = response as? HTTPURLResponse else {
-            throw FilesAPIError.invalidResponse(statusCode: -1)
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: nil)
         }
         guard (200 ... 299).contains(http.statusCode) else {
-            throw FilesAPIError.invalidResponse(statusCode: http.statusCode)
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: http.statusCode,
+                apiMessage: KBAppAPIErrorMessage.parse(from: data)
+            )
+        }
+    }
+
+    func ensureSuccessFiles(_ response: URLResponse, data: Data) throws {
+        guard let http = response as? HTTPURLResponse else {
+            throw FilesAPIError.invalidResponse(statusCode: -1, apiMessage: nil)
+        }
+        guard (200 ... 299).contains(http.statusCode) else {
+            throw FilesAPIError.invalidResponse(
+                statusCode: http.statusCode,
+                apiMessage: KBAppAPIErrorMessage.parse(from: data)
+            )
         }
     }
 }

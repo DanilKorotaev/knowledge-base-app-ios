@@ -22,7 +22,7 @@ Examples:
 1. Protocol abstraction introduced or updated where applicable.
 2. Tests added or updated.
 3. Local tests green.
-4. Docs or `docs/todo.md` updated if scope or config changed.
+4. Docs or `docs/todo.md` updated if scope or config changed. HTTP surface changes should update **`docs/KB_APP_API_CONTRACT.md`** (and `docs/openapi/kb-app-api.yaml` when applicable) in the same change.
 
 ## 4) Project policy
 

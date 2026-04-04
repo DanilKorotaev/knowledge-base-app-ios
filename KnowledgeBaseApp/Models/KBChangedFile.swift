@@ -8,4 +8,11 @@ struct KBChangedFile: Identifiable, Codable, Equatable, Hashable {
     let changeKind: String
     let beforeText: String?
     let afterText: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, path
+        case changeKind = "change_kind"
+        case beforeText = "before_text"
+        case afterText = "after_text"
+    }
 }

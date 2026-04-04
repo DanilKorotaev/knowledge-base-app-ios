@@ -41,10 +41,13 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 ## Next (product / backend)
 
 - **Voice (remaining)** — multipart upload + Whisper-backed transcription text (KB App API + bot services).
-- **Chat** — streaming assistant tokens (SSE/WebSocket TBD).
+- **Chat** — streaming assistant tokens from the server (SSE/WebSocket; see `docs/tasks/pending/task-feature-chat.md`).
+
 ## Backend boundary
 
-Until **KB App API** is implemented, the app uses the stub client. When the API is live, align URL paths and JSON with the spec in the knowledge base document «Архитектура и бэкенд API».
+Canonical HTTP contract for this app: **`docs/KB_APP_API_CONTRACT.md`** and **`docs/openapi/kb-app-api.yaml`**. Higher-level product notes remain in Nextcloud («Архитектура и бэкенд API»).
+
+Until **KB App API** is implemented, the app uses the stub client. When the API is live, keep paths and JSON aligned with the repo contract in the same change as server updates.
 
 Open choice for the repo layout (documented in Nextcloud tasks folder): separate `kb-app-api` service importing bot services vs. later merge into a gateway.
 

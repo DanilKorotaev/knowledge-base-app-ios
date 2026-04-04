@@ -76,8 +76,58 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         do {
             _ = try await client.fetchSessions()
             XCTFail("expected error")
-        } catch KnowledgeBaseAPIError.invalidResponse(let code) {
-            XCTAssertEqual(code, 503)
+        } catch let error as KnowledgeBaseAPIError {
+            if case let .invalidResponse(code, message) = error {
+                XCTAssertEqual(code, 503)
+                XCTAssertNil(message)
+            } else {
+                XCTFail("unexpected \(error)")
+            }
+        }
+
+        MockURLProtocol.requestHandler = nil
+    }
+
+    func testKBChangedFileDecodesSnakeCaseJSON() throws {
+        let json = """
+        {"id":"c1","path":"a.md","change_kind":"modified","before_text":null,"after_text":"# x"}
+        """.data(using: .utf8)!
+        let file = try JSONDecoder().decode(KBChangedFile.self, from: json)
+        XCTAssertEqual(file.changeKind, "modified")
+        XCTAssertEqual(file.afterText, "# x")
+    }
+
+    func testRemoteClientNon2xxDecodesErrorEnvelopeMessage() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        let body = """
+        {"error":{"code":"rate_limit","message":"Slow down","detail":null}}
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 429,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, body)
+        }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: nil, urlSession: URLSession(configuration: config))
+
+        do {
+            _ = try await client.fetchSessions()
+            XCTFail("expected error")
+        } catch let error as KnowledgeBaseAPIError {
+            if case let .invalidResponse(code, message) = error {
+                XCTAssertEqual(code, 429)
+                XCTAssertEqual(message, "Slow down")
+            } else {
+                XCTFail("unexpected \(error)")
+            }
         }
 
         MockURLProtocol.requestHandler = nil

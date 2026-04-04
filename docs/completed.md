@@ -5,5 +5,6 @@
 - [Voice input MVP (recording + review + stub upload)](tasks/completed/task-feature-voice-input-mvp.md)
 - [Chat text + history (stub + HTTP client)](tasks/completed/task-feature-chat-mvp.md)
 - [New session, attachments MVP, MIT license](tasks/completed/task-sessions-attachments-license.md)
+- [KB App API contract + OpenAPI subset + client error parsing](tasks/completed/task-doc-kb-app-api-contract.md)
 
 See `docs/tasks/completed/` for detailed notes.
