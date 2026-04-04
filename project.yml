@@ -54,3 +54,6 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
     info:
       path: KnowledgeBaseWidget/Info.plist
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension

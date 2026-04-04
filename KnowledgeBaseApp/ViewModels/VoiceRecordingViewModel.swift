@@ -14,6 +14,7 @@ final class VoiceRecordingViewModel {
     private(set) var phase: Phase = .idle
     private(set) var errorMessage: String?
     private(set) var showPostRecordReview = false
+    private(set) var isSendingVoice = false
     private(set) var lastRecordedFileURL: URL?
     /// User-editable; real app will pre-fill from Whisper.
     var transcriptionDraft: String = ""
@@ -118,13 +119,21 @@ final class VoiceRecordingViewModel {
                 errorMessage = "Open a chat or create a session to send voice."
                 return
             }
+            isSendingVoice = true
+            errorMessage = nil
+            defer { isSendingVoice = false }
             do {
-                _ = try await chatClient.sendVoiceRecording(
+                let result = try await chatClient.sendVoiceRecording(
                     sessionId: sessionId,
                     audioFileURL: url,
                     transcriptionHint: transcriptionDraft,
                     useKnowledgeBase: useKnowledgeBase
                 )
+                let draftEmpty = transcriptionDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                if draftEmpty, let asr = result.transcription?.trimmingCharacters(in: .whitespacesAndNewlines), !asr.isEmpty {
+                    transcriptionDraft = asr
+                    try await Task.sleep(nanoseconds: 400_000_000)
+                }
                 NotificationCenter.default.post(
                     name: .kbSessionThreadDidChange,
                     object: nil,

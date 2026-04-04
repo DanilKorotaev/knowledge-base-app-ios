@@ -265,7 +265,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         transcriptionHint: String,
         useKnowledgeBase: Bool
-    ) async throws -> [KBMessage] {
+    ) async throws -> VoiceRecordingSendResult {
         let url = baseURL
             .appendingPathComponent("api")
             .appendingPathComponent("query")
@@ -293,20 +293,26 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let (data, response) = try await urlSession.data(for: request)
         try ensureSuccessHTTP(response, data: data)
 
+        return try await decodeVoiceRecordingResponse(data: data, sessionId: sessionId)
+    }
+
+    private func decodeVoiceRecordingResponse(data: Data, sessionId: String) async throws -> VoiceRecordingSendResult {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
         struct Envelope: Codable {
             let messages: [KBMessage]?
+            let transcription: String?
         }
 
         if let env = try? decoder.decode(Envelope.self, from: data), let messages = env.messages {
-            return messages
+            return VoiceRecordingSendResult(messages: messages, transcription: env.transcription)
         }
         if let list = try? decoder.decode([KBMessage].self, from: data) {
-            return list
+            return VoiceRecordingSendResult(messages: list, transcription: nil)
         }
-        return try await fetchMessages(sessionId: sessionId)
+        let fallback = try await fetchMessages(sessionId: sessionId)
+        return VoiceRecordingSendResult(messages: fallback, transcription: nil)
     }
 
     private static func multipartVoiceQueryBody(

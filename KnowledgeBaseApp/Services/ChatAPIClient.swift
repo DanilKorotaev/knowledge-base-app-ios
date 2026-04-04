@@ -14,13 +14,13 @@ protocol ChatAPIClientProtocol: Sendable {
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage]
 
-    /// Voice note: multipart to `POST /api/query/voice` (KB App API); stub appends thread like other sends.
+    /// Voice note: multipart to `POST /api/query/voice` (KB App API); optional `transcription` from Whisper.
     func sendVoiceRecording(
         sessionId: String,
         audioFileURL: URL,
         transcriptionHint: String,
         useKnowledgeBase: Bool
-    ) async throws -> [KBMessage]
+    ) async throws -> VoiceRecordingSendResult
 
     /// Assistant reply as token chunks. Implementations add the user message before the first yield (stub); HTTP runs `POST …/messages` first, then yields assistant text (until SSE exists).
     func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error>
@@ -99,7 +99,7 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         transcriptionHint: String,
         useKnowledgeBase: Bool
-    ) async throws -> [KBMessage] {
+    ) async throws -> VoiceRecordingSendResult {
         let size = (try? FileManager.default.attributesOfItem(atPath: audioFileURL.path)[.size] as? NSNumber)?.int64Value ?? 0
         var list = store.messages(for: sessionId)
         let hint = transcriptionHint.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -123,7 +123,8 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         )
         list.append(assistant)
         store.replaceMessages(list, sessionId: sessionId)
-        return list
+        let stubASR = hint.isEmpty ? "Stub Whisper transcription (\(size) bytes)" : nil
+        return VoiceRecordingSendResult(messages: list, transcription: stubASR)
     }
 
     func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {

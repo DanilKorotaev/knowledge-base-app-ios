@@ -14,8 +14,12 @@
 ## Remaining
 
 - Сервер: `POST /api/query/voice` — см. `knowledge-base-bot/docs/tasks/pending/task-api-kb-app-voice-query-ios.md`.
-- Опционально: pre-fill `transcriptionDraft` из поля `transcription` в ответе API.
 - Optional UI tests / gesture polish on device (mic permission).
+
+## Done (client follow-up)
+
+- `VoiceRecordingSendResult` + декодирование `transcription` в `URLSessionKnowledgeBaseAPIClient`; stub отдаёт stub-ASR при пустой подсказке.
+- Pre-fill `transcriptionDraft` после успешной отправки, если поле было пустым (короткая задержка перед закрытием листа); индикатор отправки на листе.
 
 ## Acceptance
 

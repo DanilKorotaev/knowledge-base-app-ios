@@ -132,6 +132,46 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
 
         MockURLProtocol.requestHandler = nil
     }
+
+    func testVoiceUploadDecodesTranscriptionField() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        let payload = """
+        {"messages":[{"id":"m1","role":"user","content":"voice","created_at":"2026-01-01T12:00:00Z"}],"transcription":"Hello from Whisper"}
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertTrue(request.url?.path.contains("/api/query/voice") == true)
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )!
+            return (response, payload)
+        }
+
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("voice-\(UUID().uuidString).m4a")
+        try Data([0, 1, 2]).write(to: temp)
+        defer { try? FileManager.default.removeItem(at: temp) }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: "tok", urlSession: URLSession(configuration: config))
+        let result = try await client.sendVoiceRecording(
+            sessionId: "demo-session",
+            audioFileURL: temp,
+            transcriptionHint: "",
+            useKnowledgeBase: true
+        )
+
+        XCTAssertEqual(result.transcription, "Hello from Whisper")
+        XCTAssertEqual(result.messages.count, 1)
+        XCTAssertEqual(result.messages[0].content, "voice")
+
+        MockURLProtocol.requestHandler = nil
+    }
 }
 
 // MARK: - Test URLProtocol

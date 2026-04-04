@@ -34,7 +34,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 |-------|--------|
 | `VoiceRecordingService` | AAC to temp file, metering |
 | `VoiceRecordingViewModel` + `MicRecordControl` | Hold / cancel / lock, review sheet |
-| `ChatAPIClientProtocol.sendVoiceRecording` | Stub + `POST /api/query/voice` (multipart: `audio`, `session_id`, `use_knowledge_base`, `transcription_hint`) |
+| `ChatAPIClientProtocol.sendVoiceRecording` | `VoiceRecordingSendResult` — stub + `POST /api/query/voice` (multipart + опц. `transcription` в JSON) |
 | `VoiceRoutingContext` | Active chat session + KB toggle for voice send |
 | `kbSessionThreadDidChange` | Voice send notifies open `ChatView` + session list to refetch |
 

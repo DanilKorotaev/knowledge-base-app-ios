@@ -104,16 +104,35 @@ final class ChatAPIClientTests: XCTestCase {
         try Data([0, 1]).write(to: temp)
         defer { try? FileManager.default.removeItem(at: temp) }
 
-        let list = try await client.sendVoiceRecording(
+        let result = try await client.sendVoiceRecording(
             sessionId: "demo-session",
             audioFileURL: temp,
             transcriptionHint: "hello voice",
             useKnowledgeBase: true
         )
 
-        XCTAssertEqual(list.count, 2)
-        XCTAssertTrue(list[0].content.contains("🎤"))
-        XCTAssertTrue(list[0].content.contains("hello voice"))
-        XCTAssertTrue(list[1].content.contains("Stub voice"))
+        XCTAssertEqual(result.messages.count, 2)
+        XCTAssertTrue(result.messages[0].content.contains("🎤"))
+        XCTAssertTrue(result.messages[0].content.contains("hello voice"))
+        XCTAssertTrue(result.messages[1].content.contains("Stub voice"))
+        XCTAssertNil(result.transcription)
+    }
+
+    func testStubVoiceReturnsTranscriptionWhenHintEmpty() async throws {
+        let store = InMemoryKBStore(demoSession: true)
+        let client = StubChatAPIClient(store: store)
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("kb-voice-empty-\(UUID().uuidString).m4a")
+        try Data([0, 1]).write(to: temp)
+        defer { try? FileManager.default.removeItem(at: temp) }
+
+        let result = try await client.sendVoiceRecording(
+            sessionId: "demo-session",
+            audioFileURL: temp,
+            transcriptionHint: "   ",
+            useKnowledgeBase: true
+        )
+
+        XCTAssertFalse(result.messages.isEmpty)
+        XCTAssertTrue(result.transcription?.contains("Stub Whisper") ?? false)
     }
 }

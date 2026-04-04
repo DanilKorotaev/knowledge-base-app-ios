@@ -32,13 +32,18 @@ struct PostRecordingReviewSheet: View {
                     Button("Discard") {
                         viewModel.dismissPostRecordReview()
                     }
+                    .disabled(viewModel.isSendingVoice)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Send") {
-                        viewModel.confirmPostRecordUpload(
-                            sessionId: resolvedSessionId,
-                            useKnowledgeBase: voiceRouting.useKnowledgeBase
-                        )
+                    if viewModel.isSendingVoice {
+                        ProgressView()
+                    } else {
+                        Button("Send") {
+                            viewModel.confirmPostRecordUpload(
+                                sessionId: resolvedSessionId,
+                                useKnowledgeBase: voiceRouting.useKnowledgeBase
+                            )
+                        }
                     }
                 }
             }

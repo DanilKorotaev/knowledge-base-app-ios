@@ -4,7 +4,7 @@
 
 - `KnowledgeBaseApp/` — Swift sources (App, Configuration, Models, Services, Views, Resources)
 - `SharedIntents/` — **`StartVoiceRecordingIntent`** opens `knowledgebase://record` with **`OpenURLIntent`** (iOS 18+); used by widget buttons and **`KnowledgeBaseAppShortcuts`** (Shortcuts / Siri).
-- `KnowledgeBaseWidget/` — WidgetKit extension; **`Info.plist` must keep `NSExtension` / `widgetkit-extension`** (simulator install fails otherwise).
+- `KnowledgeBaseWidget/` — WidgetKit extension; **`NSExtension` / `widgetkit-extension`** is declared in `Info.plist` and merged from **`project.yml`** (`info.properties`); simulator install fails without it.
 - `project.yml` — XcodeGen specification
 - `Config/` — shared `xcconfig` files for Debug/Release
 
