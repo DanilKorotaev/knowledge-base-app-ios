@@ -2,32 +2,77 @@ openapi: 3.1.0
 info:
   title: KB App API
   version: 1.0.0
-  description: Subset aligned with knowledge-base-app-ios URLSession client. Extend with auth and streaming as implemented.
+  description: |
+    Согласовано с реализацией в `knowledge-base-bot/kb_app_api/`.
+    Расширять вместе с `docs/KB_APP_API_CONTRACT.md`.
 servers:
   - url: https://example.com
 paths:
-  /api/sessions:
+  /health:
     get:
-      summary: List sessions
-      security: [{ bearerAuth: [] }]
+      summary: Liveness (без авторизации)
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: array
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+  /api/auth/token:
+    post:
+      summary: Опциональная выдача Bearer (если включено на сервере)
+      description: |
+        При `KB_APP_API_TOKEN_ENDPOINT_ENABLED=false` сервер отвечает 404.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [secret]
+              properties:
+                secret: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token: { type: string }
+                  token_type: { type: string, example: bearer }
+                  expires_in:
+                    description: Пока всегда null (бессрочный токен из конфига)
+                    nullable: true
+        "404":
+          description: Эндпоинт отключён
+  /api/sessions:
+    get:
+      summary: List sessions
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
                     items: { $ref: "#/components/schemas/Session" }
-                  - type: object
-                    properties:
-                      sessions:
-                        type: array
-                        items: { $ref: "#/components/schemas/Session" }
-                      items:
-                        type: array
-                        items: { $ref: "#/components/schemas/Session" }
-                      total: { type: integer }
+                  total: { type: integer }
+                  page: { type: integer }
+                  per_page: { type: integer }
     post:
       summary: Create session
       security: [{ bearerAuth: [] }]
@@ -41,16 +86,14 @@ paths:
               properties:
                 title: { type: string }
       responses:
-        "200":
+        "201":
           description: Created
           content:
             application/json:
               schema:
-                oneOf:
-                  - { $ref: "#/components/schemas/Session" }
-                  - type: object
-                    properties:
-                      session: { $ref: "#/components/schemas/Session" }
+                type: object
+                properties:
+                  session: { $ref: "#/components/schemas/Session" }
   /api/sessions/{session_id}/messages:
     parameters:
       - name: session_id
@@ -60,26 +103,32 @@ paths:
     get:
       summary: List messages
       security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer }
+        - name: per_page
+          in: query
+          schema: { type: integer }
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: array
+                type: object
+                properties:
+                  messages:
+                    type: array
                     items: { $ref: "#/components/schemas/Message" }
-                  - type: object
-                    properties:
-                      messages:
-                        type: array
-                        items: { $ref: "#/components/schemas/Message" }
-                      items:
-                        type: array
-                        items: { $ref: "#/components/schemas/Message" }
+                  total: { type: integer }
     post:
-      summary: Send text message
+      summary: Send text message (SSE при Accept text/event-stream)
       security: [{ bearerAuth: [] }]
+      parameters:
+        - name: Accept
+          in: header
+          schema: { type: string }
       requestBody:
         content:
           application/json:
@@ -90,29 +139,72 @@ paths:
                 content: { type: string }
                 use_knowledge_base: { type: boolean }
       responses:
+        "201":
+          description: JSON с полным списком сообщений
+        "200":
+          description: SSE поток
+  /api/sessions/{session_id}/attachments:
+    parameters:
+      - name: session_id
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      summary: Загрузка файла в сессию (multipart)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                use_knowledge_base: { type: string }
+                message: { type: string, description: Опциональный текст запроса }
+      responses:
+        "201":
+          description: OK
+  /api/query/voice:
+    post:
+      summary: Голос (Whisper) + тот же пайплайн, что текст
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audio: { type: string, format: binary }
+                session_id: { type: string }
+                use_knowledge_base: { type: string }
+                transcription_hint: { type: string }
+      responses:
+        "200":
+          description: OK
+  /api/files/changes:
+    get:
+      summary: Список изменений файлов KB
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: session_id
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: array
-                    items: { $ref: "#/components/schemas/Message" }
-                  - type: object
-                    properties:
-                      messages:
-                        type: array
-                        items: { $ref: "#/components/schemas/Message" }
-  /api/files/changes:
-    get:
-      summary: Changed files
-      security: [{ bearerAuth: [] }]
-      responses:
-        "200":
-          description: OK
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { type: object }
   /api/files/revert:
     post:
-      summary: Revert change
+      summary: Откат одного изменения по id записи
       security: [{ bearerAuth: [] }]
       requestBody:
         content:
@@ -121,10 +213,18 @@ paths:
               type: object
               required: [file_id]
               properties:
-                file_id: { type: string }
+                file_id: { type: string, description: id из GET /changes }
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  change_id: { type: string }
+                  path: { type: string }
 components:
   securitySchemes:
     bearerAuth:
@@ -133,7 +233,7 @@ components:
   schemas:
     Session:
       type: object
-      required: [id, title, message_count]
+      required: [id, title, message_count, updated_at]
       properties:
         id: { type: string }
         title: { type: string }
@@ -141,7 +241,7 @@ components:
         updated_at: { type: string, format: date-time }
     Message:
       type: object
-      required: [id, role, content]
+      required: [id, role, content, created_at]
       properties:
         id: { type: string }
         role: { type: string, enum: [user, assistant, system] }
