@@ -1,6 +1,6 @@
 # KB App API: contract sync (iOS ↔ server ↔ bot)
 
-**Status:** Pending — server not in this repo; **knowledge-base-bot** owns shared business logic.
+**Status:** In progress — HTTP API lives in **`knowledge-base-bot/kb_app_api/`** (same business logic / DB as the bot). This repo stays aligned via contract + client.
 
 ## Scope (this repo)
 
@@ -9,7 +9,7 @@
 
 ## Scope (backend / bot)
 
-- Implementation belongs to **KB App API** task folder in Nextcloud and/or `knowledge-base-bot` (see `integration-notes.md` there).
+- Implementation: **`knowledge-base-bot/kb_app_api/`**; task notes in Nextcloud «KB App API — бэкенд для iOS» (`todo.md`, `integration-notes.md`).
 - **Rules for Python work in `knowledge-base-bot`:** `.cursor/rules/development.md` — type hints, PEP 8, docstrings, logging, tests, error handling.
 
 ## First integration milestones (reference)
