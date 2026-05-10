@@ -38,6 +38,8 @@ targets:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
         CFBundleIconName: AppIcon
+        # Export compliance: app only uses exempt encryption (e.g. HTTPS via Apple APIs). Update if you add custom crypto.
+        ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
         NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
   KnowledgeBaseAppTests:
