@@ -37,6 +37,7 @@ targets:
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
+        CFBundleIconName: AppIcon
         UILaunchStoryboardName: LaunchScreen
         NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
   KnowledgeBaseAppTests:
@@ -64,6 +65,7 @@ targets:
     info:
       path: KnowledgeBaseWidget/Info.plist
       properties:
+        CFBundleDisplayName: Knowledge Base
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
 
