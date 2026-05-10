@@ -11,7 +11,7 @@ storage_mode("git")
 
 type("appstore")
 
-app_identifier(ENV.fetch("APP_IDENTIFIER", "com.example.KnowledgeBaseApp"))
+app_identifier(ENV.fetch("APP_IDENTIFIER", "com.coredan.KnowledgeBaseApp"))
 
 # Uncomment after you add push notifications / other capabilities:
 # readonly(true)  # prefer passing readonly: in Fastfile per lane

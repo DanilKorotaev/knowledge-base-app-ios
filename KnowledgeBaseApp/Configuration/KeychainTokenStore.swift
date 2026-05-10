@@ -3,7 +3,7 @@ import Security
 
 /// Stores the KB App API bearer token in the Keychain (not UserDefaults).
 enum KeychainTokenStore {
-    private static let service = "com.example.KnowledgeBaseApp.authToken"
+    private static let service = "com.coredan.KnowledgeBaseApp.authToken"
     private static let account = "KBAPP_AUTH_TOKEN"
 
     static func setToken(_ value: String?) {

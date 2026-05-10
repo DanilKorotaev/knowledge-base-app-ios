@@ -1,6 +1,6 @@
 name: KnowledgeBaseApp
 options:
-  bundleIdPrefix: com.example
+  bundleIdPrefix: com.coredan
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
@@ -10,7 +10,7 @@ settings:
     SWIFT_VERSION: "5.9"
     CURRENT_PROJECT_VERSION: "1"
     MARKETING_VERSION: "0.1.0"
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: "66C9VGAZR5"
 configFiles:
   Debug: Config/Debug.xcconfig
   Release: Config/Release.xcconfig
@@ -26,12 +26,17 @@ targets:
         embed: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.KnowledgeBaseApp
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: "66C9VGAZR5"
+        PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp
         INFOPLIST_KEY_CFBundleDisplayName: Knowledge Base
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         TARGETED_DEVICE_FAMILY: "1"
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
+      properties:
+        UILaunchStoryboardName: LaunchScreen
+        NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
   KnowledgeBaseAppTests:
     type: bundle.unit-test
     platform: iOS
@@ -50,10 +55,45 @@ targets:
       - path: SharedIntents
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.KnowledgeBaseApp.KnowledgeBaseWidget
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: "66C9VGAZR5"
+        PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp.Widget
         GENERATE_INFOPLIST_FILE: NO
     info:
       path: KnowledgeBaseWidget/Info.plist
       properties:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+
+# XcodeGen пересоздаёт .xcodeproj и не сохраняет ручные .xcscheme — схемы задаём здесь.
+schemes:
+  KnowledgeBaseApp:
+    build:
+      targets:
+        KnowledgeBaseApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - KnowledgeBaseAppTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+  KnowledgeBaseWidgetExtension:
+    build:
+      targets:
+        KnowledgeBaseWidgetExtension: all
+        KnowledgeBaseApp: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

@@ -33,7 +33,7 @@ platform :ios do
     setup_ci if ENV["CI"]
 
     app_id = ENV["APP_IDENTIFIER"].to_s.strip
-    app_id = "com.example.KnowledgeBaseApp" if app_id.empty?
+    app_id = "com.coredan.KnowledgeBaseApp" if app_id.empty?
 
     app_store_connect_api_key(
       key_id: ENV.fetch("ASC_KEY_ID"),
