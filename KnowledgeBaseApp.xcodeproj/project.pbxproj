@@ -635,7 +635,6 @@
 		569CB4CDF14D28812AE838BE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 66C9VGAZR5;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -655,7 +654,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 66C9VGAZR5;
 				INFOPLIST_FILE = KnowledgeBaseApp/Resources/Info.plist;
@@ -692,7 +691,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 66C9VGAZR5;
 				INFOPLIST_FILE = KnowledgeBaseApp/Resources/Info.plist;
@@ -771,7 +770,6 @@
 		ED48C928D5F4B9A0960E3F9F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 66C9VGAZR5;
 				GENERATE_INFOPLIST_FILE = NO;

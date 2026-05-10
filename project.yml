@@ -27,16 +27,13 @@ targets:
     settings:
       base:
         CODE_SIGN_STYLE: Automatic
+        # Empty lets Automatic pick Development vs Distribution per action (Archive uses Distribution + Match profiles).
+        CODE_SIGN_IDENTITY: ""
         DEVELOPMENT_TEAM: "66C9VGAZR5"
         PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp
         INFOPLIST_KEY_CFBundleDisplayName: Knowledge Base
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         TARGETED_DEVICE_FAMILY: "1"
-      configs:
-        Debug:
-          CODE_SIGN_IDENTITY: Apple Development
-        Release:
-          CODE_SIGN_IDENTITY: Apple Distribution
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
@@ -64,11 +61,6 @@ targets:
         DEVELOPMENT_TEAM: "66C9VGAZR5"
         PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp.Widget
         GENERATE_INFOPLIST_FILE: NO
-      configs:
-        Debug:
-          CODE_SIGN_IDENTITY: Apple Development
-        Release:
-          CODE_SIGN_IDENTITY: Apple Distribution
     info:
       path: KnowledgeBaseWidget/Info.plist
       properties:
