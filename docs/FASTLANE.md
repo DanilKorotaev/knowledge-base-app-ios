@@ -91,6 +91,7 @@ On CI, use **GitHub Secrets** (same names as env vars). Manual deploy: **Actions
 | `ASC_ISSUER_ID`                 | App Store Connect API                                            |
 | `ASC_KEY_CONTENT`               | Contents of `.p8`                                                |
 | `APP_IDENTIFIER`                | Optional override (default in `Appfile`)                         |
+| `WIDGET_APP_IDENTIFIER`         | Optional; default `com.coredan.KnowledgeBaseApp.Widget` — **lane `beta`** runs Match for app + widget                                     |
 | `TEAM_ID`                       | Apple Developer Team ID if needed for signing                    |
 
 

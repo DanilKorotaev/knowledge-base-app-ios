@@ -35,6 +35,9 @@ platform :ios do
     app_id = ENV["APP_IDENTIFIER"].to_s.strip
     app_id = "com.coredan.KnowledgeBaseApp" if app_id.empty?
 
+    widget_id = ENV["WIDGET_APP_IDENTIFIER"].to_s.strip
+    widget_id = "com.coredan.KnowledgeBaseApp.Widget" if widget_id.empty?
+
     app_store_connect_api_key(
       key_id: ENV.fetch("ASC_KEY_ID"),
       issuer_id: ENV.fetch("ASC_ISSUER_ID"),
@@ -45,7 +48,7 @@ platform :ios do
     match_params = {
       type: "appstore",
       readonly: is_ci,
-      app_identifier: app_id
+      app_identifier: [app_id, widget_id]
     }
     if ENV["MATCH_GIT_URL"] && !ENV["MATCH_GIT_URL"].empty?
       match_params[:git_url] = ENV["MATCH_GIT_URL"]
