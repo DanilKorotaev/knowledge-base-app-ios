@@ -4,8 +4,8 @@ Test and TestFlight automation. Same playbook as the **Apple Health / HealthSync
 
 ## Prerequisites
 
-- Ruby **3.3.x** (see `.ruby-version`). Install with [rbenv](https://github.com/rbenv/rbenv) / [mise](https://mise.jdx.dev/) / system Ruby if compatible.
-- Bundler: `gem install bundler`
+- Ruby **3.3.x** (see `.ruby-version`). Install with [rbenv](https://github.com/rbenv/rbenv) / [mise](https://mise.jdx.dev/) / [Homebrew](https://brew.sh/) (`brew install ruby`). **Do not use macOS system Ruby** (`/usr/bin/ruby`, often 2.6): `bundle exec fastlane` would fall through to `/usr/local/bin/fastlane` and Match encryption breaks on modern OpenSSL.
+- Bundler **2.x** (the repo lockfile expects **2.5.x**; avoid Bundler 1.x from old system Ruby).
 - Xcode + command-line tools
 
 ## Install
@@ -13,7 +13,15 @@ Test and TestFlight automation. Same playbook as the **Apple Health / HealthSync
 From the repository root:
 
 ```bash
+# If `ruby -v` is not 3.3.x, fix PATH first, e.g. Homebrew:
+#   export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
 bundle install
+```
+
+Confirm Fastlane comes from the bundle (path should be under your gem home / `vendor/bundle`, **not** `/usr/local/bin/fastlane`):
+
+```bash
+bundle exec which fastlane
 ```
 
 ## Lane: `test`
@@ -73,16 +81,18 @@ On CI, use **GitHub Secrets** (same names as env vars). Manual deploy: **Actions
 
 ## GitHub Secrets (reference)
 
-| Secret | Used by |
-|--------|---------|
-| `MATCH_PASSWORD` | Match decrypt |
-| `MATCH_GIT_URL` | Match clone |
+
+| Secret                          | Used by                                                          |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `MATCH_PASSWORD`                | Match decrypt                                                    |
+| `MATCH_GIT_URL`                 | Match clone                                                      |
 | `MATCH_GIT_BASIC_AUTHORIZATION` | Private Match repo over HTTPS (`base64` of `x-access-token:PAT`) |
-| `ASC_KEY_ID` | App Store Connect API |
-| `ASC_ISSUER_ID` | App Store Connect API |
-| `ASC_KEY_CONTENT` | Contents of `.p8` |
-| `APP_IDENTIFIER` | Optional override (default in `Appfile`) |
-| `TEAM_ID` | Apple Developer Team ID if needed for signing |
+| `ASC_KEY_ID`                    | App Store Connect API                                            |
+| `ASC_ISSUER_ID`                 | App Store Connect API                                            |
+| `ASC_KEY_CONTENT`               | Contents of `.p8`                                                |
+| `APP_IDENTIFIER`                | Optional override (default in `Appfile`)                         |
+| `TEAM_ID`                       | Apple Developer Team ID if needed for signing                    |
+
 
 ## Shared Apple Developer account with HealthSync
 
