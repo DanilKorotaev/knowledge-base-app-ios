@@ -14,6 +14,7 @@ struct MicRecordControl: View {
 
             micButton
         }
+        .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
     }
 
@@ -27,11 +28,15 @@ struct MicRecordControl: View {
                 .foregroundStyle(.secondary)
             TimelineView(.periodic(from: .now, by: 0.05)) { context in
                 let _ = viewModel.refreshMeteringForDisplay()
-                RecordingWaveformView(level: viewModel.displayedMeterLevel)
-                    .frame(height: 36)
-                Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))
-                    .font(.system(.title3, design: .monospaced))
-                    .monospacedDigit()
+                VStack(spacing: 6) {
+                    RecordingWaveformView(level: viewModel.displayedMeterLevel)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 36)
+                    Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))
+                        .font(.system(.title3, design: .monospaced))
+                        .monospacedDigit()
+                }
+                .frame(maxWidth: .infinity)
             }
             Text("Swipe left to cancel · Release to send")
                 .font(.caption2)
@@ -46,11 +51,15 @@ struct MicRecordControl: View {
                 .font(.headline)
             TimelineView(.periodic(from: .now, by: 0.05)) { context in
                 let _ = viewModel.refreshMeteringForDisplay()
-                RecordingWaveformView(level: viewModel.displayedMeterLevel)
-                    .frame(height: 36)
-                Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))
-                    .font(.system(.title3, design: .monospaced))
-                    .monospacedDigit()
+                VStack(spacing: 6) {
+                    RecordingWaveformView(level: viewModel.displayedMeterLevel)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 36)
+                    Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))
+                        .font(.system(.title3, design: .monospaced))
+                        .monospacedDigit()
+                }
+                .frame(maxWidth: .infinity)
             }
             HStack(spacing: 24) {
                 Button(role: .cancel) {
@@ -73,26 +82,30 @@ struct MicRecordControl: View {
     }
 
     private var micButton: some View {
-        ZStack {
-            Circle()
-                .fill(viewModel.phase == .idle ? Color.accentColor.opacity(0.15) : Color.red.opacity(0.2))
-                .frame(width: 72, height: 72)
-            Image(systemName: "mic.fill")
-                .font(.title)
-                .foregroundStyle(viewModel.phase == .idle ? Color.accentColor : Color.red)
+        HStack {
+            Spacer(minLength: 0)
+            ZStack {
+                Circle()
+                    .fill(viewModel.phase == .idle ? Color.accentColor.opacity(0.15) : Color.red.opacity(0.2))
+                    .frame(width: 72, height: 72)
+                Image(systemName: "mic.fill")
+                    .font(.title)
+                    .foregroundStyle(viewModel.phase == .idle ? Color.accentColor : Color.red)
+            }
+            .opacity(viewModel.phase == .locked ? 0.35 : 1)
+            .allowsHitTesting(viewModel.phase != .locked)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        viewModel.handleDragChanged(value.translation)
+                    }
+                    .onEnded { value in
+                        viewModel.handleDragEnded(value.translation)
+                    }
+            )
+            .accessibilityLabel("Record voice")
+            Spacer(minLength: 0)
         }
-        .opacity(viewModel.phase == .locked ? 0.35 : 1)
-        .allowsHitTesting(viewModel.phase != .locked)
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    viewModel.handleDragChanged(value.translation)
-                }
-                .onEnded { value in
-                    viewModel.handleDragEnded(value.translation)
-                }
-        )
-        .accessibilityLabel("Record voice")
     }
 
     private func durationLabel(start: Date?, end: Date) -> String {
@@ -119,8 +132,9 @@ private struct RecordingWaveformView: View {
                         .frame(width: max(2, w - 2), height: height)
                 }
             }
-            .frame(maxHeight: .infinity, alignment: .center)
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
         }
+        .frame(minHeight: 36)
     }
 }
 

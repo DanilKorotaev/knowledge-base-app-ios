@@ -60,9 +60,6 @@ struct MainView: View {
                             }
                         }
                     }
-                    .navigationDestination(for: KBSession.self) { session in
-                        ChatView(session: session, chatClient: chatClient)
-                    }
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         MicBar(viewModel: voiceViewModel)
                     }
@@ -165,8 +162,11 @@ struct MainView: View {
             } message: {
                 Text(voiceViewModel.errorMessage ?? "")
             }
-            .environment(voiceRouting)
+            .navigationDestination(for: KBSession.self) { session in
+                ChatView(session: session, chatClient: chatClient)
+            }
         }
+        .environment(voiceRouting)
     }
 
     @MainActor
@@ -225,9 +225,15 @@ struct MainView: View {
 private struct MicBar: View {
     @Bindable var viewModel: VoiceRecordingViewModel
 
+    /// В режиме записи панель тянется на всю ширину; в idle — небольшие боковые отступы у микрофона.
+    private var horizontalPadding: CGFloat {
+        viewModel.phase == .idle ? 16 : 0
+    }
+
     var body: some View {
         MicRecordControl(viewModel: viewModel)
-            .padding(.horizontal)
+            .padding(.horizontal, horizontalPadding)
+            .frame(maxWidth: .infinity)
             .background(.bar)
     }
 }

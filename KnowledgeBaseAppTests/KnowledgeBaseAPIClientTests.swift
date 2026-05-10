@@ -216,6 +216,39 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         MockURLProtocol.requestHandler = nil
     }
 
+    /// Серверы часто разделяют SSE-события `\r\n\r\n`; поиск только `\n\n` в сырых байтах их пропускает.
+    func testStreamTextMessageParsesSSEWithCRLFLineEndings() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        let sse = "data: {\"delta\":\"Hi\"}\r\n\r\ndata: {\"delta\":\"!\"}\r\n\r\ndata: {\"done\":true}\r\n\r\n".data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "POST")
+            XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/s1/messages") == true)
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream; charset=utf-8"]
+            )!
+            return (response, sse)
+        }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: "tok", urlSession: URLSession(configuration: config))
+        let stream = try await client.streamTextMessage(sessionId: "s1", text: "hello", useKnowledgeBase: true)
+
+        var parts: [String] = []
+        for try await chunk in stream {
+            parts.append(chunk)
+        }
+
+        XCTAssertEqual(parts, ["Hi", "!"])
+
+        MockURLProtocol.requestHandler = nil
+    }
+
     func testStreamTextMessageJSONResponseYieldsWordChunks() async throws {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]

@@ -18,5 +18,9 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.</string>
 </dict>
 </plist>

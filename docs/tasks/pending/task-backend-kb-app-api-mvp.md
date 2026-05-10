@@ -15,6 +15,8 @@
 5. **Файлы** — `GET /api/files/changes`, `POST /api/files/revert` с телом `{ "file_id" }`.
 6. **Стриминг** — SSE/WebSocket после стабилизации синхронного пути (см. `task-feature-chat.md`).
 
+После деплоя: смоки в Python (`kb_app_api.tests`) и при необходимости E2E из iOS-репо — `docs/testing/E2E.md`.
+
 ## Правила
 
 Python в боте: `.cursor/rules/` репозитория `knowledge-base-bot`.

@@ -21,4 +21,4 @@
 
 1. Bearer and optional `POST /api/auth/token`.
 2. Voice, files, attachments — match contract.
-3. E2E from device against staging HTTPS URL.
+3. E2E: автоматические интеграционные тесты в этом репо — `KnowledgeBaseAppTests/KnowledgeBaseAPIE2ETests.swift`, инструкция `docs/testing/E2E.md` (переменные `KB_E2E_API_BASE_URL`, `KB_E2E_API_TOKEN`). Дополнительно — ручной прогон приложения на устройстве против staging HTTPS.

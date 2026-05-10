@@ -25,7 +25,11 @@ struct ChangedFilesView: View {
                 )
             } else {
                 List(files) { file in
-                    NavigationLink(value: file) {
+                    NavigationLink {
+                        FileDiffView(file: file, filesClient: filesClient) {
+                            Task { await load() }
+                        }
+                    } label: {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(file.path)
                                 .font(.headline)
@@ -39,11 +43,6 @@ struct ChangedFilesView: View {
             }
         }
         .navigationTitle("Changed files")
-        .navigationDestination(for: KBChangedFile.self) { file in
-            FileDiffView(file: file, filesClient: filesClient) {
-                Task { await load() }
-            }
-        }
         .task {
             await load()
         }

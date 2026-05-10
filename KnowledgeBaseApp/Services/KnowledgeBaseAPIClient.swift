@@ -275,40 +275,66 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         }
     }
 
+    /// Разбор SSE по границам `\n\n` после нормализации `\r\n` → `\n` (иначе `\r\n\r\n` не даёт пары LF-LF в сырых байтах).
+    /// `AsyncBytes.lines` здесь не подходит: пустые строки между событиями часто опускаются, и несколько `data:` сливаются в один блок.
     private func streamAssistantChunksFromSSE(bytes: URLSession.AsyncBytes) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
             Task {
                 do {
                     var pending = Data()
+                    var sawDoneEvent = false
                     for try await byte in bytes {
-                        pending.append(byte)
+                        if byte == 10, pending.last == 13 {
+                            pending[pending.count - 1] = 10
+                        } else {
+                            pending.append(byte)
+                        }
                         while let r = pending.range(of: Data([10, 10])) {
                             let eventBytes = pending[..<r.lowerBound]
                             pending = Data(pending[r.upperBound...])
                             let block = String(decoding: eventBytes, as: UTF8.self)
                             guard let payload = SSEventParser.dataPayload(fromSingleEventBlock: block) else { continue }
-                            let trimmed = payload.trimmingCharacters(in: .whitespacesAndNewlines)
-                            guard !trimmed.isEmpty else { continue }
-                            if let jsonData = trimmed.data(using: .utf8),
-                               let evt = try? JSONDecoder().decode(ChatSSEEvent.self, from: jsonData) {
-                                if let d = evt.delta, !d.isEmpty {
-                                    continuation.yield(d)
-                                }
-                                if evt.done == true {
-                                    continuation.finish()
-                                    return
-                                }
-                            } else {
-                                continuation.yield(trimmed)
+                            if Self.handleSSEChatPayload(payload, continuation: continuation) {
+                                sawDoneEvent = true
+                                break
                             }
                         }
+                        if sawDoneEvent { break }
                     }
-                    continuation.finish()
+                    if !sawDoneEvent, !pending.isEmpty {
+                        let block = String(decoding: pending, as: UTF8.self)
+                        if let payload = SSEventParser.dataPayload(fromSingleEventBlock: block),
+                           Self.handleSSEChatPayload(payload, continuation: continuation) {
+                            sawDoneEvent = true
+                        }
+                    }
+                    if !sawDoneEvent {
+                        continuation.finish()
+                    }
                 } catch {
                     continuation.finish(throwing: error)
                 }
             }
         }
+    }
+
+    /// - Returns: `true` if the stream ended with `done` (continuation already finished).
+    private static func handleSSEChatPayload(_ payload: String, continuation: AsyncThrowingStream<String, Error>.Continuation) -> Bool {
+        let trimmed = payload.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        if let jsonData = trimmed.data(using: .utf8),
+           let evt = try? JSONDecoder().decode(ChatSSEEvent.self, from: jsonData) {
+            if let d = evt.delta, !d.isEmpty {
+                continuation.yield(d)
+            }
+            if evt.done == true {
+                continuation.finish()
+                return true
+            }
+            return false
+        }
+        continuation.yield(trimmed)
+        return false
     }
 
     func sendAttachment(

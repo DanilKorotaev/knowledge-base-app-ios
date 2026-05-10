@@ -7,11 +7,13 @@
 - `ChatAPIClientProtocol`, stub с демо-сессией, `URLSession` для messages.
 - Экран чата, переключатель use KB, пузырьки user/assistant.
 - `streamTextMessage` + рост пузыря ассистента в UI; `use_knowledge_base` в теле запроса.
-- `URLSessionKnowledgeBaseAPIClient.streamTextMessage`: **`bytes(for:)`**, SSE `data:` + `ChatSSEEvent`, fallback на JSON.
+- `URLSessionKnowledgeBaseAPIClient.streamTextMessage`: **`bytes(for:)`**, SSE `data:` + `ChatSSEEvent`, fallback на JSON; границы событий после нормализации `\r\n` → `\n` (совместимость с типичным `text/event-stream`).
 
 ## Remaining
 
 - Режимы «с БЗ» / «пустой чат» на стороне сервера (клиент уже шлёт флаг).
+
+Интеграция против staging: `docs/testing/E2E.md` (`KB_E2E_*`, тест `sendTextMessage` с `useKnowledgeBase: false`).
 
 ## UX (client)
 

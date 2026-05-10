@@ -14,7 +14,7 @@
 ## Remaining
 
 - Сервер: `POST /api/query/voice` — см. `knowledge-base-bot/docs/tasks/pending/task-api-kb-app-voice-query-ios.md`.
-- Optional UI tests / gesture polish on device (mic permission).
+- QA на устройстве: микрофон, отправка голоса, появление транскрипта/сообщений в треде (E2E по HTTP в `docs/testing/E2E.md` голос не покрывает).
 
 ## Done (client follow-up)
 
@@ -24,4 +24,13 @@
 ## Acceptance
 
 - [x] Unit tests for gesture thresholds.
-- [ ] Integration test or manual QA checklist on device (mic permission).
+- [ ] Ручной чеклист на устройстве: разрешение микрофона → удержание записи → отпускание → отправка → сообщение/транскрипт в чате; при необходимости отмена свайпом влево и lock свайпом вверх.
+- [ ] (Опционально) UI-тесты жестов на симуляторе без реального микрофона.
+
+## Manual QA (кратко)
+
+1. Настроить API base URL и токен в приложении (как для обычного чата).
+2. Открыть сессию, нажать микрофон, записать короткую фразу, отпустить.
+3. Убедиться, что запрос уходит без ошибки и в треде появляется ответ сервера (или черновик транскрипта по UX приложения).
+
+См. также `docs/testing/E2E.md` для проверки REST без UI.
