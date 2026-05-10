@@ -6,5 +6,5 @@ app_identifier(ENV.fetch("APP_IDENTIFIER", "com.coredan.KnowledgeBaseApp"))
 # Optional until you use lanes that talk to Apple ID directly (e.g. some match flows):
 # apple_id("you@example.com")
 
-# Apple Developer Team ID (10 characters) — set locally or in CI for signing:
-# team_id(ENV.fetch("TEAM_ID", "XXXXXXXXXX"))
+# Apple Developer Team ID (10 characters) — gym export needs this when Xcode omits team from archive metadata:
+team_id(ENV.fetch("TEAM_ID", "66C9VGAZR5"))

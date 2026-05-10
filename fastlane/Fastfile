@@ -63,9 +63,15 @@ platform :ios do
       build_number: ENV["GITHUB_RUN_NUMBER"]
     ) if ENV["CI"] && ENV["GITHUB_RUN_NUMBER"]
 
+    team_id = ENV["TEAM_ID"].to_s.strip
+    team_id = "66C9VGAZR5" if team_id.empty?
+
     build_app(
       scheme: "KnowledgeBaseApp",
-      export_method: "app-store"
+      export_method: "app-store",
+      export_options: {
+        teamID: team_id
+      }
     )
 
     upload_to_testflight(
