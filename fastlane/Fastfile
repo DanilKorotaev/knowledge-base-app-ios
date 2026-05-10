@@ -66,6 +66,34 @@ platform :ios do
     team_id = ENV["TEAM_ID"].to_s.strip
     team_id = "66C9VGAZR5" if team_id.empty?
 
+    # CI has no Xcode account session: Automatic signing resolves to "Development" profiles and archive fails.
+    # Match already installed App Store profiles; pin Manual + Distribution for Release only (local stays Automatic/Debug).
+    if is_ci
+      mapping = lane_context[:MATCH_PROVISIONING_PROFILE_MAPPING] || {}
+      main_prof = mapping[app_id]
+      widget_prof = mapping[widget_id]
+      UI.user_error!("Match did not set provisioning profile mapping for #{app_id} / #{widget_id}") unless main_prof && widget_prof
+
+      update_code_signing_settings(
+        path: "KnowledgeBaseApp.xcodeproj",
+        use_automatic_signing: false,
+        targets: ["KnowledgeBaseApp"],
+        build_configurations: ["Release"],
+        team_id: team_id,
+        code_sign_identity: "Apple Distribution",
+        profile_name: main_prof
+      )
+      update_code_signing_settings(
+        path: "KnowledgeBaseApp.xcodeproj",
+        use_automatic_signing: false,
+        targets: ["KnowledgeBaseWidgetExtension"],
+        build_configurations: ["Release"],
+        team_id: team_id,
+        code_sign_identity: "Apple Distribution",
+        profile_name: widget_prof
+      )
+    end
+
     build_app(
       scheme: "KnowledgeBaseApp",
       export_method: "app-store",
