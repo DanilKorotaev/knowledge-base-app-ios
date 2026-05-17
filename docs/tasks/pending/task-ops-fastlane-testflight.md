@@ -12,7 +12,7 @@
 
 - Apple Developer + App Store Connect app record (реальный bundle ID вместо `com.example.KnowledgeBaseApp`)
 - Приватный GitHub-репо для Match + `fastlane match appstore` локально
-- GitHub Secrets: `MATCH_*`, `ASC_*` (см. [docs/FASTLANE.md](../../FASTLANE.md))
+- GitHub Secrets: `MATCH_*`, `ASC_*`, `KBAPP_API_BASE_URL`, `KBAPP_AUTH_TOKEN` (см. [docs/FASTLANE.md](../../FASTLANE.md), [API_CONFIGURATION.md](../../API_CONFIGURATION.md))
 - Первый успешный **Deploy TestFlight** из Actions
 
 ## Notes

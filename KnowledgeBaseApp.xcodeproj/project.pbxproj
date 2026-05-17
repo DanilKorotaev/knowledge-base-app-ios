@@ -617,9 +617,12 @@
 		};
 		460FE36057F0C3F6FA9AD425 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 467CF93A5C5C1E490410CEFA /* Debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_KBAppAPIBaseURL = "$(INFOPLIST_KEY_KBAppAPIBaseURL)";
+				INFOPLIST_KEY_KBAppAuthToken = "$(INFOPLIST_KEY_KBAppAuthToken)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -672,9 +675,12 @@
 		};
 		77B762308945AE5633083E8F /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E9075BD95C6FBBD783C0D5AD /* Release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_KBAppAPIBaseURL = "$(INFOPLIST_KEY_KBAppAPIBaseURL)";
+				INFOPLIST_KEY_KBAppAuthToken = "$(INFOPLIST_KEY_KBAppAuthToken)";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -6,8 +6,12 @@ struct MainView: View {
     private let filesClient: FilesAPIClientProtocol
     @Binding var deepLinkVoiceRecording: Bool
     @State private var sessions: [KBSession] = []
+    @State private var searchResults: [KBSession]?
+    @State private var searchText = ""
+    @State private var isSearching = false
     @State private var loadError: String?
     @State private var isLoading = false
+    @State private var didLoadSessionsOnce = false
     @State private var voiceViewModel: VoiceRecordingViewModel
     @State private var voiceRouting = VoiceRoutingContext()
     @State private var showNewSession = false
@@ -37,19 +41,21 @@ struct MainView: View {
                         systemImage: "exclamationmark.triangle",
                         description: Text(loadError)
                     )
-                } else if sessions.isEmpty {
+                } else if displayedSessions.isEmpty {
                     ContentUnavailableView(
-                        "No sessions",
-                        systemImage: "bubble.left.and.bubble.right",
+                        isSearchActive ? "No matches" : "No sessions",
+                        systemImage: isSearchActive ? "magnifyingglass" : "bubble.left.and.bubble.right",
                         description: Text(
-                            "Configure the API in Settings, or use a stub build with a demo session when no server is set."
+                            isSearchActive
+                                ? "Try another query (session ID or text from messages)."
+                                : "Configure the API in Settings, or use a stub build with a demo session when no server is set."
                         )
                     )
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         MicBar(viewModel: voiceViewModel)
                     }
                 } else {
-                    List(sessions) { session in
+                    List(displayedSessions) { session in
                         NavigationLink(value: session) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(session.title)
@@ -59,6 +65,9 @@ struct MainView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+                    }
+                    .refreshable {
+                        await loadSessions(showFullScreenLoading: false)
                     }
                     .safeAreaInset(edge: .bottom, spacing: 0) {
                         MicBar(viewModel: voiceViewModel)
@@ -81,7 +90,7 @@ struct MainView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        Task { await loadSessions() }
+                        Task { await loadSessions(showFullScreenLoading: false) }
                     } label: {
                         Label("Refresh", systemImage: "arrow.clockwise")
                     }
@@ -117,11 +126,17 @@ struct MainView: View {
                     onCreate: { Task { await createSessionAndDismiss() } }
                 )
             }
+            .searchable(text: $searchText, prompt: "ID or message text")
             .task {
-                await loadSessions()
+                guard !didLoadSessionsOnce else { return }
+                didLoadSessionsOnce = true
+                await loadSessions(showFullScreenLoading: true)
+            }
+            .onChange(of: searchText) { _, newValue in
+                Task { await runSearch(query: newValue) }
             }
             .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { _ in
-                Task { await loadSessions() }
+                Task { await loadSessions(showFullScreenLoading: false) }
             }
             .onChange(of: deepLinkVoiceRecording) { _, newValue in
                 guard newValue else { return }
@@ -169,11 +184,46 @@ struct MainView: View {
         .environment(voiceRouting)
     }
 
+    private var isSearchActive: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var displayedSessions: [KBSession] {
+        if isSearchActive {
+            return searchResults ?? []
+        }
+        return sessions
+    }
+
     @MainActor
-    private func loadSessions() async {
-        isLoading = true
+    private func runSearch(query: String) async {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            searchResults = nil
+            isSearching = false
+            return
+        }
+        isSearching = true
+        defer { isSearching = false }
+        do {
+            searchResults = try await apiClient.searchSessions(query: trimmed)
+        } catch {
+            loadError = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func loadSessions(showFullScreenLoading: Bool) async {
+        let showBlockingLoader = showFullScreenLoading && sessions.isEmpty
+        if showBlockingLoader {
+            isLoading = true
+        }
         loadError = nil
-        defer { isLoading = false }
+        defer {
+            if showBlockingLoader {
+                isLoading = false
+            }
+        }
         do {
             sessions = try await apiClient.fetchSessions()
         } catch {
@@ -187,7 +237,7 @@ struct MainView: View {
             _ = try await apiClient.createSession(title: newSessionTitle)
             newSessionTitle = ""
             showNewSession = false
-            await loadSessions()
+            await loadSessions(showFullScreenLoading: false)
         } catch {
             loadError = error.localizedDescription
         }

@@ -6,6 +6,7 @@ DerivedData/
 xcuserdata/
 
 # Secrets
+.env
 Config/Secrets.xcconfig
 
 # macOS

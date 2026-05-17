@@ -6,28 +6,36 @@ _(none)_
 
 ## Planned
 
-**Рекомендуемый порядок:** 1) поднять **KB App API** по [task-backend-kb-app-api-mvp.md](tasks/pending/task-backend-kb-app-api-mvp.md) (сессии → сообщения → голос → файлы → SSE); 2) в iOS переключить чат на **реальный SSE** поверх `SSEventParser` ([task-feature-chat.md](tasks/pending/task-feature-chat.md)); 3) **TestFlight** ([task-ops-fastlane-testflight.md](tasks/pending/task-ops-fastlane-testflight.md)) параллельно или после стабильного API.
+**Рекомендуемый порядок (2026-05):** 1) **деплой** KB App API на сервер и smoke/E2E — [чеклист в Nextcloud](../../Документация/Задачи/KB%20App%20API%20—%20бэкенд%20для%20iOS/Чеклист%20—%20деплой%20и%20интеграция.md); 2) интеграция iOS с **реальным SSE** и голосом ([task-feature-chat.md](tasks/pending/task-feature-chat.md), [task-feature-voice-input.md](tasks/pending/task-feature-voice-input.md)); 3) **TestFlight** ([task-ops-fastlane-testflight.md](tasks/pending/task-ops-fastlane-testflight.md)).
+
+### Integration (против реального API)
+
+- [ ] E2E: `KnowledgeBaseAPIE2ETests` против staging/prod — [docs/testing/E2E.md](testing/E2E.md)
+- [ ] Ручной прогон: сессии, чат, SSE, вложения, голос, files/changes + revert
+- [ ] Единый UX ошибок по контракту (`error.code`, `message`, `detail`)
+- [ ] Dev/staging/prod: базовый URL и токен без секретов в git
 
 ### Product
 
-- [x] [Voice MVP](tasks/pending/task-feature-voice-input.md) — см. [completed](tasks/completed/task-feature-voice-input-mvp.md); Whisper/upload — когда будет API
-- [x] [Чат: история + текст](tasks/pending/task-feature-chat.md) — см. [completed](tasks/completed/task-feature-chat-mvp.md); стриминг ответа — позже
-- [ ] [Голос: реальный upload](tasks/pending/task-feature-voice-input.md) — после KB App API
-- [ ] [Чат: серверный SSE на FastAPI](tasks/pending/task-feature-chat.md) — клиент уже шлёт `Accept: text/event-stream` и парсит `delta`/`done`
+- [x] [Voice MVP](tasks/completed/task-feature-voice-input-mvp.md) — запись + UI
+- [x] [Чат: история + текст](tasks/completed/task-feature-chat-mvp.md) — HTTP-клиент готов
+- [ ] [Голос: реальный upload + Whisper](tasks/pending/task-feature-voice-input.md) — после деплоя API
+- [ ] [Чат: серверный SSE в бою](tasks/pending/task-feature-chat.md) — клиент шлёт `Accept: text/event-stream`
 
-### Backend (вне репо)
+### Backend (`knowledge-base-bot/kb_app_api/`)
 
-- [ ] [KB App API MVP (FastAPI)](tasks/pending/task-backend-kb-app-api-mvp.md) — по [KB_APP_API_CONTRACT.md](KB_APP_API_CONTRACT.md)
-- [ ] [Синхронизация контракта](tasks/pending/task-backend-kb-app-api-sync.md)
+- [x] [KB App API MVP](tasks/completed/task-backend-kb-app-api-mvp.md) — эндпоинты по контракту
+- [ ] [Синхронизация контракта при изменениях](tasks/pending/task-backend-kb-app-api-sync.md) — ongoing
 
-### Ops / CI _(отложено — код и фичи в приоритете)_
+### Ops / CI
 
 - [ ] [Match + ASC + TestFlight](tasks/pending/task-ops-fastlane-testflight.md)
-- [x] [MIT LICENSE](tasks/completed/task-sessions-attachments-license.md) _(was task-doc-license)_
+- [x] [MIT LICENSE](tasks/completed/task-sessions-attachments-license.md)
 
 ### Documentation
 
 - [x] [Контракт KB App API в репо](tasks/completed/task-doc-kb-app-api-contract.md)
+- [x] Чеклист деплоя и интеграции (Nextcloud)
 
 ## Completed
 

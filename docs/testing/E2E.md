@@ -11,10 +11,14 @@
 
 Отдельно от префикса `KBAPP_`, который использует само приложение в рантайме.
 
+**Локально после `./scripts/sync-secrets-xcconfig.sh`:** тестовый таргет подхватывает те же значения из `Config/Secrets.xcconfig` (через Info.plist). Явные `KB_E2E_*` в Scheme по-прежнему имеют приоритет.
+
+Запросы E2E отправляют заголовок **`X-KB-App-E2E: 1`** — на сервере сессии создаются под `KB_APP_API_TEST_TELEGRAM_ID`, а не под `KB_APP_API_TELEGRAM_ID` владельца приложения.
+
 ## Запуск из Xcode
 
-1. **Product → Scheme → Edit Scheme… → Test → Arguments**
-2. В **Environment Variables** добавьте `KB_E2E_API_BASE_URL` и `KB_E2E_API_TOKEN`.
+1. Выполните `./scripts/sync-secrets-xcconfig.sh` (или задайте `KB_E2E_*` вручную).
+2. **Product → Scheme → Edit Scheme… → Test → Arguments** — опционально `KB_E2E_API_BASE_URL` / `KB_E2E_API_TOKEN`.
 3. Запустите тесты (⌘U) или только `KnowledgeBaseAPIE2ETests`.
 
 ## Запуск из терминала

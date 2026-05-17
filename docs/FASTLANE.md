@@ -84,6 +84,8 @@ On CI, use **GitHub Secrets** (same names as env vars). Manual deploy: **Actions
 
 | Secret                          | Used by                                                          |
 | ------------------------------- | ---------------------------------------------------------------- |
+| `KBAPP_API_BASE_URL`            | **TestFlight build** — KB App API HTTPS base (no trailing slash); written to `Config/Secrets.xcconfig` in CI |
+| `KBAPP_AUTH_TOKEN`              | **TestFlight build** — Bearer token for the API (same as local `.env`) |
 | `MATCH_PASSWORD`                | Match decrypt                                                    |
 | `MATCH_GIT_URL`                 | Match clone                                                      |
 | `MATCH_GIT_BASIC_AUTHORIZATION` | Private Match repo over HTTPS (`base64` of `x-access-token:PAT`) |
@@ -93,6 +95,8 @@ On CI, use **GitHub Secrets** (same names as env vars). Manual deploy: **Actions
 | `APP_IDENTIFIER`                | Optional override (default in `Appfile`)                         |
 | `WIDGET_APP_IDENTIFIER`         | Optional; default `com.coredan.KnowledgeBaseApp.Widget` — **lane `beta`** runs Match for app + widget                                     |
 | `TEAM_ID`                       | Apple Developer Team ID if needed for signing                    |
+
+KB App API values for TestFlight: [API_CONFIGURATION.md](API_CONFIGURATION.md). **Do not** put real URLs or tokens in the repository — only in GitHub Secrets and local `.env`.
 
 
 ## Shared Apple Developer account with HealthSync

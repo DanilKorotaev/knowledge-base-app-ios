@@ -24,24 +24,35 @@ Signing, Match, and TestFlight: [FASTLANE.md](FASTLANE.md).
 
 ## Configuration and secrets
 
+Full guide: **[API_CONFIGURATION.md](API_CONFIGURATION.md)**.
+
 ### Rules
 
-- Do **not** commit hostnames with embedded credentials, API keys, or personal payloads.
-- **Bearer tokens:** saved from in-app **Settings** go to the **Keychain**; legacy values in UserDefaults are migrated once on read. Scheme env `KBAPP_AUTH_TOKEN` still overrides for local runs.
+- Do **not** commit real API hosts, Bearer tokens, or personal `.env` files.
+- **Local Mac:** copy `env.example` → `.env`, fill `KBAPP_*`, run `./scripts/sync-secrets-xcconfig.sh`, then build in Xcode.
+- **TestFlight / CI:** same variable **names** as GitHub Secrets (`KBAPP_API_BASE_URL`, `KBAPP_AUTH_TOKEN`).
+- **Bearer tokens** from in-app **Settings** go to the **Keychain**; scheme env and build-time plist override for debugging.
 
-### Environment variables (prefix `KBAPP_`)
+### Quick local setup
 
-| Variable | Meaning |
-|----------|---------|
-| `KBAPP_API_BASE_URL` | HTTPS base URL of the KB App API (no trailing slash), when deployed |
-| `KBAPP_AUTH_TOKEN` | Bearer token for development only |
+```bash
+cp env.example .env
+# edit .env — your API base URL and token (private)
+./scripts/sync-secrets-xcconfig.sh
+xcodegen generate   # if project.yml changed
+```
 
-Set them in **Product → Scheme → Edit Scheme → Run → Arguments → Environment Variables**.
+Open Xcode → **Clean Build Folder** → **Run**.
+
+Optional override per session: **Edit Scheme → Run → Environment Variables** (`KBAPP_API_BASE_URL`, `KBAPP_AUTH_TOKEN`).
 
 ### Files
 
-- `env.example` — template for shell tooling.
-- `Config/Secrets.xcconfig.example` — optional build-time overrides; copy to `Config/Secrets.xcconfig` (gitignored).
+| File | Role |
+|------|------|
+| `.env` | Local secrets (gitignored); source for `sync-secrets-xcconfig.sh` |
+| `Config/Secrets.xcconfig` | Build-time API config → Info.plist (gitignored) |
+| `Config/Secrets.xcconfig.example` | Placeholder template only |
 
 ## Microphone
 

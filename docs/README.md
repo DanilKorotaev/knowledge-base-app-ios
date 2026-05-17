@@ -3,6 +3,7 @@
 ## Contents
 
 - [SETUP.md](SETUP.md) — Xcode, signing, environment variables, secrets policy
+- [API_CONFIGURATION.md](API_CONFIGURATION.md) — KB App API URL/token (local Mac + GitHub Actions)
 - [FASTLANE.md](FASTLANE.md) — Bundler, `fastlane test`, Match, TestFlight
 - [DEVELOPMENT.md](DEVELOPMENT.md) — daily development workflow and XcodeGen
 - [ARCHITECTURE.md](ARCHITECTURE.md) — folders, API boundary, and future backend
@@ -11,6 +12,7 @@
 - [CODING_STANDARDS.md](CODING_STANDARDS.md) — protocol-first + tests
 - [todo.md](todo.md) — active tasks
 - [completed.md](completed.md) — completed tasks
+- Deploy / E2E checklist (Nextcloud): `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`
 
 ## Task folders
 

@@ -1,6 +1,6 @@
 # KB App API: contract sync (iOS ↔ server ↔ bot)
 
-**Status:** Backend implemented in **`knowledge-base-bot/kb_app_api/`**; OpenAPI subset updated in **`docs/openapi/kb-app-api.yaml`**. Keep client aligned on changes.
+**Status:** Ongoing — backend in **`knowledge-base-bot/kb_app_api/`** (MVP done); OpenAPI subset in **`docs/openapi/kb-app-api.yaml`**. Keep client aligned on changes. Deploy/E2E: Nextcloud [Чеклист — деплой и интеграция.md](../../../../Документация/Задачи/KB%20App%20API%20—%20бэкенд%20для%20iOS/Чеклист%20—%20деплой%20и%20интеграция.md).
 
 ## Scope (this repo)
 

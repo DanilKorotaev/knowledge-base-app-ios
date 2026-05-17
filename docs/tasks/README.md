@@ -18,13 +18,15 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-files-diff-widgets-camera.md` | Changed files, diff, widgets, camera, deep link |
 | `task-feature-widgets-app-intents.md` | App Intents, Shortcuts, widget mic button |
 | `task-doc-kb-app-api-contract.md` | KB App API contract + OpenAPI subset + error parsing |
+| `task-backend-kb-app-api-mvp.md` | FastAPI MVP in `knowledge-base-bot/kb_app_api/` |
 
 ## Pending (`pending/`)
 
 | File | Topic |
 |------|--------|
-| `task-feature-voice-input.md` | Real audio upload + Whisper when API exists |
-| `task-feature-chat.md` | Streaming assistant replies (SSE/WS TBD) |
-| `task-backend-kb-app-api-mvp.md` | FastAPI phases (sessions → messages → voice → files → stream) |
-| `task-backend-kb-app-api-sync.md` | Contract alignment iOS ↔ KB App API ↔ bot services (voice: `task-api-kb-app-voice-query-ios.md` в репо бота) |
+| `task-feature-voice-input.md` | Real voice E2E against deployed API (Whisper on server) |
+| `task-feature-chat.md` | Server SSE verified in production |
+| `task-backend-kb-app-api-sync.md` | Ongoing contract alignment iOS ↔ KB App API ↔ bot |
 | `task-ops-fastlane-testflight.md` | Match, ASC, TestFlight |
+
+**Deploy / E2E checklist (Nextcloud):** `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`

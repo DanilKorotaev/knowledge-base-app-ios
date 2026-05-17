@@ -3,6 +3,7 @@ import Foundation
 /// HTTP client for the future **KB App API** (FastAPI). Telegram bot and this app share the same services on the server.
 protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func fetchSessions() async throws -> [KBSession]
+    func searchSessions(query: String) async throws -> [KBSession]
     func createSession(title: String) async throws -> KBSession
 }
 
@@ -24,6 +25,14 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
         store.sessionsSnapshot()
     }
 
+    func searchSessions(query: String) async throws -> [KBSession] {
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !q.isEmpty else { return store.sessionsSnapshot() }
+        return store.sessionsSnapshot().filter { session in
+            session.title.lowercased().contains(q) || session.id.lowercased().contains(q)
+        }
+    }
+
     func createSession(title: String) async throws -> KBSession {
         store.createSession(title: title)
     }
@@ -35,11 +44,28 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
     private let baseURL: URL
     private let authToken: String?
     private let urlSession: URLSession
+    /// When true, sends `X-KB-App-E2E: 1` so the server uses `KB_APP_API_TEST_TELEGRAM_ID` (not the app owner).
+    private let useE2EIntegrationUser: Bool
 
-    init(baseURL: URL, authToken: String?, urlSession: URLSession = .shared) {
+    init(
+        baseURL: URL,
+        authToken: String?,
+        urlSession: URLSession = .shared,
+        useE2EIntegrationUser: Bool = false
+    ) {
         self.baseURL = baseURL
         self.authToken = authToken
         self.urlSession = urlSession
+        self.useE2EIntegrationUser = useE2EIntegrationUser
+    }
+
+    private func applyAuthHeaders(to request: inout URLRequest) {
+        if let authToken {
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+        }
+        if useE2EIntegrationUser {
+            request.setValue("1", forHTTPHeaderField: "X-KB-App-E2E")
+        }
     }
 
     convenience init?() {
@@ -49,31 +75,87 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
     }
 
     func fetchSessions() async throws -> [KBSession] {
-        let url = baseURL.appendingPathComponent("api/sessions")
+        var all: [KBSession] = []
+        var page = 1
+        let perPage = 100
+        var total = 0
+
+        while true {
+            let batch = try await fetchSessionsPage(page: page, perPage: perPage)
+            if page == 1 {
+                total = batch.total
+            }
+            if batch.sessions.isEmpty {
+                break
+            }
+            all.append(contentsOf: batch.sessions)
+            if all.count >= total {
+                break
+            }
+            page += 1
+        }
+        return all
+    }
+
+    func searchSessions(query: String) async throws -> [KBSession] {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return try await fetchSessions() }
+
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("api/sessions/search"),
+            resolvingAgainstBaseURL: false
+        )!
+        components.queryItems = [URLQueryItem(name: "q", value: trimmed)]
+        guard let url = components.url else { throw KnowledgeBaseAPIError.missingBaseURL }
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
+
+        let (data, response) = try await urlSession.data(for: request)
+        try ensureSuccessHTTP(response, data: data)
+        return try decodeSessionList(from: data)
+    }
+
+    private struct SessionsListPayload: Codable {
+        let items: [KBSession]?
+        let sessions: [KBSession]?
+        let total: Int?
+    }
+
+    private func fetchSessionsPage(page: Int, perPage: Int) async throws -> (sessions: [KBSession], total: Int) {
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("api/sessions"),
+            resolvingAgainstBaseURL: false
+        )!
+        components.queryItems = [
+            URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "per_page", value: String(perPage)),
+        ]
+        guard let url = components.url else { throw KnowledgeBaseAPIError.missingBaseURL }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        applyAuthHeaders(to: &request)
 
         let (data, response) = try await urlSession.data(for: request)
         try ensureSuccessHTTP(response, data: data)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
+        let payload = try decoder.decode(SessionsListPayload.self, from: data)
+        let sessions = payload.items ?? payload.sessions ?? []
+        return (sessions, payload.total ?? sessions.count)
+    }
 
-        struct Page: Codable {
-            let items: [KBSession]?
-            let sessions: [KBSession]?
-        }
-
+    private func decodeSessionList(from data: Data) throws -> [KBSession] {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
         if let sessions = try? decoder.decode([KBSession].self, from: data) {
             return sessions
         }
-        if let page = try? decoder.decode(Page.self, from: data) {
-            return page.items ?? page.sessions ?? []
-        }
-        throw KnowledgeBaseAPIError.decodingFailed
+        let payload = try decoder.decode(SessionsListPayload.self, from: data)
+        return payload.items ?? payload.sessions ?? []
     }
 
     func createSession(title: String) async throws -> KBSession {
@@ -81,9 +163,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let title: String
@@ -123,9 +203,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             .appendingPathComponent("messages")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         let (data, response) = try await urlSession.data(for: request)
         try ensureSuccessHTTP(response, data: data)
@@ -156,9 +234,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let content: String
@@ -202,9 +278,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("text/event-stream, application/json;q=0.9", forHTTPHeaderField: "Accept")
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let content: String
@@ -354,9 +428,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         let fileData = try Data(contentsOf: fileURL)
         request.httpBody = Self.multipartAttachmentBody(
@@ -401,9 +473,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         let fileData = try Data(contentsOf: audioFileURL)
         let filename = audioFileURL.lastPathComponent
@@ -507,9 +577,7 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
         let url = baseURL.appendingPathComponent("api/files/changes")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         let (data, response) = try await urlSession.data(for: request)
         try ensureSuccessFiles(response, data: data)
@@ -536,9 +604,7 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
+        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let file_id: String

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Non-secret runtime configuration. API base URL is not a secret; **auth token** is read from env, then Keychain, with one-time migration from legacy UserDefaults.
+/// Runtime API configuration: scheme env → Info.plist (build-time Secrets.xcconfig) → Settings/Keychain.
 enum AppConfiguration {
     static let environmentPrefix = "KBAPP_"
 
@@ -14,6 +14,9 @@ enum AppConfiguration {
         let value = ProcessInfo.processInfo.environment[name]?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let value, !value.isEmpty {
             return value
+        }
+        if let builtIn = bundleString(for: key) {
+            return builtIn
         }
         if key == Keys.authToken {
             if let kc = KeychainTokenStore.token()?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty {
@@ -52,6 +55,22 @@ enum AppConfiguration {
 
     private static func userDefaultsKey(for key: String) -> String {
         "kbapp.config.\(key.lowercased())"
+    }
+
+    /// Values from Info.plist (filled via `Config/Secrets.xcconfig` → `INFOPLIST_KEY_*` at build time).
+    private static func bundleString(for key: String) -> String? {
+        let plistKey: String
+        switch key {
+        case Keys.apiBaseURL:
+            plistKey = "KBAppAPIBaseURL"
+        case Keys.authToken:
+            plistKey = "KBAppAuthToken"
+        default:
+            return nil
+        }
+        guard let raw = Bundle.main.object(forInfoDictionaryKey: plistKey) as? String else { return nil }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 

@@ -28,7 +28,7 @@ Native SwiftUI client for the personal knowledge base stack: same PostgreSQL ses
 
 ## Configuration
 
-- **Runtime:** `KBAPP_API_BASE_URL` and `KBAPP_AUTH_TOKEN` via Xcode scheme **Environment Variables** or **Settings** (bearer token is stored in **Keychain** when saved from Settings; env overrides for local runs).
+- **Runtime:** KB App API via `Config/Secrets.xcconfig` (local, gitignored), Xcode scheme env, or **Settings** — see [docs/API_CONFIGURATION.md](docs/API_CONFIGURATION.md). No real URLs/tokens in git.
 - **Tooling:** see `env.example` for variable names.
 - **Never commit** real URLs with embedded credentials, tokens, or API keys.
 

@@ -42,9 +42,14 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
         NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
+        KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
+        KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
   KnowledgeBaseAppTests:
     type: bundle.unit-test
     platform: iOS
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
     sources:
       - path: KnowledgeBaseAppTests
     dependencies:
@@ -52,6 +57,8 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
+        INFOPLIST_KEY_KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
   KnowledgeBaseWidgetExtension:
     type: app-extension
     platform: iOS
