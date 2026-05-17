@@ -26,7 +26,7 @@ bundle exec which fastlane
 
 ## Lane: `test`
 
-Runs **scan** on the **KnowledgeBaseApp** scheme, writes results under `fastlane/test_output/`, then enforces **line coverage** (default minimum **35%**, override with `MIN_COVERAGE`).
+Runs **scan** on the **KnowledgeBaseApp** scheme, writes results under `fastlane/test_output/`, then enforces **line coverage for the `KnowledgeBaseApp.app` target only** (SPM dependencies such as Alamofire are excluded). Default minimum **35%**, override with `MIN_COVERAGE`.
 
 ```bash
 bundle exec fastlane test

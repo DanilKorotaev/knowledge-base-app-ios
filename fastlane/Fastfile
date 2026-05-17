@@ -118,8 +118,12 @@ def enforce_line_coverage_threshold(output_dir)
     UI.user_error!("xccov failed: #{json}")
   end
 
-  coverage = (JSON.parse(json)["lineCoverage"].to_f * 100).round(4)
-  UI.success("Line coverage: #{coverage}% (minimum #{min}%)")
+  data = JSON.parse(json)
+  app_target = data.fetch("targets", []).find { |t| t["name"] == "KnowledgeBaseApp.app" }
+  UI.user_error!("KnowledgeBaseApp.app not found in coverage report") unless app_target
+
+  coverage = (app_target["lineCoverage"].to_f * 100).round(4)
+  UI.success("Line coverage (KnowledgeBaseApp.app): #{coverage}% (minimum #{min}%)")
 
   UI.user_error!("Coverage #{coverage}% is below minimum #{min}%") if coverage < min
 end
