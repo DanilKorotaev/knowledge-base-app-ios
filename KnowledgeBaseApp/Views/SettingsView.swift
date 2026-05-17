@@ -28,6 +28,12 @@ struct SettingsView: View {
                     AppConfiguration.setUserString(trimmedToken.nilIfEmpty, for: AppConfiguration.Keys.authToken)
                 }
             }
+
+            Section("Developer") {
+                NavigationLink("Debug menu") {
+                    DebugMenuView()
+                }
+            }
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)

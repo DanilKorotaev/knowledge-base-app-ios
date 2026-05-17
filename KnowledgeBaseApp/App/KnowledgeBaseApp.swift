@@ -4,6 +4,13 @@ import SwiftUI
 struct KnowledgeBaseApp: App {
     @State private var deepLinkVoiceRecording = false
 
+    init() {
+        UserDefaultsService.shared = UserDefaultsService(settings: UserDefaultsInspectorSettings.shared)
+        UserDefaultsInspectorLogger.shared.start()
+        _ = LogFilesProvider.shared
+        _ = LogSession.shared
+    }
+
     var body: some Scene {
         WindowGroup {
             MainView(deepLinkVoiceRecording: $deepLinkVoiceRecording)

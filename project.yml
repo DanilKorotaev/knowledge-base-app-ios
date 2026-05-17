@@ -1,4 +1,8 @@
 name: KnowledgeBaseApp
+packages:
+  Alamofire:
+    url: https://github.com/Alamofire/Alamofire.git
+    from: 5.9.0
 options:
   bundleIdPrefix: com.coredan
   deploymentTarget:
@@ -22,6 +26,7 @@ targets:
       - path: KnowledgeBaseApp
       - path: SharedIntents
     dependencies:
+      - package: Alamofire
       - target: KnowledgeBaseWidgetExtension
         embed: true
     settings:

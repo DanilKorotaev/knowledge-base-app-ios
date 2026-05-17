@@ -22,15 +22,14 @@ enum AppConfiguration {
             if let kc = KeychainTokenStore.token()?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty {
                 return kc
             }
-            let udKey = userDefaultsKey(for: key)
-            if let legacy = UserDefaults.standard.string(forKey: udKey)?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty {
+            if let legacy = legacyUserDefaultsString(for: key) {
                 KeychainTokenStore.setToken(legacy)
-                UserDefaults.standard.removeObject(forKey: udKey)
+                UserDefaults.standard.removeObject(forKey: "kbapp.config.auth_token")
                 return legacy
             }
             return nil
         }
-        return UserDefaults.standard.string(forKey: userDefaultsKey(for: key))?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
+        return userDefaultsString(for: key)
     }
 
     static func url(for key: String) -> URL? {
@@ -42,19 +41,51 @@ enum AppConfiguration {
         if key == Keys.authToken {
             let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             KeychainTokenStore.setToken(trimmed.isEmpty ? nil : trimmed)
-            UserDefaults.standard.removeObject(forKey: userDefaultsKey(for: key))
+            UserDefaults.standard.removeObject(forKey: "kbapp.config.auth_token")
             return
         }
-        let udKey = userDefaultsKey(for: key)
+        let storageKey = userDefaultsStorageKey(for: key)
+        if key == Keys.apiBaseURL {
+            if let value {
+                UserDefaultsService.shared.set(
+                    value.trimmingCharacters(in: .whitespacesAndNewlines),
+                    forKey: .apiBaseURL
+                )
+            } else {
+                UserDefaultsService.shared.removeObject(forKey: .apiBaseURL)
+            }
+            return
+        }
         if let value {
-            UserDefaults.standard.set(value, forKey: udKey)
+            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+            UserDefaultsService.shared.set(trimmed.nilIfEmpty, forKey: storageKey)
         } else {
-            UserDefaults.standard.removeObject(forKey: udKey)
+            UserDefaultsService.shared.removeObject(forKey: storageKey)
         }
     }
 
-    private static func userDefaultsKey(for key: String) -> String {
+    private static func userDefaultsString(for key: String) -> String? {
+        let storageKey: UserDefaultsKey
+        if key == Keys.apiBaseURL {
+            storageKey = .apiBaseURL
+        } else if key == Keys.authToken {
+            return nil
+        } else {
+            storageKey = UserDefaultsKey(userDefaultsStorageKey(for: key))
+        }
+        return UserDefaultsService.shared.string(forKey: storageKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .nilIfEmpty
+    }
+
+    private static func userDefaultsStorageKey(for key: String) -> String {
         "kbapp.config.\(key.lowercased())"
+    }
+
+    private static func legacyUserDefaultsString(for key: String) -> String? {
+        UserDefaults.standard.string(forKey: "kbapp.config.\(key.lowercased())")?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .nilIfEmpty
     }
 
     /// Values from Info.plist (filled via `Config/Secrets.xcconfig` → `INFOPLIST_KEY_*` at build time).

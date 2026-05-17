@@ -37,7 +37,7 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "GET")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer tok")
-            XCTAssertTrue(request.url?.absoluteString.hasSuffix("/api/sessions") == true)
+            XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions") == true)
             let response = HTTPURLResponse(
                 url: request.url!,
                 statusCode: 200,

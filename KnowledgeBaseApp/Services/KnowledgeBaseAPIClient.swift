@@ -38,14 +38,11 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
     }
 }
 
-/// Placeholder remote client: calls `GET {baseURL}/api/sessions` with `Authorization: Bearer` when configured.
+/// Remote client via Alamofire (`KBHTTPTransport`): auth headers + request/response logging.
 /// Paths and JSON: `docs/KB_APP_API_CONTRACT.md` (OpenAPI subset in `docs/openapi/kb-app-api.yaml`).
 final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @unchecked Sendable {
     private let baseURL: URL
-    private let authToken: String?
-    private let urlSession: URLSession
-    /// When true, sends `X-KB-App-E2E: 1` so the server uses `KB_APP_API_TEST_TELEGRAM_ID` (not the app owner).
-    private let useE2EIntegrationUser: Bool
+    private let transport: KBHTTPTransport
 
     init(
         baseURL: URL,
@@ -54,18 +51,11 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         useE2EIntegrationUser: Bool = false
     ) {
         self.baseURL = baseURL
-        self.authToken = authToken
-        self.urlSession = urlSession
-        self.useE2EIntegrationUser = useE2EIntegrationUser
-    }
-
-    private func applyAuthHeaders(to request: inout URLRequest) {
-        if let authToken {
-            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-        }
-        if useE2EIntegrationUser {
-            request.setValue("1", forHTTPHeaderField: "X-KB-App-E2E")
-        }
+        self.transport = KBHTTPTransport(
+            authToken: authToken,
+            useE2EIntegrationUser: useE2EIntegrationUser,
+            urlSession: urlSession
+        )
     }
 
     convenience init?() {
@@ -110,10 +100,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        applyAuthHeaders(to: &request)
-
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessHTTP(response, data: data)
+        let data = try await performData(request)
         return try decodeSessionList(from: data)
     }
 
@@ -136,13 +123,13 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        applyAuthHeaders(to: &request)
-
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessHTTP(response, data: data)
+        let data = try await performData(request)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
+        if let sessions = try? decoder.decode([KBSession].self, from: data) {
+            return (sessions, sessions.count)
+        }
         let payload = try decoder.decode(SessionsListPayload.self, from: data)
         let sessions = payload.items ?? payload.sessions ?? []
         return (sessions, payload.total ?? sessions.count)
@@ -163,7 +150,6 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let title: String
@@ -172,8 +158,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         let encoder = JSONEncoder()
         request.httpBody = try encoder.encode(Body(title: title))
 
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessHTTP(response, data: data)
+        let data = try await performData(request)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -203,10 +188,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             .appendingPathComponent("messages")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        applyAuthHeaders(to: &request)
-
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessHTTP(response, data: data)
+        let data = try await performData(request)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -234,7 +216,6 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let content: String
@@ -244,8 +225,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let encoder = JSONEncoder()
         request.httpBody = try encoder.encode(Body(content: text, use_knowledge_base: useKnowledgeBase))
 
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessHTTP(response, data: data)
+        let data = try await performData(request)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -278,7 +258,6 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("text/event-stream, application/json;q=0.9", forHTTPHeaderField: "Accept")
-        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let content: String
@@ -287,10 +266,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
         request.httpBody = try JSONEncoder().encode(Body(content: trimmed, use_knowledge_base: useKnowledgeBase))
 
-        let (bytes, response) = try await urlSession.bytes(for: request)
-        guard let http = response as? HTTPURLResponse else {
-            throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: nil)
-        }
+        let (bytes, http) = try await transport.bytes(for: request)
         guard (200 ... 299).contains(http.statusCode) else {
             let errData = try await collectAsyncBytes(bytes)
             throw KnowledgeBaseAPIError.invalidResponse(
@@ -428,7 +404,6 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        applyAuthHeaders(to: &request)
 
         let fileData = try Data(contentsOf: fileURL)
         request.httpBody = Self.multipartAttachmentBody(
@@ -439,8 +414,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             useKnowledgeBase: useKnowledgeBase
         )
 
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessHTTP(response, data: data)
+        let data = try await performData(request)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -473,7 +447,6 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        applyAuthHeaders(to: &request)
 
         let fileData = try Data(contentsOf: audioFileURL)
         let filename = audioFileURL.lastPathComponent
@@ -486,8 +459,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             filename: filename
         )
 
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessHTTP(response, data: data)
+        let data = try await performData(request)
 
         return try await decodeVoiceRecordingResponse(data: data, sessionId: sessionId)
     }
@@ -577,10 +549,7 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
         let url = baseURL.appendingPathComponent("api/files/changes")
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        applyAuthHeaders(to: &request)
-
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessFiles(response, data: data)
+        let data = try await performFilesData(request)
 
         let decoder = JSONDecoder()
 
@@ -604,7 +573,6 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        applyAuthHeaders(to: &request)
 
         struct Body: Encodable {
             let file_id: String
@@ -612,12 +580,23 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
 
         request.httpBody = try JSONEncoder().encode(Body(file_id: id))
 
-        let (data, response) = try await urlSession.data(for: request)
-        try ensureSuccessFiles(response, data: data)
+        _ = try await performFilesData(request)
     }
 }
 
 private extension URLSessionKnowledgeBaseAPIClient {
+    func performData(_ request: URLRequest) async throws -> Data {
+        let (data, response) = try await transport.data(for: request)
+        try ensureSuccessHTTP(response, data: data)
+        return data
+    }
+
+    func performFilesData(_ request: URLRequest) async throws -> Data {
+        let (data, response) = try await transport.data(for: request)
+        try ensureSuccessFiles(response, data: data)
+        return data
+    }
+
     func ensureSuccessHTTP(_ response: URLResponse, data: Data) throws {
         guard let http = response as? HTTPURLResponse else {
             throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: nil)
