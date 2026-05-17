@@ -105,7 +105,25 @@ platform :ios do
     upload_to_testflight(
       skip_waiting_for_build_processing: true
     )
+
+    write_ci_testflight_metadata(
+      app_identifier: app_id,
+      xcodeproj: "KnowledgeBaseApp.xcodeproj",
+      target: "KnowledgeBaseApp"
+    )
   end
+end
+
+def write_ci_testflight_metadata(app_identifier:, xcodeproj:, target:)
+  output_dir = File.expand_path("test_output", __dir__)
+  FileUtils.mkdir_p(output_dir)
+  payload = {
+    "marketing_version" => get_version_number(xcodeproj: xcodeproj, target: target),
+    "build_number" => get_build_number(xcodeproj: xcodeproj),
+    "app_identifier" => app_identifier
+  }
+  File.write(File.join(output_dir, "ci_testflight.json"), JSON.pretty_generate(payload))
+  UI.success("Wrote #{output_dir}/ci_testflight.json")
 end
 
 def enforce_line_coverage_threshold(output_dir)

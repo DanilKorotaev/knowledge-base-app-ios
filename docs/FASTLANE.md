@@ -79,6 +79,24 @@ bundle exec fastlane beta
 
 On CI, use **GitHub Secrets** (same names as env vars). Manual deploy: **Actions → Deploy TestFlight → Run workflow** (see `.github/workflows/deploy-testflight.yml`).
 
+## Telegram (CI notifications)
+
+After **CI** (`test`) and **Deploy TestFlight** (`beta`), the workflow sends a message to Telegram if secrets are set.
+
+1. Create a bot via [@BotFather](https://t.me/BotFather), copy the **token**.
+2. Get **chat id** (your user id or a group id): e.g. message the bot, then open `https://api.telegram.org/bot<TOKEN>/getUpdates`, or use [@userinfobot](https://t.me/userinfobot).
+3. Add repository secrets (see table below).
+
+**Tests message:** branch, event, passed / failed / skipped counts, app line coverage %, link to the workflow run. On failure, lists failed test identifiers from the `.xcresult` bundle (up to 25).
+
+**TestFlight message:** marketing version + build number (from `fastlane/test_output/ci_testflight.json` after upload), bundle id, success or failure.
+
+Local dry-run (no network):
+
+```bash
+TELEGRAM_NOTIFY_DISABLED=1 python3 scripts/ci/telegram_notify.py tests --outcome success
+```
+
 ## GitHub Secrets (reference)
 
 
@@ -95,6 +113,8 @@ On CI, use **GitHub Secrets** (same names as env vars). Manual deploy: **Actions
 | `APP_IDENTIFIER`                | Optional override (default in `Appfile`)                         |
 | `WIDGET_APP_IDENTIFIER`         | Optional; default `com.coredan.KnowledgeBaseApp.Widget` — **lane `beta`** runs Match for app + widget                                     |
 | `TEAM_ID`                       | Apple Developer Team ID if needed for signing                    |
+| `TELEGRAM_BOT_TOKEN`            | **CI / TestFlight** — Telegram Bot API token (from @BotFather)   |
+| `TELEGRAM_CHAT_ID`              | **CI / TestFlight** — chat id to receive notifications           |
 
 KB App API values for TestFlight: [API_CONFIGURATION.md](API_CONFIGURATION.md). **Do not** put real URLs or tokens in the repository — only in GitHub Secrets and local `.env`.
 
