@@ -37,7 +37,7 @@ jobs:
           // Generated in CI — do not commit
           SLASH = /
           KBAPP_API_BASE_URL = ${BASE_XC}
-          KBAPP_AUTH_TOKEN = ${KBAPP_API_TOKEN}
+          KBAPP_AUTH_TOKEN = ${KBAPP_AUTH_TOKEN}
           INFOPLIST_KEY_KBAppAPIBaseURL = \$(KBAPP_API_BASE_URL)
           INFOPLIST_KEY_KBAppAuthToken = \$(KBAPP_AUTH_TOKEN)
           EOF
