@@ -281,6 +281,72 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
 
         MockURLProtocol.requestHandler = nil
     }
+
+    func testStubDeleteSessionRemovesFromList() async throws {
+        let store = InMemoryKBStore(demoSession: true)
+        let client = StubKnowledgeBaseAPIClient(store: store)
+        try await client.deleteSession(id: "demo-session")
+        let sessions = try await client.fetchSessions()
+        XCTAssertTrue(sessions.isEmpty)
+    }
+
+    func testStubUpdateSessionChangesTitle() async throws {
+        let store = InMemoryKBStore(demoSession: true)
+        let client = StubKnowledgeBaseAPIClient(store: store)
+        let updated = try await client.updateSession(id: "demo-session", title: "Renamed")
+        XCTAssertEqual(updated.title, "Renamed")
+        let sessions = try await client.fetchSessions()
+        XCTAssertEqual(sessions.first?.title, "Renamed")
+    }
+
+    func testRemoteDeleteSession() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/42") == true)
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, #"{"success":true}"#.data(using: .utf8)!)
+        }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: "tok", urlSession: URLSession(configuration: config))
+        try await client.deleteSession(id: "42")
+        MockURLProtocol.requestHandler = nil
+    }
+
+    func testRemotePatchSession() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        let json = """
+        {"session":{"id":"42","title":"New","message_count":0,"updated_at":"2026-06-01T12:00:00Z"}}
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            XCTAssertEqual(request.httpMethod, "PATCH")
+            XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/42") == true)
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+            )!
+            return (response, json)
+        }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: "tok", urlSession: URLSession(configuration: config))
+        let session = try await client.updateSession(id: "42", title: "New")
+        XCTAssertEqual(session.title, "New")
+        MockURLProtocol.requestHandler = nil
+    }
 }
 
 // MARK: - Test URLProtocol
