@@ -7,6 +7,7 @@ final class InMemoryKBStoreTests: XCTestCase {
         let sessions = store.sessionsSnapshot()
         XCTAssertEqual(sessions.count, 1)
         XCTAssertEqual(sessions.first?.id, "demo-session")
+        XCTAssertEqual(store.messages(for: "demo-session").count, 4)
     }
 
     func testCreateSessionAndMessages() {

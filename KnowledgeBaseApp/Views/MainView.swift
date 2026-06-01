@@ -4,6 +4,7 @@ struct MainView: View {
     private let apiClient: KnowledgeBaseAPIClientProtocol
     private let chatClient: ChatAPIClientProtocol
     private let filesClient: FilesAPIClientProtocol
+    private let attachmentLoader: KBAttachmentLoaderProtocol?
     @Binding var deepLinkVoiceRecording: Bool
     @State private var sessions: [KBSession] = []
     @State private var searchResults: [KBSession]?
@@ -21,11 +22,13 @@ struct MainView: View {
         apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeSessionClient(),
         chatClient: ChatAPIClientProtocol = MainView.makeChatClient(),
         filesClient: FilesAPIClientProtocol = MainView.makeFilesClient(),
+        attachmentLoader: KBAttachmentLoaderProtocol? = nil,
         deepLinkVoiceRecording: Binding<Bool> = .constant(false)
     ) {
         self.apiClient = apiClient
         self.chatClient = chatClient
         self.filesClient = filesClient
+        self.attachmentLoader = attachmentLoader ?? MainView.makeAttachmentLoader()
         self._deepLinkVoiceRecording = deepLinkVoiceRecording
         _voiceViewModel = State(initialValue: VoiceRecordingViewModel(chatClient: chatClient))
     }
@@ -178,7 +181,11 @@ struct MainView: View {
                 Text(voiceViewModel.errorMessage ?? "")
             }
             .navigationDestination(for: KBSession.self) { session in
-                ChatView(session: session, chatClient: chatClient)
+                ChatView(
+                    session: session,
+                    chatClient: chatClient,
+                    attachmentLoader: attachmentLoader
+                )
             }
         }
         .environment(voiceRouting)
@@ -269,6 +276,13 @@ struct MainView: View {
             return remote
         }
         return StubFilesAPIClient()
+    }
+
+    private static func makeAttachmentLoader() -> KBAttachmentLoaderProtocol? {
+        if let remote = remoteBundle() {
+            return remote
+        }
+        return StubAttachmentLoader()
     }
 }
 
