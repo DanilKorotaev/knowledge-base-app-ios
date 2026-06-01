@@ -584,6 +584,30 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
     }
 }
 
+// MARK: - Attachment file download (authenticated)
+
+extension URLSessionKnowledgeBaseAPIClient: KBAttachmentLoaderProtocol {
+    func absoluteURL(for downloadPath: String) -> URL? {
+        if downloadPath.hasPrefix("http://") || downloadPath.hasPrefix("https://") {
+            return URL(string: downloadPath)
+        }
+        var trimmed = downloadPath
+        if trimmed.hasPrefix("/") {
+            trimmed.removeFirst()
+        }
+        return baseURL.appendingPathComponent(trimmed)
+    }
+
+    func fetchData(from downloadPath: String) async throws -> Data {
+        guard let url = absoluteURL(for: downloadPath) else {
+            throw KnowledgeBaseAPIError.missingBaseURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        return try await performData(request)
+    }
+}
+
 private extension URLSessionKnowledgeBaseAPIClient {
     func performData(_ request: URLRequest) async throws -> Data {
         let (data, response) = try await transport.data(for: request)

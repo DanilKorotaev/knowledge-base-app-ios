@@ -10,11 +10,17 @@ struct ChatView: View {
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showFileImporter = false
     @State private var showCamera = false
+    private let attachmentLoader: KBAttachmentLoaderProtocol?
 
-    init(session: KBSession, chatClient: ChatAPIClientProtocol) {
+    init(
+        session: KBSession,
+        chatClient: ChatAPIClientProtocol,
+        attachmentLoader: KBAttachmentLoaderProtocol? = nil
+    ) {
         _viewModel = State(
             initialValue: ChatViewModel(session: session, client: chatClient)
         )
+        self.attachmentLoader = attachmentLoader
     }
 
     var body: some View {
@@ -27,17 +33,22 @@ struct ChatView: View {
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 12) {
                             ForEach(viewModel.messages) { message in
-                                MessageBubbleView(message: message)
+                                RichMessageBubbleView(
+                                    message: message,
+                                    attachmentLoader: attachmentLoader
+                                )
                                     .id(message.id)
                             }
                             if let streaming = viewModel.streamingAssistantText, !streaming.isEmpty {
-                                MessageBubbleView(
+                                RichMessageBubbleView(
                                     message: KBMessage(
                                         id: "__kb_streaming__",
                                         role: .assistant,
                                         content: streaming,
-                                        createdAt: Date()
-                                    )
+                                        createdAt: Date(),
+                                        contentFormat: .markdown
+                                    ),
+                                    attachmentLoader: attachmentLoader
                                 )
                                 .id("__kb_streaming__")
                             }
@@ -220,24 +231,7 @@ struct MessageBubbleView: View {
     let message: KBMessage
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 0) {
-            if message.role == .user {
-                Spacer(minLength: 56)
-            }
-            Text(message.content)
-                .font(.body)
-                .padding(12)
-                .background(
-                    message.role == .user
-                        ? Color.accentColor.opacity(0.22)
-                        : Color.secondary.opacity(0.14)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            if message.role == .assistant {
-                Spacer(minLength: 56)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: message.role == .user ? .trailing : .leading)
+        RichMessageBubbleView(message: message)
     }
 }
 
@@ -245,7 +239,8 @@ struct MessageBubbleView: View {
     NavigationStack {
         ChatView(
             session: KBSession(id: "demo-session", title: "Demo", messageCount: 0, updatedAt: nil),
-            chatClient: StubChatAPIClient(store: InMemoryKBStore())
+            chatClient: StubChatAPIClient(store: InMemoryKBStore()),
+            attachmentLoader: StubAttachmentLoader()
         )
     }
     .environment(VoiceRoutingContext())

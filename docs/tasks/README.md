@@ -19,6 +19,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repoâ
 | `task-feature-widgets-app-intents.md` | App Intents, Shortcuts, widget mic button |
 | `task-doc-kb-app-api-contract.md` | KB App API contract + OpenAPI subset + error parsing |
 | `task-backend-kb-app-api-mvp.md` | FastAPI MVP in `knowledge-base-bot/kb_app_api/` |
+| `task-ux-chat-rich-messages.md` | Attachments, voice playback, Markdown/HTML bubbles |
 
 ## Pending (`pending/`)
 
@@ -26,6 +27,9 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repoâ
 |------|--------|
 | `task-feature-voice-input.md` | Real voice E2E against deployed API (Whisper on server) |
 | `task-feature-chat.md` | Server SSE verified in production |
+| `task-feature-default-voice-session.md` | Default voice target session + optional TTL |
+| `task-feature-session-delete-rename.md` | Delete/rename sessions in UI |
+| `task-feature-watch-app-voice.md` | watchOS companion, complication, offline queue |
 | `task-backend-kb-app-api-sync.md` | Ongoing contract alignment iOS â†” KB App API â†” bot |
 | `task-ops-fastlane-testflight.md` | Match, ASC, TestFlight |
 

@@ -73,11 +73,33 @@
   "id": "msg-uuid",
   "role": "user",
   "content": "…",
-  "created_at": "2026-04-05T12:00:00Z"
+  "content_format": "plain",
+  "created_at": "2026-04-05T12:00:00Z",
+  "attachments": [
+    {
+      "id": "7",
+      "file_type": "photo",
+      "file_name": "pic.jpg",
+      "file_size": 12345,
+      "mime_type": "image/jpeg",
+      "download_url": "/api/sessions/{session_id}/attachments/7/file"
+    }
+  ],
+  "transcription": null
 }
 ```
 
-`role`: `user` \| `assistant` \| `system`.
+`content_format`: `markdown` | `html` | `plain` (assistant по умолчанию `markdown`, user — `plain`).
+
+Для `file_type=voice` в элементе `attachments[]` допускается поле `transcription`; на уровне сообщения — `transcription` (удобно для voice-only).
+
+### Скачивание вложения
+
+| Метод | Путь |
+|-------|------|
+| GET | `/api/sessions/{session_id}/attachments/{attachment_id}/file` |
+
+Bearer обязателен; сервер проверяет владение сессией. Ответ — бинарный файл (`image/*`, `audio/*`, …).
 
 ### Стриминг ответа ассистента
 

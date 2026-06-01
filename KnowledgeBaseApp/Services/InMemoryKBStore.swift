@@ -11,10 +11,11 @@ final class InMemoryKBStore: @unchecked Sendable {
             _sessions = [
                 KBSession(id: "demo-session", title: "Demo session", messageCount: 0, updatedAt: Date())
             ]
+            _messages = ["demo-session": Self.richDemoMessages()]
         } else {
             _sessions = []
+            _messages = [:]
         }
-        _messages = [:]
     }
 
     func sessionsSnapshot() -> [KBSession] {
@@ -49,5 +50,61 @@ final class InMemoryKBStore: @unchecked Sendable {
         let session = KBSession(id: id, title: name, messageCount: 0, updatedAt: Date())
         _sessions.insert(session, at: 0)
         return session
+    }
+
+    private static func richDemoMessages() -> [KBMessage] {
+        [
+            KBMessage(
+                id: "demo-photo",
+                role: .user,
+                content: "Photo from the meeting",
+                createdAt: Date().addingTimeInterval(-300),
+                attachments: [
+                    KBAttachment(
+                        id: "att-photo-1",
+                        fileType: "photo",
+                        fileName: "whiteboard.jpg",
+                        fileSize: 2048,
+                        mimeType: "image/jpeg",
+                        downloadURL: "demo-photo",
+                        transcription: nil
+                    )
+                ],
+                contentFormat: .plain
+            ),
+            KBMessage(
+                id: "demo-voice",
+                role: .user,
+                content: "🎤 Voice",
+                createdAt: Date().addingTimeInterval(-240),
+                attachments: [
+                    KBAttachment(
+                        id: "att-voice-1",
+                        fileType: "voice",
+                        fileName: "voice.m4a",
+                        fileSize: 4096,
+                        mimeType: "audio/mp4",
+                        downloadURL: "demo-voice",
+                        transcription: "Add a meeting tomorrow at 10"
+                    )
+                ],
+                contentFormat: .plain,
+                transcription: "Add a meeting tomorrow at 10"
+            ),
+            KBMessage(
+                id: "demo-md",
+                role: .assistant,
+                content: "**Summary**\n\n- First point\n- Second point\n\nSee `docs/plan.md` for details.",
+                createdAt: Date().addingTimeInterval(-120),
+                contentFormat: .markdown
+            ),
+            KBMessage(
+                id: "demo-html",
+                role: .assistant,
+                content: "<b>HTML reply</b> with <i>emphasis</i> and a <a href=\"https://example.com\">link</a>.",
+                createdAt: Date(),
+                contentFormat: .html
+            ),
+        ]
     }
 }

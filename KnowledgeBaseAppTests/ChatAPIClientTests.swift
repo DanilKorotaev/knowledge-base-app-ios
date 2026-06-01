@@ -2,12 +2,18 @@ import XCTest
 @testable import KnowledgeBaseApp
 
 final class ChatAPIClientTests: XCTestCase {
+    private func emptyStoreWithSession() -> (InMemoryKBStore, String) {
+        let store = InMemoryKBStore(demoSession: false)
+        let session = store.createSession(title: "Test")
+        return (store, session.id)
+    }
+
     func testStubSendTrimsAndAppendsUserAndAssistant() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
 
         let list = try await client.sendTextMessage(
-            sessionId: "demo-session",
+            sessionId: sessionId,
             text: "  hello  ",
             useKnowledgeBase: true
         )
@@ -20,11 +26,11 @@ final class ChatAPIClientTests: XCTestCase {
     }
 
     func testStubSendEmptyTextDoesNotAppend() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
 
         let list = try await client.sendTextMessage(
-            sessionId: "demo-session",
+            sessionId: sessionId,
             text: "   ",
             useKnowledgeBase: false
         )
@@ -33,23 +39,23 @@ final class ChatAPIClientTests: XCTestCase {
     }
 
     func testFetchMessagesReturnsStoredThread() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
-        _ = try await client.sendTextMessage(sessionId: "demo-session", text: "x", useKnowledgeBase: true)
+        _ = try await client.sendTextMessage(sessionId: sessionId, text: "x", useKnowledgeBase: true)
 
-        let fetched = try await client.fetchMessages(sessionId: "demo-session")
+        let fetched = try await client.fetchMessages(sessionId: sessionId)
         XCTAssertEqual(fetched.count, 2)
     }
 
     func testSendAttachmentAppendsStubMessages() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent("kb-test-\(UUID().uuidString).txt")
         try "hello".write(to: temp, atomically: true, encoding: .utf8)
         defer { try? FileManager.default.removeItem(at: temp) }
 
         let list = try await client.sendAttachment(
-            sessionId: "demo-session",
+            sessionId: sessionId,
             fileURL: temp,
             filename: "note.txt",
             mimeType: "text/plain",
@@ -62,10 +68,10 @@ final class ChatAPIClientTests: XCTestCase {
     }
 
     func testStubStreamAccumulatesToFinalAssistantMessage() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
         let stream = try await client.streamTextMessage(
-            sessionId: "demo-session",
+            sessionId: sessionId,
             text: "hello",
             useKnowledgeBase: true
         )
@@ -73,7 +79,7 @@ final class ChatAPIClientTests: XCTestCase {
         for try await chunk in stream {
             accumulated += chunk
         }
-        let list = try await client.fetchMessages(sessionId: "demo-session")
+        let list = try await client.fetchMessages(sessionId: sessionId)
         XCTAssertEqual(list.count, 2)
         XCTAssertEqual(list[1].role, .assistant)
         XCTAssertEqual(list[1].content, accumulated)
@@ -81,10 +87,10 @@ final class ChatAPIClientTests: XCTestCase {
     }
 
     func testStubStreamEmptyTextFinishesWithoutMessages() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
         let stream = try await client.streamTextMessage(
-            sessionId: "demo-session",
+            sessionId: sessionId,
             text: "   ",
             useKnowledgeBase: false
         )
@@ -93,19 +99,19 @@ final class ChatAPIClientTests: XCTestCase {
             count += 1
         }
         XCTAssertEqual(count, 0)
-        let list = try await client.fetchMessages(sessionId: "demo-session")
+        let list = try await client.fetchMessages(sessionId: sessionId)
         XCTAssertTrue(list.isEmpty)
     }
 
     func testSendVoiceRecordingAppendsStubMessages() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent("kb-voice-\(UUID().uuidString).m4a")
         try Data([0, 1]).write(to: temp)
         defer { try? FileManager.default.removeItem(at: temp) }
 
         let result = try await client.sendVoiceRecording(
-            sessionId: "demo-session",
+            sessionId: sessionId,
             audioFileURL: temp,
             transcriptionHint: "hello voice",
             useKnowledgeBase: true
@@ -119,14 +125,14 @@ final class ChatAPIClientTests: XCTestCase {
     }
 
     func testStubVoiceReturnsTranscriptionWhenHintEmpty() async throws {
-        let store = InMemoryKBStore(demoSession: true)
+        let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
         let temp = FileManager.default.temporaryDirectory.appendingPathComponent("kb-voice-empty-\(UUID().uuidString).m4a")
         try Data([0, 1]).write(to: temp)
         defer { try? FileManager.default.removeItem(at: temp) }
 
         let result = try await client.sendVoiceRecording(
-            sessionId: "demo-session",
+            sessionId: sessionId,
             audioFileURL: temp,
             transcriptionHint: "   ",
             useKnowledgeBase: true
