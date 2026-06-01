@@ -5,6 +5,8 @@ protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func fetchSessions() async throws -> [KBSession]
     func searchSessions(query: String) async throws -> [KBSession]
     func createSession(title: String) async throws -> KBSession
+    func deleteSession(id: String) async throws
+    func updateSession(id: String, title: String) async throws -> KBSession
 }
 
 enum KnowledgeBaseAPIError: Error, Equatable {
@@ -35,6 +37,22 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
 
     func createSession(title: String) async throws -> KBSession {
         store.createSession(title: title)
+    }
+
+    func deleteSession(id: String) async throws {
+        store.deleteSession(id: id)
+    }
+
+    func updateSession(id: String, title: String) async throws -> KBSession {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: 400, apiMessage: "Title cannot be empty")
+        }
+        store.updateSessionTitle(id: id, title: trimmed)
+        guard let session = store.sessionsSnapshot().first(where: { $0.id == id }) else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: 404, apiMessage: "Session not found")
+        }
+        return session
     }
 }
 
@@ -171,6 +189,49 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
             return session
         }
         if let env = try? decoder.decode(Envelope.self, from: data), let session = env.session {
+            return session
+        }
+        throw KnowledgeBaseAPIError.decodingFailed
+    }
+
+    func deleteSession(id: String) async throws {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(id)
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        _ = try await performData(request)
+    }
+
+    func updateSession(id: String, title: String) async throws -> KBSession {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(id)
+        var request = URLRequest(url: url)
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        struct Body: Encodable {
+            let title: String
+        }
+
+        request.httpBody = try JSONEncoder().encode(Body(title: title))
+
+        let data = try await performData(request)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        struct Envelope: Codable {
+            let session: KBSession?
+        }
+
+        if let env = try? decoder.decode(Envelope.self, from: data), let session = env.session {
+            return session
+        }
+        if let session = try? decoder.decode(KBSession.self, from: data) {
             return session
         }
         throw KnowledgeBaseAPIError.decodingFailed

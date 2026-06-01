@@ -17,6 +17,11 @@ struct MainView: View {
     @State private var voiceRouting = VoiceRoutingContext()
     @State private var showNewSession = false
     @State private var newSessionTitle = ""
+    @State private var sessionPendingDelete: KBSession?
+    @State private var sessionPendingRename: KBSession?
+    @State private var renameTitle = ""
+    @State private var showRenameSheet = false
+    @State private var sessionActionError: String?
 
     init(
         apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeSessionClient(),
@@ -35,48 +40,7 @@ struct MainView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if isLoading {
-                    ProgressView("Loading sessions…")
-                } else if let loadError {
-                    ContentUnavailableView(
-                        "Could not load",
-                        systemImage: "exclamationmark.triangle",
-                        description: Text(loadError)
-                    )
-                } else if displayedSessions.isEmpty {
-                    ContentUnavailableView(
-                        isSearchActive ? "No matches" : "No sessions",
-                        systemImage: isSearchActive ? "magnifyingglass" : "bubble.left.and.bubble.right",
-                        description: Text(
-                            isSearchActive
-                                ? "Try another query (session ID or text from messages)."
-                                : "Configure the API in Settings, or use a stub build with a demo session when no server is set."
-                        )
-                    )
-                    .safeAreaInset(edge: .bottom, spacing: 0) {
-                        MicBar(viewModel: voiceViewModel)
-                    }
-                } else {
-                    List(displayedSessions) { session in
-                        NavigationLink(value: session) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(session.title)
-                                    .font(.headline)
-                                Text("\(session.messageCount) messages")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .refreshable {
-                        await loadSessions(showFullScreenLoading: false)
-                    }
-                    .safeAreaInset(edge: .bottom, spacing: 0) {
-                        MicBar(viewModel: voiceViewModel)
-                    }
-                }
-            }
+            mainStackContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Knowledge Base")
             .safeAreaInset(edge: .top, spacing: 0) {
@@ -128,6 +92,43 @@ struct MainView: View {
                     onCancel: { showNewSession = false },
                     onCreate: { Task { await createSessionAndDismiss() } }
                 )
+            }
+            .sheet(isPresented: $showRenameSheet) {
+                RenameSessionSheet(
+                    title: $renameTitle,
+                    sessionName: sessionPendingRename?.title ?? "",
+                    onCancel: {
+                        showRenameSheet = false
+                        sessionPendingRename = nil
+                    },
+                    onSave: { Task { await saveRenameAndDismiss() } }
+                )
+            }
+            .alert("Delete session?", isPresented: deleteConfirmPresented) {
+                Button("Delete", role: .destructive) {
+                    guard let session = sessionPendingDelete else { return }
+                    Task { await deleteSessionConfirmed(session) }
+                }
+                Button("Cancel", role: .cancel) {
+                    sessionPendingDelete = nil
+                }
+            } message: {
+                if let session = sessionPendingDelete {
+                    Text("“\(session.title)” will be removed from your list. This cannot be undone from the app.")
+                }
+            }
+            .alert(
+                "Session",
+                isPresented: Binding(
+                    get: { sessionActionError != nil },
+                    set: { if !$0 { sessionActionError = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) {
+                    sessionActionError = nil
+                }
+            } message: {
+                Text(sessionActionError ?? "")
             }
             .searchable(text: $searchText, prompt: "ID or message text")
             .task {
@@ -195,6 +196,85 @@ struct MainView: View {
         !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    private var deleteConfirmPresented: Binding<Bool> {
+        Binding(
+            get: { sessionPendingDelete != nil },
+            set: { if !$0 { sessionPendingDelete = nil } }
+        )
+    }
+
+    @ViewBuilder
+    private var mainStackContent: some View {
+        if isLoading {
+            ProgressView("Loading sessions…")
+        } else if let loadError {
+            ContentUnavailableView(
+                "Could not load",
+                systemImage: "exclamationmark.triangle",
+                description: Text(loadError)
+            )
+        } else if displayedSessions.isEmpty {
+            ContentUnavailableView(
+                isSearchActive ? "No matches" : "No sessions",
+                systemImage: isSearchActive ? "magnifyingglass" : "bubble.left.and.bubble.right",
+                description: Text(
+                    isSearchActive
+                        ? "Try another query (session ID or text from messages)."
+                        : "Configure the API in Settings, or use a stub build with a demo session when no server is set."
+                )
+            )
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                MicBar(viewModel: voiceViewModel)
+            }
+        } else {
+            sessionsList
+        }
+    }
+
+    private var sessionsList: some View {
+        List(displayedSessions) { session in
+            sessionRow(session)
+        }
+        .refreshable {
+            await loadSessions(showFullScreenLoading: false)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            MicBar(viewModel: voiceViewModel)
+        }
+    }
+
+    @ViewBuilder
+    private func sessionRow(_ session: KBSession) -> some View {
+        NavigationLink(value: session) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(session.title)
+                    .font(.headline)
+                Text("\(session.messageCount) messages")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                sessionPendingDelete = session
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .contextMenu {
+            Button {
+                beginRename(session)
+            } label: {
+                Label("Rename", systemImage: "pencil")
+            }
+            Button(role: .destructive) {
+                sessionPendingDelete = session
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+
     private var displayedSessions: [KBSession] {
         if isSearchActive {
             return searchResults ?? []
@@ -247,6 +327,66 @@ struct MainView: View {
             await loadSessions(showFullScreenLoading: false)
         } catch {
             loadError = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func beginRename(_ session: KBSession) {
+        sessionPendingRename = session
+        renameTitle = session.title
+        showRenameSheet = true
+    }
+
+    @MainActor
+    private func saveRenameAndDismiss() async {
+        guard let session = sessionPendingRename else { return }
+        let trimmed = renameTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        showRenameSheet = false
+        sessionPendingRename = nil
+
+        do {
+            _ = try await apiClient.updateSession(id: session.id, title: trimmed)
+            renameTitle = ""
+            if isSearchActive {
+                await runSearch(query: searchText)
+            } else {
+                await loadSessions(showFullScreenLoading: false)
+            }
+        } catch {
+            sessionActionError = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func deleteSessionConfirmed(_ session: KBSession) async {
+        sessionPendingDelete = nil
+
+        if voiceRouting.activeSessionId == session.id {
+            voiceRouting.activeSessionId = nil
+        }
+
+        let previousSessions = sessions
+        let previousSearch = searchResults
+
+        if isSearchActive {
+            searchResults?.removeAll { $0.id == session.id }
+        } else {
+            sessions.removeAll { $0.id == session.id }
+        }
+
+        do {
+            try await apiClient.deleteSession(id: session.id)
+            if isSearchActive {
+                await runSearch(query: searchText)
+            } else {
+                await loadSessions(showFullScreenLoading: false)
+            }
+        } catch {
+            sessions = previousSessions
+            searchResults = previousSearch
+            sessionActionError = error.localizedDescription
         }
     }
 

@@ -39,6 +39,26 @@ final class InMemoryKBStore: @unchecked Sendable {
         _messages[sessionId] = messages
     }
 
+    func deleteSession(id: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        _sessions.removeAll { $0.id == id }
+        _messages.removeValue(forKey: id)
+    }
+
+    func updateSessionTitle(id: String, title: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let index = _sessions.firstIndex(where: { $0.id == id }) else { return }
+        let old = _sessions[index]
+        _sessions[index] = KBSession(
+            id: old.id,
+            title: title,
+            messageCount: _messages[id]?.count ?? old.messageCount,
+            updatedAt: Date()
+        )
+    }
+
     /// Appends a new session (stub / offline).
     @discardableResult
     func createSession(title: String) -> KBSession {

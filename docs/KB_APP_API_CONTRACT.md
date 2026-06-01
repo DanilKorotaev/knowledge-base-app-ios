@@ -43,6 +43,8 @@
 | GET | `/api/sessions` | Query: `page`, `per_page` (опц., по умолчанию 20; iOS запрашивает все страницы с `per_page=100`) | `200` — `{ "sessions": [...], "total", "page", "per_page" }` |
 | GET | `/api/sessions/search` | Query: `q` (ID или текст в сообщениях) | `200` — `{ "sessions": [...], "total" }` |
 | POST | `/api/sessions` | `{ "title": "..." }` | `200`/`201` — объект сессии **или** `{ "session": { ... } }` |
+| PATCH | `/api/sessions/{session_id}` | `{ "title": "..." }` (1…500 символов после trim) | `200` — `{ "session": { ... } }` |
+| DELETE | `/api/sessions/{session_id}` | — | `200` — `{ "success": true }` (soft delete, `status=deleted`) |
 
 **Сессия (минимум для iOS):**
 

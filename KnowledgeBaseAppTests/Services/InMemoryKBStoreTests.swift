@@ -28,4 +28,12 @@ final class InMemoryKBStoreTests: XCTestCase {
         let created = store.createSession(title: "   ")
         XCTAssertEqual(created.title, "New session")
     }
+
+    func testDeleteAndRenameSession() {
+        let store = InMemoryKBStore(demoSession: true)
+        store.updateSessionTitle(id: "demo-session", title: "Renamed")
+        XCTAssertEqual(store.sessionsSnapshot().first?.title, "Renamed")
+        store.deleteSession(id: "demo-session")
+        XCTAssertTrue(store.sessionsSnapshot().isEmpty)
+    }
 }

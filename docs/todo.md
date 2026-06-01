@@ -21,6 +21,10 @@ _(none)_
 - [x] [Чат: история + текст](tasks/completed/task-feature-chat-mvp.md) — HTTP-клиент готов
 - [ ] [Голос: реальный upload + Whisper](tasks/pending/task-feature-voice-input.md) — после деплоя API
 - [ ] [Чат: серверный SSE в бою](tasks/pending/task-feature-chat.md) — клиент шлёт `Accept: text/event-stream`
+- [ ] [Дефолтная сессия для голоса + TTL](tasks/pending/task-feature-default-voice-session.md) — маршрутизация с mic bar / widget / Watch
+- [ ] [Удаление и переименование сессий](tasks/pending/task-feature-session-delete-rename.md) — UI + KB App API DELETE/PATCH
+- [ ] [Чат: вложения, голос, Markdown/HTML](tasks/pending/task-ux-chat-rich-messages.md) — rich bubbles
+- [ ] [Apple Watch: companion + complication](tasks/pending/task-feature-watch-app-voice.md) — запись с циферблата
 
 ### Backend (`knowledge-base-bot/kb_app_api/`)
 
