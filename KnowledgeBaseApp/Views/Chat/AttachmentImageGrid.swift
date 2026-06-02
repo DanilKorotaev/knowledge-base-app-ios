@@ -5,7 +5,7 @@ struct AttachmentImageGrid: View {
     let loader: KBAttachmentLoaderProtocol?
     let onSelect: (UIImage) -> Void
 
-    private let columns = [GridItem(.adaptive(minimum: 96, maximum: 160), spacing: 8)]
+    private let columns = [GridItem(.flexible(), spacing: 8)]
 
     var body: some View {
         LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
@@ -13,7 +13,6 @@ struct AttachmentImageGrid: View {
                 AuthenticatedAttachmentImage(attachment: attachment, loader: loader) { image in
                     onSelect(image)
                 }
-                .frame(minHeight: 96)
             }
         }
     }
@@ -32,9 +31,8 @@ private struct AuthenticatedAttachmentImage: View {
             if let image {
                 Image(uiImage: image)
                     .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: 160, minHeight: 96, maxHeight: 160)
-                    .clipped()
+                    .scaledToFit()
+                    .frame(maxWidth: 280, maxHeight: 280)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .onTapGesture { onTap(image) }
             } else if failed {
@@ -52,7 +50,7 @@ private struct AuthenticatedAttachmentImage: View {
     private func placeholder(systemName: String) -> some View {
         RoundedRectangle(cornerRadius: 12, style: .continuous)
             .fill(Color.secondary.opacity(0.12))
-            .frame(maxWidth: 160, minHeight: 96, maxHeight: 160)
+            .frame(width: 160, height: 120)
             .overlay {
                 Image(systemName: systemName)
                     .foregroundStyle(.secondary)

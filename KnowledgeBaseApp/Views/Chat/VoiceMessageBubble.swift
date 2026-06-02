@@ -4,6 +4,7 @@ import SwiftUI
 struct VoiceMessageBubble: View {
     let attachment: KBAttachment
     let transcription: String?
+    let showsTranscription: Bool
     let collapsedByDefault: Bool
     let loader: KBAttachmentLoaderProtocol?
 
@@ -17,11 +18,13 @@ struct VoiceMessageBubble: View {
     init(
         attachment: KBAttachment,
         transcription: String?,
+        showsTranscription: Bool = true,
         collapsedByDefault: Bool,
         loader: KBAttachmentLoaderProtocol?
     ) {
         self.attachment = attachment
         self.transcription = transcription
+        self.showsTranscription = showsTranscription
         self.collapsedByDefault = collapsedByDefault
         self.loader = loader
         _isExpanded = State(initialValue: !collapsedByDefault)
@@ -41,7 +44,7 @@ struct VoiceMessageBubble: View {
                 ProgressView(value: progress)
                     .progressViewStyle(.linear)
 
-                if collapsedByDefault {
+                if showsTranscription && collapsedByDefault {
                     Button {
                         withAnimation { isExpanded.toggle() }
                     } label: {
@@ -57,7 +60,7 @@ struct VoiceMessageBubble: View {
                     .foregroundStyle(.secondary)
             }
 
-            if let transcription {
+            if showsTranscription, let transcription {
                 if isExpanded {
                     Text(transcription)
                         .font(.subheadline)

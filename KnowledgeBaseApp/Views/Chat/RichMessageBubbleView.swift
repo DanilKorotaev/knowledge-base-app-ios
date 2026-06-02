@@ -10,11 +10,19 @@ struct RichMessageBubbleView: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
             if message.role == .user {
-                Spacer(minLength: 56)
+                Spacer(minLength: 16)
             }
-            bubbleContent
+            VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
+                bubbleContent
+                    .frame(maxWidth: Self.maxBubbleWidth, alignment: message.role == .user ? .trailing : .leading)
+                if let createdAt = message.createdAt {
+                    Text(createdAt, format: .dateTime.day().month(.abbreviated).hour().minute())
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
             if message.role == .assistant {
-                Spacer(minLength: 56)
+                Spacer(minLength: 16)
             }
         }
         .frame(maxWidth: .infinity, alignment: message.role == .user ? .trailing : .leading)
@@ -39,14 +47,17 @@ struct RichMessageBubbleView: View {
             ForEach(message.voiceAttachments) { voice in
                 VoiceMessageBubble(
                     attachment: voice,
-                    transcription: voice.transcription ?? message.transcription,
-                    collapsedByDefault: message.isVoiceOnly,
+                    transcription: message.isSingleVoiceOnlyMessage
+                        ? (voice.transcription ?? message.transcription)
+                        : nil,
+                    showsTranscription: message.isSingleVoiceOnlyMessage,
+                    collapsedByDefault: message.isSingleVoiceOnlyMessage,
                     loader: attachmentLoader
                 )
             }
 
-            if shouldShowTextContent {
-                MessageContentView(message: message)
+            if let text = message.bubbleTextContent {
+                MessageContentView(message: message, contentOverride: text)
             }
         }
         .padding(12)
@@ -58,11 +69,11 @@ struct RichMessageBubbleView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
-    private var shouldShowTextContent: Bool {
-        let text = message.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        if text.isEmpty { return false }
-        if message.isVoiceOnly { return false }
-        return true
+    private static var maxBubbleWidth: CGFloat {
+        let screenWidth = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.screen.bounds.width ?? 390
+        return min(560, screenWidth * 0.90)
     }
 }
 

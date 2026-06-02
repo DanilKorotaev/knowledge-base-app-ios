@@ -93,6 +93,72 @@ final class KBMessageTests: XCTestCase {
         )
         XCTAssertTrue(message.contentDuplicatesVoiceTranscription)
         XCTAssertTrue(message.isVoiceOnly)
+        XCTAssertNil(message.bubbleTextContent)
+    }
+
+    func testCompositePhotoVoiceHidesDuplicateText() {
+        let tr = "Текст расшифровки голосового сообщения."
+        let message = KBMessage(
+            id: "cv",
+            role: .user,
+            content: tr,
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "p",
+                    fileType: "photo",
+                    fileName: "a.jpg",
+                    fileSize: 100,
+                    mimeType: "image/jpeg",
+                    downloadURL: "/p",
+                    transcription: nil
+                ),
+                KBAttachment(
+                    id: "v",
+                    fileType: "voice",
+                    fileName: "v.m4a",
+                    fileSize: 100,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/v",
+                    transcription: tr
+                )
+            ],
+            transcription: tr
+        )
+        XCTAssertTrue(message.isCompositeAttachmentMessage)
+        XCTAssertFalse(message.isSingleVoiceOnlyMessage)
+        XCTAssertNil(message.bubbleTextContent)
+    }
+
+    func testCompositePhotoVoiceKeepsExtraText() {
+        let tr = "Голосовая часть."
+        let message = KBMessage(
+            id: "cv2",
+            role: .user,
+            content: "\(tr)\n\nПодпись к фото.",
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "p",
+                    fileType: "photo",
+                    fileName: "a.jpg",
+                    fileSize: 100,
+                    mimeType: "image/jpeg",
+                    downloadURL: "/p",
+                    transcription: nil
+                ),
+                KBAttachment(
+                    id: "v",
+                    fileType: "voice",
+                    fileName: "v.m4a",
+                    fileSize: 100,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/v",
+                    transcription: tr
+                )
+            ]
+        )
+        XCTAssertEqual(message.bubbleTextContent, "Подпись к фото.")
     }
 }
 
@@ -107,6 +173,40 @@ final class MessageContentRendererTests: XCTestCase {
         )
         let attr = MessageContentRenderer.attributedText(for: message)
         XCTAssertFalse(String(attr.characters).isEmpty)
+    }
+
+    func testMarkdownHeaderUsesFullSyntax() {
+        let content = "### Блоки\n\n**жирный**"
+        let attr = MessageContentRenderer.parseMarkdown(content)
+        let plain = String(attr.characters)
+        XCTAssertFalse(plain.contains("###"), "Header markers should be parsed, not shown literally")
+        XCTAssertTrue(plain.contains("Блоки"))
+        XCTAssertTrue(plain.contains("жирный"))
+    }
+
+    func testMarkdownTableParser() {
+        let md = """
+        Intro
+
+        | A | B |
+        |---|---|
+        | 1 | 2 |
+
+        Outro
+        """
+        let blocks = MarkdownBlockParser.blocks(from: md)
+        XCTAssertEqual(blocks.count, 3)
+        if case .text(let intro) = blocks[0] {
+            XCTAssertTrue(intro.contains("Intro"))
+        } else {
+            XCTFail("expected text block")
+        }
+        if case .table(let header, let rows) = blocks[1] {
+            XCTAssertEqual(header, ["A", "B"])
+            XCTAssertEqual(rows, [["1", "2"]])
+        } else {
+            XCTFail("expected table block")
+        }
     }
 
     func testHTMLFallbackToPlain() {

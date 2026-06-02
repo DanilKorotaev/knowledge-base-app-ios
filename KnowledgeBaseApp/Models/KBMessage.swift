@@ -62,9 +62,9 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         return voiceAttachments.compactMap(\.transcription).first
     }
 
-    /// True when `content` is empty, a voice marker, or duplicates the voice transcription (stored in DB as message text).
+    /// True when the message is only voice attachment(s) with no images or extra text.
     var isVoiceOnly: Bool {
-        guard !voiceAttachments.isEmpty else { return false }
+        guard !voiceAttachments.isEmpty, imageAttachments.isEmpty else { return false }
         let text = content.trimmingCharacters(in: .whitespacesAndNewlines)
         if text.isEmpty { return true }
         if text.hasPrefix("🎤") { return true }
@@ -72,6 +72,54 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         return contentDuplicatesVoiceTranscription
     }
 
+    /// Single voice, no images — Telegram-style collapsible transcription under the player.
+    var isSingleVoiceOnlyMessage: Bool {
+        isVoiceOnly && voiceAttachments.count == 1
+    }
+
+    /// Photo + voice, multiple voices, etc.
+    var isCompositeAttachmentMessage: Bool {
+        let hasVoice = !voiceAttachments.isEmpty
+        let hasImages = !imageAttachments.isEmpty
+        if hasVoice && hasImages { return true }
+        if voiceAttachments.count > 1 { return true }
+        return false
+    }
+
+    /// Text shown under attachments; nil hides the text block entirely.
+    var bubbleTextContent: String? {
+        let text = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return nil }
+        if isVoiceOnly { return nil }
+        if contentDuplicatesVoiceTranscription { return nil }
+        if isCompositeAttachmentMessage {
+            let stripped = stripEmbeddedVoiceTranscriptions(from: text)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !stripped.isEmpty else { return nil }
+            return stripped
+        }
+        return text
+    }
+
+    private func stripEmbeddedVoiceTranscriptions(from text: String) -> String {
+        var result = text
+        for voice in voiceAttachments {
+            guard let tr = voice.transcription?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !tr.isEmpty else { continue }
+            result = result.replacingOccurrences(of: tr, with: "")
+        }
+        if let tr = transcription?.trimmingCharacters(in: .whitespacesAndNewlines), !tr.isEmpty {
+            result = result.replacingOccurrences(of: tr, with: "")
+        }
+        return result
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n")
+    }
+
+    /// True when `content` is empty, a voice marker, or duplicates the voice transcription (stored in DB as message text).
+    /// Kept for tests; prefer `isVoiceOnly` in UI.
     var contentDuplicatesVoiceTranscription: Bool {
         guard !voiceAttachments.isEmpty, let transcription = effectiveTranscription else { return false }
         let contentNorm = content.trimmingCharacters(in: .whitespacesAndNewlines)
