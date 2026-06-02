@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct KnowledgeBaseApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var deepLinkVoiceRecording = false
 
     init() {

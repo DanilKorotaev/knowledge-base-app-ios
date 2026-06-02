@@ -4,58 +4,56 @@ struct MarkdownTableView: View {
     let header: [String]
     let rows: [[String]]
 
-    private let maxColumnWidth: CGFloat = 132
-    private let cellPaddingH: CGFloat = 10
-    private let cellPaddingV: CGFloat = 8
+    @State private var viewportWidth: CGFloat = 280
+    @State private var fullscreenTable: MarkdownTableData?
 
-    private var columnCount: Int {
-        max(header.count, rows.map(\.count).max() ?? 0)
+    /// ~72% of bubble width so the next column peeks and hints at horizontal scroll.
+    private var columnWidth: CGFloat {
+        max(112, viewportWidth * 0.72)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            rowCells(header, bold: true, background: Color.primary.opacity(0.08))
-            ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
-                rowCells(row, bold: false, background: index.isMultiple(of: 2)
-                    ? Color.clear
-                    : Color.primary.opacity(0.04))
-            }
+        ScrollView(.horizontal, showsIndicators: true) {
+            MarkdownTableGrid(
+                header: header,
+                rows: rows,
+                columnWidth: columnWidth,
+                compactPadding: true
+            )
         }
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 10, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
         }
+        .overlay(alignment: .bottomTrailing) {
+            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(6)
+                .background(.ultraThinMaterial, in: Circle())
+                .padding(6)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            fullscreenTable = MarkdownTableData(header: header, rows: rows)
+        }
+        .background(widthReader)
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    @ViewBuilder
-    private func rowCells(_ cells: [String], bold: Bool, background: Color) -> some View {
-        HStack(alignment: .top, spacing: 0) {
-            ForEach(0 ..< columnCount, id: \.self) { col in
-                cellText(cells[safe: col] ?? "", bold: bold)
-                    .frame(maxWidth: maxColumnWidth, alignment: .topLeading)
-                    .padding(.horizontal, cellPaddingH)
-                    .padding(.vertical, cellPaddingV)
-                    .background(background)
-                if col < columnCount - 1 {
-                    Divider()
-                }
+        .fullScreenCover(item: $fullscreenTable) { table in
+            MarkdownTableFullscreenView(table: table) {
+                fullscreenTable = nil
             }
         }
     }
 
-    @ViewBuilder
-    private func cellText(_ value: String, bold: Bool) -> some View {
-        Text(MessageContentRenderer.inlineAttributedText(value))
-            .font(bold ? .subheadline.weight(.semibold) : .subheadline)
-            .multilineTextAlignment(.leading)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-}
-
-private extension Array {
-    subscript(safe index: Int) -> Element? {
-        indices.contains(index) ? self[index] : nil
+    private var widthReader: some View {
+        GeometryReader { geo in
+            Color.clear
+                .onAppear { viewportWidth = geo.size.width }
+                .onChange(of: geo.size.width) { _, newValue in
+                    viewportWidth = max(1, newValue)
+                }
+        }
     }
 }

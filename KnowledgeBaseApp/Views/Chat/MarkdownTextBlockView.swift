@@ -14,10 +14,12 @@ struct MarkdownTextBlockView: View {
                     Text(MessageContentRenderer.parseMarkdown(line))
                         .font(headerFont(level))
                         .fontWeight(.semibold)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 case .line(let line):
                     Text(MessageContentRenderer.inlineAttributedText(line))
                         .font(.body)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -69,6 +71,7 @@ struct PlainTextBlockView: View {
                 } else {
                     Text(line)
                         .font(.body)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }

@@ -101,6 +101,7 @@ struct MessageContentView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }

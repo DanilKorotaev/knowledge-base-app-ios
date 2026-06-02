@@ -49,6 +49,10 @@ targets:
         NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
         KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
         KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
   KnowledgeBaseAppTests:
     type: bundle.unit-test
     platform: iOS
