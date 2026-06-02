@@ -14,6 +14,9 @@ protocol ChatAPIClientProtocol: Sendable {
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage]
 
+    /// Whisper only — `POST /api/query/voice/transcribe` (no session / no assistant reply).
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String
+
     /// Voice note: multipart to `POST /api/query/voice` (KB App API); optional `transcription` from Whisper.
     func sendVoiceRecording(
         sessionId: String,
@@ -24,6 +27,14 @@ protocol ChatAPIClientProtocol: Sendable {
 
     /// Assistant reply as token chunks. Implementations add the user message before the first yield (stub); HTTP runs `POST …/messages` first, then yields assistant text (until SSE exists).
     func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error>
+
+    /// Text + voice file: `POST …/messages/voice` (multipart + SSE). Saves audio and transcription on the server.
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error>
 }
 
 struct StubChatAPIClient: ChatAPIClientProtocol {
@@ -94,6 +105,12 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         return list
     }
 
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        let size = (try? FileManager.default.attributesOfItem(atPath: audioFileURL.path)[.size] as? NSNumber)?.int64Value ?? 0
+        try await Task.sleep(nanoseconds: 200_000_000)
+        return "Stub Whisper transcription (\(size) bytes)"
+    }
+
     func sendVoiceRecording(
         sessionId: String,
         audioFileURL: URL,
@@ -125,6 +142,64 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         store.replaceMessages(list, sessionId: sessionId)
         let stubASR = hint.isEmpty ? "Stub Whisper transcription (\(size) bytes)" : nil
         return VoiceRecordingSendResult(messages: list, transcription: stubASR)
+    }
+
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+
+        let size = (try? FileManager.default.attributesOfItem(atPath: audioFileURL.path)[.size] as? NSNumber)?.intValue ?? 0
+        var list = store.messages(for: sessionId)
+        let voiceAtt = KBAttachment(
+            id: UUID().uuidString,
+            fileType: "voice",
+            fileName: audioFileURL.lastPathComponent,
+            fileSize: size,
+            mimeType: "audio/mp4",
+            downloadURL: "stub-voice",
+            transcription: trimmed
+        )
+        let user = KBMessage(
+            id: UUID().uuidString,
+            role: .user,
+            content: trimmed,
+            createdAt: Date(),
+            attachments: [voiceAtt],
+            transcription: trimmed
+        )
+        list.append(user)
+        store.replaceMessages(list, sessionId: sessionId)
+
+        let kbNote = useKnowledgeBase ? "with KB" : "empty chat"
+        let fullReply = "Stub voice reply (\(kbNote)): \(trimmed.prefix(120))"
+
+        return AsyncThrowingStream { continuation in
+            Task {
+                let parts = fullReply.components(separatedBy: " ")
+                for (index, part) in parts.enumerated() {
+                    let chunk = index == 0 ? part : " " + part
+                    continuation.yield(chunk)
+                    try? await Task.sleep(nanoseconds: 25_000_000)
+                }
+                var updated = store.messages(for: sessionId)
+                let assistant = KBMessage(
+                    id: UUID().uuidString,
+                    role: .assistant,
+                    content: fullReply,
+                    createdAt: Date()
+                )
+                updated.append(assistant)
+                store.replaceMessages(updated, sessionId: sessionId)
+                continuation.finish()
+            }
+        }
     }
 
     func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {

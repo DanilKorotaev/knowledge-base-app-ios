@@ -220,6 +220,49 @@ paths:
       responses:
         "200":
           description: Binary file stream
+  /api/sessions/{session_id}/messages/voice:
+    post:
+      summary: Текст + голосовой файл (транскрипция + пайплайн + сохранение voice в БД)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio, content]
+              properties:
+                audio: { type: string, format: binary }
+                content: { type: string }
+                use_knowledge_base: { type: string }
+      responses:
+        "201":
+          description: OK (JSON) or SSE stream with Accept text/event-stream
+  /api/query/voice/transcribe:
+    post:
+      summary: Только Whisper (без сессии и без ответа ассистента)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [audio]
+              properties:
+                audio: { type: string, format: binary }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transcription: { type: string }
   /api/query/voice:
     post:
       summary: Голос (Whisper) + тот же пайплайн, что текст

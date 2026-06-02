@@ -9,24 +9,50 @@ struct PostRecordingReviewSheet: View {
         voiceRouting.activeSessionId ?? sessions.first?.id
     }
 
+    private var resolvedSessionTitle: String? {
+        if let id = resolvedSessionId {
+            return sessions.first(where: { $0.id == id })?.title
+        }
+        return nil
+    }
+
     var body: some View {
         NavigationStack {
             Form {
+                if viewModel.isTranscribing {
+                    Section {
+                        HStack {
+                            ProgressView()
+                            Text("Transcribing…")
+                        }
+                    }
+                }
+
                 Section {
                     TextField(
-                        "Transcription will appear here after Whisper (KB App API)",
+                        "Transcription",
                         text: $viewModel.transcriptionDraft,
                         axis: .vertical
                     )
                     .lineLimit(4 ... 12)
+                    .disabled(viewModel.isTranscribing)
                 } header: {
                     Text("Review")
                 } footer: {
-                    Text("Edit text before sending. The backend will replace this with Whisper output later.")
+                    if let title = resolvedSessionTitle {
+                        Text("Will send to “\(title)”. Edit the text, then tap Send to chat.")
+                    } else if sessions.isEmpty {
+                        Text("Create a session first, then send your message.")
+                    } else {
+                        Text("Edit the text, then tap Send to chat.")
+                    }
                 }
             }
             .navigationTitle("Voice note")
             .navigationBarTitleDisplayMode(.inline)
+            .task {
+                await viewModel.transcribeRecordedAudioIfNeeded()
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Discard") {
@@ -38,12 +64,13 @@ struct PostRecordingReviewSheet: View {
                     if viewModel.isSendingVoice {
                         ProgressView()
                     } else {
-                        Button("Send") {
+                        Button("Send to chat") {
                             viewModel.confirmPostRecordUpload(
                                 sessionId: resolvedSessionId,
                                 useKnowledgeBase: voiceRouting.useKnowledgeBase
                             )
                         }
+                        .disabled(!viewModel.canSendTranscription || resolvedSessionId == nil)
                     }
                 }
             }

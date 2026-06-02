@@ -364,6 +364,76 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return streamAssistantByWord(assistant.content)
     }
 
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(sessionId)
+            .appendingPathComponent("messages")
+            .appendingPathComponent("voice")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("text/event-stream, application/json;q=0.9", forHTTPHeaderField: "Accept")
+
+        let fileData = try Data(contentsOf: audioFileURL)
+        request.httpBody = Self.multipartVoiceMessageBody(
+            boundary: boundary,
+            content: trimmed,
+            useKnowledgeBase: useKnowledgeBase,
+            fileData: fileData,
+            filename: audioFileURL.lastPathComponent
+        )
+
+        let (bytes, http) = try await transport.bytes(for: request)
+        guard (200 ... 299).contains(http.statusCode) else {
+            let errData = try await collectAsyncBytes(bytes)
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: http.statusCode,
+                apiMessage: KBAppAPIErrorMessage.parse(from: errData)
+            )
+        }
+
+        let mime = http.value(forHTTPHeaderField: "Content-Type")?.lowercased() ?? ""
+        if mime.contains("text/event-stream") {
+            return streamAssistantChunksFromSSE(bytes: bytes)
+        }
+
+        let data = try await collectAsyncBytes(bytes)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        struct Envelope: Codable {
+            let messages: [KBMessage]?
+        }
+
+        let messages: [KBMessage]
+        if let env = try? decoder.decode(Envelope.self, from: data), let m = env.messages {
+            messages = m
+        } else if let list = try? decoder.decode([KBMessage].self, from: data) {
+            messages = list
+        } else {
+            messages = try await fetchMessages(sessionId: sessionId)
+        }
+
+        guard let assistant = messages.last(where: { $0.role == .assistant }) else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+        return streamAssistantByWord(assistant.content)
+    }
+
     private func collectAsyncBytes(_ bytes: URLSession.AsyncBytes) async throws -> Data {
         var data = Data()
         for try await byte in bytes {
@@ -493,6 +563,44 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return try await fetchMessages(sessionId: sessionId)
     }
 
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("query")
+            .appendingPathComponent("voice")
+            .appendingPathComponent("transcribe")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        let fileData = try Data(contentsOf: audioFileURL)
+        let filename = audioFileURL.lastPathComponent
+        request.httpBody = Self.multipartTranscribeBody(
+            boundary: boundary,
+            fileData: fileData,
+            filename: filename
+        )
+
+        let data = try await performData(request)
+
+        struct Envelope: Codable {
+            let transcription: String?
+        }
+
+        let decoder = JSONDecoder()
+        if let env = try? decoder.decode(Envelope.self, from: data),
+           let text = env.transcription?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !text.isEmpty {
+            return text
+        }
+        throw KnowledgeBaseAPIError.invalidResponse(
+            statusCode: 0,
+            apiMessage: "Empty transcription in response"
+        )
+    }
+
     func sendVoiceRecording(
         sessionId: String,
         audioFileURL: URL,
@@ -542,6 +650,56 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         }
         let fallback = try await fetchMessages(sessionId: sessionId)
         return VoiceRecordingSendResult(messages: fallback, transcription: nil)
+    }
+
+    private static func multipartVoiceMessageBody(
+        boundary: String,
+        content: String,
+        useKnowledgeBase: Bool,
+        fileData: Data,
+        filename: String
+    ) -> Data {
+        var data = Data()
+        let crlf = "\r\n"
+        let mime = "audio/mp4"
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"content\"\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append("\(content)\(crlf)".data(using: .utf8)!)
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append("\(useKnowledgeBase)\(crlf)".data(using: .utf8)!)
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(
+            "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+        )
+        data.append("Content-Type: \(mime)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(fileData)
+        data.append(crlf.data(using: .utf8)!)
+        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        return data
+    }
+
+    private static func multipartTranscribeBody(
+        boundary: String,
+        fileData: Data,
+        filename: String
+    ) -> Data {
+        var data = Data()
+        let crlf = "\r\n"
+        let mime = "audio/mp4"
+
+        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(
+            "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+        )
+        data.append("Content-Type: \(mime)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(fileData)
+        data.append(crlf.data(using: .utf8)!)
+        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        return data
     }
 
     private static func multipartVoiceQueryBody(

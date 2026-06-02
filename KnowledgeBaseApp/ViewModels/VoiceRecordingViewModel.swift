@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Coordinates mic gestures, AV capture, and post-record review (transcription stub until Whisper API exists).
+/// Coordinates mic gestures, AV capture, Whisper transcribe, and post-record review before sending text to chat.
 @MainActor
 @Observable
 final class VoiceRecordingViewModel {
@@ -14,11 +14,10 @@ final class VoiceRecordingViewModel {
     private(set) var phase: Phase = .idle
     private(set) var errorMessage: String?
     private(set) var showPostRecordReview = false
+    private(set) var isTranscribing = false
     private(set) var isSendingVoice = false
     private(set) var lastRecordedFileURL: URL?
-    /// User-editable; real app will pre-fill from Whisper.
     var transcriptionDraft: String = ""
-    /// Drive SwiftUI refresh while recording; updated from `refreshMeteringForDisplay()`.
     private(set) var displayedMeterLevel: Float = 0
 
     private let recordingService: VoiceRecordingServiceProtocol
@@ -28,6 +27,7 @@ final class VoiceRecordingViewModel {
     private var cancelledByGesture = false
     private var lockedByGesture = false
     private var recordingStartDate: Date?
+    private var didStartTranscriptionForReview = false
 
     private let impactLight = UIImpactFeedbackGenerator(style: .light)
     private let impactMedium = UIImpactFeedbackGenerator(style: .medium)
@@ -45,6 +45,12 @@ final class VoiceRecordingViewModel {
 
     var isRecordingActive: Bool {
         phase != .idle || showPostRecordReview
+    }
+
+    var canSendTranscription: Bool {
+        !transcriptionDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            && !isTranscribing
+            && !isSendingVoice
     }
 
     func recordingStartTime() -> Date? {
@@ -94,7 +100,7 @@ final class VoiceRecordingViewModel {
         }
 
         resetGestureFlags()
-        Task { await finishHoldAndSend() }
+        Task { await finishHoldAndOpenReview() }
     }
 
     func cancelLockedSession() {
@@ -108,41 +114,69 @@ final class VoiceRecordingViewModel {
     }
 
     func sendLockedSession() {
-        Task { await finishHoldAndSend() }
+        Task { await finishHoldAndOpenReview() }
     }
 
-    /// Sends via `ChatAPIClientProtocol.sendVoiceRecording` (stub or `POST /api/query/voice`). Requires a session.
+    /// Called when the post-record sheet appears — uploads audio for Whisper only.
+    func transcribeRecordedAudioIfNeeded() async {
+        guard let url = lastRecordedFileURL else { return }
+        guard !didStartTranscriptionForReview else { return }
+        didStartTranscriptionForReview = true
+        isTranscribing = true
+        errorMessage = nil
+        defer { isTranscribing = false }
+        do {
+            transcriptionDraft = try await chatClient.transcribeVoiceRecording(audioFileURL: url)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Sends edited text; keeps the recording as a voice attachment when the audio file is still available.
     func confirmPostRecordUpload(sessionId: String?, useKnowledgeBase: Bool) {
         Task {
-            guard let url = lastRecordedFileURL else { return }
+            let trimmed = transcriptionDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
             guard let sessionId else {
-                errorMessage = "Open a chat or create a session to send voice."
+                errorMessage = "Open a chat or create a session to send."
                 return
             }
             isSendingVoice = true
             errorMessage = nil
             defer { isSendingVoice = false }
             do {
-                let result = try await chatClient.sendVoiceRecording(
-                    sessionId: sessionId,
-                    audioFileURL: url,
-                    transcriptionHint: transcriptionDraft,
-                    useKnowledgeBase: useKnowledgeBase
-                )
-                let draftEmpty = transcriptionDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                if draftEmpty, let asr = result.transcription?.trimmingCharacters(in: .whitespacesAndNewlines), !asr.isEmpty {
-                    transcriptionDraft = asr
-                    try await Task.sleep(nanoseconds: 400_000_000)
+                let audioURL = lastRecordedFileURL
+                let stream: AsyncThrowingStream<String, Error>
+                if let audioURL {
+                    stream = try await chatClient.streamVoiceMessage(
+                        sessionId: sessionId,
+                        audioFileURL: audioURL,
+                        text: trimmed,
+                        useKnowledgeBase: useKnowledgeBase
+                    )
+                } else {
+                    stream = try await chatClient.streamTextMessage(
+                        sessionId: sessionId,
+                        text: trimmed,
+                        useKnowledgeBase: useKnowledgeBase
+                    )
                 }
+                for try await _ in stream { }
+
+                if let url = lastRecordedFileURL {
+                    try? FileManager.default.removeItem(at: url)
+                    lastRecordedFileURL = nil
+                }
+                transcriptionDraft = ""
+                showPostRecordReview = false
+                didStartTranscriptionForReview = false
+
                 NotificationCenter.default.post(
                     name: .kbSessionThreadDidChange,
                     object: nil,
                     userInfo: [KBNotificationUserInfoKey.sessionId: sessionId]
                 )
-                try? FileManager.default.removeItem(at: url)
-                lastRecordedFileURL = nil
-                transcriptionDraft = ""
-                showPostRecordReview = false
+                notification.notificationOccurred(.success)
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -156,6 +190,7 @@ final class VoiceRecordingViewModel {
         }
         transcriptionDraft = ""
         showPostRecordReview = false
+        didStartTranscriptionForReview = false
     }
 
     // MARK: - Private
@@ -182,14 +217,16 @@ final class VoiceRecordingViewModel {
         phase = .idle
         recordingStartDate = nil
         lastRecordedFileURL = nil
+        didStartTranscriptionForReview = false
     }
 
-    private func finishHoldAndSend() async {
+    private func finishHoldAndOpenReview() async {
         guard !cancelledByGesture else { return }
         do {
             let url = try await recordingService.stopRecording()
             lastRecordedFileURL = url
             transcriptionDraft = ""
+            didStartTranscriptionForReview = false
             phase = .idle
             recordingStartDate = nil
             showPostRecordReview = true
@@ -208,7 +245,6 @@ final class VoiceRecordingViewModel {
         lockedByGesture = false
     }
 
-    /// After locking, keep `phase == .locked` but clear drag tracking for the next sub-gesture (Send/Cancel).
     private func resetGestureFlagsPreservingLockedPhase() {
         recordingStartedForGesture = false
         cancelledByGesture = false

@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 
 struct ChatView: View {
     @Environment(VoiceRoutingContext.self) private var voiceRouting
+    @Environment(VoiceRecordingViewModel.self) private var voiceViewModel
     @State private var viewModel: ChatViewModel
     @State private var scrollSpace = UUID()
     @State private var photoPickerItem: PhotosPickerItem?
@@ -75,6 +76,12 @@ struct ChatView: View {
             }
 
             inputBar
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if voiceViewModel.phase != .idle {
+                MicRecordControl(viewModel: voiceViewModel)
+                    .background(.bar)
+            }
         }
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
@@ -169,6 +176,9 @@ struct ChatView: View {
                 }
                 .disabled(viewModel.isSending)
 
+                ChatMicButton(viewModel: voiceViewModel)
+                    .opacity(voiceViewModel.phase == .idle ? 1 : 0.35)
+
                 TextField("Message", text: $viewModel.draft, axis: .vertical)
                     .lineLimit(1 ... 6)
                     .textFieldStyle(.roundedBorder)
@@ -244,4 +254,5 @@ struct MessageBubbleView: View {
         )
     }
     .environment(VoiceRoutingContext())
+    .environment(VoiceRecordingViewModel(chatClient: StubChatAPIClient(store: InMemoryKBStore())))
 }

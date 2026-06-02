@@ -38,7 +38,7 @@ struct MicRecordControl: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            Text("Swipe left to cancel · Release to send")
+            Text("Swipe left to cancel · Release to review")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
         }

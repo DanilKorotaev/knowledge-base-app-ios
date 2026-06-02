@@ -190,6 +190,7 @@ struct MainView: View {
             }
         }
         .environment(voiceRouting)
+        .environment(voiceViewModel)
     }
 
     private var isSearchActive: Bool {

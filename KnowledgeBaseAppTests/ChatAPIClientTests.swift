@@ -103,6 +103,17 @@ final class ChatAPIClientTests: XCTestCase {
         XCTAssertTrue(list.isEmpty)
     }
 
+    func testTranscribeVoiceRecordingReturnsStubText() async throws {
+        let (store, _) = emptyStoreWithSession()
+        let client = StubChatAPIClient(store: store)
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("kb-asr-\(UUID().uuidString).m4a")
+        try Data([0, 1, 2]).write(to: temp)
+        defer { try? FileManager.default.removeItem(at: temp) }
+
+        let text = try await client.transcribeVoiceRecording(audioFileURL: temp)
+        XCTAssertTrue(text.contains("Stub Whisper"))
+    }
+
     func testSendVoiceRecordingAppendsStubMessages() async throws {
         let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)

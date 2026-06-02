@@ -124,13 +124,29 @@ Bearer обязателен; сервер проверяет владение с
 
 Успех: как у `POST …/messages` — полный список сообщений или `messages` в JSON.
 
-## Голос (Whisper + тот же пайплайн, что текст)
+## Голос
+
+### Только транскрибация (без сессии и без ответа ассистента)
+
+| Метод | Путь | Тело |
+|-------|------|------|
+| POST | `/api/query/voice/transcribe` | `multipart/form-data`: `audio` (файл) |
+
+Успех: `{ "transcription": "…" }` — Whisper + полировка.
+
+### Whisper + полный пайплайн (legacy / Telegram-style one-shot)
 
 | Метод | Путь | Тело |
 |-------|------|------|
 | POST | `/api/query/voice` | `multipart/form-data`: `audio` (файл), `session_id`, `use_knowledge_base`, `transcription_hint` (опц.) |
 
-Успех: как сообщения — массив / `{ "messages": [...] }`. Опционально верхнеуровневое поле **`transcription`** (текст Whisper); iOS подставляет его в черновик подсказки, если пользователь не ввёл свой текст.
+Успех: как сообщения — массив / `{ "messages": [...] }`. Опционально верхнеуровневое поле **`transcription`**.
+
+**iOS (2026-06):** запись → `POST …/voice/transcribe` → экран правки → `POST …/sessions/{id}/messages/voice` (multipart: `audio`, `content`, `use_knowledge_base`; SSE как у текста) — текст в чат + voice attachment + transcription в БД.
+
+| Метод | Путь | Тело |
+|-------|------|------|
+| POST | `/api/sessions/{session_id}/messages/voice` | `multipart/form-data`: `audio`, `content` (транскрипция), `use_knowledge_base` |
 
 Пример:
 
