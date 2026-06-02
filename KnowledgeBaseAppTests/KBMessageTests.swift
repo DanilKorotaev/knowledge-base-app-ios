@@ -195,6 +195,15 @@ final class MessageContentRendererTests: XCTestCase {
         XCTAssertTrue(plain.contains("жирный"))
     }
 
+    func testMarkdownThematicBreak() {
+        XCTAssertTrue(MarkdownLineParser.isThematicBreak("---"))
+        XCTAssertTrue(MarkdownLineParser.isThematicBreak("- - -"))
+        XCTAssertTrue(MarkdownLineParser.isThematicBreak("***"))
+        XCTAssertTrue(MarkdownLineParser.isThematicBreak("___"))
+        XCTAssertFalse(MarkdownLineParser.isThematicBreak("--"))
+        XCTAssertFalse(MarkdownLineParser.isThematicBreak("--- still text"))
+    }
+
     func testMarkdownTableParser() {
         let md = """
         Intro

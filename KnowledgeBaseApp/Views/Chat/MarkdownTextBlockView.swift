@@ -1,5 +1,17 @@
 import SwiftUI
 
+enum MarkdownLineParser {
+    /// GFM thematic break: `---`, `***`, `___` (spaces allowed between chars).
+    static func isThematicBreak(_ line: String) -> Bool {
+        let compact = line
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: " ", with: "")
+        guard compact.count >= 3 else { return false }
+        guard let marker = compact.first, marker == "-" || marker == "*" || marker == "_" else { return false }
+        return compact.allSatisfy { $0 == marker }
+    }
+}
+
 /// Renders markdown-ish text line-by-line so `\n` from the server are preserved.
 struct MarkdownTextBlockView: View {
     let text: String
@@ -10,6 +22,11 @@ struct MarkdownTextBlockView: View {
                 switch item {
                 case .blank:
                     Color.clear.frame(height: 4)
+                case .horizontalRule:
+                    Rectangle()
+                        .fill(Color.primary.opacity(0.15))
+                        .frame(height: 1)
+                        .padding(.vertical, 6)
                 case .header(let level, let line):
                     Text(MessageContentRenderer.parseMarkdown(line))
                         .font(headerFont(level))
@@ -29,6 +46,7 @@ struct MarkdownTextBlockView: View {
 
     private enum DisplayLine {
         case blank
+        case horizontalRule
         case header(Int, String)
         case line(String)
     }
@@ -37,6 +55,7 @@ struct MarkdownTextBlockView: View {
         source.components(separatedBy: "\n").map { raw in
             let trimmed = raw.trimmingCharacters(in: .whitespaces)
             if trimmed.isEmpty { return .blank }
+            if MarkdownLineParser.isThematicBreak(raw) { return .horizontalRule }
             let hashCount = raw.prefix(while: { $0 == "#" }).count
             if hashCount > 0, hashCount <= 6, raw.dropFirst(hashCount).first == " " {
                 return .header(hashCount, raw)
