@@ -39,7 +39,7 @@ struct RichMessageBubbleView: View {
             ForEach(message.voiceAttachments) { voice in
                 VoiceMessageBubble(
                     attachment: voice,
-                    transcription: voice.transcription ?? message.effectiveTranscription,
+                    transcription: voice.transcription ?? message.transcription,
                     collapsedByDefault: message.isVoiceOnly,
                     loader: attachmentLoader
                 )

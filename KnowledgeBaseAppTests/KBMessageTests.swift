@@ -70,6 +70,30 @@ final class KBMessageTests: XCTestCase {
         )
         XCTAssertTrue(voiceOnly.isVoiceOnly)
     }
+
+    func testContentDuplicateTranscriptionHidesSecondBlock() {
+        let tr = "Прошел я ТО, поменял масло. Пробег 39 586."
+        let message = KBMessage(
+            id: "v2",
+            role: .user,
+            content: tr,
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "1",
+                    fileType: "voice",
+                    fileName: "voice.ogg",
+                    fileSize: 100,
+                    mimeType: "audio/ogg",
+                    downloadURL: "/x",
+                    transcription: tr
+                )
+            ],
+            transcription: tr
+        )
+        XCTAssertTrue(message.contentDuplicatesVoiceTranscription)
+        XCTAssertTrue(message.isVoiceOnly)
+    }
 }
 
 final class MessageContentRendererTests: XCTestCase {
