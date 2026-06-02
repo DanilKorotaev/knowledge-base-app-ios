@@ -19,7 +19,7 @@ enum MessageContentRenderer {
         }
     }
 
-    /// Inline markdown only (bold, code) — for table cells and compact snippets.
+    /// Inline markdown only (bold, code) — preserves structure when rendered line-by-line.
     static func inlineAttributedText(_ content: String) -> AttributedString {
         guard !content.isEmpty else { return AttributedString("") }
         if let parsed = try? AttributedString(
@@ -73,9 +73,12 @@ struct MessageContentView: View {
     }
 
     var body: some View {
-        if format == .markdown {
+        switch format {
+        case .markdown:
             markdownBody
-        } else {
+        case .plain:
+            PlainTextBlockView(text: text)
+        case .html:
             Text(MessageContentRenderer.attributedText(from: text, format: format))
                 .font(.body)
                 .textSelection(.enabled)
@@ -86,18 +89,13 @@ struct MessageContentView: View {
     private var markdownBody: some View {
         let blocks = MarkdownBlockParser.blocks(from: text)
         if blocks.isEmpty {
-            Text(MessageContentRenderer.parseMarkdown(text))
-                .font(.body)
-                .textSelection(.enabled)
+            MarkdownTextBlockView(text: text)
         } else {
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(blocks) { block in
                     switch block {
                     case .text(let chunk):
-                        Text(MessageContentRenderer.parseMarkdown(chunk))
-                            .font(.body)
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        MarkdownTextBlockView(text: chunk)
                     case .table(let header, let rows):
                         MarkdownTableView(header: header, rows: rows)
                     }

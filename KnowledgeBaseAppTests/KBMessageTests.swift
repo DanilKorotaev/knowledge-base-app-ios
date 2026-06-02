@@ -96,7 +96,7 @@ final class KBMessageTests: XCTestCase {
         XCTAssertNil(message.bubbleTextContent)
     }
 
-    func testCompositePhotoVoiceHidesDuplicateText() {
+    func testCompositePhotoVoiceShowsTranscriptionOnce() {
         let tr = "Текст расшифровки голосового сообщения."
         let message = KBMessage(
             id: "cv",
@@ -127,7 +127,7 @@ final class KBMessageTests: XCTestCase {
         )
         XCTAssertTrue(message.isCompositeAttachmentMessage)
         XCTAssertFalse(message.isSingleVoiceOnlyMessage)
-        XCTAssertNil(message.bubbleTextContent)
+        XCTAssertEqual(message.bubbleTextContent, tr)
     }
 
     func testCompositePhotoVoiceKeepsExtraText() {
@@ -158,7 +158,18 @@ final class KBMessageTests: XCTestCase {
                 )
             ]
         )
-        XCTAssertEqual(message.bubbleTextContent, "Подпись к фото.")
+        XCTAssertEqual(message.bubbleTextContent, "\(tr)\n\nПодпись к фото.")
+    }
+
+    func testPlainTextPreservesNewlines() {
+        let message = KBMessage(
+            id: "plain",
+            role: .user,
+            content: "Line one\nLine two",
+            createdAt: nil,
+            contentFormat: .plain
+        )
+        XCTAssertEqual(message.bubbleTextContent, "Line one\nLine two")
     }
 }
 

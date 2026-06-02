@@ -86,18 +86,48 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         return false
     }
 
+    /// Combined transcription from voice attachment(s) and message-level field.
+    var composedVoiceTranscription: String? {
+        let fromAttachments = voiceAttachments
+            .compactMap { $0.transcription?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        if fromAttachments.count > 1 {
+            return fromAttachments.joined(separator: "\n\n")
+        }
+        if let single = fromAttachments.first {
+            return single
+        }
+        if let tr = transcription?.trimmingCharacters(in: .whitespacesAndNewlines), !tr.isEmpty {
+            return tr
+        }
+        return nil
+    }
+
     /// Text shown under attachments; nil hides the text block entirely.
     var bubbleTextContent: String? {
         let text = content.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return nil }
         if isVoiceOnly { return nil }
-        if contentDuplicatesVoiceTranscription { return nil }
+
         if isCompositeAttachmentMessage {
-            let stripped = stripEmbeddedVoiceTranscriptions(from: text)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !stripped.isEmpty else { return nil }
-            return stripped
+            var sections: [String] = []
+            if let voiceBlock = composedVoiceTranscription {
+                sections.append(voiceBlock)
+            }
+            if !text.isEmpty {
+                let supplemental = stripEmbeddedVoiceTranscriptions(from: text)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !supplemental.isEmpty {
+                    sections.append(supplemental)
+                } else if sections.isEmpty {
+                    sections.append(text)
+                }
+            }
+            let result = sections.joined(separator: "\n\n")
+            return result.isEmpty ? nil : result
         }
+
+        guard !text.isEmpty else { return nil }
+        if contentDuplicatesVoiceTranscription { return nil }
         return text
     }
 
