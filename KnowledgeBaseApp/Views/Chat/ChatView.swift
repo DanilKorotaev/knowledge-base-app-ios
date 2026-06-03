@@ -34,7 +34,7 @@ struct ChatView: View {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 12) {
                             if viewModel.isLoadingOlder {
                                 HStack {
                                     Spacer()
@@ -44,12 +44,16 @@ struct ChatView: View {
                                 }
                             }
 
-                            ForEach(viewModel.messages) { message in
+                            ForEach(Array(viewModel.messages.enumerated()), id: \.element.id) { index, message in
                                 RichMessageBubbleView(
                                     message: message,
                                     attachmentLoader: attachmentLoader
                                 )
                                 .id(message.id)
+                                .onAppear {
+                                    guard index == 0, hasPinnedToBottom, viewModel.hasMoreOlder else { return }
+                                    Task { await viewModel.loadOlder() }
+                                }
                             }
                             if let streaming = viewModel.streamingAssistantText, !streaming.isEmpty {
                                 RichMessageBubbleView(
@@ -76,6 +80,10 @@ struct ChatView: View {
                     } action: { wasNearTop, isNearTop in
                         guard hasPinnedToBottom, isNearTop, !wasNearTop else { return }
                         Task { await viewModel.loadOlder() }
+                    }
+                    .onChange(of: viewModel.isLoading) { _, isLoading in
+                        guard !isLoading, !viewModel.messages.isEmpty else { return }
+                        pinToBottom(proxy: proxy)
                     }
                     .onChange(of: viewModel.scrollIntent) { _, intent in
                         applyScrollIntent(intent, proxy: proxy)
@@ -156,6 +164,19 @@ struct ChatView: View {
         }
     }
 
+    private func pinToBottom(proxy: ScrollViewProxy) {
+        guard !viewModel.messages.isEmpty else { return }
+        let scroll = {
+            if let lastId = viewModel.messages.last?.id {
+                proxy.scrollTo(lastId, anchor: .bottom)
+            }
+            proxy.scrollTo(bottomScrollID, anchor: .bottom)
+            hasPinnedToBottom = true
+        }
+        DispatchQueue.main.async(execute: scroll)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: scroll)
+    }
+
     private func applyScrollIntent(_ intent: ChatScrollIntent, proxy: ScrollViewProxy) {
         guard intent != .none else { return }
         let apply = {
@@ -163,8 +184,7 @@ struct ChatView: View {
             case .none:
                 break
             case .scrollToBottom:
-                proxy.scrollTo(bottomScrollID, anchor: .bottom)
-                hasPinnedToBottom = true
+                pinToBottom(proxy: proxy)
             case .preserve(let messageId):
                 proxy.scrollTo(messageId, anchor: .top)
             }
