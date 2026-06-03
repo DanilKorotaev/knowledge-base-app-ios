@@ -65,7 +65,7 @@
 
 | Метод | Путь | Запрос | Успех |
 |-------|------|--------|--------|
-| GET | `/api/sessions/{session_id}/messages` | Query: `page`, `per_page` | `200` — массив **или** `{ "messages": [...] }` \| `{ "items": [...] }` |
+| GET | `/api/sessions/{session_id}/messages` | Query: `limit` (1…100, default 20), опционально `before` (id сообщения) | `200` — `{ "messages": [...], "total": N, "has_more_older": bool }` (сообщения в хронологическом порядке; без `before` — последние `limit`; с `before` — ещё `limit` сообщений **старше** указанного id) |
 | POST | `/api/sessions/{session_id}/messages` | `{ "content": "...", "use_knowledge_base": true }` | `200`/`201` — `{ "messages": [...] }` или массив сообщений |
 
 **Сообщение:**

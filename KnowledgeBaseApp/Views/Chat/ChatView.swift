@@ -7,7 +7,7 @@ struct ChatView: View {
     @Environment(VoiceRoutingContext.self) private var voiceRouting
     @Environment(VoiceRecordingViewModel.self) private var voiceViewModel
     @State private var viewModel: ChatViewModel
-    @State private var scrollSpace = UUID()
+    @State private var bottomScrollID = "kb-chat-bottom"
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showFileImporter = false
     @State private var showCamera = false
@@ -32,13 +32,28 @@ struct ChatView: View {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            if viewModel.isLoadingOlder {
+                                HStack {
+                                    Spacer()
+                                    ProgressView()
+                                    Spacer()
+                                }
+                                .padding(.vertical, 8)
+                            } else if viewModel.hasMoreOlder {
+                                Color.clear
+                                    .frame(height: 1)
+                                    .onAppear {
+                                        Task { await viewModel.loadOlder() }
+                                    }
+                            }
+
                             ForEach(viewModel.messages) { message in
                                 RichMessageBubbleView(
                                     message: message,
                                     attachmentLoader: attachmentLoader
                                 )
-                                    .id(message.id)
+                                .id(message.id)
                             }
                             if let streaming = viewModel.streamingAssistantText, !streaming.isEmpty {
                                 RichMessageBubbleView(
@@ -55,22 +70,33 @@ struct ChatView: View {
                             }
                             Color.clear
                                 .frame(height: 1)
-                                .id(scrollSpace)
+                                .id(bottomScrollID)
                         }
                         .padding()
                     }
-                    .onChange(of: viewModel.messages.count) { _, _ in
-                        withAnimation {
-                            proxy.scrollTo(scrollSpace, anchor: .bottom)
+                    .defaultScrollAnchor(.bottom)
+                    .onAppear {
+                        guard !viewModel.messages.isEmpty, !viewModel.isLoading else { return }
+                        scrollToBottom(proxy: proxy, delayed: true)
+                    }
+                    .onChange(of: viewModel.scrollAnchorMessageId) { _, anchor in
+                        guard let anchor else { return }
+                        DispatchQueue.main.async {
+                            proxy.scrollTo(anchor, anchor: .top)
+                            viewModel.scrollAnchorMessageId = nil
                         }
+                    }
+                    .onChange(of: viewModel.messages.count) { oldCount, newCount in
+                        guard viewModel.scrollAnchorMessageId == nil else { return }
+                        guard newCount > oldCount, !viewModel.isLoadingOlder else { return }
+                        scrollToBottom(proxy: proxy)
                     }
                     .onChange(of: viewModel.streamingAssistantText) { _, _ in
-                        withAnimation {
-                            proxy.scrollTo(scrollSpace, anchor: .bottom)
-                        }
+                        scrollToBottom(proxy: proxy)
                     }
-                    .onAppear {
-                        proxy.scrollTo(scrollSpace, anchor: .bottom)
+                    .onChange(of: viewModel.isLoading) { _, loading in
+                        guard !loading, !viewModel.messages.isEmpty else { return }
+                        scrollToBottom(proxy: proxy, delayed: true)
                     }
                 }
             }
@@ -91,7 +117,7 @@ struct ChatView: View {
         .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { notification in
             guard let sid = notification.userInfo?[KBNotificationUserInfoKey.sessionId] as? String,
                   sid == viewModel.session.id else { return }
-            Task { await viewModel.load() }
+            Task { await viewModel.reloadLatestWindow() }
         }
         .onAppear {
             voiceRouting.activeSessionId = viewModel.session.id
@@ -144,6 +170,17 @@ struct ChatView: View {
                 onCancel: { showCamera = false }
             )
             .ignoresSafeArea()
+        }
+    }
+
+    private func scrollToBottom(proxy: ScrollViewProxy, delayed: Bool = false) {
+        let scroll = {
+            proxy.scrollTo(bottomScrollID, anchor: .bottom)
+        }
+        if delayed {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: scroll)
+        } else {
+            DispatchQueue.main.async(execute: scroll)
         }
     }
 

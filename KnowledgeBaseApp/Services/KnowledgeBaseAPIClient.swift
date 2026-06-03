@@ -241,31 +241,63 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
 // MARK: - Chat (same transport as sessions)
 
 extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
-    func fetchMessages(sessionId: String) async throws -> [KBMessage] {
-        let url = baseURL
-            .appendingPathComponent("api")
-            .appendingPathComponent("sessions")
-            .appendingPathComponent(sessionId)
-            .appendingPathComponent("messages")
-        var request = URLRequest(url: url)
+    func fetchMessagesPage(
+        sessionId: String,
+        limit: Int,
+        beforeMessageId: String?
+    ) async throws -> KBMessagesPage {
+        var components = URLComponents(
+            url: baseURL
+                .appendingPathComponent("api")
+                .appendingPathComponent("sessions")
+                .appendingPathComponent(sessionId)
+                .appendingPathComponent("messages"),
+            resolvingAgainstBaseURL: false
+        )!
+        var query: [URLQueryItem] = [URLQueryItem(name: "limit", value: String(limit))]
+        if let beforeMessageId, !beforeMessageId.isEmpty {
+            query.append(URLQueryItem(name: "before", value: beforeMessageId))
+        }
+        components.queryItems = query
+
+        var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
         let data = try await performData(request)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        struct Page: Codable {
-            let items: [KBMessage]?
-            let messages: [KBMessage]?
+        if let page = try? decoder.decode(KBMessagesPage.self, from: data) {
+            return page
         }
 
+        struct LegacyEnvelope: Codable {
+            let messages: [KBMessage]?
+            let items: [KBMessage]?
+        }
+        if let legacy = try? decoder.decode(LegacyEnvelope.self, from: data) {
+            let list = legacy.messages ?? legacy.items ?? []
+            return KBMessagesPage(messages: list, total: list.count, hasMoreOlder: false)
+        }
+        if let list = try? decoder.decode([KBMessage].self, from: data) {
+            return KBMessagesPage(messages: list, total: list.count, hasMoreOlder: false)
+        }
+        throw KnowledgeBaseAPIError.decodingFailed
+    }
+
+    private func messagesFromPostResponse(data: Data, sessionId: String) async throws -> [KBMessage] {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        struct Envelope: Codable {
+            let messages: [KBMessage]?
+        }
+        if let env = try? decoder.decode(Envelope.self, from: data), let messages = env.messages {
+            return messages
+        }
         if let list = try? decoder.decode([KBMessage].self, from: data) {
             return list
         }
-        if let page = try? decoder.decode(Page.self, from: data) {
-            return page.items ?? page.messages ?? []
-        }
-        throw KnowledgeBaseAPIError.decodingFailed
+        return try await fetchMessagesPage(sessionId: sessionId, limit: 100, beforeMessageId: nil).messages
     }
 
     func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
@@ -301,7 +333,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         if let list = try? decoder.decode([KBMessage].self, from: data) {
             return list
         }
-        return try await fetchMessages(sessionId: sessionId)
+        return try await messagesFromPostResponse(data: data, sessionId: sessionId)
     }
 
     func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
@@ -355,7 +387,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         } else if let list = try? decoder.decode([KBMessage].self, from: data) {
             messages = list
         } else {
-            messages = try await fetchMessages(sessionId: sessionId)
+            messages = try await messagesFromPostResponse(data: data, sessionId: sessionId)
         }
 
         guard let assistant = messages.last(where: { $0.role == .assistant }) else {
@@ -425,7 +457,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         } else if let list = try? decoder.decode([KBMessage].self, from: data) {
             messages = list
         } else {
-            messages = try await fetchMessages(sessionId: sessionId)
+            messages = try await messagesFromPostResponse(data: data, sessionId: sessionId)
         }
 
         guard let assistant = messages.last(where: { $0.role == .assistant }) else {
@@ -560,7 +592,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         if let list = try? decoder.decode([KBMessage].self, from: data) {
             return list
         }
-        return try await fetchMessages(sessionId: sessionId)
+        return try await messagesFromPostResponse(data: data, sessionId: sessionId)
     }
 
     func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
@@ -648,7 +680,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         if let list = try? decoder.decode([KBMessage].self, from: data) {
             return VoiceRecordingSendResult(messages: list, transcription: nil)
         }
-        let fallback = try await fetchMessages(sessionId: sessionId)
+        let fallback = try await messagesFromPostResponse(data: data, sessionId: sessionId)
         return VoiceRecordingSendResult(messages: fallback, transcription: nil)
     }
 

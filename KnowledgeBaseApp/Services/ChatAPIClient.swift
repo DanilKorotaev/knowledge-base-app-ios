@@ -2,7 +2,11 @@ import Foundation
 
 /// Messages and text send — separate surface from session list (`KnowledgeBaseAPIClientProtocol`).
 protocol ChatAPIClientProtocol: Sendable {
-    func fetchMessages(sessionId: String) async throws -> [KBMessage]
+    func fetchMessagesPage(
+        sessionId: String,
+        limit: Int,
+        beforeMessageId: String?
+    ) async throws -> KBMessagesPage
     /// Returns the full thread after appending user + assistant messages (stub) or server response (HTTP).
     func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage]
     /// Photo or file attachment; real API will run Whisper / file pipeline.
@@ -44,8 +48,19 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         self.store = store
     }
 
-    func fetchMessages(sessionId: String) async throws -> [KBMessage] {
-        store.messages(for: sessionId)
+    func fetchMessagesPage(
+        sessionId: String,
+        limit: Int,
+        beforeMessageId: String?
+    ) async throws -> KBMessagesPage {
+        var all = store.messages(for: sessionId)
+        if let before = beforeMessageId,
+           let index = all.firstIndex(where: { $0.id == before }) {
+            all = Array(all.prefix(index))
+        }
+        let slice = Array(all.suffix(limit))
+        let hasMore = all.count > slice.count
+        return KBMessagesPage(messages: slice, total: store.messages(for: sessionId).count, hasMoreOlder: hasMore)
     }
 
     func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {

@@ -43,8 +43,10 @@ final class ChatAPIClientTests: XCTestCase {
         let client = StubChatAPIClient(store: store)
         _ = try await client.sendTextMessage(sessionId: sessionId, text: "x", useKnowledgeBase: true)
 
-        let fetched = try await client.fetchMessages(sessionId: sessionId)
-        XCTAssertEqual(fetched.count, 2)
+        let page = try await client.fetchMessagesPage(sessionId: sessionId, limit: 20, beforeMessageId: nil)
+        XCTAssertEqual(page.messages.count, 2)
+        XCTAssertEqual(page.total, 2)
+        XCTAssertFalse(page.hasMoreOlder)
     }
 
     func testSendAttachmentAppendsStubMessages() async throws {
@@ -79,10 +81,10 @@ final class ChatAPIClientTests: XCTestCase {
         for try await chunk in stream {
             accumulated += chunk
         }
-        let list = try await client.fetchMessages(sessionId: sessionId)
-        XCTAssertEqual(list.count, 2)
-        XCTAssertEqual(list[1].role, .assistant)
-        XCTAssertEqual(list[1].content, accumulated)
+        let page = try await client.fetchMessagesPage(sessionId: sessionId, limit: 20, beforeMessageId: nil)
+        XCTAssertEqual(page.messages.count, 2)
+        XCTAssertEqual(page.messages[1].role, .assistant)
+        XCTAssertEqual(page.messages[1].content, accumulated)
         XCTAssertTrue(accumulated.contains("Stub reply"))
     }
 
@@ -99,8 +101,32 @@ final class ChatAPIClientTests: XCTestCase {
             count += 1
         }
         XCTAssertEqual(count, 0)
-        let list = try await client.fetchMessages(sessionId: sessionId)
-        XCTAssertTrue(list.isEmpty)
+        let page = try await client.fetchMessagesPage(sessionId: sessionId, limit: 20, beforeMessageId: nil)
+        XCTAssertTrue(page.messages.isEmpty)
+    }
+
+    func testStubFetchMessagesPageReturnsLatestSlice() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let client = StubChatAPIClient(store: store)
+        for i in 1 ... 7 {
+            _ = try await client.sendTextMessage(sessionId: sessionId, text: "msg \(i)", useKnowledgeBase: false)
+        }
+
+        let first = try await client.fetchMessagesPage(sessionId: sessionId, limit: 5, beforeMessageId: nil)
+        XCTAssertEqual(first.messages.count, 5)
+        XCTAssertEqual(first.total, 14)
+        XCTAssertTrue(first.hasMoreOlder)
+        XCTAssertTrue(first.messages.last?.content.contains("msg 7") ?? false)
+
+        let oldestId = first.messages.first!.id
+        let older = try await client.fetchMessagesPage(
+            sessionId: sessionId,
+            limit: 5,
+            beforeMessageId: oldestId
+        )
+        XCTAssertEqual(older.messages.count, 5)
+        XCTAssertTrue(older.hasMoreOlder)
+        XCTAssertFalse(older.messages.contains(where: { $0.id == oldestId }))
     }
 
     func testTranscribeVoiceRecordingReturnsStubText() async throws {
