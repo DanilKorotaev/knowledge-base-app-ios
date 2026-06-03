@@ -11,10 +11,7 @@ struct ChatView: View {
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showFileImporter = false
     @State private var showCamera = false
-    @State private var isNearScrollTop = false
-    @State private var isContentScrollable = false
     private let attachmentLoader: KBAttachmentLoaderProtocol?
-    private let olderPageTopThreshold: CGFloat = 120
 
     init(
         session: KBSession,
@@ -33,23 +30,19 @@ struct ChatView: View {
                 ProgressView("Loading messages…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
+                if viewModel.hasMoreOlder {
+                    olderMessagesBar
+                }
+
                 ScrollViewReader { proxy in
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 12) {
-                            if viewModel.hasMoreOlder, viewModel.isOlderPaginationEnabled {
-                                olderMessagesHeader
-                            }
-
-                            ForEach(Array(viewModel.messages.enumerated()), id: \.element.id) { index, message in
+                        LazyVStack(alignment: .leading, spacing: 12) {
+                            ForEach(viewModel.messages) { message in
                                 RichMessageBubbleView(
                                     message: message,
                                     attachmentLoader: attachmentLoader
                                 )
                                 .id(message.id)
-                                .onAppear {
-                                    guard index <= 1 else { return }
-                                    Task { await requestOlderMessagesIfNeeded() }
-                                }
                             }
                             if let streaming = viewModel.streamingAssistantText, !streaming.isEmpty {
                                 RichMessageBubbleView(
@@ -70,22 +63,8 @@ struct ChatView: View {
                         }
                         .padding()
                     }
-                    .defaultScrollAnchor(.bottom)
-                    .onScrollGeometryChange(for: Bool.self) { geometry in
-                        geometry.contentSize.height > geometry.visibleRect.height + 8
-                    } action: { _, scrollable in
-                        isContentScrollable = scrollable
-                    }
-                    .onScrollGeometryChange(for: Bool.self) { geometry in
-                        Self.isNearTopOfScroll(geometry, threshold: olderPageTopThreshold)
-                    } action: { wasNearTop, isNearTop in
-                        isNearScrollTop = isNearTop
-                        guard isNearTop, !wasNearTop else { return }
-                        Task { await requestOlderMessagesIfNeeded() }
-                    }
                     .onAppear {
-                        guard !viewModel.messages.isEmpty, !viewModel.isLoading else { return }
-                        scrollToBottom(proxy: proxy, delayed: true)
+                        scrollToBottomIfNeeded(proxy: proxy, delayed: true)
                     }
                     .onChange(of: viewModel.scrollAnchorMessageId) { _, anchor in
                         guard let anchor else { return }
@@ -97,30 +76,14 @@ struct ChatView: View {
                     .onChange(of: viewModel.messages.count) { oldCount, newCount in
                         guard viewModel.scrollAnchorMessageId == nil else { return }
                         guard newCount > oldCount, !viewModel.isLoadingOlder else { return }
-                        scrollToBottom(proxy: proxy)
+                        scrollToBottomIfNeeded(proxy: proxy)
                     }
                     .onChange(of: viewModel.streamingAssistantText) { _, _ in
-                        scrollToBottom(proxy: proxy)
+                        scrollToBottomIfNeeded(proxy: proxy)
                     }
                     .onChange(of: viewModel.isLoading) { _, loading in
-                        guard !loading, !viewModel.messages.isEmpty else { return }
-                        scrollToBottom(proxy: proxy, delayed: true)
-                        Task {
-                            try? await Task.sleep(for: .milliseconds(400))
-                            viewModel.enableOlderPagination()
-                            if !isContentScrollable {
-                                await requestOlderMessagesIfNeeded()
-                            }
-                        }
-                    }
-                    .onChange(of: viewModel.isOlderPaginationEnabled) { _, enabled in
-                        guard enabled else { return }
-                        guard isNearScrollTop || !isContentScrollable else { return }
-                        Task { await requestOlderMessagesIfNeeded() }
-                    }
-                    .onChange(of: viewModel.isLoadingOlder) { wasLoading, isLoading in
-                        guard wasLoading, !isLoading, isNearScrollTop else { return }
-                        Task { await requestOlderMessagesIfNeeded() }
+                        guard !loading else { return }
+                        scrollToBottomIfNeeded(proxy: proxy, delayed: true)
                     }
                 }
             }
@@ -197,50 +160,40 @@ struct ChatView: View {
         }
     }
 
-    private func requestOlderMessagesIfNeeded() async {
-        guard viewModel.isOlderPaginationEnabled, viewModel.hasMoreOlder else { return }
-        await viewModel.loadOlder()
-    }
-
     @ViewBuilder
-    private var olderMessagesHeader: some View {
+    private var olderMessagesBar: some View {
         if viewModel.isLoadingOlder {
             HStack {
                 Spacer()
                 ProgressView()
                 Spacer()
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, 10)
+            .background(.bar)
         } else {
             Button {
-                Task { await requestOlderMessagesIfNeeded() }
+                Task { await viewModel.loadOlder() }
             } label: {
-                Text("Load earlier messages")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.up.circle")
+                    if viewModel.totalCount > viewModel.messages.count {
+                        Text("Earlier messages (\(viewModel.messages.count) of \(viewModel.totalCount))")
+                    } else {
+                        Text("Load earlier messages")
+                    }
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 6)
-            .onAppear {
-                Task { await requestOlderMessagesIfNeeded() }
-            }
+            .padding(.vertical, 10)
+            .background(.bar)
+            .disabled(viewModel.isLoading)
         }
     }
 
-    /// Bottom-anchored chat: user scrolls up when `contentOffset` moves away from the bottom edge.
-    private static func isNearTopOfScroll(_ geometry: ScrollGeometry, threshold: CGFloat) -> Bool {
-        let contentHeight = geometry.contentSize.height
-        let viewportHeight = geometry.visibleRect.height
-        guard contentHeight > viewportHeight + 8 else { return false }
-        let maxOffset = max(
-            0,
-            contentHeight - viewportHeight + geometry.contentInsets.bottom
-        )
-        let offsetY = geometry.contentOffset.y + geometry.contentInsets.top
-        return maxOffset - offsetY >= threshold
-    }
-
-    private func scrollToBottom(proxy: ScrollViewProxy, delayed: Bool = false) {
+    private func scrollToBottomIfNeeded(proxy: ScrollViewProxy, delayed: Bool = false) {
+        guard !viewModel.messages.isEmpty, viewModel.scrollAnchorMessageId == nil else { return }
         let scroll = {
             proxy.scrollTo(bottomScrollID, anchor: .bottom)
         }

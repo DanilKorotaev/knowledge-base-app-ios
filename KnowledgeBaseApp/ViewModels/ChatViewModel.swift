@@ -15,8 +15,6 @@ final class ChatViewModel {
     var errorMessage: String?
     var totalCount = 0
     var hasMoreOlder = false
-    /// False until initial window is shown — prevents top sentinel from loading the whole thread at once.
-    var isOlderPaginationEnabled = false
     /// After prepending older messages, ChatView scrolls to this id to keep position.
     var scrollAnchorMessageId: String?
     /// Growing assistant text while `streamTextMessage` is active (hidden once final thread is loaded).
@@ -33,7 +31,6 @@ final class ChatViewModel {
         isLoading = true
         errorMessage = nil
         scrollAnchorMessageId = nil
-        isOlderPaginationEnabled = false
         defer { isLoading = false }
         do {
             let page = try await client.fetchMessagesPage(
@@ -47,12 +44,8 @@ final class ChatViewModel {
         }
     }
 
-    func enableOlderPagination() {
-        isOlderPaginationEnabled = true
-    }
-
     func loadOlder() async {
-        guard isOlderPaginationEnabled, hasMoreOlder, !isLoadingOlder, !isLoading else { return }
+        guard hasMoreOlder, !isLoadingOlder, !isLoading else { return }
         guard let oldestId = messages.first?.id else { return }
         isLoadingOlder = true
         scrollAnchorMessageId = oldestId
