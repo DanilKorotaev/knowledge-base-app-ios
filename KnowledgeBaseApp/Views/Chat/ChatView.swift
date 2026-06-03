@@ -7,11 +7,14 @@ struct ChatView: View {
     @Environment(VoiceRoutingContext.self) private var voiceRouting
     @Environment(VoiceRecordingViewModel.self) private var voiceViewModel
     @State private var viewModel: ChatViewModel
+    @State private var scrollPosition: String?
+    @State private var allowOlderLoad = false
     @State private var bottomScrollID = "kb-chat-bottom"
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showFileImporter = false
     @State private var showCamera = false
     private let attachmentLoader: KBAttachmentLoaderProtocol?
+    private let olderLoadTopThreshold: CGFloat = 80
 
     init(
         session: KBSession,
@@ -30,13 +33,11 @@ struct ChatView: View {
                 ProgressView("Loading messages…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                if viewModel.hasMoreOlder {
-                    olderMessagesBar
-                }
-
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 12) {
+                            olderLoadTrigger
+
                             ForEach(viewModel.messages) { message in
                                 RichMessageBubbleView(
                                     message: message,
@@ -63,27 +64,15 @@ struct ChatView: View {
                         }
                         .padding()
                     }
-                    .onAppear {
-                        scrollToBottomIfNeeded(proxy: proxy, delayed: true)
+                    .scrollPosition(id: $scrollPosition, anchor: .bottom)
+                    .onScrollGeometryChange(for: Bool.self) { geometry in
+                        Self.shouldLoadOlderMessages(geometry, threshold: olderLoadTopThreshold)
+                    } action: { wasNearTop, isNearTop in
+                        guard isNearTop, !wasNearTop, allowOlderLoad else { return }
+                        Task { await viewModel.loadOlder() }
                     }
-                    .onChange(of: viewModel.scrollAnchorMessageId) { _, anchor in
-                        guard let anchor else { return }
-                        DispatchQueue.main.async {
-                            proxy.scrollTo(anchor, anchor: .top)
-                            viewModel.scrollAnchorMessageId = nil
-                        }
-                    }
-                    .onChange(of: viewModel.messages.count) { oldCount, newCount in
-                        guard viewModel.scrollAnchorMessageId == nil else { return }
-                        guard newCount > oldCount, !viewModel.isLoadingOlder else { return }
-                        scrollToBottomIfNeeded(proxy: proxy)
-                    }
-                    .onChange(of: viewModel.streamingAssistantText) { _, _ in
-                        scrollToBottomIfNeeded(proxy: proxy)
-                    }
-                    .onChange(of: viewModel.isLoading) { _, loading in
-                        guard !loading else { return }
-                        scrollToBottomIfNeeded(proxy: proxy, delayed: true)
+                    .onChange(of: viewModel.scrollIntent) { _, intent in
+                        applyScrollIntent(intent, proxy: proxy)
                     }
                 }
             }
@@ -99,7 +88,10 @@ struct ChatView: View {
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
         .task {
+            allowOlderLoad = false
             await viewModel.load()
+            try? await Task.sleep(for: .milliseconds(350))
+            allowOlderLoad = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { notification in
             guard let sid = notification.userInfo?[KBNotificationUserInfoKey.sessionId] as? String,
@@ -161,47 +153,51 @@ struct ChatView: View {
     }
 
     @ViewBuilder
-    private var olderMessagesBar: some View {
+    private var olderLoadTrigger: some View {
         if viewModel.isLoadingOlder {
             HStack {
                 Spacer()
                 ProgressView()
+                    .padding(.vertical, 8)
                 Spacer()
             }
-            .padding(.vertical, 10)
-            .background(.bar)
-        } else {
-            Button {
-                Task { await viewModel.loadOlder() }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.up.circle")
-                    if viewModel.totalCount > viewModel.messages.count {
-                        Text("Earlier messages (\(viewModel.messages.count) of \(viewModel.totalCount))")
-                    } else {
-                        Text("Load earlier messages")
-                    }
+        } else if viewModel.hasMoreOlder {
+            Color.clear
+                .frame(height: 1)
+                .id(olderTriggerID)
+                .onAppear {
+                    guard allowOlderLoad else { return }
+                    Task { await viewModel.loadOlder() }
                 }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-            }
-            .padding(.vertical, 10)
-            .background(.bar)
-            .disabled(viewModel.isLoading)
         }
     }
 
-    private func scrollToBottomIfNeeded(proxy: ScrollViewProxy, delayed: Bool = false) {
-        guard !viewModel.messages.isEmpty, viewModel.scrollAnchorMessageId == nil else { return }
-        let scroll = {
-            proxy.scrollTo(bottomScrollID, anchor: .bottom)
+    private var olderTriggerID: String {
+        "kb-older-trigger-\(viewModel.messages.first?.id ?? "none")"
+    }
+
+    private func applyScrollIntent(_ intent: ChatScrollIntent, proxy: ScrollViewProxy) {
+        guard intent != .none else { return }
+        let apply = {
+            switch intent {
+            case .none:
+                break
+            case .scrollToBottom:
+                scrollPosition = viewModel.messages.last?.id ?? bottomScrollID
+            case .preserve(let messageId):
+                proxy.scrollTo(messageId, anchor: .top)
+            }
+            viewModel.acknowledgeScrollIntent()
         }
-        if delayed {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: scroll)
-        } else {
-            DispatchQueue.main.async(execute: scroll)
-        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: apply)
+    }
+
+    /// True when the user has scrolled up toward older messages (standard top offset).
+    private static func shouldLoadOlderMessages(_ geometry: ScrollGeometry, threshold: CGFloat) -> Bool {
+        let contentHeight = geometry.contentSize.height
+        let viewportHeight = geometry.visibleRect.height
+        guard contentHeight > viewportHeight + 8 else { return false }
+        return geometry.contentOffset.y + geometry.contentInsets.top <= threshold
     }
 
     private var inputBar: some View {

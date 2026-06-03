@@ -1,5 +1,12 @@
 import Foundation
 
+/// Drives `ChatView` scroll without implicit `onChange` heuristics.
+enum ChatScrollIntent: Equatable {
+    case none
+    case scrollToBottom
+    case preserve(messageId: String)
+}
+
 @MainActor
 @Observable
 final class ChatViewModel {
@@ -15,8 +22,7 @@ final class ChatViewModel {
     var errorMessage: String?
     var totalCount = 0
     var hasMoreOlder = false
-    /// After prepending older messages, ChatView scrolls to this id to keep position.
-    var scrollAnchorMessageId: String?
+    var scrollIntent: ChatScrollIntent = .none
     /// Growing assistant text while `streamTextMessage` is active (hidden once final thread is loaded).
     var streamingAssistantText: String?
 
@@ -30,7 +36,7 @@ final class ChatViewModel {
     func load() async {
         isLoading = true
         errorMessage = nil
-        scrollAnchorMessageId = nil
+        scrollIntent = .none
         defer { isLoading = false }
         do {
             let page = try await client.fetchMessagesPage(
@@ -39,6 +45,7 @@ final class ChatViewModel {
                 beforeMessageId: nil
             )
             apply(page: page, requestedLimit: Self.pageSize)
+            scrollIntent = .scrollToBottom
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -46,29 +53,31 @@ final class ChatViewModel {
 
     func loadOlder() async {
         guard hasMoreOlder, !isLoadingOlder, !isLoading else { return }
-        guard let oldestId = messages.first?.id else { return }
+        guard let anchorId = messages.first?.id else { return }
         isLoadingOlder = true
-        scrollAnchorMessageId = oldestId
         defer { isLoadingOlder = false }
         do {
             let page = try await client.fetchMessagesPage(
                 sessionId: session.id,
                 limit: Self.pageSize,
-                beforeMessageId: oldestId
+                beforeMessageId: anchorId
             )
             guard !page.messages.isEmpty else {
                 hasMoreOlder = false
-                scrollAnchorMessageId = nil
                 return
             }
             let older = clamp(page.messages, to: Self.pageSize)
             messages = older + messages
             totalCount = page.total
             hasMoreOlder = page.hasMoreOlder
+            scrollIntent = .preserve(messageId: anchorId)
         } catch {
             errorMessage = error.localizedDescription
-            scrollAnchorMessageId = nil
         }
+    }
+
+    func acknowledgeScrollIntent() {
+        scrollIntent = .none
     }
 
     func send() async {
@@ -77,7 +86,7 @@ final class ChatViewModel {
         isSending = true
         errorMessage = nil
         streamingAssistantText = nil
-        scrollAnchorMessageId = nil
+        scrollIntent = .none
         defer {
             isSending = false
             streamingAssistantText = nil
@@ -91,6 +100,7 @@ final class ChatViewModel {
                 createdAt: Date()
             )
             messages.append(optimisticUser)
+            scrollIntent = .scrollToBottom
 
             let stream = try await client.streamTextMessage(
                 sessionId: session.id,
@@ -102,6 +112,7 @@ final class ChatViewModel {
             for try await chunk in stream {
                 accumulated += chunk
                 streamingAssistantText = accumulated
+                scrollIntent = .scrollToBottom
             }
 
             await reloadLatestWindow()
@@ -120,6 +131,7 @@ final class ChatViewModel {
                 beforeMessageId: nil
             )
             apply(page: page, requestedLimit: limit)
+            scrollIntent = .scrollToBottom
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -136,7 +148,7 @@ final class ChatViewModel {
     func sendAttachment(fileURL: URL, filename: String, mimeType: String) async {
         isSending = true
         errorMessage = nil
-        scrollAnchorMessageId = nil
+        scrollIntent = .none
         defer { isSending = false }
         let scoped = fileURL.startAccessingSecurityScopedResource()
         defer {
