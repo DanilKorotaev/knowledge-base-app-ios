@@ -268,21 +268,50 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         decoder.dateDecodingStrategy = .iso8601
 
         if let page = try? decoder.decode(KBMessagesPage.self, from: data) {
-            return page
+            return clampMessagesPage(page, limit: limit)
         }
 
         struct LegacyEnvelope: Codable {
             let messages: [KBMessage]?
             let items: [KBMessage]?
+            let total: Int?
+            let hasMoreOlder: Bool?
+
+            enum CodingKeys: String, CodingKey {
+                case messages
+                case items
+                case total
+                case hasMoreOlder = "has_more_older"
+            }
         }
         if let legacy = try? decoder.decode(LegacyEnvelope.self, from: data) {
             let list = legacy.messages ?? legacy.items ?? []
-            return KBMessagesPage(messages: list, total: list.count, hasMoreOlder: false)
+            let page = KBMessagesPage(
+                messages: list,
+                total: legacy.total ?? list.count,
+                hasMoreOlder: legacy.hasMoreOlder ?? (list.count > limit)
+            )
+            return clampMessagesPage(page, limit: limit)
         }
         if let list = try? decoder.decode([KBMessage].self, from: data) {
-            return KBMessagesPage(messages: list, total: list.count, hasMoreOlder: false)
+            let page = KBMessagesPage(
+                messages: list,
+                total: list.count,
+                hasMoreOlder: list.count > limit
+            )
+            return clampMessagesPage(page, limit: limit)
         }
         throw KnowledgeBaseAPIError.decodingFailed
+    }
+
+    private func clampMessagesPage(_ page: KBMessagesPage, limit: Int) -> KBMessagesPage {
+        guard page.messages.count > limit else { return page }
+        let window = Array(page.messages.suffix(limit))
+        return KBMessagesPage(
+            messages: window,
+            total: page.total,
+            hasMoreOlder: true
+        )
     }
 
     private func messagesFromPostResponse(data: Data, sessionId: String) async throws -> [KBMessage] {

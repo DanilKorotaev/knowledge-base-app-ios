@@ -15,6 +15,8 @@ final class ChatViewModel {
     var errorMessage: String?
     var totalCount = 0
     var hasMoreOlder = false
+    /// False until initial window is shown — prevents top sentinel from loading the whole thread at once.
+    var isOlderPaginationEnabled = false
     /// After prepending older messages, ChatView scrolls to this id to keep position.
     var scrollAnchorMessageId: String?
     /// Growing assistant text while `streamTextMessage` is active (hidden once final thread is loaded).
@@ -31,6 +33,7 @@ final class ChatViewModel {
         isLoading = true
         errorMessage = nil
         scrollAnchorMessageId = nil
+        isOlderPaginationEnabled = false
         defer { isLoading = false }
         do {
             let page = try await client.fetchMessagesPage(
@@ -38,14 +41,18 @@ final class ChatViewModel {
                 limit: Self.pageSize,
                 beforeMessageId: nil
             )
-            apply(page: page)
+            apply(page: page, requestedLimit: Self.pageSize)
         } catch {
             errorMessage = error.localizedDescription
         }
     }
 
+    func enableOlderPagination() {
+        isOlderPaginationEnabled = true
+    }
+
     func loadOlder() async {
-        guard hasMoreOlder, !isLoadingOlder, !isLoading else { return }
+        guard isOlderPaginationEnabled, hasMoreOlder, !isLoadingOlder, !isLoading else { return }
         guard let oldestId = messages.first?.id else { return }
         isLoadingOlder = true
         scrollAnchorMessageId = oldestId
@@ -61,7 +68,8 @@ final class ChatViewModel {
                 scrollAnchorMessageId = nil
                 return
             }
-            messages = page.messages + messages
+            let older = clamp(page.messages, to: Self.pageSize)
+            messages = older + messages
             totalCount = page.total
             hasMoreOlder = page.hasMoreOlder
         } catch {
@@ -118,7 +126,7 @@ final class ChatViewModel {
                 limit: limit,
                 beforeMessageId: nil
             )
-            apply(page: page)
+            apply(page: page, requestedLimit: limit)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -157,9 +165,15 @@ final class ChatViewModel {
         }
     }
 
-    private func apply(page: KBMessagesPage) {
-        messages = page.messages
+    private func apply(page: KBMessagesPage, requestedLimit: Int) {
+        messages = clamp(page.messages, to: requestedLimit)
         totalCount = page.total
-        hasMoreOlder = page.hasMoreOlder
+        let hasOlderByCount = page.total > messages.count
+        hasMoreOlder = page.hasMoreOlder || hasOlderByCount
+    }
+
+    private func clamp(_ list: [KBMessage], to limit: Int) -> [KBMessage] {
+        guard list.count > limit else { return list }
+        return Array(list.suffix(limit))
     }
 }

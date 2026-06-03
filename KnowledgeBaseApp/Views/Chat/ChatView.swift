@@ -40,7 +40,7 @@ struct ChatView: View {
                                     Spacer()
                                 }
                                 .padding(.vertical, 8)
-                            } else if viewModel.hasMoreOlder {
+                            } else if viewModel.hasMoreOlder, viewModel.isOlderPaginationEnabled {
                                 Color.clear
                                     .frame(height: 1)
                                     .onAppear {
@@ -97,6 +97,10 @@ struct ChatView: View {
                     .onChange(of: viewModel.isLoading) { _, loading in
                         guard !loading, !viewModel.messages.isEmpty else { return }
                         scrollToBottom(proxy: proxy, delayed: true)
+                        Task {
+                            try? await Task.sleep(for: .milliseconds(400))
+                            viewModel.enableOlderPagination()
+                        }
                     }
                 }
             }
