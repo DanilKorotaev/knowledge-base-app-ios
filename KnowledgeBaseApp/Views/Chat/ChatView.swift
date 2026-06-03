@@ -11,7 +11,9 @@ struct ChatView: View {
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showFileImporter = false
     @State private var showCamera = false
+    @State private var isNearScrollTop = false
     private let attachmentLoader: KBAttachmentLoaderProtocol?
+    private let olderPageTopThreshold: CGFloat = 120
 
     init(
         session: KBSession,
@@ -41,11 +43,16 @@ struct ChatView: View {
                                 }
                                 .padding(.vertical, 8)
                             } else if viewModel.hasMoreOlder, viewModel.isOlderPaginationEnabled {
-                                Color.clear
-                                    .frame(height: 1)
-                                    .onAppear {
-                                        Task { await viewModel.loadOlder() }
-                                    }
+                                Button {
+                                    Task { await requestOlderMessagesIfNeeded() }
+                                } label: {
+                                    Text("Load earlier messages")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .padding(.vertical, 6)
+                                .id("kb-chat-older-sentinel-\(viewModel.messages.first?.id ?? "none")")
                             }
 
                             ForEach(viewModel.messages) { message in
@@ -75,6 +82,13 @@ struct ChatView: View {
                         .padding()
                     }
                     .defaultScrollAnchor(.bottom)
+                    .onScrollGeometryChange(for: Bool.self) { geometry in
+                        Self.isNearTopOfScroll(geometry, threshold: olderPageTopThreshold)
+                    } action: { wasNearTop, isNearTop in
+                        isNearScrollTop = isNearTop
+                        guard isNearTop, !wasNearTop else { return }
+                        Task { await requestOlderMessagesIfNeeded() }
+                    }
                     .onAppear {
                         guard !viewModel.messages.isEmpty, !viewModel.isLoading else { return }
                         scrollToBottom(proxy: proxy, delayed: true)
@@ -101,6 +115,14 @@ struct ChatView: View {
                             try? await Task.sleep(for: .milliseconds(400))
                             viewModel.enableOlderPagination()
                         }
+                    }
+                    .onChange(of: viewModel.isOlderPaginationEnabled) { _, enabled in
+                        guard enabled, isNearScrollTop else { return }
+                        Task { await requestOlderMessagesIfNeeded() }
+                    }
+                    .onChange(of: viewModel.isLoadingOlder) { wasLoading, isLoading in
+                        guard wasLoading, !isLoading, isNearScrollTop else { return }
+                        Task { await requestOlderMessagesIfNeeded() }
                     }
                 }
             }
@@ -175,6 +197,19 @@ struct ChatView: View {
             )
             .ignoresSafeArea()
         }
+    }
+
+    private func requestOlderMessagesIfNeeded() async {
+        guard viewModel.isOlderPaginationEnabled, viewModel.hasMoreOlder else { return }
+        await viewModel.loadOlder()
+    }
+
+    /// With `defaultScrollAnchor(.bottom)` the offset is ~0 at the oldest edge once the user scrolls up.
+    private static func isNearTopOfScroll(_ geometry: ScrollGeometry, threshold: CGFloat) -> Bool {
+        let contentHeight = geometry.contentSize.height
+        let viewportHeight = geometry.visibleRect.height
+        guard contentHeight > viewportHeight + 8 else { return false }
+        return geometry.contentOffset.y + geometry.contentInsets.top <= threshold
     }
 
     private func scrollToBottom(proxy: ScrollViewProxy, delayed: Bool = false) {
