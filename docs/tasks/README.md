@@ -20,6 +20,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repoâ
 | `task-doc-kb-app-api-contract.md` | KB App API contract + OpenAPI subset + error parsing |
 | `task-backend-kb-app-api-mvp.md` | FastAPI MVP in `knowledge-base-bot/kb_app_api/` |
 | `task-ux-chat-rich-messages.md` | Attachments, voice playback, Markdown/HTML bubbles |
+| `task-ux-chat-markdown-blocks.md` | Lists, fenced code, blockquotes in assistant markdown |
 | `task-feature-session-delete-rename.md` | Delete/rename sessions in UI |
 
 ## Pending (`pending/`)

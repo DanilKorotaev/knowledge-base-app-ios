@@ -1,71 +1,100 @@
 import SwiftUI
 
-enum MarkdownLineParser {
-    /// GFM thematic break: `---`, `***`, `___` (spaces allowed between chars).
-    static func isThematicBreak(_ line: String) -> Bool {
-        let compact = line
-            .trimmingCharacters(in: .whitespaces)
-            .replacingOccurrences(of: " ", with: "")
-        guard compact.count >= 3 else { return false }
-        guard let marker = compact.first, marker == "-" || marker == "*" || marker == "_" else { return false }
-        return compact.allSatisfy { $0 == marker }
-    }
-}
-
-/// Renders markdown-ish text line-by-line so `\n` from the server are preserved.
+/// Renders markdown text blocks: lists, code, quotes, headers, preserved line breaks.
 struct MarkdownTextBlockView: View {
     let text: String
 
+    private var segments: [MarkdownSegment] {
+        MarkdownSegmentParser.segments(from: text)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ForEach(Array(displayLines.enumerated()), id: \.offset) { _, item in
-                switch item {
-                case .blank:
-                    Color.clear.frame(height: 4)
-                case .horizontalRule:
-                    Rectangle()
-                        .fill(Color.primary.opacity(0.15))
-                        .frame(height: 1)
-                        .padding(.vertical, 6)
-                case .header(let level, let line):
-                    Text(MessageContentRenderer.parseMarkdown(line))
-                        .font(headerFont(level))
-                        .fontWeight(.semibold)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                case .line(let line):
-                    Text(MessageContentRenderer.inlineAttributedText(line))
-                        .font(.body)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(segments) { segment in
+                segmentView(segment)
             }
         }
         .textSelection(.enabled)
     }
 
-    private enum DisplayLine {
-        case blank
-        case horizontalRule
-        case header(Int, String)
-        case line(String)
-    }
-
-    private func displayLines(from source: String) -> [DisplayLine] {
-        source.components(separatedBy: "\n").map { raw in
-            let trimmed = raw.trimmingCharacters(in: .whitespaces)
-            if trimmed.isEmpty { return .blank }
-            if MarkdownLineParser.isThematicBreak(raw) { return .horizontalRule }
-            let hashCount = raw.prefix(while: { $0 == "#" }).count
-            if hashCount > 0, hashCount <= 6, raw.dropFirst(hashCount).first == " " {
-                return .header(hashCount, raw)
-            }
-            return .line(raw)
+    @ViewBuilder
+    private func segmentView(_ segment: MarkdownSegment) -> some View {
+        switch segment {
+        case .blank:
+            Color.clear.frame(height: 4)
+        case .horizontalRule:
+            Rectangle()
+                .fill(Color.primary.opacity(0.15))
+                .frame(height: 1)
+                .padding(.vertical, 4)
+        case .header(let level, let line):
+            Text(MessageContentRenderer.parseMarkdown(line))
+                .font(headerFont(level))
+                .fontWeight(.semibold)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        case .paragraph(let line):
+            Text(MessageContentRenderer.inlineAttributedText(line))
+                .font(.body)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        case .list(let items):
+            listView(items)
+        case .codeBlock(let language, let code):
+            MarkdownCodeBlockView(language: language, code: code)
+        case .blockquote(let lines):
+            blockquoteView(lines)
         }
     }
 
-    private var displayLines: [DisplayLine] {
-        displayLines(from: text)
+    @ViewBuilder
+    private func listView(_ items: [MarkdownListItem]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                HStack(alignment: .top, spacing: 8) {
+                    Text(listMarkerLabel(item.marker))
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 22, alignment: .trailing)
+                    Text(MessageContentRenderer.inlineAttributedText(item.text))
+                        .font(.body)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding(.leading, CGFloat(item.indentLevel) * 16)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func blockquoteView(_ lines: [String]) -> some View {
+        HStack(alignment: .top, spacing: 0) {
+            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                .fill(Color.accentColor.opacity(0.55))
+                .frame(width: 3)
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                    Text(MessageContentRenderer.inlineAttributedText(line))
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .padding(.leading, 10)
+            .padding(.vertical, 4)
+        }
+        .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.primary.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+    }
+
+    private func listMarkerLabel(_ marker: MarkdownListMarker) -> String {
+        switch marker {
+        case .bullet: return "•"
+        case .numbered(let n): return "\(n)."
+        }
     }
 
     private func headerFont(_ level: Int) -> Font {

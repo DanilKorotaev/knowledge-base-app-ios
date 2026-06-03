@@ -204,6 +204,34 @@ final class MessageContentRendererTests: XCTestCase {
         XCTAssertFalse(MarkdownLineParser.isThematicBreak("--- still text"))
     }
 
+    func testMarkdownSegmentParserListAndCode() {
+        let md = """
+        Intro line
+
+        - first
+        - second
+
+        ```swift
+        let x = 1
+        ```
+
+        > quote one
+        > quote two
+        """
+        let segments = MarkdownSegmentParser.segments(from: md)
+        XCTAssertTrue(segments.contains { if case .paragraph(let s) = $0 { return s == "Intro line" } else { return false } })
+        XCTAssertTrue(segments.contains { if case .list(let items) = $0 { return items.count == 2 && items[0].text == "first" } else { return false } })
+        XCTAssertTrue(segments.contains { if case .codeBlock(let lang, let code) = $0 { return lang == "swift" && code.contains("let x") } else { return false } })
+        XCTAssertTrue(segments.contains { if case .blockquote(let lines) = $0 { return lines == ["quote one", "quote two"] } else { return false } })
+    }
+
+    func testMarkdownNestedListIndent() {
+        let item = MarkdownLineParser.parseListItem("  - nested item")
+        XCTAssertNotNil(item)
+        XCTAssertEqual(item?.indentLevel, 1)
+        XCTAssertEqual(item?.text, "nested item")
+    }
+
     func testMarkdownTableParser() {
         let md = """
         Intro

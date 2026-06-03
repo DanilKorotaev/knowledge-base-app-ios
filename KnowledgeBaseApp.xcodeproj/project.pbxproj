@@ -26,6 +26,7 @@
 		3297C5655A888B182615C5FB /* VoiceMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A76B8A20C44A7BB80F7509 /* VoiceMessageBubble.swift */; };
 		343498C2DB528E4809E9DCCE /* URLMIMETypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABACE67AA14AB98FB6859D /* URLMIMETypeTests.swift */; };
 		366AB847DA19D3225603589C /* SearchTextFieldConfigurator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916CB4865EF5D7C9534296F3 /* SearchTextFieldConfigurator.swift */; };
+		369161ED876B4F81DECBE80B /* MarkdownCodeBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1434E608570E5AE19C695 /* MarkdownCodeBlockView.swift */; };
 		3A5B775E1E1FB8503C07EE77 /* LogTagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2F945D81839C273CE774D0 /* LogTagsView.swift */; };
 		3BA6889C3284734F7754E04F /* LogSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F55829B019AC60454AD98C6 /* LogSettingsView.swift */; };
 		3DA54BC6048F0C6630A19F5D /* UserDefaultsDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800F7BD9AA9398BD37AE5995 /* UserDefaultsDetailViewModelTests.swift */; };
@@ -34,6 +35,7 @@
 		3E3686DD8A6345F55E307ADD /* KnowledgeBaseAppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD8B85391698AF8E13EE6F4 /* KnowledgeBaseAppShortcuts.swift */; };
 		3F8EEDABA7DDEEB198245960 /* UserDefaultsTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91CAF6150A511EF48A26E1E1 /* UserDefaultsTestSupport.swift */; };
 		4000B1481D59B69B849A0E8D /* UserDefaultsValueEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5537ED8C51E85D4C7BDA95C9 /* UserDefaultsValueEditView.swift */; };
+		41CCEDE070A03565ADD46192 /* MarkdownSegmentParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93B79D3758739A5234B9CDDD /* MarkdownSegmentParser.swift */; };
 		42E5A6556C7E37D86B366541 /* KnowledgeBaseAPIE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC45859588ECAA80CFB3B7 /* KnowledgeBaseAPIE2ETests.swift */; };
 		432AA9C7E78A441CBD34EF3F /* OutputFileStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D649862177DB7808910834 /* OutputFileStream.swift */; };
 		45F5768E165DAB72D797657A /* KBLoggerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7796837ED7E57A491D719DC3 /* KBLoggerSettings.swift */; };
@@ -266,6 +268,7 @@
 		9193CB5D05F676D78DC1F959 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		91CAF6150A511EF48A26E1E1 /* UserDefaultsTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsTestSupport.swift; sourceTree = "<group>"; };
 		931725756FD9C89F97BA8328 /* MarkdownBlockParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownBlockParser.swift; sourceTree = "<group>"; };
+		93B79D3758739A5234B9CDDD /* MarkdownSegmentParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownSegmentParser.swift; sourceTree = "<group>"; };
 		971AA806E04560A1CB1992EB /* UserDefaultsAddViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsAddViewModelTests.swift; sourceTree = "<group>"; };
 		9764B8699FAD518EB32C07A9 /* UserDefaultsDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDetailView.swift; sourceTree = "<group>"; };
 		97AD15C24F6049D4694DC603 /* RenameSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameSessionSheet.swift; sourceTree = "<group>"; };
@@ -302,6 +305,7 @@
 		CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAPIClient.swift; sourceTree = "<group>"; };
 		CFD644C3B0F531601E4EDA40 /* KnowledgeBaseWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseWidgets.swift; sourceTree = "<group>"; };
 		D1FCCA0BB3CACBD1682EDF80 /* KnowledgeBaseAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAPIClientTests.swift; sourceTree = "<group>"; };
+		D2F1434E608570E5AE19C695 /* MarkdownCodeBlockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownCodeBlockView.swift; sourceTree = "<group>"; };
 		D4172111889978BC06253A14 /* UserDefaultsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsListView.swift; sourceTree = "<group>"; };
 		D4BD102BF4E88BE964430B5A /* RecordingGestureLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingGestureLogicTests.swift; sourceTree = "<group>"; };
 		D4D649862177DB7808910834 /* OutputFileStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputFileStream.swift; sourceTree = "<group>"; };
@@ -679,6 +683,8 @@
 				0F402A7D191773857BCD1B01 /* CameraPicker.swift */,
 				BFE66E36D575D6879DC9F0F6 /* ChatView.swift */,
 				931725756FD9C89F97BA8328 /* MarkdownBlockParser.swift */,
+				D2F1434E608570E5AE19C695 /* MarkdownCodeBlockView.swift */,
+				93B79D3758739A5234B9CDDD /* MarkdownSegmentParser.swift */,
 				1FE4F79FC5092B8C640F3DA6 /* MarkdownTableData.swift */,
 				667E0B685130674D97FD74F5 /* MarkdownTableFullscreenView.swift */,
 				6662058D3176B3AB154C7DE2 /* MarkdownTableGrid.swift */,
@@ -930,6 +936,8 @@
 				615B550C8EDC8E53A5196051 /* LogsMenuView.swift in Sources */,
 				4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */,
 				9EB86C83E89C633B796C7A37 /* MarkdownBlockParser.swift in Sources */,
+				369161ED876B4F81DECBE80B /* MarkdownCodeBlockView.swift in Sources */,
+				41CCEDE070A03565ADD46192 /* MarkdownSegmentParser.swift in Sources */,
 				2B035B749D11F7B716AD1736 /* MarkdownTableData.swift in Sources */,
 				C48EEFBC2F48A2409A5F5089 /* MarkdownTableFullscreenView.swift in Sources */,
 				C8F2A6682A1F5AAB3F73D48C /* MarkdownTableGrid.swift in Sources */,
