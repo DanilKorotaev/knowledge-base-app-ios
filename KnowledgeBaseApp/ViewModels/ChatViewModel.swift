@@ -27,6 +27,7 @@ final class ChatViewModel {
     var streamingAssistantText: String?
 
     private let client: ChatAPIClientProtocol
+    private var lastOlderLoadTime: CFAbsoluteTime = 0
 
     init(session: KBSession, client: ChatAPIClientProtocol) {
         self.session = session
@@ -53,7 +54,10 @@ final class ChatViewModel {
 
     func loadOlder() async {
         guard hasMoreOlder, !isLoadingOlder, !isLoading else { return }
+        let now = CFAbsoluteTimeGetCurrent()
+        guard now - lastOlderLoadTime >= 0.45 else { return }
         guard let anchorId = messages.first?.id else { return }
+        lastOlderLoadTime = now
         isLoadingOlder = true
         defer { isLoadingOlder = false }
         do {
