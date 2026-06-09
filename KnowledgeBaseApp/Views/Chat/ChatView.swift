@@ -192,22 +192,10 @@ struct ChatView: View {
             AssistantPendingBubbleView()
                 .id("__kb_assistant_streaming_empty__")
         case .streaming(let text), .finalizing(let text):
-            VStack(alignment: .leading, spacing: 6) {
-                RichMessageBubbleView(
-                    message: KBMessage(
-                        id: "__kb_streaming__",
-                        role: .assistant,
-                        content: text,
-                        createdAt: Date(),
-                        contentFormat: .markdown
-                    ),
-                    attachmentLoader: attachmentLoader
-                )
-                if viewModel.assistantReplyPhase.showsTypingIndicator {
-                    TypingIndicatorView()
-                        .padding(.leading, 8)
-                }
-            }
+            StreamingAssistantBubbleView(
+                text: text,
+                showsTypingIndicator: viewModel.assistantReplyPhase.showsTypingIndicator
+            )
             .id("__kb_assistant_streaming__")
         }
     }

@@ -45,6 +45,7 @@
 		B8G9F0E1D2C345678901BCDE /* AssistantReplyPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F8E9D0C1B234567890ABCD /* AssistantReplyPhase.swift */; };
 		D0I1H2G3F4E567890123DEF0 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9H0G1F2E3D456789012CDEF /* TypingIndicatorView.swift */; };
 		F2K3J4I5H6G789012345F012 /* AssistantPendingBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1J2I3H4G5F678901234EF01 /* AssistantPendingBubbleView.swift */; };
+		S7T8R9E0A1M2B3U4B5B6L7E8 /* StreamingAssistantBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = S1T2R3E4A5M6B7U8B9B0L1E2 /* StreamingAssistantBubbleView.swift */; };
 		H4M5L6K7J8I9012345671234 /* AssistantReplyPhaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */; };
 		J6O7N8M9L0K1234567893456 /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = I5N6M7L8K9J0123456782345 /* ChatViewModelTests.swift */; };
 		4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E8507F60F3F1F8BE4CB3FB /* MainView.swift */; };
@@ -269,6 +270,7 @@
 		A7F8E9D0C1B234567890ABCD /* AssistantReplyPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantReplyPhase.swift; sourceTree = "<group>"; };
 		C9H0G1F2E3D456789012CDEF /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
 		E1J2I3H4G5F678901234EF01 /* AssistantPendingBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantPendingBubbleView.swift; sourceTree = "<group>"; };
+		S1T2R3E4A5M6B7U8B9B0L1E2 /* StreamingAssistantBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingAssistantBubbleView.swift; sourceTree = "<group>"; };
 		G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantReplyPhaseTests.swift; sourceTree = "<group>"; };
 		I5N6M7L8K9J0123456782345 /* ChatViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModelTests.swift; sourceTree = "<group>"; };
 		86B8B8B44D1FB644523A5399 /* UserDefaultsInspectorLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsInspectorLoggerTests.swift; sourceTree = "<group>"; };
@@ -718,6 +720,7 @@
 				BDFF88AB53A3C8CD731FCF09 /* MarkdownTextBlockView.swift */,
 				12FD86A6BA8F2F6076143984 /* MessageContentView.swift */,
 				75DCAA284E519E800019228F /* RichMessageBubbleView.swift */,
+				S1T2R3E4A5M6B7U8B9B0L1E2 /* StreamingAssistantBubbleView.swift */,
 				C9H0G1F2E3D456789012CDEF /* TypingIndicatorView.swift */,
 				43A76B8A20C44A7BB80F7509 /* VoiceMessageBubble.swift */,
 			);
@@ -925,6 +928,7 @@
 				A1B2C3D4E5F60718293A4B5C /* ChatPaginationLogger.swift in Sources */,
 				B8G9F0E1D2C345678901BCDE /* AssistantReplyPhase.swift in Sources */,
 				F2K3J4I5H6G789012345F012 /* AssistantPendingBubbleView.swift in Sources */,
+				S7T8R9E0A1M2B3U4B5B6L7E8 /* StreamingAssistantBubbleView.swift in Sources */,
 				764D152A8A192C4FD5D122BB /* ChatViewModel.swift in Sources */,
 				2B71CED7CA14D0C19C814D13 /* Collection+Group.swift in Sources */,
 				54C2BD34B388702A10349971 /* ConsoleLogger.swift in Sources */,
