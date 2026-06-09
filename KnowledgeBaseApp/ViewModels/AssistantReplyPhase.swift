@@ -65,10 +65,18 @@ enum AssistantReplyStreamConsumer {
     ) async throws {
         await onPhaseChange(.waiting)
         var accumulated = ""
+        var chunkIndex = 0
         for try await chunk in stream {
+            chunkIndex += 1
             accumulated += chunk
+            ChatPaginationLogger.streamingDelta(
+                index: chunkIndex,
+                deltaChars: chunk.count,
+                totalChars: accumulated.count
+            )
             await onPhaseChange(.streaming(text: accumulated))
         }
+        ChatPaginationLogger.streamingFinished(chunks: chunkIndex, totalChars: accumulated.count)
         await onPhaseChange(.finalizing(text: accumulated))
     }
 }

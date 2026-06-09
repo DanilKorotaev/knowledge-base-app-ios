@@ -119,7 +119,10 @@ struct ChatView: View {
         .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { notification in
             guard let sid = notification.userInfo?[KBNotificationUserInfoKey.sessionId] as? String,
                   sid == viewModel.session.id else { return }
-            Task { await viewModel.reloadLatestWindow() }
+            Task {
+                await viewModel.waitForStreamRevealAnimation()
+                await viewModel.reloadLatestWindow()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: AssistantReplyPhaseNotification.name)) { notification in
             guard let parsed = AssistantReplyPhaseNotification.parse(notification),
@@ -194,7 +197,13 @@ struct ChatView: View {
         case .streaming(let text), .finalizing(let text):
             StreamingAssistantBubbleView(
                 text: text,
-                showsTypingIndicator: viewModel.assistantReplyPhase.showsTypingIndicator
+                showsTypingIndicator: viewModel.assistantReplyPhase.showsTypingIndicator,
+                isFinishing: {
+                    if case .finalizing = viewModel.assistantReplyPhase { return true }
+                    return false
+                }(),
+                onRevealedGrowth: { viewModel.scrollIntent = .scrollToBottom },
+                onRevealComplete: { viewModel.completeStreamRevealAnimation() }
             )
             .id("__kb_assistant_streaming__")
         }

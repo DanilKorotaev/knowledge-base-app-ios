@@ -26,6 +26,8 @@ final class ChatViewModel {
     /// In-flight assistant reply UI (spinner, streaming text, finalize).
     var assistantReplyPhase: AssistantReplyPhase = .idle
 
+    private var streamRevealContinuation: CheckedContinuation<Void, Never>?
+
     private let client: ChatAPIClientProtocol
 
     init(session: KBSession, client: ChatAPIClientProtocol) {
@@ -104,6 +106,33 @@ final class ChatViewModel {
         scrollIntent = .none
     }
 
+    /// Called when the streaming bubble finishes its typewriter reveal in `finalizing`.
+    func completeStreamRevealAnimation() {
+        streamRevealContinuation?.resume()
+        streamRevealContinuation = nil
+    }
+
+    func waitForStreamRevealAnimation() async {
+        guard case .finalizing(let text) = assistantReplyPhase, !text.isEmpty else { return }
+        let timeoutMs = min(30_000, max(800, text.count * 28))
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { @MainActor in
+                await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+                    self.streamRevealContinuation = continuation
+                }
+            }
+            group.addTask {
+                try? await Task.sleep(for: .milliseconds(timeoutMs))
+                await MainActor.run {
+                    self.completeStreamRevealAnimation()
+                }
+            }
+            _ = await group.next()
+            group.cancelAll()
+        }
+    }
+
     /// Applies streaming phase from voice send (`AssistantReplyPhaseNotification`).
     func applyExternalAssistantPhase(_ phase: AssistantReplyPhase) {
         assistantReplyPhase = phase
@@ -142,6 +171,7 @@ final class ChatViewModel {
                 scrollIntent = .scrollToBottom
             }
 
+            await waitForStreamRevealAnimation()
             await reloadLatestWindow()
             assistantReplyPhase = .idle
         } catch {

@@ -46,6 +46,10 @@
 		D0I1H2G3F4E567890123DEF0 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9H0G1F2E3D456789012CDEF /* TypingIndicatorView.swift */; };
 		F2K3J4I5H6G789012345F012 /* AssistantPendingBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1J2I3H4G5F678901234EF01 /* AssistantPendingBubbleView.swift */; };
 		S7T8R9E0A1M2B3U4B5B6L7E8 /* StreamingAssistantBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = S1T2R3E4A5M6B7U8B9B0L1E2 /* StreamingAssistantBubbleView.swift */; };
+		R3E4V5E6A7L8E9N0G1I2N3E4 /* StreamTextRevealEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = R1E2V3E4A5L6E7N8G9I0N1E2 /* StreamTextRevealEngine.swift */; };
+		S5T6R7E8A9T0E1R2E3V4E5A6 /* StreamTextRevealState.swift in Sources */ = {isa = PBXBuildFile; fileRef = S4T5R6E7V8E9A0L1S2T3A4T5 /* StreamTextRevealState.swift */; };
+		T3E4S5T6R7E8V9A0L1E2N3E4 /* StreamTextRevealEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T1E2S3T4R5E6V7E8A9L0E1E2 /* StreamTextRevealEngineTests.swift */; };
+		S7T8A9T0E1R2E3V4E5A6L7S8T9 /* StreamTextRevealStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = S6T7A8T9E0R1E2V3E4A5L6S7 /* StreamTextRevealStateTests.swift */; };
 		H4M5L6K7J8I9012345671234 /* AssistantReplyPhaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */; };
 		J6O7N8M9L0K1234567893456 /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = I5N6M7L8K9J0123456782345 /* ChatViewModelTests.swift */; };
 		4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E8507F60F3F1F8BE4CB3FB /* MainView.swift */; };
@@ -271,6 +275,10 @@
 		C9H0G1F2E3D456789012CDEF /* TypingIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingIndicatorView.swift; sourceTree = "<group>"; };
 		E1J2I3H4G5F678901234EF01 /* AssistantPendingBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantPendingBubbleView.swift; sourceTree = "<group>"; };
 		S1T2R3E4A5M6B7U8B9B0L1E2 /* StreamingAssistantBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingAssistantBubbleView.swift; sourceTree = "<group>"; };
+		R1E2V3E4A5L6E7N8G9I0N1E2 /* StreamTextRevealEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTextRevealEngine.swift; sourceTree = "<group>"; };
+		S4T5R6E7V8E9A0L1S2T3A4T5 /* StreamTextRevealState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTextRevealState.swift; sourceTree = "<group>"; };
+		T1E2S3T4R5E6V7E8A9L0E1E2 /* StreamTextRevealEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTextRevealEngineTests.swift; sourceTree = "<group>"; };
+		S6T7A8T9E0R1E2V3E4A5L6S7 /* StreamTextRevealStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTextRevealStateTests.swift; sourceTree = "<group>"; };
 		G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantReplyPhaseTests.swift; sourceTree = "<group>"; };
 		I5N6M7L8K9J0123456782345 /* ChatViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModelTests.swift; sourceTree = "<group>"; };
 		86B8B8B44D1FB644523A5399 /* UserDefaultsInspectorLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsInspectorLoggerTests.swift; sourceTree = "<group>"; };
@@ -589,6 +597,8 @@
 				G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */,
 				C1BDEE39C2A096C09D9AEB7A /* ChatAPIClientTests.swift */,
 				F2D3E4B5C6A789012345BC02 /* ChatOlderLoadScrollMetricsTests.swift */,
+				T1E2S3T4R5E6V7E8A9L0E1E2 /* StreamTextRevealEngineTests.swift */,
+				S6T7A8T9E0R1E2V3E4A5L6S7 /* StreamTextRevealStateTests.swift */,
 				I5N6M7L8K9J0123456782345 /* ChatViewModelTests.swift */,
 				E234A59CC512EFB706BC6C3F /* FilesAPIClientTests.swift */,
 				8B9045AD9F3D838066801585 /* KBMessageTests.swift */,
@@ -672,6 +682,8 @@
 				0446D0911187C57A67AF311A /* NotificationName+KB.swift */,
 				32B3B95E949DC1CC7BE06DA7 /* OrientationLock.swift */,
 				A5844BC95580DD7DD2FE6F31 /* URL+MIME.swift */,
+				R1E2V3E4A5L6E7N8G9I0N1E2 /* StreamTextRevealEngine.swift */,
+				S4T5R6E7V8E9A0L1S2T3A4T5 /* StreamTextRevealState.swift */,
 				9192B4B94501983C871B3839 /* View+KBErrorAlert.swift */,
 			);
 			path = Utilities;
@@ -929,6 +941,8 @@
 				B8G9F0E1D2C345678901BCDE /* AssistantReplyPhase.swift in Sources */,
 				F2K3J4I5H6G789012345F012 /* AssistantPendingBubbleView.swift in Sources */,
 				S7T8R9E0A1M2B3U4B5B6L7E8 /* StreamingAssistantBubbleView.swift in Sources */,
+				R3E4V5E6A7L8E9N0G1I2N3E4 /* StreamTextRevealEngine.swift in Sources */,
+				S5T6R7E8A9T0E1R2E3V4E5A6 /* StreamTextRevealState.swift in Sources */,
 				764D152A8A192C4FD5D122BB /* ChatViewModel.swift in Sources */,
 				2B71CED7CA14D0C19C814D13 /* Collection+Group.swift in Sources */,
 				54C2BD34B388702A10349971 /* ConsoleLogger.swift in Sources */,
@@ -1036,6 +1050,8 @@
 				H4M5L6K7J8I9012345671234 /* AssistantReplyPhaseTests.swift in Sources */,
 				82FB060EF8C9C6959928DCAA /* ChatAPIClientTests.swift in Sources */,
 				E1C2D3A4B5F678901234AB01 /* ChatOlderLoadScrollMetricsTests.swift in Sources */,
+				T3E4S5T6R7E8V9A0L1E2N3E4 /* StreamTextRevealEngineTests.swift in Sources */,
+				S7T8A9T0E1R2E3V4E5A6L7S8T9 /* StreamTextRevealStateTests.swift in Sources */,
 				J6O7N8M9L0K1234567893456 /* ChatViewModelTests.swift in Sources */,
 				7276D716A7B485FA251262D9 /* ConsoleLoggerTests.swift in Sources */,
 				B361F522BB60D5E14DF3A00F /* FileBatchWriterTests.swift in Sources */,
