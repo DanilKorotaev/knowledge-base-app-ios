@@ -1,6 +1,6 @@
 # Apple Watch: companion app + complication (голосовой ввод)
 
-**Статус:** 📋 Запланировано  
+**Статус:** In progress (2026-06-10) — MVP target + relay; complication pending
 **Приоритет:** 🟡 Средний (после E2E iPhone ↔ KB App API)  
 **Категория:** Product / watchOS  
 **Связанные документы:**
@@ -29,32 +29,32 @@
 
 ### Этап 1 — Target и связь
 
-- [ ] Добавить watchOS target + shared scheme в XcodeGen/`project.yml`.
-- [ ] Настроить `WCSession` (activate в iOS и watchOS, делегаты).
-- [ ] Главный экран Watch: название **текущей дефолтной сессии** (из `applicationContext` с iPhone).
+- [x] Добавить watchOS target + shared scheme в XcodeGen/`project.yml`.
+- [x] Настроить `WCSession` (activate в iOS и watchOS, делегаты).
+- [x] Главный экран Watch: название **текущей дефолтной сессии** (из `applicationContext` с iPhone).
 
 ### Этап 2 — Запись и relay
 
-- [ ] `AVAudioRecorder` на Watch, UI записи (таймер, waveform, отмена).
-- [ ] iPhone: обработчик входящего аудио → `POST /api/query/voice` с `session_id` дефолтной сессии.
-- [ ] Ответ сервера → краткий текст обратно на Watch (`replyHandler` / `updateApplicationContext`).
+- [x] `AVAudioRecorder` на Watch, UI записи (таймер, meter, отмена).
+- [x] iPhone: обработчик входящего аудио → transcribe + `streamVoiceMessage` в дефолтную сессию.
+- [x] Ответ сервера → краткий текст обратно на Watch (`updateApplicationContext`).
 
 ### Этап 2.5 — Оффлайн
 
-- [ ] Если `!WCSession.default.isReachable` — сохранить в `pendingRecordings` (FileManager + метаданные).
-- [ ] Автоотправка очереди при восстановлении связи.
-- [ ] Бейдж / индикатор неотправленных записей.
+- [x] Локальное сохранение при недоступности iPhone (`WatchPendingRecordingStore`).
+- [x] Автоотправка очереди при `sessionReachabilityDidChange`.
+- [x] Индикатор pending count на главном экране.
 
 ### Этап 3 — Complication
 
-- [ ] `accessoryCircular` с `mic.fill`, `widgetURL` / App Intent → `kbapp://record` (или общий scheme с iOS).
+- [ ] `accessoryCircular` с `mic.fill`, `widgetURL` → `knowledgebase://record` (отдельный widget extension — follow-up).
 - [ ] `onOpenURL` в Watch App → `startRecordingImmediately()`.
 - [ ] Опционально: `accessoryInline` — имя дефолтной сессии; corner — счётчик pending.
 
 ### Этап 4 — Polish
 
-- [ ] `AVSpeechSynthesizer` для озвучивания ответа.
-- [ ] Haptic при успехе/ошибке.
+- [x] `AVSpeechSynthesizer` для озвучивания ответа (кнопка Speak).
+- [x] Haptic при успехе/ошибке.
 - [ ] Список сессий на Watch (read-only sync) — **не MVP**, если есть дефолтная сессия на iPhone.
 
 ## Зависимости

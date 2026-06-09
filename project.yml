@@ -7,8 +7,11 @@ options:
   bundleIdPrefix: com.coredan
   deploymentTarget:
     iOS: "18.0"
+    watchOS: "10.0"
   createIntermediateGroups: true
   groupSortPosition: top
+  postGenCommand: |
+    sed -i '' -e 's|dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";|dstPath = "";|' -e 's|dstSubfolderSpec = 16;|dstSubfolderSpec = 13;|' KnowledgeBaseApp.xcodeproj/project.pbxproj 2>/dev/null || true
 settings:
   base:
     SWIFT_VERSION: "5.9"
@@ -25,14 +28,16 @@ targets:
     sources:
       - path: KnowledgeBaseApp
       - path: SharedIntents
+      - path: SharedWatchConnectivity
     dependencies:
       - package: Alamofire
       - target: KnowledgeBaseWidgetExtension
         embed: true
+      - target: KnowledgeBaseWatchApp
+        embed: true
     settings:
       base:
         CODE_SIGN_STYLE: Automatic
-        # Empty lets Automatic pick Development vs Distribution per action (Archive uses Distribution + Match profiles).
         CODE_SIGN_IDENTITY: ""
         DEVELOPMENT_TEAM: "66C9VGAZR5"
         PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp
@@ -43,7 +48,6 @@ targets:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
         CFBundleIconName: AppIcon
-        # Export compliance: app only uses exempt encryption (e.g. HTTPS via Apple APIs). Update if you add custom crypto.
         ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
         NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
@@ -86,13 +90,29 @@ targets:
         CFBundleDisplayName: Knowledge Base
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+  KnowledgeBaseWatchApp:
+    type: application
+    platform: watchOS
+    sources:
+      - path: KnowledgeBaseWatchApp
+      - path: SharedWatchConnectivity
+    settings:
+      base:
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: "66C9VGAZR5"
+        PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp.watch
+        INFOPLIST_KEY_CFBundleDisplayName: Knowledge Base
+        TARGETED_DEVICE_FAMILY: "4"
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: KnowledgeBaseWatchApp/Info.plist
 
-# XcodeGen пересоздаёт .xcodeproj и не сохраняет ручные .xcscheme — схемы задаём здесь.
 schemes:
   KnowledgeBaseApp:
     build:
       targets:
         KnowledgeBaseApp: all
+        KnowledgeBaseWatchApp: all
     run:
       config: Debug
     test:
@@ -111,6 +131,18 @@ schemes:
       targets:
         KnowledgeBaseWidgetExtension: all
         KnowledgeBaseApp: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+  KnowledgeBaseWatchApp:
+    build:
+      targets:
+        KnowledgeBaseWatchApp: all
     run:
       config: Debug
     profile:
