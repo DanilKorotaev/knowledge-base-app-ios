@@ -6,4 +6,6 @@ import Foundation
 final class VoiceRoutingContext {
     var activeSessionId: String?
     var useKnowledgeBase: Bool = true
+    /// When true, finished recordings append to the open chat composer instead of the review sheet.
+    var usesComposerDraft: Bool = false
 }

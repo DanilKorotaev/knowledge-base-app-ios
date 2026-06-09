@@ -18,10 +18,12 @@ final class VoiceRecordingViewModel {
     private(set) var isSendingVoice = false
     private(set) var lastRecordedFileURL: URL?
     var transcriptionDraft: String = ""
-    private(set) var displayedMeterLevel: Float = 0
-
     private let recordingService: VoiceRecordingServiceProtocol
     private let chatClient: ChatAPIClientProtocol
+
+    /// When set, recording finishes into the chat composer draft instead of `PostRecordingReviewSheet`.
+    var deferToComposer: Bool = false
+    var onComposerRecordingFinished: ((URL) -> Void)?
 
     private var recordingStartedForGesture = false
     private var cancelledByGesture = false
@@ -57,9 +59,10 @@ final class VoiceRecordingViewModel {
         recordingStartDate
     }
 
-    func refreshMeteringForDisplay() {
+    /// Read-only metering sample for waveform UI (safe to call from `TimelineView` body).
+    func currentMeterLevelForDisplay() -> Float {
         recordingService.updateMetering()
-        displayedMeterLevel = recordingService.normalizedMeterLevel
+        return recordingService.normalizedMeterLevel
     }
 
     func handleDragChanged(_ translation: CGSize) {
@@ -233,8 +236,14 @@ final class VoiceRecordingViewModel {
             didStartTranscriptionForReview = false
             phase = .idle
             recordingStartDate = nil
-            showPostRecordReview = true
             notification.notificationOccurred(.success)
+
+            if deferToComposer {
+                onComposerRecordingFinished?(url)
+                return
+            }
+
+            showPostRecordReview = true
         } catch {
             errorMessage = error.localizedDescription
             try? await recordingService.cancelRecording()

@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// Drives `ChatView` scroll without implicit `onChange` heuristics.
 enum ChatScrollIntent: Equatable {
@@ -14,11 +15,12 @@ final class ChatViewModel {
 
     let session: KBSession
     var messages: [KBMessage] = []
-    var draft = ""
+    var composerDraft = ChatComposerDraft()
     var useKnowledgeBase = true
     var isLoading = false
     var isLoadingOlder = false
     var isSending = false
+    var isTranscribingVoice = false
     var errorMessage: String?
     var totalCount = 0
     var hasMoreOlder = false
@@ -29,6 +31,16 @@ final class ChatViewModel {
     private var streamRevealContinuation: CheckedContinuation<Void, Never>?
 
     private let client: ChatAPIClientProtocol
+
+    /// Backward-compatible alias for tests and legacy call sites.
+    var draft: String {
+        get { composerDraft.text }
+        set { composerDraft.text = newValue }
+    }
+
+    var canSendComposer: Bool {
+        composerDraft.canSend && !isSending && !isTranscribingVoice
+    }
 
     init(session: KBSession, client: ChatAPIClientProtocol) {
         self.session = session
@@ -142,18 +154,132 @@ final class ChatViewModel {
     }
 
     func send() async {
-        let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+        await sendComposed()
+    }
+
+    func removeAttachment(id: String) {
+        composerDraft.attachments.removeAll { $0.id == id }
+    }
+
+    func removeVoiceClip(id: String) {
+        if let clip = composerDraft.voiceClips.first(where: { $0.id == id }) {
+            try? FileManager.default.removeItem(at: clip.audioURL)
+        }
+        composerDraft.voiceClips.removeAll { $0.id == id }
+    }
+
+    func addPendingAttachment(_ attachment: PendingAttachment) {
+        composerDraft.attachments.append(attachment)
+    }
+
+    func addPhotoData(_ data: Data, filename: String = "photo.jpg") {
+        let path = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(UUID().uuidString).jpg")
+        do {
+            try data.write(to: path)
+            addPendingAttachment(
+                PendingAttachment(
+                    localURL: path,
+                    kind: .image,
+                    filename: filename,
+                    mimeType: "image/jpeg",
+                    fileSize: Int64(data.count)
+                )
+            )
+        } catch {
+            reportError(error.localizedDescription)
+        }
+    }
+
+    func addCameraImage(_ image: UIImage) async {
+        guard let data = image.jpegData(compressionQuality: 0.85) else {
+            reportError("Could not encode photo.")
+            return
+        }
+        addPhotoData(data, filename: "camera.jpg")
+    }
+
+    func addFiles(from urls: [URL]) async {
+        for url in urls {
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer {
+                if scoped {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+            let dest = FileManager.default.temporaryDirectory
+                .appendingPathComponent("\(UUID().uuidString)-\(url.lastPathComponent)")
+            do {
+                if FileManager.default.fileExists(atPath: dest.path) {
+                    try FileManager.default.removeItem(at: dest)
+                }
+                try FileManager.default.copyItem(at: url, to: dest)
+                let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? NSNumber)?
+                    .int64Value
+                let mime = dest.kbPreferredMIMEType
+                let kind: PendingAttachmentKind = mime.hasPrefix("image/") ? .image : .file
+                addPendingAttachment(
+                    PendingAttachment(
+                        localURL: dest,
+                        kind: kind,
+                        filename: url.lastPathComponent,
+                        mimeType: mime,
+                        fileSize: size
+                    )
+                )
+            } catch {
+                reportError(error.localizedDescription)
+            }
+        }
+    }
+
+    func enqueueVoiceRecording(audioURL: URL) async {
+        isTranscribingVoice = true
+        errorMessage = nil
+        defer { isTranscribingVoice = false }
+        do {
+            let transcription = try await client.transcribeVoiceRecording(audioFileURL: audioURL)
+            let clip = PendingVoiceClip(audioURL: audioURL, transcriptionSegment: transcription)
+            composerDraft.voiceClips.append(clip)
+            composerDraft.appendTranscription(transcription)
+        } catch {
+            try? FileManager.default.removeItem(at: audioURL)
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func sendComposed() async {
+        let route = ChatComposerSendPlanner.route(for: composerDraft)
+        if case .unsupported(let message) = route {
+            errorMessage = message
+            return
+        }
+
         isSending = true
         errorMessage = nil
         scrollIntent = .none
         defer { isSending = false }
+
+        composerDraft.clear()
+
+        switch route {
+        case .unsupported:
+            return
+        case .textOnly(let text):
+            await sendStreamingText(text, optimisticContent: text)
+        case .singleAttachment(let attachment):
+            await sendSingleAttachment(attachment)
+        case .singleVoice(let clip, let text):
+            await sendSingleVoice(clip: clip, text: text)
+        }
+    }
+
+    private func sendStreamingText(_ text: String, optimisticContent: String) async {
         do {
-            draft = ""
             let optimisticUser = KBMessage(
                 id: "kb-optimistic-\(UUID().uuidString)",
                 role: .user,
-                content: trimmed,
+                content: optimisticContent,
                 createdAt: Date()
             )
             messages.append(optimisticUser)
@@ -162,15 +288,69 @@ final class ChatViewModel {
 
             let stream = try await client.streamTextMessage(
                 sessionId: session.id,
-                text: trimmed,
+                text: text,
                 useKnowledgeBase: useKnowledgeBase
             )
-
             try await AssistantReplyStreamConsumer.consume(stream) { phase in
                 assistantReplyPhase = phase
                 scrollIntent = .scrollToBottom
             }
+            await waitForStreamRevealAnimation()
+            await reloadLatestWindow()
+            assistantReplyPhase = .idle
+        } catch {
+            assistantReplyPhase = .idle
+            errorMessage = error.localizedDescription
+        }
+    }
 
+    private func sendSingleAttachment(_ attachment: PendingAttachment) async {
+        let scoped = attachment.localURL.startAccessingSecurityScopedResource()
+        defer {
+            if scoped {
+                attachment.localURL.stopAccessingSecurityScopedResource()
+            }
+            try? FileManager.default.removeItem(at: attachment.localURL)
+        }
+        do {
+            _ = try await client.sendAttachment(
+                sessionId: session.id,
+                fileURL: attachment.localURL,
+                filename: attachment.filename,
+                mimeType: attachment.mimeType,
+                useKnowledgeBase: useKnowledgeBase
+            )
+            await reloadLatestWindow()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func sendSingleVoice(clip: PendingVoiceClip, text: String) async {
+        defer {
+            try? FileManager.default.removeItem(at: clip.audioURL)
+        }
+        do {
+            let optimisticUser = KBMessage(
+                id: "kb-optimistic-\(UUID().uuidString)",
+                role: .user,
+                content: text,
+                createdAt: Date()
+            )
+            messages.append(optimisticUser)
+            assistantReplyPhase = .waiting
+            scrollIntent = .scrollToBottom
+
+            let stream = try await client.streamVoiceMessage(
+                sessionId: session.id,
+                audioFileURL: clip.audioURL,
+                text: text,
+                useKnowledgeBase: useKnowledgeBase
+            )
+            try await AssistantReplyStreamConsumer.consume(stream) { phase in
+                assistantReplyPhase = phase
+                scrollIntent = .scrollToBottom
+            }
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
             assistantReplyPhase = .idle

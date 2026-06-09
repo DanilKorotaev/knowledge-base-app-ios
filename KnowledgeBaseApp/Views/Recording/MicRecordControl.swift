@@ -27,9 +27,8 @@ struct MicRecordControl: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             TimelineView(.periodic(from: .now, by: 0.05)) { context in
-                let _ = viewModel.refreshMeteringForDisplay()
                 VStack(spacing: 6) {
-                    RecordingWaveformView(level: viewModel.displayedMeterLevel)
+                    RecordingWaveformView(level: viewModel.currentMeterLevelForDisplay())
                         .frame(maxWidth: .infinity)
                         .frame(height: 36)
                     Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))
@@ -50,9 +49,8 @@ struct MicRecordControl: View {
             Label("Locked recording", systemImage: "lock.fill")
                 .font(.headline)
             TimelineView(.periodic(from: .now, by: 0.05)) { context in
-                let _ = viewModel.refreshMeteringForDisplay()
                 VStack(spacing: 6) {
-                    RecordingWaveformView(level: viewModel.displayedMeterLevel)
+                    RecordingWaveformView(level: viewModel.currentMeterLevelForDisplay())
                         .frame(maxWidth: .infinity)
                         .frame(height: 36)
                     Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))

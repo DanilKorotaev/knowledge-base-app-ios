@@ -1,7 +1,5 @@
-import PhotosUI
 import SwiftUI
 import UIKit
-import UniformTypeIdentifiers
 
 struct ChatView: View {
     @Environment(VoiceRoutingContext.self) private var voiceRouting
@@ -12,9 +10,6 @@ struct ChatView: View {
     @State private var suppressPaginationUntil: Date = .distantPast
     @State private var latestScrollSample: ScrollPaginationSample?
     @State private var bottomScrollID = "kb-chat-bottom"
-    @State private var photoPickerItem: PhotosPickerItem?
-    @State private var showFileImporter = false
-    @State private var showCamera = false
     private let attachmentLoader: KBAttachmentLoaderProtocol?
 
     /// Pause auto-load after prepend while layout settles (prevents cascade from geometry/onAppear).
@@ -74,8 +69,13 @@ struct ChatView: View {
                         }
                         .padding()
                         .scrollTargetLayout()
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            dismissKeyboard()
+                        }
                     }
                     .defaultScrollAnchor(.bottom)
+                    .scrollDismissesKeyboard(.interactively)
                     .onScrollGeometryChange(for: ScrollPaginationSample.self) { geometry in
                         ScrollPaginationSample(geometry: geometry)
                     } action: { _, current in
@@ -99,16 +99,32 @@ struct ChatView: View {
                 }
             }
 
-            inputBar
+            ChatComposerView(viewModel: viewModel, voiceViewModel: voiceViewModel)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if voiceViewModel.phase != .idle {
                 MicRecordControl(viewModel: voiceViewModel)
-                    .background(.bar)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background {
+                        RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            .fill(Color(.secondarySystemGroupedBackground))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 8)
             }
         }
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Toggle(isOn: $viewModel.useKnowledgeBase) {
+                    Label("Knowledge base", systemImage: "books.vertical")
+                }
+                .labelsHidden()
+                .accessibilityLabel("Use knowledge base")
+            }
+        }
         .task(id: viewModel.session.id) {
             ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
             resetChatScrollState()
@@ -132,34 +148,20 @@ struct ChatView: View {
         .onAppear {
             voiceRouting.activeSessionId = viewModel.session.id
             voiceRouting.useKnowledgeBase = viewModel.useKnowledgeBase
+            voiceRouting.usesComposerDraft = true
+            voiceViewModel.deferToComposer = true
+            voiceViewModel.onComposerRecordingFinished = { url in
+                Task { await viewModel.enqueueVoiceRecording(audioURL: url) }
+            }
         }
         .onDisappear {
             voiceRouting.activeSessionId = nil
+            voiceRouting.usesComposerDraft = false
+            voiceViewModel.deferToComposer = false
+            voiceViewModel.onComposerRecordingFinished = nil
         }
         .onChange(of: viewModel.useKnowledgeBase) { _, newValue in
             voiceRouting.useKnowledgeBase = newValue
-        }
-        .onChange(of: photoPickerItem) { _, newItem in
-            Task { await handlePhotoPicked(newItem) }
-        }
-        .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [.item],
-            allowsMultipleSelection: false
-        ) { result in
-            switch result {
-            case .success(let urls):
-                guard let url = urls.first else { return }
-                Task {
-                    await viewModel.sendAttachment(
-                        fileURL: url,
-                        filename: url.lastPathComponent,
-                        mimeType: url.kbPreferredMIMEType
-                    )
-                }
-            case .failure(let error):
-                viewModel.reportError(error.localizedDescription)
-            }
         }
         .alert("Chat", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
@@ -170,16 +172,6 @@ struct ChatView: View {
             }
         } message: {
             Text(viewModel.errorMessage ?? "")
-        }
-        .fullScreenCover(isPresented: $showCamera) {
-            CameraPicker(
-                onImage: { image in
-                    showCamera = false
-                    Task { await handleCameraImage(image) }
-                },
-                onCancel: { showCamera = false }
-            )
-            .ignoresSafeArea()
         }
     }
 
@@ -294,93 +286,13 @@ struct ChatView: View {
         viewModel.acknowledgeScrollIntent()
     }
 
-    private var inputBar: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Toggle("Use knowledge base", isOn: $viewModel.useKnowledgeBase)
-                .font(.subheadline)
-            HStack(alignment: .bottom, spacing: 6) {
-                PhotosPicker(selection: $photoPickerItem, matching: .images) {
-                    Image(systemName: "photo.on.rectangle")
-                        .font(.title3)
-                }
-                .disabled(viewModel.isSending)
-
-                if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                    Button {
-                        showCamera = true
-                    } label: {
-                        Image(systemName: "camera.fill")
-                            .font(.title3)
-                    }
-                    .disabled(viewModel.isSending)
-                }
-
-                Button {
-                    showFileImporter = true
-                } label: {
-                    Image(systemName: "paperclip")
-                        .font(.title3)
-                }
-                .disabled(viewModel.isSending)
-
-                ChatMicButton(viewModel: voiceViewModel)
-                    .opacity(voiceViewModel.phase == .idle ? 1 : 0.35)
-
-                TextField("Message", text: $viewModel.draft, axis: .vertical)
-                    .lineLimit(1 ... 6)
-                    .textFieldStyle(.roundedBorder)
-                Button {
-                    Task { await viewModel.send() }
-                } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.title)
-                }
-                .disabled(
-                    viewModel.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        || viewModel.isSending
-                )
-            }
-        }
-        .padding()
-        .background(.bar)
-    }
-
-    private func handlePhotoPicked(_ item: PhotosPickerItem?) async {
-        guard let item else { return }
-        defer { photoPickerItem = nil }
-        guard let data = try? await item.loadTransferable(type: Data.self) else {
-            viewModel.reportError("Could not read photo.")
-            return
-        }
-        let path = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
-        do {
-            try data.write(to: path)
-            await viewModel.sendAttachment(
-                fileURL: path,
-                filename: "photo.jpg",
-                mimeType: "image/jpeg"
-            )
-        } catch {
-            viewModel.reportError(error.localizedDescription)
-        }
-    }
-
-    private func handleCameraImage(_ image: UIImage) async {
-        guard let data = image.jpegData(compressionQuality: 0.85) else {
-            viewModel.reportError("Could not encode photo.")
-            return
-        }
-        let path = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).jpg")
-        do {
-            try data.write(to: path)
-            await viewModel.sendAttachment(
-                fileURL: path,
-                filename: "camera.jpg",
-                mimeType: "image/jpeg"
-            )
-        } catch {
-            viewModel.reportError(error.localizedDescription)
-        }
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 }
 

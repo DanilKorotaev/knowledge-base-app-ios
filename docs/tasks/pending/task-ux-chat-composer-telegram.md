@@ -1,6 +1,6 @@
 # Chat composer: Telegram-style input bar
 
-**Status:** Pending
+**Status:** In progress — Phase A (UI + draft + legacy send paths)
 
 **Master spec:** `Документация/Задачи/task-kb-app-chat-composer-telegram-ux.md`  
 **Backend blocker:** `knowledge-base-bot/docs/tasks/pending/task-api-chat-composer-multipart.md`
@@ -9,65 +9,54 @@
 
 Redesign chat input: centered `TextField`, paperclip (attachments), mic by default; send button when there is text and/or draft attachments. Voice transcribes into the field (append). Attachments preview above field. Single Send posts everything — requires new API.
 
-## Current (`ChatView`)
-
-- Photo + camera + paperclip + mic + field + send in one row; KB toggle above.
-- Each attachment triggers immediate `sendAttachment()` (full pipeline).
-- Voice uses `PostRecordingReviewSheet` and immediate `streamVoiceMessage`.
-
-## Target layout
-
-```
-[ attachment previews strip ]
-[ TextField ............... ] [clip] [mic | send]
-```
-
-- `mic` when draft is “empty” for send purposes; `send` when text non-empty OR attachments OR voice clips queued.
-- Recording UI: keep `MicRecordControl` in `safeAreaInset` (existing gestures).
-
-## iOS tasks
+## Phase A delivered (2026-06-09)
 
 ### Models
 
-- [ ] `PendingAttachment` (id, localURL, kind: image/file, filename, mime)
-- [ ] `PendingVoiceClip` (id, audioURL, transcriptionSegment)
-- [ ] `ChatComposerDraft` on `ChatViewModel` or dedicated observable
+- [x] `PendingAttachment` (id, localURL, kind: image/file, filename, mime)
+- [x] `PendingVoiceClip` (id, audioURL, transcriptionSegment)
+- [x] `ChatComposerDraft` on `ChatViewModel`
+- [x] `ChatComposerSendPlanner` — routes to legacy API or surfaces unsupported combo
 
 ### Views
 
-- [ ] `ChatComposerView` — replaces `inputBar` in `ChatView`
-- [ ] `AttachmentPickerSheet` — File / Camera / Gallery (multi)
-- [ ] `ComposerAttachmentStripView` — thumbnails + remove
-- [ ] `ComposerFileChipView` — non-image preview
-- [ ] `ImagePreviewSheet` — full screen on thumbnail tap
+- [x] `ChatComposerView` — replaces `inputBar` in `ChatView`
+- [x] `AttachmentPickerSheet` — File / Camera / Gallery (multi)
+- [x] `ComposerAttachmentStripView` — thumbnails + remove
+- [x] `ComposerFileChipView` / `ComposerVoiceChipView`
+- [x] `ImagePreviewSheet` — full screen on thumbnail tap
 
 ### Voice integration
 
-- [ ] On transcribe complete: append to `draft.text` (separator if needed)
-- [ ] Queue `PendingVoiceClip`; loader near field while `isTranscribing`
-- [ ] Skip auto-send from `confirmPostRecordUpload` when chat composer owns draft (route via composer callback)
-- [ ] Second recording appends text + second clip
+- [x] On transcribe complete: append to `composerDraft.text`
+- [x] Queue `PendingVoiceClip`; loader near field while transcribing
+- [x] Skip `PostRecordingReviewSheet` when chat open (`deferToComposer`)
+- [x] Second recording appends text + second clip
 
-### Send
+### Send (legacy fallback until compose API)
 
-- [ ] `sendComposedMessage` on `ChatAPIClientProtocol` (after backend lands)
-- [ ] Until then: document fallback behavior in UI tests / feature flag
+- [x] Text only → `streamTextMessage`
+- [x] Single file → `sendAttachment`
+- [x] Single voice → `streamVoiceMessage`
+- [ ] `sendComposedMessage` multipart (after backend `messages/compose`)
 
 ### KB toggle
 
-- [ ] Decide placement (toolbar vs compact row) per master spec §9
+- [x] Moved to navigation toolbar (compact icon toggle)
+
+## Remaining (Phase B+)
+
+- [ ] Backend `POST …/messages/compose` + iOS client
+- [ ] Multi-file / file+text / multi-voice in one send
+- [ ] Quick Look for non-image files
+- [ ] Attachment count / size limits
 
 ## Tests
 
-- [ ] Unit: send button enabled when text OR attachments OR voice clips
-- [ ] Unit: append transcription preserves existing draft text
+- [x] Unit: `ChatComposerDraftTests` — send planner + append transcription
 - [ ] UI: sheet actions add to strip without network call
-
-## Acceptance
-
-See master spec §7.
 
 ## Depends on
 
-- `knowledge-base-bot/docs/tasks/pending/task-api-chat-composer-multipart.md` for full single-send
-- Optional parallel: [task-ux-chat-streaming-feedback.md](task-ux-chat-streaming-feedback.md) for reply UX after send
+- ~~[task-ux-chat-streaming-feedback.md](task-ux-chat-streaming-feedback.md)~~ → done
+- Push notifications deferred — see `task-feature-push-notifications-chat.md`

@@ -50,6 +50,13 @@
 		S5T6R7E8A9T0E1R2E3V4E5A6 /* StreamTextRevealState.swift in Sources */ = {isa = PBXBuildFile; fileRef = S4T5R6E7V8E9A0L1S2T3A4T5 /* StreamTextRevealState.swift */; };
 		T3E4S5T6R7E8V9A0L1E2N3E4 /* StreamTextRevealEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = T1E2S3T4R5E6V7E8A9L0E1E2 /* StreamTextRevealEngineTests.swift */; };
 		S7T8A9T0E1R2E3V4E5A6L7S8T9 /* StreamTextRevealStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = S6T7A8T9E0R1E2V3E4A5L6S7 /* StreamTextRevealStateTests.swift */; };
+		C0M1P2O3S4E5R6D7R8A9F0T1 /* ChatComposerDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1O2M3P4O5S6E7R8D9R0A1F2 /* ChatComposerDraft.swift */; };
+		C2O3M4P5O6S7E8R9V0I1E2W3 /* ChatComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3O4M5P6O7S8E9R0V1I2E3W4 /* ChatComposerView.swift */; };
+		A1T2T3A4C5H6P7I8C9K0E1R2 /* AttachmentPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3T4T5A6C7H8P9I0C1K2E3R4 /* AttachmentPickerSheet.swift */; };
+		C5O6M7P8O9S0E1R2S3T4R5I6 /* ComposerAttachmentStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7O8M9P0O1S2E3R4S5T6R7I8 /* ComposerAttachmentStripView.swift */; };
+		C9O0M1P2O3S4E5R6F7I8L9E0 /* ComposerFileChipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1O2M3P4O5S6E7R8F9I0L1E2 /* ComposerFileChipView.swift */; };
+		I1M2A3G4E5P6R7E8V9I0E1W2 /* ImagePreviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = I3M4A5G6E7P8R9E0V1I2E3W4 /* ImagePreviewSheet.swift */; };
+		C4O5M6P7O8S9E0R1D2R3A4F5 /* ChatComposerDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6O7M8P9O0S1E2R3D4R5A6F7 /* ChatComposerDraftTests.swift */; };
 		H4M5L6K7J8I9012345671234 /* AssistantReplyPhaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */; };
 		J6O7N8M9L0K1234567893456 /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = I5N6M7L8K9J0123456782345 /* ChatViewModelTests.swift */; };
 		4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E8507F60F3F1F8BE4CB3FB /* MainView.swift */; };
@@ -279,6 +286,13 @@
 		S4T5R6E7V8E9A0L1S2T3A4T5 /* StreamTextRevealState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTextRevealState.swift; sourceTree = "<group>"; };
 		T1E2S3T4R5E6V7E8A9L0E1E2 /* StreamTextRevealEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTextRevealEngineTests.swift; sourceTree = "<group>"; };
 		S6T7A8T9E0R1E2V3E4A5L6S7 /* StreamTextRevealStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamTextRevealStateTests.swift; sourceTree = "<group>"; };
+		C1O2M3P4O5S6E7R8D9R0A1F2 /* ChatComposerDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerDraft.swift; sourceTree = "<group>"; };
+		C3O4M5P6O7S8E9R0V1I2E3W4 /* ChatComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerView.swift; sourceTree = "<group>"; };
+		A3T4T5A6C7H8P9I0C1K2E3R4 /* AttachmentPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentPickerSheet.swift; sourceTree = "<group>"; };
+		C7O8M9P0O1S2E3R4S5T6R7I8 /* ComposerAttachmentStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerAttachmentStripView.swift; sourceTree = "<group>"; };
+		C1O2M3P4O5S6E7R8F9I0L1E2 /* ComposerFileChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerFileChipView.swift; sourceTree = "<group>"; };
+		I3M4A5G6E7P8R9E0V1I2E3W4 /* ImagePreviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewSheet.swift; sourceTree = "<group>"; };
+		C6O7M8P9O0S1E2R3D4R5A6F7 /* ChatComposerDraftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerDraftTests.swift; sourceTree = "<group>"; };
 		G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantReplyPhaseTests.swift; sourceTree = "<group>"; };
 		I5N6M7L8K9J0123456782345 /* ChatViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModelTests.swift; sourceTree = "<group>"; };
 		86B8B8B44D1FB644523A5399 /* UserDefaultsInspectorLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsInspectorLoggerTests.swift; sourceTree = "<group>"; };
@@ -596,6 +610,7 @@
 				A6034236759483DAE494A376 /* AppConfigurationTests.swift */,
 				G3L4K5J6I7H8901234560123 /* AssistantReplyPhaseTests.swift */,
 				C1BDEE39C2A096C09D9AEB7A /* ChatAPIClientTests.swift */,
+				C6O7M8P9O0S1E2R3D4R5A6F7 /* ChatComposerDraftTests.swift */,
 				F2D3E4B5C6A789012345BC02 /* ChatOlderLoadScrollMetricsTests.swift */,
 				T1E2S3T4R5E6V7E8A9L0E1E2 /* StreamTextRevealEngineTests.swift */,
 				S6T7A8T9E0R1E2V3E4A5L6S7 /* StreamTextRevealStateTests.swift */,
@@ -653,6 +668,7 @@
 				70947C74DA8C579280E8E9A7 /* KBAttachment.swift */,
 				8B2894684426095746A5DEC5 /* KBChangedFile.swift */,
 				B11CFFE6F030EC6A9FBE63AE /* KBMessage.swift */,
+				C1O2M3P4O5S6E7R8D9R0A1F2 /* ChatComposerDraft.swift */,
 				590A4578FB7E8FEDE78E2060 /* KBMessagesPage.swift */,
 				EB1F215090174ACE1EABAB6E /* KBSession.swift */,
 				6D06253EF2F27BC06C693BA3 /* VoiceRecordingSendResult.swift */,
@@ -717,9 +733,14 @@
 			isa = PBXGroup;
 			children = (
 				E1J2I3H4G5F678901234EF01 /* AssistantPendingBubbleView.swift */,
+				A3T4T5A6C7H8P9I0C1K2E3R4 /* AttachmentPickerSheet.swift */,
 				AD4D09B0BBB3164307024430 /* AttachmentImageGrid.swift */,
 				0F402A7D191773857BCD1B01 /* CameraPicker.swift */,
+				C3O4M5P6O7S8E9R0V1I2E3W4 /* ChatComposerView.swift */,
 				BFE66E36D575D6879DC9F0F6 /* ChatView.swift */,
+				C7O8M9P0O1S2E3R4S5T6R7I8 /* ComposerAttachmentStripView.swift */,
+				C1O2M3P4O5S6E7R8F9I0L1E2 /* ComposerFileChipView.swift */,
+				I3M4A5G6E7P8R9E0V1I2E3W4 /* ImagePreviewSheet.swift */,
 				D9BA02F35C4E62B178F30E50 /* ChatOlderLoadScrollMetrics.swift */,
 				B2C3D4E5F60718293A4B5D6 /* ChatPaginationLogger.swift */,
 				931725756FD9C89F97BA8328 /* MarkdownBlockParser.swift */,
@@ -936,6 +957,12 @@
 				DBDF17E90F9D4D859CE4003A /* ChatMicButton.swift in Sources */,
 				7A1625DF58CFDBDF226CA234 /* ChatSSEEvent.swift in Sources */,
 				46E9F085C5E58735D88D47D2 /* ChatView.swift in Sources */,
+				C0M1P2O3S4E5R6D7R8A9F0T1 /* ChatComposerDraft.swift in Sources */,
+				C2O3M4P5O6S7E8R9V0I1E2W3 /* ChatComposerView.swift in Sources */,
+				A1T2T3A4C5H6P7I8C9K0E1R2 /* AttachmentPickerSheet.swift in Sources */,
+				C5O6M7P8O9S0E1R2S3T4R5I6 /* ComposerAttachmentStripView.swift in Sources */,
+				C9O0M1P2O3S4E5R6F7I8L9E0 /* ComposerFileChipView.swift in Sources */,
+				I1M2A3G4E5P6R7E8V9I0E1W2 /* ImagePreviewSheet.swift in Sources */,
 				C8A91F2E4B3D51A067E29D4F /* ChatOlderLoadScrollMetrics.swift in Sources */,
 				A1B2C3D4E5F60718293A4B5C /* ChatPaginationLogger.swift in Sources */,
 				B8G9F0E1D2C345678901BCDE /* AssistantReplyPhase.swift in Sources */,
@@ -1049,6 +1076,7 @@
 				59737C4E43C4BB2892D2A3D5 /* AppConfigurationTests.swift in Sources */,
 				H4M5L6K7J8I9012345671234 /* AssistantReplyPhaseTests.swift in Sources */,
 				82FB060EF8C9C6959928DCAA /* ChatAPIClientTests.swift in Sources */,
+				C4O5M6P7O8S9E0R1D2R3A4F5 /* ChatComposerDraftTests.swift in Sources */,
 				E1C2D3A4B5F678901234AB01 /* ChatOlderLoadScrollMetricsTests.swift in Sources */,
 				T3E4S5T6R7E8V9A0L1E2N3E4 /* StreamTextRevealEngineTests.swift in Sources */,
 				S7T8A9T0E1R2E3V4E5A6L7S8T9 /* StreamTextRevealStateTests.swift in Sources */,

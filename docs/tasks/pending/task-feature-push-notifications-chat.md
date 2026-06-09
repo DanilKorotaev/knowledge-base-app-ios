@@ -1,6 +1,6 @@
 # Push notifications: chat reply ready
 
-**Status:** Pending — no APNs integration yet (`AppDelegate` is orientation-only).
+**Status:** Deferred (2026-06-09) — после composer redesign; APNs не начинали.
 
 **Master spec (Obsidian):** `Документация/Задачи/task-kb-app-push-uvedomleniya-otvet-chat.md`
 
@@ -31,4 +31,4 @@ User sends a chat message and leaves the app. When the assistant reply is saved,
 
 ## Depends on
 
-- [task-ux-chat-streaming-feedback.md](task-ux-chat-streaming-feedback.md) for in-app UX when chat stays open
+- ~~[task-ux-chat-streaming-feedback.md](task-ux-chat-streaming-feedback.md)~~ → done: `docs/tasks/completed/task-ux-chat-streaming-feedback.md`
