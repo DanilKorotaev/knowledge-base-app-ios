@@ -27,7 +27,6 @@ final class ChatViewModel {
     var streamingAssistantText: String?
 
     private let client: ChatAPIClientProtocol
-    private var lastOlderLoadTime: CFAbsoluteTime = 0
 
     init(session: KBSession, client: ChatAPIClientProtocol) {
         self.session = session
@@ -38,6 +37,7 @@ final class ChatViewModel {
         isLoading = true
         errorMessage = nil
         scrollIntent = .none
+        ChatPaginationLogger.initialLoadStarted(sessionId: session.id)
         defer { isLoading = false }
         do {
             let page = try await client.fetchMessagesPage(
@@ -45,19 +45,30 @@ final class ChatViewModel {
                 limit: Self.pageSize,
                 beforeMessageId: nil
             )
-            apply(page: page, requestedLimit: Self.pageSize)
-            scrollIntent = .scrollToBottom
+            apply(page: page, requestedLimit: Self.pageSize, kind: "initial")
         } catch {
             errorMessage = error.localizedDescription
+            ChatPaginationLogger.loadFailed("initial", error: error.localizedDescription)
         }
     }
 
     func loadOlder() async {
-        guard hasMoreOlder, !isLoadingOlder, !isLoading else { return }
-        let now = CFAbsoluteTimeGetCurrent()
-        guard now - lastOlderLoadTime >= 0.45 else { return }
-        guard let anchorId = messages.first?.id else { return }
-        lastOlderLoadTime = now
+        if !hasMoreOlder {
+            ChatPaginationLogger.requestBlocked("hasMoreOlder=false", context: "viewModel.loadOlder")
+            return
+        }
+        if isLoadingOlder {
+            ChatPaginationLogger.requestBlocked("isLoadingOlder=true", context: "viewModel.loadOlder")
+            return
+        }
+        if isLoading {
+            ChatPaginationLogger.requestBlocked("isLoading=true", context: "viewModel.loadOlder")
+            return
+        }
+        guard let anchorId = messages.first?.id else {
+            ChatPaginationLogger.requestBlocked("messages.first=nil", context: "viewModel.loadOlder")
+            return
+        }
         isLoadingOlder = true
         defer { isLoadingOlder = false }
         do {
@@ -68,6 +79,7 @@ final class ChatViewModel {
             )
             guard !page.messages.isEmpty else {
                 hasMoreOlder = false
+                ChatPaginationLogger.requestBlocked("empty page from API", context: "viewModel.loadOlder")
                 return
             }
             let older = clamp(page.messages, to: Self.pageSize)
@@ -75,8 +87,16 @@ final class ChatViewModel {
             totalCount = page.total
             hasMoreOlder = page.hasMoreOlder
             scrollIntent = .preserve(messageId: anchorId)
+            ChatPaginationLogger.pageApplied(
+                kind: "older",
+                messageIds: page.messages.map(\.id),
+                total: page.total,
+                hasMoreOlder: page.hasMoreOlder,
+                windowCount: messages.count
+            )
         } catch {
             errorMessage = error.localizedDescription
+            ChatPaginationLogger.loadFailed("older", error: error.localizedDescription)
         }
     }
 
@@ -134,10 +154,11 @@ final class ChatViewModel {
                 limit: limit,
                 beforeMessageId: nil
             )
-            apply(page: page, requestedLimit: limit)
+            apply(page: page, requestedLimit: limit, kind: "reloadLatest")
             scrollIntent = .scrollToBottom
         } catch {
             errorMessage = error.localizedDescription
+            ChatPaginationLogger.loadFailed("reloadLatest", error: error.localizedDescription)
         }
     }
 
@@ -174,11 +195,18 @@ final class ChatViewModel {
         }
     }
 
-    private func apply(page: KBMessagesPage, requestedLimit: Int) {
+    private func apply(page: KBMessagesPage, requestedLimit: Int, kind: String) {
         messages = clamp(page.messages, to: requestedLimit)
         totalCount = page.total
         let hasOlderByCount = page.total > messages.count
         hasMoreOlder = page.hasMoreOlder || hasOlderByCount
+        ChatPaginationLogger.pageApplied(
+            kind: kind,
+            messageIds: messages.map(\.id),
+            total: page.total,
+            hasMoreOlder: hasMoreOlder,
+            windowCount: messages.count
+        )
     }
 
     private func clamp(_ list: [KBMessage], to limit: Int) -> [KBMessage] {

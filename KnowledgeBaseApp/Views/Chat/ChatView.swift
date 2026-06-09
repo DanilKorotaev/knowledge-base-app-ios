@@ -7,13 +7,18 @@ struct ChatView: View {
     @Environment(VoiceRoutingContext.self) private var voiceRouting
     @Environment(VoiceRecordingViewModel.self) private var voiceViewModel
     @State private var viewModel: ChatViewModel
-    @State private var hasPinnedToBottom = false
+    @State private var isChatScrollReady = false
+    @State private var userHasScrolled = false
+    @State private var suppressPaginationUntil: Date = .distantPast
+    @State private var latestScrollSample: ScrollPaginationSample?
     @State private var bottomScrollID = "kb-chat-bottom"
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var showFileImporter = false
     @State private var showCamera = false
     private let attachmentLoader: KBAttachmentLoaderProtocol?
-    private let olderLoadTopThreshold: CGFloat = 80
+
+    /// Pause auto-load after prepend while layout settles (prevents cascade from geometry/onAppear).
+    private static let paginationSettleDelay: TimeInterval = 0.85
 
     init(
         session: KBSession,
@@ -34,7 +39,13 @@ struct ChatView: View {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
-                        VStack(alignment: .leading, spacing: 12) {
+                        LazyVStack(alignment: .leading, spacing: 12) {
+                            if viewModel.hasMoreOlder {
+                                Color.clear
+                                    .frame(height: 1)
+                                    .onAppear { topLoadSentinelDidAppear() }
+                            }
+
                             if viewModel.isLoadingOlder {
                                 HStack {
                                     Spacer()
@@ -44,15 +55,14 @@ struct ChatView: View {
                                 }
                             }
 
-                            ForEach(Array(viewModel.messages.enumerated()), id: \.element.id) { index, message in
+                            ForEach(viewModel.messages) { message in
                                 RichMessageBubbleView(
                                     message: message,
                                     attachmentLoader: attachmentLoader
                                 )
                                 .id(message.id)
                                 .onAppear {
-                                    guard index == 0, hasPinnedToBottom, viewModel.hasMoreOlder else { return }
-                                    Task { await viewModel.loadOlder() }
+                                    oldestMessageDidAppear(message.id)
                                 }
                             }
                             if let streaming = viewModel.streamingAssistantText, !streaming.isEmpty {
@@ -73,17 +83,25 @@ struct ChatView: View {
                                 .id(bottomScrollID)
                         }
                         .padding()
+                        .scrollTargetLayout()
                     }
                     .defaultScrollAnchor(.bottom)
-                    .onScrollGeometryChange(for: Bool.self) { geometry in
-                        Self.isNearOldestEdge(geometry, threshold: olderLoadTopThreshold)
-                    } action: { wasNearTop, isNearTop in
-                        guard hasPinnedToBottom, isNearTop, !wasNearTop else { return }
-                        Task { await viewModel.loadOlder() }
+                    .onScrollGeometryChange(for: ScrollPaginationSample.self) { geometry in
+                        ScrollPaginationSample(geometry: geometry)
+                    } action: { _, current in
+                        latestScrollSample = current
+                        ChatPaginationLogger.scrollSample(current)
                     }
-                    .onChange(of: viewModel.isLoading) { _, isLoading in
-                        guard !isLoading, !viewModel.messages.isEmpty else { return }
-                        pinToBottom(proxy: proxy)
+                    .onScrollPhaseChange { _, newPhase, _ in
+                        if newPhase == .interacting {
+                            userHasScrolled = true
+                        }
+                    }
+                    .onChange(of: viewModel.isLoadingOlder) { wasLoadingOlder, isLoadingOlder in
+                        guard wasLoadingOlder, !isLoadingOlder else { return }
+                        suppressPaginationUntil = Date().addingTimeInterval(Self.paginationSettleDelay)
+                        ChatPaginationLogger.paginationSuppressed(untilSeconds: Self.paginationSettleDelay)
+                        schedulePostSettlePaginationCheck()
                     }
                     .onChange(of: viewModel.scrollIntent) { _, intent in
                         applyScrollIntent(intent, proxy: proxy)
@@ -102,8 +120,11 @@ struct ChatView: View {
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
         .task(id: viewModel.session.id) {
-            hasPinnedToBottom = false
+            ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
+            resetChatScrollState()
             await viewModel.load()
+            guard !viewModel.messages.isEmpty else { return }
+            armChatScrollAfterInitialLoad()
         }
         .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { notification in
             guard let sid = notification.userInfo?[KBNotificationUserInfoKey.sessionId] as? String,
@@ -164,41 +185,89 @@ struct ChatView: View {
         }
     }
 
-    private func pinToBottom(proxy: ScrollViewProxy) {
-        guard !viewModel.messages.isEmpty else { return }
-        let scroll = {
-            if let lastId = viewModel.messages.last?.id {
-                proxy.scrollTo(lastId, anchor: .bottom)
-            }
-            proxy.scrollTo(bottomScrollID, anchor: .bottom)
-            hasPinnedToBottom = true
+    private func resetChatScrollState() {
+        isChatScrollReady = false
+        userHasScrolled = false
+        suppressPaginationUntil = .distantPast
+        ChatPaginationLogger.scrollStateReset()
+    }
+
+    private func armChatScrollAfterInitialLoad() {
+        isChatScrollReady = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            isChatScrollReady = true
+            ChatPaginationLogger.scrollArmed(afterSeconds: 0.4)
         }
-        DispatchQueue.main.async(execute: scroll)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12, execute: scroll)
+    }
+
+    private func schedulePostSettlePaginationCheck() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.paginationSettleDelay + 0.05) {
+            guard isChatScrollReady, userHasScrolled else { return }
+            guard Date() >= suppressPaginationUntil else { return }
+            guard latestScrollSample?.isNearOldestEdge == true else { return }
+            requestOlderMessagesIfNeeded(source: "post-settle")
+        }
+    }
+
+    private func topLoadSentinelDidAppear() {
+        guard isChatScrollReady, userHasScrolled else { return }
+        requestOlderMessagesIfNeeded(source: "top-sentinel")
+    }
+
+    private func oldestMessageDidAppear(_ messageId: String) {
+        let firstId = viewModel.messages.first?.id
+        ChatPaginationLogger.oldestMessageAppeared(messageId: messageId, firstMessageId: firstId)
+        guard isChatScrollReady else {
+            ChatPaginationLogger.requestBlocked("isChatScrollReady=false", context: "onAppear")
+            return
+        }
+        guard userHasScrolled else {
+            ChatPaginationLogger.requestBlocked("userHasScrolled=false", context: "onAppear")
+            return
+        }
+        guard messageId == firstId else { return }
+        requestOlderMessagesIfNeeded(source: "onAppear")
+    }
+
+    private func requestOlderMessagesIfNeeded(source: String) {
+        if Date() < suppressPaginationUntil {
+            ChatPaginationLogger.requestBlocked("pagination settle window", context: source)
+            return
+        }
+        if !viewModel.hasMoreOlder {
+            ChatPaginationLogger.requestBlocked("hasMoreOlder=false", context: source)
+            return
+        }
+        if viewModel.isLoadingOlder {
+            ChatPaginationLogger.requestBlocked("isLoadingOlder=true", context: source)
+            return
+        }
+        if viewModel.isLoading {
+            ChatPaginationLogger.requestBlocked("isLoading=true", context: source)
+            return
+        }
+        ChatPaginationLogger.requestStarted(
+            source: source,
+            anchorId: viewModel.messages.first?.id
+        )
+        Task { await viewModel.loadOlder() }
     }
 
     private func applyScrollIntent(_ intent: ChatScrollIntent, proxy: ScrollViewProxy) {
         guard intent != .none else { return }
-        let apply = {
-            switch intent {
-            case .none:
-                break
-            case .scrollToBottom:
-                pinToBottom(proxy: proxy)
-            case .preserve(let messageId):
+        switch intent {
+        case .none:
+            break
+        case .scrollToBottom:
+            proxy.scrollTo(bottomScrollID, anchor: .bottom)
+        case .preserve(let messageId):
+            // Restore anchor after prepend once suppress window is active (avoids cascade + jump).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
                 proxy.scrollTo(messageId, anchor: .top)
             }
-            viewModel.acknowledgeScrollIntent()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05, execute: apply)
-    }
-
-    /// True when the scroll offset is at the oldest edge (user reached the top of the thread).
-    private static func isNearOldestEdge(_ geometry: ScrollGeometry, threshold: CGFloat) -> Bool {
-        let contentHeight = geometry.contentSize.height
-        let viewportHeight = geometry.visibleRect.height
-        guard contentHeight > viewportHeight + 8 else { return false }
-        return geometry.contentOffset.y + geometry.contentInsets.top <= threshold
+        ChatPaginationLogger.scrollIntent(intent)
+        viewModel.acknowledgeScrollIntent()
     }
 
     private var inputBar: some View {

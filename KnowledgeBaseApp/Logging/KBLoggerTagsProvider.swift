@@ -18,6 +18,9 @@ final class KBLoggerTagsProvider: LoggerTagsProviderDescription, ExcludedLoggerT
         .common, .network, .http, .sessions, .chat, .files, .voice, .config, .debug, .userDefaultsService,
     ]
 
+    /// Tags off on first launch; enable in Debug → Log settings when needed.
+    private static let disabledByDefault: Set<LoggerTag> = [.chat]
+
     private init() {
         tags = Self.allTags
         excludedTags = Set(tags.filter { !isEnabled(tag: $0) })
@@ -37,14 +40,18 @@ final class KBLoggerTagsProvider: LoggerTagsProviderDescription, ExcludedLoggerT
     }
 
     func resetToDefaults() {
-        tags.forEach { set(isEnabled: true, for: $0) }
+        tags.forEach { set(isEnabled: Self.isEnabledByDefault(tag: $0), for: $0) }
     }
 
     func isEnabled(tag: LoggerTag) -> Bool {
         if UserDefaultsService.shared.object(forKey: storageKey(for: tag)) == nil {
-            return true
+            return Self.isEnabledByDefault(tag: tag)
         }
         return UserDefaultsService.shared.bool(forKey: storageKey(for: tag))
+    }
+
+    private static func isEnabledByDefault(tag: LoggerTag) -> Bool {
+        !disabledByDefault.contains(tag)
     }
 
     private func storageKey(for tag: LoggerTag) -> String {

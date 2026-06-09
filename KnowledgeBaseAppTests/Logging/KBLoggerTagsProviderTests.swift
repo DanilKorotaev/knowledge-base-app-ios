@@ -40,6 +40,13 @@ final class KBLoggerTagsProviderTests: XCTestCase {
 
         provider.resetToDefaults()
         XCTAssertTrue(provider.isEnabled(tag: .network))
+        XCTAssertFalse(provider.isEnabled(tag: .chat))
+    }
+
+    func testChatTagDisabledByDefaultWhenUnset() {
+        let key = UserDefaultsKeyPrefix.loggerTag.appending(LoggerTag.chat.rawValue) + ".enabled"
+        storage.removeObject(forKey: key)
+        XCTAssertFalse(KBLoggerTagsProvider.shared.isEnabled(tag: .chat))
     }
 
     func testTagsListIncludesUserDefaultsService() {
