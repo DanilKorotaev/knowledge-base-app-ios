@@ -127,7 +127,7 @@ final class KBMessageTests: XCTestCase {
         )
         XCTAssertTrue(message.isCompositeAttachmentMessage)
         XCTAssertFalse(message.isSingleVoiceOnlyMessage)
-        XCTAssertEqual(message.bubbleTextContent, tr)
+        XCTAssertNil(message.bubbleTextContent)
     }
 
     func testCompositePhotoVoiceKeepsExtraText() {
@@ -158,7 +158,7 @@ final class KBMessageTests: XCTestCase {
                 )
             ]
         )
-        XCTAssertEqual(message.bubbleTextContent, "\(tr)\n\nПодпись к фото.")
+        XCTAssertEqual(message.bubbleTextContent, "Подпись к фото.")
     }
 
     func testPlainTextPreservesNewlines() {
@@ -184,6 +184,13 @@ final class MessageContentRendererTests: XCTestCase {
         )
         let attr = MessageContentRenderer.attributedText(for: message)
         XCTAssertFalse(String(attr.characters).isEmpty)
+    }
+
+    func testStripsTerminalEscapeSequences() {
+        let content = "Done.\n\u{1B}[?25h"
+        let attr = MessageContentRenderer.attributedText(from: content, format: .markdown)
+        XCTAssertEqual(String(attr.characters), "Done.")
+        XCTAssertFalse(String(attr.characters).contains("[?25h"))
     }
 
     func testMarkdownHeaderUsesFullSyntax() {

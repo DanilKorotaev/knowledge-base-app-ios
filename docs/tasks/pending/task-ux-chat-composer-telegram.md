@@ -1,9 +1,9 @@
 # Chat composer: Telegram-style input bar
 
-**Status:** In progress — Phase A (UI + draft + legacy send paths)
+**Status:** In progress — Phase A done; Phase B compose client wired (needs backend deploy)
 
 **Master spec:** `Документация/Задачи/task-kb-app-chat-composer-telegram-ux.md`  
-**Backend blocker:** `knowledge-base-bot/docs/tasks/pending/task-api-chat-composer-multipart.md`
+**Backend:** `knowledge-base-bot/docs/tasks/pending/task-api-chat-composer-multipart.md`
 
 ## Goal
 
@@ -33,12 +33,12 @@ Redesign chat input: centered `TextField`, paperclip (attachments), mic by defau
 - [x] Skip `PostRecordingReviewSheet` when chat open (`deferToComposer`)
 - [x] Second recording appends text + second clip
 
-### Send (legacy fallback until compose API)
+### Send
 
 - [x] Text only → `streamTextMessage`
 - [x] Single file → `sendAttachment`
 - [x] Single voice → `streamVoiceMessage`
-- [ ] `sendComposedMessage` multipart (after backend `messages/compose`)
+- [x] Multi-file / file+text / mixed → `streamComposedMessage` (`POST …/messages/compose`)
 
 ### KB toggle
 
@@ -46,8 +46,7 @@ Redesign chat input: centered `TextField`, paperclip (attachments), mic by defau
 
 ## Remaining (Phase B+)
 
-- [ ] Backend `POST …/messages/compose` + iOS client
-- [ ] Multi-file / file+text / multi-voice in one send
+- [ ] Deploy backend `POST …/messages/compose` to prod
 - [ ] Quick Look for non-image files
 - [ ] Attachment count / size limits
 

@@ -39,6 +39,13 @@ protocol ChatAPIClientProtocol: Sendable {
         text: String,
         useKnowledgeBase: Bool
     ) async throws -> AsyncThrowingStream<String, Error>
+
+    /// Text + multiple files/voice clips: `POST …/messages/compose` (multipart + SSE).
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error>
 }
 
 struct StubChatAPIClient: ChatAPIClientProtocol {
@@ -261,5 +268,16 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
                 continuation.finish()
             }
         }
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        let summary = draft.trimmedText.isEmpty
+            ? "Compose: \(draft.attachments.count) files, \(draft.voiceClips.count) voice"
+            : draft.trimmedText
+        return try await streamTextMessage(sessionId: sessionId, text: summary, useKnowledgeBase: useKnowledgeBase)
     }
 }

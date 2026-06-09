@@ -92,6 +92,19 @@ struct VoiceMessageBubble: View {
     }
 
     private func preparePlayer() async {
+        if let local = localFileURL(from: attachment.downloadURL) {
+            do {
+                let data = try Data(contentsOf: local)
+                player = try AVAudioPlayer(data: data)
+                player?.prepareToPlay()
+                progress = 0
+                return
+            } catch {
+                loadError = "Could not load audio"
+                return
+            }
+        }
+
         guard let path = attachment.downloadURL, let loader else {
             loadError = "Voice unavailable"
             return
@@ -124,6 +137,11 @@ struct VoiceMessageBubble: View {
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
+    }
+
+    private func localFileURL(from downloadURL: String?) -> URL? {
+        guard let downloadURL, downloadURL.hasPrefix("file://") else { return nil }
+        return URL(string: downloadURL)
     }
 }
 

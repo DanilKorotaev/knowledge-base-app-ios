@@ -109,18 +109,19 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         if isVoiceOnly { return nil }
 
         if isCompositeAttachmentMessage {
+            let supplemental = stripEmbeddedVoiceTranscriptions(from: text)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !voiceAttachments.isEmpty {
+                return supplemental.isEmpty ? nil : supplemental
+            }
             var sections: [String] = []
             if let voiceBlock = composedVoiceTranscription {
                 sections.append(voiceBlock)
             }
-            if !text.isEmpty {
-                let supplemental = stripEmbeddedVoiceTranscriptions(from: text)
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                if !supplemental.isEmpty {
-                    sections.append(supplemental)
-                } else if sections.isEmpty {
-                    sections.append(text)
-                }
+            if !supplemental.isEmpty {
+                sections.append(supplemental)
+            } else if sections.isEmpty, !text.isEmpty {
+                sections.append(text)
             }
             let result = sections.joined(separator: "\n\n")
             return result.isEmpty ? nil : result

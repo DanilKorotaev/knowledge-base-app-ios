@@ -5,12 +5,20 @@ struct AttachmentImageGrid: View {
     let loader: KBAttachmentLoaderProtocol?
     let onSelect: (UIImage) -> Void
 
-    private let columns = [GridItem(.flexible(), spacing: 8)]
+    private var columns: [GridItem] {
+        attachments.count <= 1
+            ? [GridItem(.flexible(), spacing: 8)]
+            : [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)]
+    }
 
     var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
+        LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
             ForEach(attachments) { attachment in
-                AuthenticatedAttachmentImage(attachment: attachment, loader: loader) { image in
+                AuthenticatedAttachmentImage(
+                    attachment: attachment,
+                    loader: loader,
+                    layout: attachments.count <= 1 ? .hero : .thumbnail
+                ) { image in
                     onSelect(image)
                 }
             }
@@ -18,9 +26,15 @@ struct AttachmentImageGrid: View {
     }
 }
 
+private enum AttachmentImageLayout {
+    case hero
+    case thumbnail
+}
+
 private struct AuthenticatedAttachmentImage: View {
     let attachment: KBAttachment
     let loader: KBAttachmentLoaderProtocol?
+    let layout: AttachmentImageLayout
     let onTap: (UIImage) -> Void
 
     @State private var image: UIImage?
@@ -31,8 +45,7 @@ private struct AuthenticatedAttachmentImage: View {
             if let image {
                 Image(uiImage: image)
                     .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: 280, maxHeight: 280)
+                    .modifier(ImageLayoutModifier(layout: layout))
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .onTapGesture { onTap(image) }
             } else if failed {
@@ -50,7 +63,7 @@ private struct AuthenticatedAttachmentImage: View {
     private func placeholder(systemName: String) -> some View {
         RoundedRectangle(cornerRadius: 12, style: .continuous)
             .fill(Color.secondary.opacity(0.12))
-            .frame(width: 160, height: 120)
+            .modifier(ImageLayoutModifier(layout: layout))
             .overlay {
                 Image(systemName: systemName)
                     .foregroundStyle(.secondary)
@@ -58,6 +71,13 @@ private struct AuthenticatedAttachmentImage: View {
     }
 
     private func load() async {
+        if let local = localFileURL(from: attachment.downloadURL) {
+            if let ui = UIImage(contentsOfFile: local.path) {
+                image = ui
+                return
+            }
+        }
+
         guard let path = attachment.downloadURL, let loader else {
             failed = true
             return
@@ -71,6 +91,29 @@ private struct AuthenticatedAttachmentImage: View {
             }
         } catch {
             failed = true
+        }
+    }
+
+    private func localFileURL(from downloadURL: String?) -> URL? {
+        guard let downloadURL, downloadURL.hasPrefix("file://") else { return nil }
+        return URL(string: downloadURL)
+    }
+}
+
+private struct ImageLayoutModifier: ViewModifier {
+    let layout: AttachmentImageLayout
+
+    func body(content: Content) -> some View {
+        switch layout {
+        case .hero:
+            content
+                .scaledToFit()
+                .frame(maxWidth: 280, maxHeight: 280)
+        case .thumbnail:
+            content
+                .scaledToFill()
+                .frame(minWidth: 0, maxWidth: .infinity, minHeight: 120, maxHeight: 120)
+                .clipped()
         }
     }
 }

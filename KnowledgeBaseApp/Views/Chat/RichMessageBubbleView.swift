@@ -47,11 +47,9 @@ struct RichMessageBubbleView: View {
             ForEach(message.voiceAttachments) { voice in
                 VoiceMessageBubble(
                     attachment: voice,
-                    transcription: message.isSingleVoiceOnlyMessage
-                        ? (voice.transcription ?? message.transcription)
-                        : nil,
-                    showsTranscription: message.isSingleVoiceOnlyMessage,
-                    collapsedByDefault: message.isSingleVoiceOnlyMessage,
+                    transcription: voice.transcription,
+                    showsTranscription: true,
+                    collapsedByDefault: message.isCompositeAttachmentMessage,
                     loader: attachmentLoader
                 )
             }

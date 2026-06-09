@@ -3,20 +3,25 @@ import SwiftUI
 enum MessageContentRenderer {
     /// Full markdown block (headers, lists, bold, etc.).
     static func attributedText(for message: KBMessage) -> AttributedString {
-        attributedText(from: message.content, format: message.resolvedContentFormat)
+        attributedText(from: sanitizedContent(message.content), format: message.resolvedContentFormat)
     }
 
     static func attributedText(from content: String, format: ContentFormat) -> AttributedString {
-        guard !content.isEmpty else { return AttributedString("") }
+        let cleaned = sanitizedContent(content)
+        guard !cleaned.isEmpty else { return AttributedString("") }
 
         switch format {
         case .markdown:
-            return parseMarkdown(content)
+            return parseMarkdown(cleaned)
         case .html:
-            return htmlToAttributed(content) ?? AttributedString(content)
+            return htmlToAttributed(cleaned) ?? AttributedString(cleaned)
         case .plain:
-            return AttributedString(content)
+            return AttributedString(cleaned)
         }
+    }
+
+    private static func sanitizedContent(_ content: String) -> String {
+        TerminalSanitizer.stripEscapeSequences(content)
     }
 
     /// Inline markdown only (bold, code) — preserves structure when rendered line-by-line.
@@ -65,7 +70,8 @@ struct MessageContentView: View {
     var contentOverride: String?
 
     private var text: String {
-        contentOverride ?? message.content
+        let raw = contentOverride ?? message.content
+        return TerminalSanitizer.stripEscapeSequences(raw)
     }
 
     private var format: ContentFormat {

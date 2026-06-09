@@ -331,6 +331,18 @@ private struct SlowConnectStreamChatAPIClient: ChatAPIClientProtocol {
     ) async throws -> AsyncThrowingStream<String, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        try await StubChatAPIClient(store: store).streamComposedMessage(
+            sessionId: sessionId,
+            draft: draft,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
 }
 
 /// Yields a stream that fails immediately after the user message is queued.
@@ -385,6 +397,14 @@ private struct FailingStreamChatAPIClient: ChatAPIClientProtocol {
     ) async throws -> AsyncThrowingStream<String, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
+    }
 }
 
 private struct FailingFetchChatAPIClient: ChatAPIClientProtocol {
@@ -430,6 +450,14 @@ private struct FailingFetchChatAPIClient: ChatAPIClientProtocol {
         useKnowledgeBase: Bool
     ) async throws -> AsyncThrowingStream<String, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
 
@@ -491,5 +519,17 @@ private struct FailingOlderFetchChatAPIClient: ChatAPIClientProtocol {
         useKnowledgeBase: Bool
     ) async throws -> AsyncThrowingStream<String, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        try await StubChatAPIClient(store: store).streamComposedMessage(
+            sessionId: sessionId,
+            draft: draft,
+            useKnowledgeBase: useKnowledgeBase
+        )
     }
 }

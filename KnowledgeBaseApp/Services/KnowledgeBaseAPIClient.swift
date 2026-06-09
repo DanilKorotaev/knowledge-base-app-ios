@@ -504,6 +504,72 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return streamAssistantByWord(assistant.content)
     }
 
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        guard draft.canSend else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(sessionId)
+            .appendingPathComponent("messages")
+            .appendingPathComponent("compose")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("text/event-stream, application/json;q=0.9", forHTTPHeaderField: "Accept")
+
+        request.httpBody = try Self.multipartComposeBody(
+            boundary: boundary,
+            draft: draft,
+            useKnowledgeBase: useKnowledgeBase
+        )
+        Self.applySSETimeout(to: &request)
+
+        let (bytes, http) = try await transport.bytes(for: request)
+        guard (200 ... 299).contains(http.statusCode) else {
+            let errData = try await collectAsyncBytes(bytes)
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: http.statusCode,
+                apiMessage: KBAppAPIErrorMessage.parse(from: errData)
+            )
+        }
+
+        let mime = http.value(forHTTPHeaderField: "Content-Type")?.lowercased() ?? ""
+        if mime.contains("text/event-stream") {
+            return streamAssistantChunksFromSSE(bytes: bytes)
+        }
+
+        let data = try await collectAsyncBytes(bytes)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        struct Envelope: Codable {
+            let messages: [KBMessage]?
+        }
+
+        let messages: [KBMessage]
+        if let env = try? decoder.decode(Envelope.self, from: data), let m = env.messages {
+            messages = m
+        } else if let list = try? decoder.decode([KBMessage].self, from: data) {
+            messages = list
+        } else {
+            messages = try await messagesFromPostResponse(data: data, sessionId: sessionId)
+        }
+
+        guard let assistant = messages.last(where: { $0.role == .assistant }) else {
+            return AsyncThrowingStream { $0.finish() }
+        }
+        return streamAssistantByWord(assistant.content)
+    }
+
     private func collectAsyncBytes(_ bytes: URLSession.AsyncBytes) async throws -> Data {
         var data = Data()
         for try await byte in bytes {
@@ -833,6 +899,56 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         data.append("Content-Type: \(mimeType)\(crlf)\(crlf)".data(using: .utf8)!)
         data.append(fileData)
         data.append(crlf.data(using: .utf8)!)
+        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        return data
+    }
+
+    private static func multipartComposeBody(
+        boundary: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) throws -> Data {
+        var data = Data()
+        let crlf = "\r\n"
+
+        func appendField(name: String, value: String) {
+            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+            data.append("Content-Disposition: form-data; name=\"\(name)\"\(crlf)\(crlf)".data(using: .utf8)!)
+            data.append("\(value)\(crlf)".data(using: .utf8)!)
+        }
+
+        appendField(name: "content", value: draft.text)
+        appendField(name: "use_knowledge_base", value: useKnowledgeBase ? "true" : "false")
+
+        let transcriptions = draft.voiceClips.map(\.transcriptionSegment)
+        if !transcriptions.isEmpty {
+            let json = try JSONSerialization.data(withJSONObject: transcriptions)
+            appendField(name: "audio_transcriptions", value: String(decoding: json, as: UTF8.self))
+        }
+
+        for attachment in draft.attachments {
+            let fileData = try Data(contentsOf: attachment.localURL)
+            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+            data.append(
+                "Content-Disposition: form-data; name=\"files\"; filename=\"\(attachment.filename)\"\(crlf)".data(using: .utf8)!
+            )
+            data.append("Content-Type: \(attachment.mimeType)\(crlf)\(crlf)".data(using: .utf8)!)
+            data.append(fileData)
+            data.append(crlf.data(using: .utf8)!)
+        }
+
+        for clip in draft.voiceClips {
+            let fileData = try Data(contentsOf: clip.audioURL)
+            let filename = clip.audioURL.lastPathComponent
+            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+            data.append(
+                "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+            )
+            data.append("Content-Type: audio/mp4\(crlf)\(crlf)".data(using: .utf8)!)
+            data.append(fileData)
+            data.append(crlf.data(using: .utf8)!)
+        }
+
         data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
         return data
     }

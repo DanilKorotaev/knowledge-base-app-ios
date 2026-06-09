@@ -84,6 +84,7 @@ enum ChatComposerSendPlanner {
         case textOnly(String)
         case singleAttachment(PendingAttachment)
         case singleVoice(PendingVoiceClip, text: String)
+        case compose(ChatComposerDraft)
         case unsupported(String)
     }
 
@@ -91,34 +92,28 @@ enum ChatComposerSendPlanner {
         let attachmentCount = draft.attachments.count
         let voiceCount = draft.voiceClips.count
 
-        if attachmentCount + voiceCount > 1 {
-            return .unsupported(
-                "Пока можно отправить только один файл или одно голосовое за раз. Несколько вложений — после обновления API compose."
-            )
+        if attachmentCount == 0 && voiceCount == 0 {
+            guard !draft.trimmedText.isEmpty else {
+                return .unsupported("Добавьте текст, файл или голосовое.")
+            }
+            return .textOnly(draft.trimmedText)
         }
-        if attachmentCount > 0 && voiceCount > 0 {
-            return .unsupported(
-                "Файл и голосовое в одном сообщении пока не поддерживаются — дождитесь API compose."
-            )
+
+        if attachmentCount == 1 && voiceCount == 0 && draft.trimmedText.isEmpty {
+            return .singleAttachment(draft.attachments[0])
         }
-        if attachmentCount == 1, !draft.trimmedText.isEmpty {
-            return .unsupported(
-                "Текст вместе с файлом пока не поддерживается — отправьте отдельно или дождитесь API compose."
-            )
-        }
-        if let attachment = draft.attachments.first {
-            return .singleAttachment(attachment)
-        }
-        if let clip = draft.voiceClips.first {
-            let text = draft.trimmedText.isEmpty ? clip.transcriptionSegment : draft.trimmedText
+
+        if voiceCount == 1 && attachmentCount == 0 {
+            let text = draft.trimmedText.isEmpty ? draft.voiceClips[0].transcriptionSegment : draft.trimmedText
             guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 return .unsupported("Голосовое сообщение не удалось расшифровать.")
             }
-            return .singleVoice(clip, text: text)
+            return .singleVoice(draft.voiceClips[0], text: text)
         }
-        guard !draft.trimmedText.isEmpty else {
+
+        guard draft.canSend else {
             return .unsupported("Добавьте текст, файл или голосовое.")
         }
-        return .textOnly(draft.trimmedText)
+        return .compose(draft)
     }
 }

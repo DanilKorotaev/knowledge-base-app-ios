@@ -271,6 +271,8 @@ final class ChatViewModel {
             await sendSingleAttachment(attachment)
         case .singleVoice(let clip, let text):
             await sendSingleVoice(clip: clip, text: text)
+        case .compose(let draft):
+            await sendComposedMessage(draft)
         }
     }
 
@@ -358,6 +360,101 @@ final class ChatViewModel {
             assistantReplyPhase = .idle
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func sendComposedMessage(_ draft: ChatComposerDraft) async {
+        var scopedURLs: [URL] = []
+        defer {
+            for url in scopedURLs {
+                url.stopAccessingSecurityScopedResource()
+            }
+            for attachment in draft.attachments {
+                try? FileManager.default.removeItem(at: attachment.localURL)
+            }
+            for clip in draft.voiceClips {
+                try? FileManager.default.removeItem(at: clip.audioURL)
+            }
+        }
+
+        for attachment in draft.attachments {
+            if attachment.localURL.startAccessingSecurityScopedResource() {
+                scopedURLs.append(attachment.localURL)
+            }
+        }
+
+        let optimisticUser = buildOptimisticMessage(from: draft)
+        do {
+            messages.append(optimisticUser)
+            assistantReplyPhase = .waiting
+            scrollIntent = .scrollToBottom
+
+            let stream = try await client.streamComposedMessage(
+                sessionId: session.id,
+                draft: draft,
+                useKnowledgeBase: useKnowledgeBase
+            )
+            try await AssistantReplyStreamConsumer.consume(stream) { phase in
+                assistantReplyPhase = phase
+                scrollIntent = .scrollToBottom
+            }
+            await waitForStreamRevealAnimation()
+            await reloadLatestWindow()
+            assistantReplyPhase = .idle
+        } catch {
+            assistantReplyPhase = .idle
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func composedOptimisticPlaceholder(for draft: ChatComposerDraft) -> String {
+        var parts: [String] = []
+        if !draft.attachments.isEmpty {
+            parts.append("📎 \(draft.attachments.count)")
+        }
+        if !draft.voiceClips.isEmpty {
+            parts.append("🎤 \(draft.voiceClips.count)")
+        }
+        return parts.joined(separator: " ")
+    }
+
+    private func buildOptimisticMessage(from draft: ChatComposerDraft) -> KBMessage {
+        var attachments: [KBAttachment] = []
+        for item in draft.attachments {
+            attachments.append(
+                KBAttachment(
+                    id: "optimistic-\(item.id)",
+                    fileType: item.kind == .image ? "photo" : "document",
+                    fileName: item.filename,
+                    fileSize: item.fileSize.map(Int.init),
+                    mimeType: item.mimeType,
+                    downloadURL: item.localURL.absoluteString,
+                    transcription: nil
+                )
+            )
+        }
+        for clip in draft.voiceClips {
+            attachments.append(
+                KBAttachment(
+                    id: "optimistic-\(clip.id)",
+                    fileType: "voice",
+                    fileName: clip.audioURL.lastPathComponent,
+                    fileSize: nil,
+                    mimeType: "audio/mp4",
+                    downloadURL: clip.audioURL.absoluteString,
+                    transcription: clip.transcriptionSegment
+                )
+            )
+        }
+        let content = draft.trimmedText.isEmpty
+            ? composedOptimisticPlaceholder(for: draft)
+            : draft.text
+        return KBMessage(
+            id: "kb-optimistic-\(UUID().uuidString)",
+            role: .user,
+            content: content,
+            createdAt: Date(),
+            attachments: attachments.isEmpty ? nil : attachments
+        )
     }
 
     func reloadLatestWindow() async {
