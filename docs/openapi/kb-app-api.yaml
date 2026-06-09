@@ -1,16 +1,16 @@
 openapi: 3.1.0
 info:
   title: KB App API
-  version: 1.0.0
+  version: 1.1.0
   description: |
-    Согласовано с реализацией в `knowledge-base-bot/kb_app_api/`.
-    Расширять вместе с `docs/KB_APP_API_CONTRACT.md`.
+    Subset aligned with `knowledge-base-bot/kb_app_api/` and the iOS client.
+    Human-readable spec: `docs/KB_APP_API_CONTRACT.md`.
 servers:
   - url: https://example.com
 paths:
   /health:
     get:
-      summary: Liveness (без авторизации)
+      summary: Liveness (no auth)
       responses:
         "200":
           description: OK
@@ -22,9 +22,9 @@ paths:
                   status: { type: string, example: ok }
   /api/auth/token:
     post:
-      summary: Опциональная выдача Bearer (если включено на сервере)
+      summary: Optional Bearer issuance
       description: |
-        При `KB_APP_API_TOKEN_ENDPOINT_ENABLED=false` сервер отвечает 404.
+        Returns 404 when `KB_APP_API_TOKEN_ENDPOINT_ENABLED=false`.
       requestBody:
         content:
           application/json:
@@ -44,10 +44,10 @@ paths:
                   access_token: { type: string }
                   token_type: { type: string, example: bearer }
                   expires_in:
-                    description: Пока всегда null (бессрочный токен из конфига)
+                    description: Currently always null (config token has no expiry)
                     nullable: true
         "404":
-          description: Эндпоинт отключён
+          description: Endpoint disabled
   /api/sessions:
     get:
       summary: List sessions
@@ -55,10 +55,10 @@ paths:
       parameters:
         - name: page
           in: query
-          schema: { type: integer, default: 1 }
+          schema: { type: integer, default: 1, minimum: 1 }
         - name: per_page
           in: query
-          schema: { type: integer, default: 20 }
+          schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
       responses:
         "200":
           description: OK
@@ -66,6 +66,7 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [sessions, total, page, per_page]
                 properties:
                   sessions:
                     type: array
@@ -82,9 +83,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [title]
               properties:
-                title: { type: string }
+                title: { type: string, maxLength: 500, default: "Новый чат" }
       responses:
         "201":
           description: Created
@@ -94,12 +94,32 @@ paths:
                 type: object
                 properties:
                   session: { $ref: "#/components/schemas/Session" }
+  /api/sessions/search:
+    get:
+      summary: Search sessions by id or message text
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 1 }
+          description: Session id (optional `#` prefix) or substring in title/messages
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [sessions, total]
+                properties:
+                  sessions:
+                    type: array
+                    items: { $ref: "#/components/schemas/Session" }
+                  total: { type: integer }
   /api/sessions/{session_id}:
     parameters:
-      - name: session_id
-        in: path
-        required: true
-        schema: { type: string }
+      - $ref: "#/components/parameters/SessionId"
     patch:
       summary: Rename session (display_title)
       security: [{ bearerAuth: [] }]
@@ -111,7 +131,7 @@ paths:
               type: object
               required: [title]
               properties:
-                title: { type: string, maxLength: 500 }
+                title: { type: string, minLength: 1, maxLength: 500 }
       responses:
         "200":
           description: OK
@@ -132,104 +152,70 @@ paths:
               schema:
                 type: object
                 properties:
-                  success: { type: boolean }
+                  success: { type: boolean, example: true }
   /api/sessions/{session_id}/messages:
     parameters:
-      - name: session_id
-        in: path
-        required: true
-        schema: { type: string }
+      - $ref: "#/components/parameters/SessionId"
     get:
-      summary: List messages
+      summary: Message window (newest last, cursor pagination)
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: page
+        - name: limit
           in: query
-          schema: { type: integer }
-        - name: per_page
+          schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+        - name: before
           in: query
-          schema: { type: integer }
+          required: false
+          schema: { type: string }
+          description: Message id — return up to `limit` messages older than this id
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  messages:
-                    type: array
-                    items: { $ref: "#/components/schemas/Message" }
-                  total: { type: integer }
+                $ref: "#/components/schemas/MessagesPage"
     post:
-      summary: Send text message (SSE при Accept text/event-stream)
+      summary: Send text message
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: Accept
-          in: header
-          schema: { type: string }
+        - $ref: "#/components/parameters/AcceptSSE"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               required: [content, use_knowledge_base]
               properties:
-                content: { type: string }
-                use_knowledge_base: { type: boolean }
+                content: { type: string, minLength: 1, maxLength: 32000 }
+                use_knowledge_base: { type: boolean, default: true }
       responses:
         "201":
-          description: JSON с полным списком сообщений
+          description: JSON — full message list after sync pipeline
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesEnvelope"
         "200":
-          description: SSE поток
-  /api/sessions/{session_id}/attachments:
-    parameters:
-      - name: session_id
-        in: path
-        required: true
-        schema: { type: string }
-    post:
-      summary: Загрузка файла в сессию (multipart)
-      security: [{ bearerAuth: [] }]
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              required: [file]
-              properties:
-                file: { type: string, format: binary }
-                use_knowledge_base: { type: string }
-                message: { type: string, description: Опциональный текст запроса }
-      responses:
-        "201":
-          description: OK
-  /api/sessions/{session_id}/attachments/{attachment_id}/file:
-    parameters:
-      - name: session_id
-        in: path
-        required: true
-        schema: { type: string }
-      - name: attachment_id
-        in: path
-        required: true
-        schema: { type: string }
-    get:
-      summary: Download attachment file (authenticated proxy)
-      security: [{ bearerAuth: [] }]
-      responses:
-        "200":
-          description: Binary file stream
+          description: SSE stream when Accept includes text/event-stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  SSE `data:` lines with JSON objects (see ChatSSEEvent):
+                  `{"status":"processing"}`, `{"delta":"…"}`, `{"error":"…"}`, `{"done":true}`.
   /api/sessions/{session_id}/messages/voice:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
     post:
-      summary: Текст + голосовой файл (транскрипция + пайплайн + сохранение voice в БД)
+      summary: Edited transcription + audio → pipeline + voice attachment in DB
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: session_id
-          in: path
-          required: true
-          schema: { type: string }
+        - $ref: "#/components/parameters/AcceptSSE"
       requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -237,16 +223,120 @@ paths:
               required: [audio, content]
               properties:
                 audio: { type: string, format: binary }
-                content: { type: string }
-                use_knowledge_base: { type: string }
+                content:
+                  type: string
+                  description: Non-empty edited transcription
+                use_knowledge_base:
+                  type: string
+                  default: "true"
+                  description: Form boolean — `true`/`false`/`1`/`yes`
       responses:
         "201":
-          description: OK (JSON) or SSE stream with Accept text/event-stream
-  /api/query/voice/transcribe:
+          description: JSON — full message list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesEnvelope"
+        "200":
+          description: SSE stream when Accept includes text/event-stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /api/sessions/{session_id}/messages/compose:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
     post:
-      summary: Только Whisper (без сессии и без ответа ассистента)
+      summary: Single user message — text, multiple files and voice clips
+      description: |
+        iOS composer sends `content`, repeated `files`, repeated `audio`, and optional
+        `audio_transcriptions` (JSON array of strings, one per `audio` part, same order).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/AcceptSSE"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  default: ""
+                  description: Optional message text (at least one of content/files/audio required)
+                use_knowledge_base:
+                  type: string
+                  default: "true"
+                audio_transcriptions:
+                  type: string
+                  description: JSON array of transcription strings, length must match `audio` parts count
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+                audio:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        "201":
+          description: JSON — full message list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesEnvelope"
+        "200":
+          description: SSE stream when Accept includes text/event-stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+  /api/sessions/{session_id}/attachments:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    post:
+      summary: Upload one file into session thread
       security: [{ bearerAuth: [] }]
       requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                use_knowledge_base:
+                  type: string
+                  default: "true"
+                message:
+                  type: string
+                  description: Optional query text instead of server default prompt
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesEnvelope"
+  /api/sessions/{session_id}/attachments/{attachment_id}/file:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+      - name: attachment_id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      summary: Download attachment (authenticated proxy)
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Binary file stream
+  /api/query/voice/transcribe:
+    post:
+      summary: Whisper ASR only (no session, no assistant reply)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
@@ -261,28 +351,45 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [transcription]
                 properties:
                   transcription: { type: string }
   /api/query/voice:
     post:
-      summary: Голос (Whisper) + тот же пайплайн, что текст
+      summary: Legacy one-shot — Whisper (or hint) + full pipeline
+      description: |
+        Prefer `POST …/messages/voice` or `…/messages/compose` from the iOS app.
+        Requires `session_id`. Provide non-empty `audio` **or** `transcription_hint`.
       security: [{ bearerAuth: [] }]
       requestBody:
+        required: true
         content:
           multipart/form-data:
             schema:
               type: object
+              required: [session_id]
               properties:
-                audio: { type: string, format: binary }
                 session_id: { type: string }
-                use_knowledge_base: { type: string }
+                audio: { type: string, format: binary }
+                use_knowledge_base:
+                  type: string
+                  default: "true"
                 transcription_hint: { type: string }
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items: { $ref: "#/components/schemas/Message" }
+                  transcription: { type: string }
   /api/files/changes:
     get:
-      summary: Список изменений файлов KB
+      summary: KB file change log
       security: [{ bearerAuth: [] }]
       parameters:
         - name: session_id
@@ -296,22 +403,26 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [items]
                 properties:
                   items:
                     type: array
-                    items: { type: object }
+                    items: { $ref: "#/components/schemas/FileChangeItem" }
   /api/files/revert:
     post:
-      summary: Откат одного изменения по id записи
+      summary: Revert one file change by change record id
       security: [{ bearerAuth: [] }]
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               required: [file_id]
               properties:
-                file_id: { type: string, description: id из GET /changes }
+                file_id:
+                  type: string
+                  description: Id from GET /api/files/changes (`items[].id`)
       responses:
         "200":
           description: OK
@@ -319,8 +430,9 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [ok, change_id, path]
                 properties:
-                  ok: { type: boolean }
+                  ok: { type: boolean, example: true }
                   change_id: { type: string }
                   path: { type: string }
 components:
@@ -328,6 +440,19 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema: { type: string }
+    AcceptSSE:
+      name: Accept
+      in: header
+      schema:
+        type: string
+        example: "text/event-stream, application/json;q=0.9"
+      description: When value includes `text/event-stream`, response is SSE instead of JSON
   schemas:
     Session:
       type: object
@@ -352,15 +477,59 @@ components:
           items: { $ref: "#/components/schemas/Attachment" }
     Attachment:
       type: object
-      required: [id, file_type]
+      required: [id, file_type, download_url]
       properties:
         id: { type: string }
-        file_type: { type: string }
+        file_type: { type: string, description: "photo | voice | file | …" }
         file_name: { type: string, nullable: true }
         file_size: { type: integer, nullable: true }
         mime_type: { type: string, nullable: true }
         download_url: { type: string }
         transcription: { type: string, nullable: true }
+    MessagesPage:
+      type: object
+      required: [messages, total, has_more_older]
+      properties:
+        messages:
+          type: array
+          items: { $ref: "#/components/schemas/Message" }
+        total: { type: integer }
+        has_more_older: { type: boolean }
+    MessagesEnvelope:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          items: { $ref: "#/components/schemas/Message" }
+    FileChangeItem:
+      type: object
+      required: [id, path, change_kind]
+      properties:
+        id: { type: string }
+        path: { type: string }
+        change_kind: { type: string, enum: [created, modified, deleted] }
+        before_text: { type: string, nullable: true }
+        after_text: { type: string, nullable: true }
+        created_at: { type: string, format: date-time, nullable: true }
+    ChatSSEEvent:
+      type: object
+      description: JSON payload inside an SSE `data:` line
+      properties:
+        status:
+          type: string
+          enum: [processing]
+          description: First event — headers flushed before long-running pipeline
+        delta:
+          type: string
+          description: Assistant text chunk
+        error:
+          type: string
+          description: Pipeline error message (stream may still end with done)
+        done:
+          type: boolean
+          enum: [true]
+          description: Terminal event
     ErrorEnvelope:
       type: object
       properties:

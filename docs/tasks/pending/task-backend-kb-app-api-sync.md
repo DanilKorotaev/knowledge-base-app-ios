@@ -6,13 +6,14 @@ Deploy checklist (Nextcloud): [Чеклист — деплой и интегра
 
 ## Scope (this repo)
 
-- Keep `URLSessionKnowledgeBaseAPIClient` paths and JSON decoding aligned with **`docs/KB_APP_API_CONTRACT.md`** and **`docs/openapi/kb-app-api.yaml`**.
-- When the backend adds or changes endpoints, update models, OpenAPI, and tests in the same PR or follow-up.
+- Keep `URLSessionKnowledgeBaseAPIClient` paths and JSON decoding aligned with **`docs/KB_APP_API_CONTRACT.md`** (v1.1) and **`docs/openapi/kb-app-api.yaml`** (v1.1).
+- When the backend adds or changes endpoints, update models, OpenAPI, contract, and tests in the same PR or follow-up.
 
 ## E2E automation (remaining)
 
 Current `KnowledgeBaseAPIE2ETests` covers `GET /health`, session CRUD smoke, and `POST …/messages` (text, `use_knowledge_base: false`). See [docs/testing/E2E.md](../../testing/E2E.md).
 
+- [x] OpenAPI + contract v1.1 — compose, search, messages pagination, SSE events, files/changes schema (2026-06-10)
 - [ ] SSE: `streamTextMessage` — assert at least one `delta` event (or `processing` → `done`).
 - [ ] Voice: `transcribeVoiceRecording` against prod/staging fixture audio.
 - [ ] Compose: `streamComposedMessage` — text + small attachment smoke.

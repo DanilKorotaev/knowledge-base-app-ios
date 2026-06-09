@@ -1,8 +1,10 @@
 # KB App API — контракт (канон для iOS и бэкенда)
 
-**Версия:** 1.0  
-**Статус:** черновик для реализации FastAPI (`kb-app-api`) и клиента в этом репозитории.  
-**Связь:** дополняет заметку в Nextcloud «Архитектура и бэкенд API» (папка `Документация`); при расхождении **пути и JSON для iOS** задаётся **здесь**, пока бэкенд не подтвердит OpenAPI.
+**Версия:** 1.1  
+**Статус:** prod — реализация в `knowledge-base-bot/kb_app_api/`, клиент iOS на `https://kbapp.coredan.ru` (и staging).  
+**OpenAPI subset:** [`openapi/kb-app-api.yaml`](openapi/kb-app-api.yaml) — держать в синке с этим файлом.
+
+**Связь:** дополняет заметку в Nextcloud «Архитектура и бэкенд API»; при расхождении **пути и JSON для iOS** задаются **здесь**.
 
 ## Базовые правила
 
@@ -12,7 +14,8 @@
 | Идентификаторы | Строки (`uuid` или строковый surrogate), в JSON — **строки**, не числа |
 | Даты | ISO 8601 в UTC, поля `*_at` |
 | JSON ключи | `snake_case` |
-| Аутентификация | `Authorization: Bearer <token>` на всех маршрутах, кроме явно публичных (например `POST /api/auth/token`) |
+| Аутентификация | `Authorization: Bearer <token>` на всех маршрутах, кроме явно публичных (`GET /health`, опционально `POST /api/auth/token`) |
+| E2E-тесты | Заголовок `X-KB-App-E2E: 1` — отдельный telegram user на сервере (см. `docs/testing/E2E.md`) |
 
 ## Ошибки
 
@@ -30,43 +33,43 @@
 
 Клиент iOS читает `message`, затем `detail`, затем `code`. Если JSON не разобран — показывается превью тела ответа.
 
-## Auth (опционально на ранней стадии)
+## Auth (опционально)
 
 | Метод | Путь | Описание |
 |-------|------|----------|
-| POST | `/api/auth/token` | Выдача токена (см. концепт в Nextcloud-доке). Пока допустим **только** статический токен из конфига без этого endpoint. |
+| POST | `/api/auth/token` | Выдача Bearer при `KB_APP_API_TOKEN_ENDPOINT_ENABLED=true`. Иначе **404**. |
 
 ## Сессии
 
 | Метод | Путь | Запрос | Успех |
 |-------|------|--------|--------|
-| GET | `/api/sessions` | Query: `page`, `per_page` (опц., по умолчанию 20; iOS запрашивает все страницы с `per_page=100`) | `200` — `{ "sessions": [...], "total", "page", "per_page" }` |
-| GET | `/api/sessions/search` | Query: `q` (ID или текст в сообщениях) | `200` — `{ "sessions": [...], "total" }` |
-| POST | `/api/sessions` | `{ "title": "..." }` | `200`/`201` — объект сессии **или** `{ "session": { ... } }` |
-| PATCH | `/api/sessions/{session_id}` | `{ "title": "..." }` (1…500 символов после trim) | `200` — `{ "session": { ... } }` |
-| DELETE | `/api/sessions/{session_id}` | — | `200` — `{ "success": true }` (soft delete, `status=deleted`) |
+| GET | `/api/sessions` | Query: `page`, `per_page` (default 20, max 100; iOS обходит страницы с `per_page=100`) | `200` — `{ "sessions", "total", "page", "per_page" }` |
+| GET | `/api/sessions/search` | Query: `q` (ID или текст в title/сообщениях) | `200` — `{ "sessions", "total" }` |
+| POST | `/api/sessions` | `{ "title": "..." }` (опц., default «Новый чат») | `201` — `{ "session": { ... } }` |
+| PATCH | `/api/sessions/{session_id}` | `{ "title": "..." }` (1…500 после trim) | `200` — `{ "session": { ... } }` |
+| DELETE | `/api/sessions/{session_id}` | — | `200` — `{ "success": true }` (soft delete) |
 
 **Сессия (минимум для iOS):**
 
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "id": "109",
   "title": "Demo",
-  "message_count": 0,
+  "message_count": 42,
   "updated_at": "2026-04-05T12:00:00Z"
 }
 ```
 
-Расширения (игнорируются клиентом, если не нужны): `type`, `status`, `last_message_at`.
+Расширения (игнорируются клиентом): `type`, `status`, `last_message_at`.
 
 ## Сообщения внутри сессии
 
-История и отправка текста привязаны к **сессии** — это текущий контракт iOS-приложения (альтернатива «глобальному» `POST /api/query` из концепта).
-
 | Метод | Путь | Запрос | Успех |
 |-------|------|--------|--------|
-| GET | `/api/sessions/{session_id}/messages` | Query: `limit` (1…100, default 20), опционально `before` (id сообщения) | `200` — `{ "messages": [...], "total": N, "has_more_older": bool }` (сообщения в хронологическом порядке; без `before` — последние `limit`; с `before` — ещё `limit` сообщений **старше** указанного id) |
-| POST | `/api/sessions/{session_id}/messages` | `{ "content": "...", "use_knowledge_base": true }` | `200`/`201` — `{ "messages": [...] }` или массив сообщений |
+| GET | `/api/sessions/{session_id}/messages` | Query: `limit` (1…100, default 20), опц. `before` (id сообщения) | `200` — `{ "messages", "total", "has_more_older" }` |
+| POST | `/api/sessions/{session_id}/messages` | JSON: `{ "content", "use_knowledge_base" }` | `201` JSON или SSE (см. ниже) |
+
+**Пагинация GET:** без `before` — последние `limit` сообщений (хронологический порядок); с `before={message_id}` — ещё `limit` сообщений **старше** указанного id.
 
 **Сообщение:**
 
@@ -91,80 +94,98 @@
 }
 ```
 
-`content_format`: `markdown` | `html` | `plain` (assistant по умолчанию `markdown`, user — `plain`).
+`content_format`: `markdown` | `html` | `plain`.
 
-Для `file_type=voice` в элементе `attachments[]` допускается поле `transcription`; на уровне сообщения — `transcription` (удобно для voice-only).
+Для `file_type=voice` в `attachments[]` допускается `transcription`; на уровне сообщения — `transcription` (voice-only).
 
-### Скачивание вложения
+### Стриминг ответа ассистента (SSE)
 
-| Метод | Путь |
-|-------|------|
-| GET | `/api/sessions/{session_id}/attachments/{attachment_id}/file` |
-
-Bearer обязателен; сервер проверяет владение сессией. Ответ — бинарный файл (`image/*`, `audio/*`, …).
-
-### Стриминг ответа ассистента
-
-Клиент шлёт **`POST /api/sessions/{session_id}/messages`** с телом как у обычной отправки и заголовком:
+Заголовок клиента:
 
 `Accept: text/event-stream, application/json;q=0.9`
 
-- Ответ **`Content-Type: text/event-stream`** — поток SSE; события `data:` с JSON `{"delta":"…"}`; завершение: `data: {"done":true}` (и/или закрытие соединения).
-- Иначе — ответ как у синхронного `POST` (`application/json` с `messages`), на устройстве текст ассистента разбивается на чанки для UX до появления настоящего SSE на сервере.
+Применяется к:
 
-**Формат событий:** каждое событие — строки `data:`; JSON на событие: `{"delta":"…"}` или `{"done":true}`. Парсер: `SSEventParser` + `ChatSSEEvent`.
+- `POST …/messages`
+- `POST …/messages/voice`
+- `POST …/messages/compose`
 
-**Завершение:** событие `data: {"done":true}` **или** только EOF — сервер и OpenAPI должны зафиксировать один вариант.
+Ответ **`Content-Type: text/event-stream`**. Каждое событие — строка `data:` + JSON (`ChatSSEEvent` / `SSEventParser`):
 
-## Вложения (файл в тред)
+| Событие | Когда |
+|---------|--------|
+| `{"status":"processing"}` | Сразу после POST — сброс буферов nginx/клиента до старта Cursor/KB |
+| `{"delta":"…"}` | Чанк текста ассистента (может быть разбит сервером ~48 символов) |
+| `{"error":"…"}` | Ошибка пайплайна (поток может завершиться `done`) |
+| `{"done":true}` | Нормальное завершение |
+
+Без `Accept: text/event-stream` — синхронный JSON `{ "messages": [...] }` (HTTP 201). iOS fallback: разбивает финальный текст ассистента по словам для UX.
+
+Timeout клиента на SSE: **600 s** (Cursor + sync могут занимать минуты до первого `delta`).
+
+### Compose (Telegram-style composer)
 
 | Метод | Путь | Тело |
 |-------|------|------|
-| POST | `/api/sessions/{session_id}/attachments` | `multipart/form-data`: поле `file`, поле `use_knowledge_base` (`true`/`false`) |
+| POST | `/api/sessions/{session_id}/messages/compose` | `multipart/form-data` |
 
-Успех: как у `POST …/messages` — полный список сообщений или `messages` в JSON.
+Поля:
+
+| Поле | Обязательность | Описание |
+|------|----------------|----------|
+| `content` | опц. | Текст сообщения |
+| `use_knowledge_base` | опц., default `true` | Form-boolean string |
+| `files` | опц., repeat | Файлы/фото (несколько частей с именем `files`) |
+| `audio` | опц., repeat | Голосовые клипы (несколько частей с именем `audio`) |
+| `audio_transcriptions` | опц. | JSON-массив строк — по одной на каждый `audio`, **в том же порядке** |
+
+Хотя бы одно из `content` (непустой после trim), `files`, `audio` обязательно.
+
+Успех: JSON `{ "messages": [...] }` или SSE (как у текста). iOS: `streamComposedMessage` в `URLSessionKnowledgeBaseAPIClient`.
+
+## Вложения
+
+| Метод | Путь | Тело |
+|-------|------|------|
+| POST | `/api/sessions/{session_id}/attachments` | `multipart`: `file`, `use_knowledge_base`, опц. `message` (текст запроса) |
+| GET | `/api/sessions/{session_id}/attachments/{attachment_id}/file` | — (Bearer, бинарный ответ) |
+
+Успех POST: `{ "messages": [...] }`.
 
 ## Голос
 
-### Только транскрибация (без сессии и без ответа ассистента)
+### Только транскрибация
 
 | Метод | Путь | Тело |
 |-------|------|------|
-| POST | `/api/query/voice/transcribe` | `multipart/form-data`: `audio` (файл) |
+| POST | `/api/query/voice/transcribe` | `multipart`: `audio` |
 
-Успех: `{ "transcription": "…" }` — Whisper + полировка.
+Успех: `{ "transcription": "…" }`.
 
-### Whisper + полный пайплайн (legacy / Telegram-style one-shot)
-
-| Метод | Путь | Тело |
-|-------|------|------|
-| POST | `/api/query/voice` | `multipart/form-data`: `audio` (файл), `session_id`, `use_knowledge_base`, `transcription_hint` (опц.) |
-
-Успех: как сообщения — массив / `{ "messages": [...] }`. Опционально верхнеуровневое поле **`transcription`**.
-
-**iOS (2026-06):** запись → `POST …/voice/transcribe` → экран правки → `POST …/sessions/{id}/messages/voice` (multipart: `audio`, `content`, `use_knowledge_base`; SSE как у текста) — текст в чат + voice attachment + transcription в БД.
+### Транскрипция + ответ в тред (основной iOS-путь)
 
 | Метод | Путь | Тело |
 |-------|------|------|
-| POST | `/api/sessions/{session_id}/messages/voice` | `multipart/form-data`: `audio`, `content` (транскрипция), `use_knowledge_base` |
+| POST | `/api/sessions/{session_id}/messages/voice` | `multipart`: `audio`, `content` (непустая транскрипция), `use_knowledge_base` |
 
-Пример:
+Успех: JSON или SSE. Сервер сохраняет voice attachment + transcription в БД.
 
-```json
-{
-  "messages": [
-    { "id": "…", "role": "user", "content": "…", "created_at": "2026-04-05T12:00:00Z" }
-  ],
-  "transcription": "Распознанная фраза"
-}
-```
+**iOS flow:** `transcribe` → правка в composer → `messages/voice` или `compose` (несколько клипов).
+
+### Legacy one-shot
+
+| Метод | Путь | Тело |
+|-------|------|------|
+| POST | `/api/query/voice` | `multipart`: **`session_id`** (обяз.), `audio` **или** `transcription_hint`, `use_knowledge_base` |
+
+Успех: `{ "messages": [...], "transcription": "…" }`. Клиент сохраняет метод `sendVoiceRecording`; основной UX использует пути выше.
 
 ## Изменённые файлы (рабочая копия KB)
 
 | Метод | Путь | Запрос |
 |-------|------|--------|
 | GET | `/api/files/changes` | Query: `session_id` (опц.) |
-| POST | `/api/files/revert` | `{ "file_id": "<id>" }` |
+| POST | `/api/files/revert` | `{ "file_id": "<id из changes>" }` |
 
 **Элемент списка:**
 
@@ -174,11 +195,12 @@ Bearer обязателен; сервер проверяет владение с
   "path": "notes/x.md",
   "change_kind": "modified",
   "before_text": null,
-  "after_text": "# …"
+  "after_text": "# …",
+  "created_at": "2026-04-05T12:00:00Z"
 }
 ```
 
-Примечание: в концепте встречается `POST /api/files/rollback` + `change_id` — при реализации бэкенда выбрать **одно** имя; iOS сейчас использует **`revert` + `file_id`**.
+Ответ revert: `{ "ok": true, "change_id": "…", "path": "…" }`.
 
 ## Синхронизация (не в клиенте MVP)
 
@@ -186,4 +208,5 @@ Bearer обязателен; сервер проверяет владение с
 
 ## Артефакты в репозитории
 
-- Машиночитаемый черновик: [`openapi/kb-app-api.yaml`](openapi/kb-app-api.yaml) (subset; расширять вместе с бэкендом).
+- OpenAPI: [`openapi/kb-app-api.yaml`](openapi/kb-app-api.yaml)
+- Ongoing sync + E2E roadmap: [`tasks/pending/task-backend-kb-app-api-sync.md`](tasks/pending/task-backend-kb-app-api-sync.md)
