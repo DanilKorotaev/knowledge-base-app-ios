@@ -65,18 +65,8 @@ struct ChatView: View {
                                     oldestMessageDidAppear(message.id)
                                 }
                             }
-                            if let streaming = viewModel.streamingAssistantText, !streaming.isEmpty {
-                                RichMessageBubbleView(
-                                    message: KBMessage(
-                                        id: "__kb_streaming__",
-                                        role: .assistant,
-                                        content: streaming,
-                                        createdAt: Date(),
-                                        contentFormat: .markdown
-                                    ),
-                                    attachmentLoader: attachmentLoader
-                                )
-                                .id("__kb_streaming__")
+                            if viewModel.assistantReplyPhase.showsPlaceholder {
+                                assistantReplyPhaseView
                             }
                             Color.clear
                                 .frame(height: 1)
@@ -131,6 +121,11 @@ struct ChatView: View {
                   sid == viewModel.session.id else { return }
             Task { await viewModel.reloadLatestWindow() }
         }
+        .onReceive(NotificationCenter.default.publisher(for: AssistantReplyPhaseNotification.name)) { notification in
+            guard let parsed = AssistantReplyPhaseNotification.parse(notification),
+                  parsed.sessionId == viewModel.session.id else { return }
+            viewModel.applyExternalAssistantPhase(parsed.phase)
+        }
         .onAppear {
             voiceRouting.activeSessionId = viewModel.session.id
             voiceRouting.useKnowledgeBase = viewModel.useKnowledgeBase
@@ -182,6 +177,38 @@ struct ChatView: View {
                 onCancel: { showCamera = false }
             )
             .ignoresSafeArea()
+        }
+    }
+
+    @ViewBuilder
+    private var assistantReplyPhaseView: some View {
+        switch viewModel.assistantReplyPhase {
+        case .idle:
+            EmptyView()
+        case .waiting:
+            AssistantPendingBubbleView()
+                .id("__kb_assistant_waiting__")
+        case .streaming(let text) where text.isEmpty:
+            AssistantPendingBubbleView()
+                .id("__kb_assistant_streaming_empty__")
+        case .streaming(let text), .finalizing(let text):
+            VStack(alignment: .leading, spacing: 6) {
+                RichMessageBubbleView(
+                    message: KBMessage(
+                        id: "__kb_streaming__",
+                        role: .assistant,
+                        content: text,
+                        createdAt: Date(),
+                        contentFormat: .markdown
+                    ),
+                    attachmentLoader: attachmentLoader
+                )
+                if viewModel.assistantReplyPhase.showsTypingIndicator {
+                    TypingIndicatorView()
+                        .padding(.leading, 8)
+                }
+            }
+            .id("__kb_assistant_streaming__")
         }
     }
 

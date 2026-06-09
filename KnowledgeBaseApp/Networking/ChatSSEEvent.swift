@@ -4,4 +4,6 @@ import Foundation
 struct ChatSSEEvent: Decodable, Sendable {
     let delta: String?
     let done: Bool?
+    let status: String?
+    let error: String?
 }

@@ -145,6 +145,7 @@ final class VoiceRecordingViewModel {
             errorMessage = nil
             defer { isSendingVoice = false }
             do {
+                AssistantReplyPhaseNotification.post(sessionId: sessionId, phase: .waiting)
                 let audioURL = lastRecordedFileURL
                 let stream: AsyncThrowingStream<String, Error>
                 if let audioURL {
@@ -161,7 +162,9 @@ final class VoiceRecordingViewModel {
                         useKnowledgeBase: useKnowledgeBase
                     )
                 }
-                for try await _ in stream { }
+                try await AssistantReplyStreamConsumer.consume(stream) { phase in
+                    AssistantReplyPhaseNotification.post(sessionId: sessionId, phase: phase)
+                }
 
                 if let url = lastRecordedFileURL {
                     try? FileManager.default.removeItem(at: url)
@@ -178,6 +181,7 @@ final class VoiceRecordingViewModel {
                 )
                 notification.notificationOccurred(.success)
             } catch {
+                AssistantReplyPhaseNotification.post(sessionId: sessionId, phase: .idle)
                 errorMessage = error.localizedDescription
             }
         }

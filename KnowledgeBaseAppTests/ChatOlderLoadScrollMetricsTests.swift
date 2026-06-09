@@ -35,4 +35,22 @@ final class ChatOlderLoadScrollMetricsTests: XCTestCase {
             )
         )
     }
+
+    func testMaxScrollOffset_whenContentShorterThanContainer_isZero() {
+        XCTAssertEqual(
+            ChatOlderLoadScrollMetrics.maxScrollOffset(contentHeight: 400, containerHeight: 700),
+            0
+        )
+    }
+
+    func testDebugSnapshot_includesNearFlag() {
+        let snapshot = ChatOlderLoadScrollMetrics.debugSnapshot(
+            contentOffsetY: -50,
+            contentInsetTop: 100,
+            contentHeight: 2000,
+            containerHeight: 600
+        )
+        XCTAssertTrue(snapshot.contains("near=YES"))
+        XCTAssertTrue(snapshot.contains("offsetY="))
+    }
 }

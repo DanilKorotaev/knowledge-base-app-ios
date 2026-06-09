@@ -43,6 +43,8 @@ protocol ChatAPIClientProtocol: Sendable {
 
 struct StubChatAPIClient: ChatAPIClientProtocol {
     let store: InMemoryKBStore
+    /// Test hook: delay before the first stream chunk (exercises `.waiting` UI).
+    var streamInitialDelayNanoseconds: UInt64 = 0
 
     init(store: InMemoryKBStore) {
         self.store = store
@@ -238,6 +240,9 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
 
         return AsyncThrowingStream { continuation in
             Task {
+                if streamInitialDelayNanoseconds > 0 {
+                    try? await Task.sleep(nanoseconds: streamInitialDelayNanoseconds)
+                }
                 let parts = fullReply.components(separatedBy: " ")
                 for (index, part) in parts.enumerated() {
                     let chunk = index == 0 ? part : " " + part

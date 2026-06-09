@@ -4,8 +4,11 @@ import QuartzCore
 
 /// Single Alamofire entry point: auth headers, request/response logging.
 final class KBHTTPTransport: @unchecked Sendable {
+    /// Long-running SSE (Cursor agent can take minutes before first byte).
+    private static let streamingRequestTimeout: TimeInterval = 600
+
     private let session: Session
-    private let urlSession: URLSession
+    private let streamingSession: URLSession
     private let apiLogger = KBApiLogger(logger: makeLogger(tags: [.network, .http]))
     private let lock = NSLock()
     private var authToken: String?
@@ -14,9 +17,11 @@ final class KBHTTPTransport: @unchecked Sendable {
     init(authToken: String?, useE2EIntegrationUser: Bool = false, urlSession: URLSession = .shared) {
         self.authToken = authToken
         self.useE2EIntegrationUser = useE2EIntegrationUser
-        self.urlSession = urlSession
-        let configuration = urlSession.configuration
-        self.session = Session(configuration: configuration)
+        let configuration = urlSession.configuration.copy() as! URLSessionConfiguration
+        configuration.timeoutIntervalForRequest = Self.streamingRequestTimeout
+        configuration.timeoutIntervalForResource = 3600
+        self.streamingSession = URLSession(configuration: configuration)
+        self.session = Session(configuration: urlSession.configuration)
     }
 
     func updateAuth(token: String?) {
@@ -58,7 +63,7 @@ final class KBHTTPTransport: @unchecked Sendable {
         applyAuthHeaders(to: &adapted)
         apiLogger.log(request: adapted, id: id)
         do {
-            let (bytes, response) = try await urlSession.bytes(for: adapted)
+            let (bytes, response) = try await streamingSession.bytes(for: adapted)
             guard let http = response as? HTTPURLResponse else {
                 throw KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: nil)
             }

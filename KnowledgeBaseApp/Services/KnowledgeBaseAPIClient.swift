@@ -241,6 +241,13 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
 // MARK: - Chat (same transport as sessions)
 
 extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
+    /// Cursor + KB sync can exceed the default 60s before the first SSE byte.
+    private static let sseRequestTimeout: TimeInterval = 600
+
+    private static func applySSETimeout(to request: inout URLRequest) {
+        request.timeoutInterval = sseRequestTimeout
+    }
+
     func fetchMessagesPage(
         sessionId: String,
         limit: Int,
@@ -387,6 +394,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         }
 
         request.httpBody = try JSONEncoder().encode(Body(content: trimmed, use_knowledge_base: useKnowledgeBase))
+        Self.applySSETimeout(to: &request)
 
         let (bytes, http) = try await transport.bytes(for: request)
         guard (200 ... 299).contains(http.statusCode) else {
@@ -457,6 +465,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             fileData: fileData,
             filename: audioFileURL.lastPathComponent
         )
+        Self.applySSETimeout(to: &request)
 
         let (bytes, http) = try await transport.bytes(for: request)
         guard (200 ... 299).contains(http.statusCode) else {
@@ -566,6 +575,13 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         guard !trimmed.isEmpty else { return false }
         if let jsonData = trimmed.data(using: .utf8),
            let evt = try? JSONDecoder().decode(ChatSSEEvent.self, from: jsonData) {
+            if let err = evt.error, !err.isEmpty {
+                continuation.finish(throwing: KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: err))
+                return true
+            }
+            if evt.status != nil {
+                return false
+            }
             if let d = evt.delta, !d.isEmpty {
                 continuation.yield(d)
             }

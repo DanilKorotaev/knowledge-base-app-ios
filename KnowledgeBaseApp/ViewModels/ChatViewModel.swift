@@ -23,8 +23,8 @@ final class ChatViewModel {
     var totalCount = 0
     var hasMoreOlder = false
     var scrollIntent: ChatScrollIntent = .none
-    /// Growing assistant text while `streamTextMessage` is active (hidden once final thread is loaded).
-    var streamingAssistantText: String?
+    /// In-flight assistant reply UI (spinner, streaming text, finalize).
+    var assistantReplyPhase: AssistantReplyPhase = .idle
 
     private let client: ChatAPIClientProtocol
 
@@ -104,17 +104,21 @@ final class ChatViewModel {
         scrollIntent = .none
     }
 
+    /// Applies streaming phase from voice send (`AssistantReplyPhaseNotification`).
+    func applyExternalAssistantPhase(_ phase: AssistantReplyPhase) {
+        assistantReplyPhase = phase
+        if phase.showsPlaceholder {
+            scrollIntent = .scrollToBottom
+        }
+    }
+
     func send() async {
         let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         isSending = true
         errorMessage = nil
-        streamingAssistantText = nil
         scrollIntent = .none
-        defer {
-            isSending = false
-            streamingAssistantText = nil
-        }
+        defer { isSending = false }
         do {
             draft = ""
             let optimisticUser = KBMessage(
@@ -124,6 +128,7 @@ final class ChatViewModel {
                 createdAt: Date()
             )
             messages.append(optimisticUser)
+            assistantReplyPhase = .waiting
             scrollIntent = .scrollToBottom
 
             let stream = try await client.streamTextMessage(
@@ -132,17 +137,16 @@ final class ChatViewModel {
                 useKnowledgeBase: useKnowledgeBase
             )
 
-            var accumulated = ""
-            for try await chunk in stream {
-                accumulated += chunk
-                streamingAssistantText = accumulated
+            try await AssistantReplyStreamConsumer.consume(stream) { phase in
+                assistantReplyPhase = phase
                 scrollIntent = .scrollToBottom
             }
 
             await reloadLatestWindow()
+            assistantReplyPhase = .idle
         } catch {
+            assistantReplyPhase = .idle
             errorMessage = error.localizedDescription
-            await load()
         }
     }
 
@@ -156,6 +160,7 @@ final class ChatViewModel {
             )
             apply(page: page, requestedLimit: limit, kind: "reloadLatest")
             scrollIntent = .scrollToBottom
+            assistantReplyPhase = .idle
         } catch {
             errorMessage = error.localizedDescription
             ChatPaginationLogger.loadFailed("reloadLatest", error: error.localizedDescription)
