@@ -5,7 +5,7 @@
 **Категория:** UX / Chat  
 **Дата завершения:** 2026-06-01  
 **Backend:** [task-api-messages-rich-content.md](../../../knowledge-base-bot/docs/tasks/completed/task-api-messages-rich-content.md)  
-**Связанные:** [task-feature-chat.md](task-feature-chat.md), [task-sessions-attachments-license.md](../completed/task-sessions-attachments-license.md)
+**Связанные:** [task-feature-chat.md](../completed/task-feature-chat.md), [task-sessions-attachments-license.md](../completed/task-sessions-attachments-license.md)
 
 ## Реализовано
 

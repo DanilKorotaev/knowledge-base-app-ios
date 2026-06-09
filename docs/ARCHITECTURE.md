@@ -42,7 +42,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 ## Next (product / backend)
 
 - **Voice (remaining)** — multipart upload + Whisper-backed transcription text (KB App API + bot services).
-- **Chat** — серверный стрим по `text/event-stream` (клиент готов; см. `task-feature-chat.md`); WebSocket — только если понадобится отдельно от SSE.
+- **Chat** — серверный SSE по `text/event-stream` (prod; см. `tasks/completed/task-feature-chat.md`); WebSocket — только если понадобится отдельно от SSE.
 
 ## Backend boundary
 

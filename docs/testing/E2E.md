@@ -43,3 +43,5 @@ xcodebuild test -scheme KnowledgeBaseApp -destination 'platform=iOS Simulator,na
 
 - Не заменяет ручной прогон UI, голоса и виджетов на устройстве.
 - Нужен доступ с машины, где запускаются тесты, до указанного URL (VPN/allowlist).
+
+**Roadmap:** расширение покрытия (SSE, voice, compose) — [task-backend-kb-app-api-sync.md](../tasks/pending/task-backend-kb-app-api-sync.md).

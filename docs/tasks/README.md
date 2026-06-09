@@ -12,8 +12,11 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 |------|--------|
 | `task-skeleton-repo-ci.md` | XcodeGen, CI |
 | `task-fastlane-setup.md` | Fastlane |
+| `task-ops-fastlane-testflight.md` | Match, ASC, TestFlight via CI/CD |
 | `task-feature-voice-input-mvp.md` | Voice UI + stub upload |
+| `task-feature-voice-input.md` | Prod voice + Whisper + composer routing |
 | `task-feature-chat-mvp.md` | Chat stub + HTTP shapes |
+| `task-feature-chat.md` | SSE streaming + prod integration |
 | `task-sessions-attachments-license.md` | Sessions, attachments, MIT |
 | `task-files-diff-widgets-camera.md` | Changed files, diff, widgets, camera, deep link |
 | `task-feature-widgets-app-intents.md` | App Intents, Shortcuts, widget mic button |
@@ -30,11 +33,8 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 
 | File | Topic |
 |------|--------|
-| `task-feature-voice-input.md` | Real voice E2E against deployed API (Whisper on server) |
-| `task-feature-chat.md` | Server SSE verified in production |
+| `task-backend-kb-app-api-sync.md` | Contract alignment + E2E automation (SSE, voice, compose) |
 | `task-feature-push-notifications-chat.md` | APNs when reply ready (background / other screen) |
 | `task-feature-watch-app-voice.md` | watchOS companion, complication, offline queue |
-| `task-backend-kb-app-api-sync.md` | Ongoing contract alignment iOS ↔ KB App API ↔ bot |
-| `task-ops-fastlane-testflight.md` | Match, ASC, TestFlight |
 
 **Deploy / E2E checklist (Nextcloud):** `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`

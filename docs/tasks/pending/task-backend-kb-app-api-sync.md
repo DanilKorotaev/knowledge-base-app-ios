@@ -1,11 +1,24 @@
-# KB App API: contract sync (iOS ↔ server ↔ bot)
+# KB App API: contract sync + E2E automation (iOS ↔ server ↔ bot)
 
-**Status:** Ongoing — backend in **`knowledge-base-bot/kb_app_api/`** (MVP done); OpenAPI subset in **`docs/openapi/kb-app-api.yaml`**. Keep client aligned on changes. Deploy/E2E: Nextcloud [Чеклист — деплой и интеграция.md](../../../../Документация/Задачи/KB%20App%20API%20—%20бэкенд%20для%20iOS/Чеклист%20—%20деплой%20и%20интеграция.md).
+**Status:** Ongoing — backend in **`knowledge-base-bot/kb_app_api/`** (MVP done); OpenAPI subset in **`docs/openapi/kb-app-api.yaml`**. Keep client aligned on changes.
+
+Deploy checklist (Nextcloud): [Чеклист — деплой и интеграция.md](../../../../Документация/Задачи/KB%20App%20API%20—%20бэкенд%20для%20iOS/Чеклист%20—%20деплой%20и%20интеграция.md).
 
 ## Scope (this repo)
 
 - Keep `URLSessionKnowledgeBaseAPIClient` paths and JSON decoding aligned with **`docs/KB_APP_API_CONTRACT.md`** and **`docs/openapi/kb-app-api.yaml`**.
-- When the backend adds or changes endpoints, update models, OpenAPI, and tests here in the same PR or follow-up.
+- When the backend adds or changes endpoints, update models, OpenAPI, and tests in the same PR or follow-up.
+
+## E2E automation (remaining)
+
+Current `KnowledgeBaseAPIE2ETests` covers `GET /health`, session CRUD smoke, and `POST …/messages` (text, `use_knowledge_base: false`). See [docs/testing/E2E.md](../../testing/E2E.md).
+
+- [ ] SSE: `streamTextMessage` — assert at least one `delta` event (or `processing` → `done`).
+- [ ] Voice: `transcribeVoiceRecording` against prod/staging fixture audio.
+- [ ] Compose: `streamComposedMessage` — text + small attachment smoke.
+- [ ] Session delete/rename round-trip in E2E suite.
+- [ ] Unified error UX in app for `error.code` / `message` / `detail` from API.
+- [ ] Manual UI regression checklist: sessions, chat, SSE, attachments, voice, files/changes + revert (device + TestFlight build).
 
 ## Scope (backend / bot)
 
@@ -16,9 +29,3 @@
 ## Server-side reminders
 
 - **`ACCESS_MODE=restricted`**: API user (`KB_APP_API_TELEGRAM_ID`) must have `is_allowed=true`, or set **`KB_APP_API_BYPASS_ACCESS_CHECK=true`** only for debugging (see bot `config` and `kb_app_api/deps.py`).
-
-## First integration milestones (reference)
-
-1. Bearer and optional `POST /api/auth/token`.
-2. Voice, files, attachments — match contract.
-3. E2E: автоматические интеграционные тесты в этом репо — `KnowledgeBaseAppTests/KnowledgeBaseAPIE2ETests.swift`, инструкция `docs/testing/E2E.md` (переменные `KB_E2E_API_BASE_URL`, `KB_E2E_API_TOKEN`). Дополнительно — ручной прогон приложения на устройстве против staging HTTPS.

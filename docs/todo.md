@@ -6,37 +6,36 @@ _(none)_
 
 ## Planned
 
-**Рекомендуемый порядок (2026-05):** 1) **деплой** KB App API на сервер и smoke/E2E — [чеклист в Nextcloud](../../Документация/Задачи/KB%20App%20API%20—%20бэкенд%20для%20iOS/Чеклист%20—%20деплой%20и%20интеграция.md); 2) интеграция iOS с **реальным SSE** и голосом ([task-feature-chat.md](tasks/pending/task-feature-chat.md), [task-feature-voice-input.md](tasks/pending/task-feature-voice-input.md)); 3) **TestFlight** ([task-ops-fastlane-testflight.md](tasks/pending/task-ops-fastlane-testflight.md)).
+**Рекомендуемый порядок (2026-06):** 1) **E2E automation** — расширить `KnowledgeBaseAPIE2ETests` ([task-backend-kb-app-api-sync.md](tasks/pending/task-backend-kb-app-api-sync.md)); 2) **Push notifications** ([task-feature-push-notifications-chat.md](tasks/pending/task-feature-push-notifications-chat.md)); 3) **Apple Watch** ([task-feature-watch-app-voice.md](tasks/pending/task-feature-watch-app-voice.md)).
 
-### Integration (против реального API)
+### Integration (E2E + contract)
 
-- [ ] E2E: `KnowledgeBaseAPIE2ETests` против staging/prod — [docs/testing/E2E.md](testing/E2E.md)
+- [ ] E2E: расширить `KnowledgeBaseAPIE2ETests` — SSE, voice, compose — [docs/testing/E2E.md](testing/E2E.md)
 - [ ] Ручной прогон: сессии, чат, SSE, вложения, голос, files/changes + revert
 - [ ] Единый UX ошибок по контракту (`error.code`, `message`, `detail`)
-- [ ] Dev/staging/prod: базовый URL и токен без секретов в git
+- [ ] [Синхронизация контракта при изменениях](tasks/pending/task-backend-kb-app-api-sync.md) — ongoing
 
 ### Product
 
 - [x] [Voice MVP](tasks/completed/task-feature-voice-input-mvp.md) — запись + UI
-- [x] [Чат: история + текст](tasks/completed/task-feature-chat-mvp.md) — HTTP-клиент готов
-- [ ] [Голос: реальный upload + Whisper](tasks/pending/task-feature-voice-input.md) — после деплоя API
-- [ ] [Чат: серверный SSE в бою](tasks/pending/task-feature-chat.md) — клиент шлёт `Accept: text/event-stream`
-- [ ] [Чат: UX стриминга](tasks/pending/task-ux-chat-streaming-feedback.md) — прелоадер, typing dots, подмена на сообщение из БД
-- [ ] [Push: ответ готов](tasks/pending/task-feature-push-notifications-chat.md) — APNs, deep link, suppress на открытом чате
+- [x] [Голос: prod pipeline + Whisper](tasks/completed/task-feature-voice-input.md) — completed 2026-06-10
+- [x] [Чат: история + текст (MVP)](tasks/completed/task-feature-chat-mvp.md) — HTTP-клиент
+- [x] [Чат: SSE в бою](tasks/completed/task-feature-chat.md) — completed 2026-06-10
+- [x] [Чат: UX стриминга](tasks/completed/task-ux-chat-streaming-feedback.md) — completed 2026-06-09
 - [x] [Композер чата (Telegram UX)](tasks/completed/task-ux-chat-composer-telegram.md) — completed 2026-06-09
 - [x] [Дефолтная сессия для голоса + TTL](tasks/completed/task-feature-default-voice-session.md) — completed 2026-06-09
-- [ ] [Удаление и переименование сессий](tasks/pending/task-feature-session-delete-rename.md) — UI + KB App API DELETE/PATCH
-- [ ] [Чат: вложения, голос, Markdown/HTML](tasks/pending/task-ux-chat-rich-messages.md) — rich bubbles
+- [x] [Удаление и переименование сессий](tasks/completed/task-feature-session-delete-rename.md) — completed 2026-06-01
+- [x] [Чат: вложения, голос, Markdown/HTML](tasks/completed/task-ux-chat-rich-messages.md) — completed 2026-06-01
+- [ ] [Push: ответ готов](tasks/pending/task-feature-push-notifications-chat.md) — APNs, deep link, suppress на открытом чате
 - [ ] [Apple Watch: companion + complication](tasks/pending/task-feature-watch-app-voice.md) — запись с циферблата
 
 ### Backend (`knowledge-base-bot/kb_app_api/`)
 
 - [x] [KB App API MVP](tasks/completed/task-backend-kb-app-api-mvp.md) — эндпоинты по контракту
-- [ ] [Синхронизация контракта при изменениях](tasks/pending/task-backend-kb-app-api-sync.md) — ongoing
 
 ### Ops / CI
 
-- [ ] [Match + ASC + TestFlight](tasks/pending/task-ops-fastlane-testflight.md)
+- [x] [Match + ASC + TestFlight](tasks/completed/task-ops-fastlane-testflight.md) — CI/CD deploy, completed 2026-06-10
 - [x] [MIT LICENSE](tasks/completed/task-sessions-attachments-license.md)
 
 ### Documentation

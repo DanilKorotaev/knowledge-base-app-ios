@@ -10,5 +10,5 @@
 
 ## See also
 
-- [task-backend-kb-app-api-mvp.md](task-backend-kb-app-api-mvp.md) — бэкенд MVP (готово).
+- [task-backend-kb-app-api-mvp.md](../completed/task-backend-kb-app-api-mvp.md) — бэкенд MVP (готово).
 - [task-backend-kb-app-api-sync.md](../pending/task-backend-kb-app-api-sync.md) — синхронизация при изменениях контракта.

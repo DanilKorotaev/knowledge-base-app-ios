@@ -7,7 +7,7 @@
 **Связанные задачи:**
 
 - [task-feature-watch-app-voice.md](../pending/task-feature-watch-app-voice.md)
-- [task-feature-voice-input.md](../pending/task-feature-voice-input.md)
+- [task-feature-voice-input.md](../completed/task-feature-voice-input.md)
 
 ## Проблема
 
