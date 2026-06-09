@@ -153,6 +153,11 @@ struct ChatView: View {
             voiceViewModel.onComposerRecordingFinished = { url in
                 Task { await viewModel.enqueueVoiceRecording(audioURL: url) }
             }
+            if let pending = voiceRouting.pendingComposerVoice,
+               pending.sessionId == viewModel.session.id {
+                voiceRouting.pendingComposerVoice = nil
+                Task { await viewModel.enqueueVoiceRecording(audioURL: pending.audioURL) }
+            }
         }
         .onDisappear {
             voiceRouting.activeSessionId = nil

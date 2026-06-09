@@ -6,14 +6,11 @@ struct PostRecordingReviewSheet: View {
     @Bindable var voiceRouting: VoiceRoutingContext
 
     private var resolvedSessionId: String? {
-        voiceRouting.activeSessionId ?? sessions.first?.id
+        voiceRouting.resolveVoiceTargetSessionId(in: sessions)
     }
 
     private var resolvedSessionTitle: String? {
-        if let id = resolvedSessionId {
-            return sessions.first(where: { $0.id == id })?.title
-        }
-        return nil
+        voiceRouting.resolveVoiceTargetSession(in: sessions)?.title
     }
 
     var body: some View {

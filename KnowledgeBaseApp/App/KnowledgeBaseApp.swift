@@ -10,6 +10,9 @@ struct KnowledgeBaseApp: App {
         UserDefaultsInspectorLogger.shared.start()
         _ = LogFilesProvider.shared
         _ = LogSession.shared
+        #if canImport(WatchConnectivity)
+        WatchVoiceSessionContextSync.shared.activateIfNeeded()
+        #endif
     }
 
     var body: some Scene {

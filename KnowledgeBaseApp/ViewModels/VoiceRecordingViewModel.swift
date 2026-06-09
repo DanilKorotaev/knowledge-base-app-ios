@@ -24,6 +24,8 @@ final class VoiceRecordingViewModel {
     /// When set, recording finishes into the chat composer draft instead of `PostRecordingReviewSheet`.
     var deferToComposer: Bool = false
     var onComposerRecordingFinished: ((URL) -> Void)?
+    /// MainView hook: return `true` when the host handled routing (e.g. navigated to default chat).
+    var recordingFinishedOutsideChatHandler: ((URL) -> Bool)?
 
     private var recordingStartedForGesture = false
     private var cancelledByGesture = false
@@ -240,6 +242,10 @@ final class VoiceRecordingViewModel {
 
             if deferToComposer {
                 onComposerRecordingFinished?(url)
+                return
+            }
+
+            if recordingFinishedOutsideChatHandler?(url) == true {
                 return
             }
 

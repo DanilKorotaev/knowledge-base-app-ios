@@ -28,6 +28,9 @@ extension UserDefaultsKey {
     // App configuration (Settings screen; token is in Keychain)
     static let apiBaseURL = UserDefaultsKey("kbapp.config.api_base_url")
 
+    // Voice routing
+    static let defaultVoiceSession = UserDefaultsKey("kb.voice.default_session")
+
     // Logger settings
     static let loggerDebugConsole = UserDefaultsKey("kb.logger.isDebugLogger")
     static let loggerFileEnabled = UserDefaultsKey("kb.logger.isFileLoggerEnabled")

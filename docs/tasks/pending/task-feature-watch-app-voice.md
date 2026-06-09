@@ -7,7 +7,7 @@
 
 - [Концепция Apple Watch](../../../../Документация/iOS-приложение%20базы%20знаний/Концепция%20Apple%20Watch.md)
 - [План реализации iOS-приложения](../../../../Документация/iOS-приложение%20базы%20знаний/План%20реализации%20iOS-приложения%20базы%20знаний.md) § 5.3
-- [task-feature-default-voice-session.md](task-feature-default-voice-session.md) — дефолтная сессия для маршрутизации с Watch
+- [task-feature-default-voice-session.md](../completed/task-feature-default-voice-session.md) — дефолтная сессия для маршрутизации с Watch
 - [task-feature-voice-input.md](task-feature-voice-input.md) — голос на iPhone
 - [task-feature-widgets-app-intents.md](../completed/task-feature-widgets-app-intents.md) — аналог для iPhone (deep link `knowledgebase://record`)
 
@@ -62,7 +62,7 @@
 | Зависимость | Зачем |
 |-------------|--------|
 | E2E голос iPhone ↔ API | Watch relay использует тот же пайплайн |
-| [task-feature-default-voice-session.md](task-feature-default-voice-session.md) | Куда маршрутизировать запросы с Watch |
+| [task-feature-default-voice-session.md](../completed/task-feature-default-voice-session.md) | Куда маршрутизировать запросы с Watch |
 | TestFlight / provisioning | Отдельный bundle id для Watch extension |
 
 ## Acceptance

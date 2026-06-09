@@ -19,6 +19,7 @@ enum UserDefaultsValueType: String, CaseIterable, Identifiable {
 
 enum UserDefaultsKeyCategory: String, CaseIterable, Identifiable {
     case config = "Config"
+    case voice = "Voice"
     case logs = "Logs"
     case loggerTags = "Logger Tags"
     case inspector = "Inspector"
@@ -50,6 +51,12 @@ enum UserDefaultsKeyRegistry {
             description: "KB App API base URL (Settings screen)",
             category: .config,
             valueType: .string
+        ),
+        .init(
+            key: .defaultVoiceSession,
+            description: "Default voice target session + optional TTL (JSON)",
+            category: .voice,
+            valueType: .data
         ),
         .init(
             key: .loggerDebugConsole,

@@ -3,6 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @State private var apiBaseURL: String = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL) ?? ""
     @State private var authToken: String = AppConfiguration.string(for: AppConfiguration.Keys.authToken) ?? ""
+    @State private var voiceDefaultTitle: String?
+    @State private var voiceDefaultExpiry: String?
 
     var body: some View {
         Form {
@@ -29,6 +31,30 @@ struct SettingsView: View {
                 }
             }
 
+            Section {
+                if let voiceDefaultTitle {
+                    LabeledContent("Session", value: voiceDefaultTitle)
+                    if let voiceDefaultExpiry {
+                        LabeledContent("Expires", value: voiceDefaultExpiry)
+                    } else {
+                        LabeledContent("Expires", value: "No limit")
+                    }
+                    Button("Clear voice default", role: .destructive) {
+                        DefaultVoiceSessionStore.shared.clear()
+                        WatchVoiceSessionContextSync.shared.publish(nil)
+                        reloadVoiceDefaultSummary()
+                    }
+                } else {
+                    Text("Not set — use “Default for voice” on a session in the list.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            } header: {
+                Text("Voice routing")
+            } footer: {
+                Text("When no chat is open, the mic bar sends to this session. Optional TTL resets automatically.")
+            }
+
             Section("Developer") {
                 NavigationLink("Debug menu") {
                     DebugMenuView()
@@ -37,6 +63,23 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            reloadVoiceDefaultSummary()
+        }
+    }
+
+    private func reloadVoiceDefaultSummary() {
+        guard let preference = DefaultVoiceSessionStore.shared.load(), preference.isValid() else {
+            voiceDefaultTitle = nil
+            voiceDefaultExpiry = nil
+            return
+        }
+        voiceDefaultTitle = preference.sessionTitle
+        if let expiresAt = preference.expiresAt {
+            voiceDefaultExpiry = expiresAt.formatted(date: .omitted, time: .shortened)
+        } else {
+            voiceDefaultExpiry = nil
+        }
     }
 }
 

@@ -21,7 +21,12 @@ struct MainView: View {
     @State private var sessionPendingRename: KBSession?
     @State private var renameTitle = ""
     @State private var showRenameSheet = false
+    @State private var sessionPendingVoiceDefault: KBSession?
+    @State private var showVoiceDefaultTTLSheet = false
+    @State private var selectedVoiceDefaultTTL: DefaultVoiceSessionTTL = .oneHour
     @State private var sessionActionError: String?
+    @State private var navigationPath = NavigationPath()
+    @Environment(\.scenePhase) private var scenePhase
 
     init(
         apiClient: KnowledgeBaseAPIClientProtocol = MainView.makeSessionClient(),
@@ -39,7 +44,7 @@ struct MainView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navigationPath) {
             mainStackContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Knowledge Base")
@@ -52,6 +57,14 @@ struct MainView: View {
                         .padding(.vertical, 10)
                         .frame(maxWidth: .infinity)
                         .background(.yellow.opacity(0.38))
+                } else if let notice = voiceRouting.defaultExpiredNotice {
+                    Text(notice)
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                        .background(.orange.opacity(0.28))
                 }
             }
             .toolbar {
@@ -142,6 +155,16 @@ struct MainView: View {
             .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { _ in
                 Task { await loadSessions(showFullScreenLoading: false) }
             }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    voiceRouting.refreshExpiryIfNeeded()
+                }
+            }
+            .onAppear {
+                voiceViewModel.recordingFinishedOutsideChatHandler = { url in
+                    routeMainScreenVoiceToDefaultChat(audioURL: url)
+                }
+            }
             .onChange(of: deepLinkVoiceRecording) { _, newValue in
                 guard newValue else { return }
                 Task {
@@ -149,6 +172,23 @@ struct MainView: View {
                     await MainActor.run {
                         deepLinkVoiceRecording = false
                     }
+                }
+            }
+            .sheet(isPresented: $showVoiceDefaultTTLSheet) {
+                if let session = sessionPendingVoiceDefault {
+                    DefaultVoiceSessionTTLSheet(
+                        session: session,
+                        selectedTTL: $selectedVoiceDefaultTTL,
+                        onCancel: {
+                            showVoiceDefaultTTLSheet = false
+                            sessionPendingVoiceDefault = nil
+                        },
+                        onConfirm: {
+                            voiceRouting.setDefaultVoiceSession(session, ttl: selectedVoiceDefaultTTL)
+                            showVoiceDefaultTTLSheet = false
+                            sessionPendingVoiceDefault = nil
+                        }
+                    )
                 }
             }
             .sheet(isPresented: Binding(
@@ -225,7 +265,7 @@ struct MainView: View {
                 )
             )
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                MicBar(viewModel: voiceViewModel)
+                MicBar(viewModel: voiceViewModel, voiceRouting: voiceRouting)
             }
         } else {
             sessionsList
@@ -240,7 +280,7 @@ struct MainView: View {
             await loadSessions(showFullScreenLoading: false)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            MicBar(viewModel: voiceViewModel)
+            MicBar(viewModel: voiceViewModel, voiceRouting: voiceRouting)
         }
     }
 
@@ -248,11 +288,36 @@ struct MainView: View {
     private func sessionRow(_ session: KBSession) -> some View {
         NavigationLink(value: session) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(session.title)
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text(session.title)
+                        .font(.headline)
+                    if voiceRouting.isDefaultVoiceSession(session.id) {
+                        Image(systemName: "mic.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("Default for voice")
+                    }
+                }
                 Text("\(session.messageCount) messages")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+        }
+        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+            if voiceRouting.isDefaultVoiceSession(session.id) {
+                Button {
+                    voiceRouting.clearDefaultVoiceSession()
+                } label: {
+                    Label("Clear default", systemImage: "mic.slash")
+                }
+                .tint(.gray)
+            } else {
+                Button {
+                    beginSetVoiceDefault(session)
+                } label: {
+                    Label("Voice default", systemImage: "mic")
+                }
+                .tint(.blue)
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -263,6 +328,19 @@ struct MainView: View {
             }
         }
         .contextMenu {
+            if voiceRouting.isDefaultVoiceSession(session.id) {
+                Button {
+                    voiceRouting.clearDefaultVoiceSession()
+                } label: {
+                    Label("Clear voice default", systemImage: "mic.slash")
+                }
+            } else {
+                Button {
+                    beginSetVoiceDefault(session)
+                } label: {
+                    Label("Set as voice default", systemImage: "mic")
+                }
+            }
             Button {
                 beginRename(session)
             } label: {
@@ -314,6 +392,7 @@ struct MainView: View {
         }
         do {
             sessions = try await apiClient.fetchSessions()
+            voiceRouting.refreshExpiryIfNeeded()
         } catch {
             loadError = error.localizedDescription
         }
@@ -329,6 +408,23 @@ struct MainView: View {
         } catch {
             loadError = error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func routeMainScreenVoiceToDefaultChat(audioURL: URL) -> Bool {
+        guard let session = voiceRouting.mainScreenVoiceChatSession(in: sessions) else {
+            return false
+        }
+        voiceRouting.pendingComposerVoice = (sessionId: session.id, audioURL: audioURL)
+        navigationPath.append(session)
+        return true
+    }
+
+    @MainActor
+    private func beginSetVoiceDefault(_ session: KBSession) {
+        sessionPendingVoiceDefault = session
+        selectedVoiceDefaultTTL = .oneHour
+        showVoiceDefaultTTLSheet = true
     }
 
     @MainActor
@@ -364,9 +460,7 @@ struct MainView: View {
     private func deleteSessionConfirmed(_ session: KBSession) async {
         sessionPendingDelete = nil
 
-        if voiceRouting.activeSessionId == session.id {
-            voiceRouting.activeSessionId = nil
-        }
+        voiceRouting.handleDeletedSession(session.id)
 
         let previousSessions = sessions
         let previousSearch = searchResults
@@ -429,6 +523,7 @@ struct MainView: View {
 
 private struct MicBar: View {
     @Bindable var viewModel: VoiceRecordingViewModel
+    @Bindable var voiceRouting: VoiceRoutingContext
 
     /// В режиме записи панель тянется на всю ширину; в idle — небольшие боковые отступы у микрофона.
     private var horizontalPadding: CGFloat {
@@ -436,10 +531,13 @@ private struct MicBar: View {
     }
 
     var body: some View {
-        MicRecordControl(viewModel: viewModel)
-            .padding(.horizontal, horizontalPadding)
-            .frame(maxWidth: .infinity)
-            .background(.bar)
+        VStack(spacing: 0) {
+            VoiceDefaultSessionIndicator(label: voiceRouting.indicatorLabel())
+            MicRecordControl(viewModel: viewModel)
+                .padding(.horizontal, horizontalPadding)
+        }
+        .frame(maxWidth: .infinity)
+        .background(.bar)
     }
 }
 

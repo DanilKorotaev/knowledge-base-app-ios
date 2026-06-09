@@ -24,6 +24,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repoâ
 | `task-feature-session-delete-rename.md` | Delete/rename sessions in UI |
 | `task-ux-chat-streaming-feedback.md` | Processing spinner, typing dots, stream â†’ final message |
 | `task-ux-chat-composer-telegram.md` | Telegram-style composer, compose API, draft attachments |
+| `task-feature-default-voice-session.md` | Default voice target session + optional TTL |
 
 ## Pending (`pending/`)
 
@@ -32,7 +33,6 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repoâ
 | `task-feature-voice-input.md` | Real voice E2E against deployed API (Whisper on server) |
 | `task-feature-chat.md` | Server SSE verified in production |
 | `task-feature-push-notifications-chat.md` | APNs when reply ready (background / other screen) |
-| `task-feature-default-voice-session.md` | Default voice target session + optional TTL |
 | `task-feature-watch-app-voice.md` | watchOS companion, complication, offline queue |
 | `task-backend-kb-app-api-sync.md` | Ongoing contract alignment iOS â†” KB App API â†” bot |
 | `task-ops-fastlane-testflight.md` | Match, ASC, TestFlight |
