@@ -12,6 +12,7 @@
 ## Remaining
 
 - Режимы «с БЗ» / «пустой чат» на стороне сервера (клиент уже шлёт флаг).
+- **UX обратной связи:** см. [task-ux-chat-streaming-feedback.md](task-ux-chat-streaming-feedback.md) и Obsidian `Документация/Задачи/task-kb-app-chat-streaming-ux.md` — прелоадер до первого delta, typing dots, финализация.
 
 Интеграция против staging: `docs/testing/E2E.md` (`KB_E2E_*`, тест `sendTextMessage` с `useKnowledgeBase: false`).
 

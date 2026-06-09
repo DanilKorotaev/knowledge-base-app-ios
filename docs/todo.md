@@ -21,6 +21,9 @@ _(none)_
 - [x] [Чат: история + текст](tasks/completed/task-feature-chat-mvp.md) — HTTP-клиент готов
 - [ ] [Голос: реальный upload + Whisper](tasks/pending/task-feature-voice-input.md) — после деплоя API
 - [ ] [Чат: серверный SSE в бою](tasks/pending/task-feature-chat.md) — клиент шлёт `Accept: text/event-stream`
+- [ ] [Чат: UX стриминга](tasks/pending/task-ux-chat-streaming-feedback.md) — прелоадер, typing dots, подмена на сообщение из БД
+- [ ] [Push: ответ готов](tasks/pending/task-feature-push-notifications-chat.md) — APNs, deep link, suppress на открытом чате
+- [ ] [Композер чата (Telegram UX)](tasks/pending/task-ux-chat-composer-telegram.md) — скрепка/sheet, микрофон→поле, превью, одна отправка (ждёт API compose)
 - [ ] [Дефолтная сессия для голоса + TTL](tasks/pending/task-feature-default-voice-session.md) — маршрутизация с mic bar / widget / Watch
 - [ ] [Удаление и переименование сессий](tasks/pending/task-feature-session-delete-rename.md) — UI + KB App API DELETE/PATCH
 - [ ] [Чат: вложения, голос, Markdown/HTML](tasks/pending/task-ux-chat-rich-messages.md) — rich bubbles
