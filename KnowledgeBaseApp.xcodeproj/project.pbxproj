@@ -31,6 +31,7 @@
 		2E5EFC151911E88B15FA7337 /* FilesAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 749B674A93832F603A6199D9 /* FilesAPIClient.swift */; };
 		3297C5655A888B182615C5FB /* VoiceMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A76B8A20C44A7BB80F7509 /* VoiceMessageBubble.swift */; };
 		33ADE23DC2858D4008C85C15 /* ChatOlderLoadScrollMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B57D4607FB06D773C15DF69E /* ChatOlderLoadScrollMetrics.swift */; };
+		33EFE2CCF8C5D63F194C20D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5801DB22177E6F3E48D017B4 /* Assets.xcassets */; };
 		343498C2DB528E4809E9DCCE /* URLMIMETypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABACE67AA14AB98FB6859D /* URLMIMETypeTests.swift */; };
 		352C87886184DC6713E68603 /* WatchVoiceRelayProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D56D0D3AECF80FD8F0A233 /* WatchVoiceRelayProcessor.swift */; };
 		366AB847DA19D3225603589C /* SearchTextFieldConfigurator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916CB4865EF5D7C9534296F3 /* SearchTextFieldConfigurator.swift */; };
@@ -231,8 +232,8 @@
 		AB9643B8A4B4F58BA36BF707 /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
 			files = (
 				6599D2A9521545CA3D19559B /* KnowledgeBaseWatchApp.app in Embed Watch Content */,
 			);
@@ -302,6 +303,7 @@
 		5530CA85EFB82842E33B912A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5537ED8C51E85D4C7BDA95C9 /* UserDefaultsValueEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsValueEditView.swift; sourceTree = "<group>"; };
 		56F177E2C6F97AA880529F5F /* AssistantReplyPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantReplyPhase.swift; sourceTree = "<group>"; };
+		5801DB22177E6F3E48D017B4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		590A4578FB7E8FEDE78E2060 /* KBMessagesPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBMessagesPage.swift; sourceTree = "<group>"; };
 		596C9D69CBBA94A14032FCF8 /* WatchConnectivityKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityKeys.swift; sourceTree = "<group>"; };
 		59A7201A1617CECC84202979 /* KBApiLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBApiLoggerTests.swift; sourceTree = "<group>"; };
@@ -934,6 +936,7 @@
 				4E4787D2BF5369CCC0FA8BBB /* Services */,
 				259379F6048E26D39A585D7F /* ViewModels */,
 				130AB447AB37812F776FADC8 /* Views */,
+				5801DB22177E6F3E48D017B4 /* Assets.xcassets */,
 				0A693442AD2D8D1A6EE3D948 /* Info.plist */,
 				94B2D39F111B3EAEBE25046B /* KnowledgeBaseWatchApp.swift */,
 			);
@@ -990,6 +993,7 @@
 			buildConfigurationList = D675E612515F16D6EFA6B657 /* Build configuration list for PBXNativeTarget "KnowledgeBaseWatchApp" */;
 			buildPhases = (
 				F9182F7AAEA658D1A9145EFD /* Sources */,
+				EC6161246A1C337E0739F00E /* Resources */,
 			);
 			buildRules = (
 			);
@@ -1077,6 +1081,14 @@
 			files = (
 				53FDB826E259B0CFCD14E27F /* Assets.xcassets in Resources */,
 				DA9DAF0DF6FF9DF23CD0F785 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EC6161246A1C337E0739F00E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				33EFE2CCF8C5D63F194C20D0 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

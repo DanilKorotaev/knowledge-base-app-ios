@@ -10,8 +10,6 @@ options:
     watchOS: "10.0"
   createIntermediateGroups: true
   groupSortPosition: top
-  postGenCommand: |
-    sed -i '' -e 's|dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";|dstPath = "";|' -e 's|dstSubfolderSpec = 16;|dstSubfolderSpec = 13;|' KnowledgeBaseApp.xcodeproj/project.pbxproj 2>/dev/null || true
 settings:
   base:
     SWIFT_VERSION: "5.9"
@@ -102,11 +100,13 @@ targets:
         DEVELOPMENT_TEAM: "66C9VGAZR5"
         PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp.watch
         INFOPLIST_KEY_CFBundleDisplayName: Knowledge Base
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "4"
         GENERATE_INFOPLIST_FILE: NO
     info:
       path: KnowledgeBaseWatchApp/Info.plist
       properties:
+        CFBundleIconName: AppIcon
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.coredan.KnowledgeBaseApp
         NSMicrophoneUsageDescription: Микрофон нужен для записи голосового сообщения на Apple Watch.
