@@ -106,6 +106,10 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
     info:
       path: KnowledgeBaseWatchApp/Info.plist
+      properties:
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: com.coredan.KnowledgeBaseApp
+        NSMicrophoneUsageDescription: Микрофон нужен для записи голосового сообщения на Apple Watch.
 
 schemes:
   KnowledgeBaseApp:

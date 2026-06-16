@@ -142,7 +142,10 @@ def configure_deliver_altool_for_xcode26!(platform:, apple_id:)
   additions = []
   additions << "--use-old-altool" unless existing.include?("--use-old-altool")
   additions << "--apple-id #{apple_id}" unless apple_id.to_s.empty? || existing.include?("--apple-id")
-  additions << "--platform #{platform}" unless existing.include?("--platform")
+  # Legacy altool uses fastlane's `-t ios`; `--platform` is for new altool only and confuses old altool.
+  unless existing.include?("--platform") || additions.include?("--use-old-altool") || existing.include?("--use-old-altool")
+    additions << "--platform #{platform}"
+  end
   ENV["DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS"] = [existing, *additions].reject(&:empty?).join(" ")
   UI.message("DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS=#{ENV['DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS']}")
 end
