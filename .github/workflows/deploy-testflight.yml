@@ -13,6 +13,7 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS: "--use-old-altool"
     steps:
       - name: Checkout
         uses: actions/checkout@v4

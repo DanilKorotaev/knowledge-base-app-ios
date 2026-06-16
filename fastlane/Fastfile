@@ -134,14 +134,17 @@ platform :ios do
   end
 end
 
-# Xcode 26+ altool ignores fastlane's `-t ios` and requires `--platform` (and often `--apple-id`).
+# Xcode 26+ new altool breaks fastlane's `--upload-app -f` + `-t ios` combo.
+# Legacy altool accepts the same flags; --platform alone does not fix --upload-app.
 # https://github.com/fastlane/fastlane/issues/29743
 def configure_deliver_altool_for_xcode26!(platform:, apple_id:)
   existing = ENV["DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS"].to_s.strip
   additions = []
-  additions << "--platform #{platform}" unless existing.include?("--platform")
+  additions << "--use-old-altool" unless existing.include?("--use-old-altool")
   additions << "--apple-id #{apple_id}" unless apple_id.to_s.empty? || existing.include?("--apple-id")
+  additions << "--platform #{platform}" unless existing.include?("--platform")
   ENV["DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS"] = [existing, *additions].reject(&:empty?).join(" ")
+  UI.message("DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS=#{ENV['DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS']}")
 end
 
 def write_ci_testflight_metadata(app_identifier:, xcodeproj:, target:)
