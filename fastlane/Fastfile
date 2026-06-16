@@ -115,9 +115,13 @@ platform :ios do
       }
     )
 
+    asc_app_id = ENV["ASC_APPLE_ID"].to_s.strip
+    asc_app_id = "6768027088" if asc_app_id.empty?
+    configure_deliver_altool_for_xcode26!(platform: "ios", apple_id: asc_app_id)
+
     upload_to_testflight(
       app_identifier: app_id,
-      # IPA embeds watchOS; altool needs an explicit platform (Xcode 15+/26).
+      apple_id: asc_app_id,
       app_platform: "ios",
       skip_waiting_for_build_processing: true
     )
@@ -128,6 +132,16 @@ platform :ios do
       target: "KnowledgeBaseApp"
     )
   end
+end
+
+# Xcode 26+ altool ignores fastlane's `-t ios` and requires `--platform` (and often `--apple-id`).
+# https://github.com/fastlane/fastlane/issues/29743
+def configure_deliver_altool_for_xcode26!(platform:, apple_id:)
+  existing = ENV["DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS"].to_s.strip
+  additions = []
+  additions << "--platform #{platform}" unless existing.include?("--platform")
+  additions << "--apple-id #{apple_id}" unless apple_id.to_s.empty? || existing.include?("--apple-id")
+  ENV["DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS"] = [existing, *additions].reject(&:empty?).join(" ")
 end
 
 def write_ci_testflight_metadata(app_identifier:, xcodeproj:, target:)
