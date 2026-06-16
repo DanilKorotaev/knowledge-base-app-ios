@@ -15,7 +15,7 @@ final class KBLoggerTagsProvider: LoggerTagsProviderDescription, ExcludedLoggerT
     private(set) var excludedTags: Set<LoggerTag> = []
 
     private static let allTags: [LoggerTag] = [
-        .common, .network, .http, .sessions, .chat, .files, .voice, .config, .debug, .userDefaultsService,
+        .common, .network, .http, .sessions, .chat, .files, .voice, .watch, .config, .debug, .userDefaultsService,
     ]
 
     /// Tags off on first launch; enable in Debug → Log settings when needed.

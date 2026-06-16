@@ -12,10 +12,16 @@ struct WatchMainView: View {
             case .recording:
                 WatchRecordView(viewModel: viewModel)
             case .sending:
-                ProgressView("Sending…")
+                VStack(spacing: 8) {
+                    ProgressView()
+                    Text("Sending…")
+                        .font(.caption)
+                }
             }
         }
-        .navigationTitle("Knowledge Base")
+        .navigationTitle(viewModel.phase == .idle ? "Knowledge Base" : "")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(viewModel.phase == .recording ? .hidden : .visible, for: .navigationBar)
         .onAppear {
             viewModel.onAppear()
             if autoStartRecording {
@@ -26,6 +32,9 @@ struct WatchMainView: View {
         .onChange(of: viewModel.isPhoneReachable) { _, _ in
             viewModel.onReachabilityChanged()
             viewModel.reloadPending()
+        }
+        .onChange(of: viewModel.voiceContext.relayStatus) { _, _ in
+            viewModel.syncRelayStatusMessage()
         }
         .onReceive(NotificationCenter.default.publisher(for: .watchStartRecordingImmediately)) { _ in
             if viewModel.phase == .idle {
@@ -38,8 +47,9 @@ struct WatchMainView: View {
 
     private var idleContent: some View {
         ScrollView {
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 sessionHeader
+                relayStatusBanner
 
                 Button {
                     viewModel.startRecording()
@@ -74,21 +84,42 @@ struct WatchMainView: View {
                     Text(error)
                         .font(.caption2)
                         .foregroundStyle(.red)
+                        .multilineTextAlignment(.center)
                 }
 
                 if let status = viewModel.statusMessage {
                     Text(status)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
 
                 if !viewModel.isPhoneReachable {
-                    Text("iPhone not reachable")
+                    Text("iPhone not reachable — file still queues via Bluetooth")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
             }
             .padding(.horizontal, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var relayStatusBanner: some View {
+        switch viewModel.voiceContext.relayStatus {
+        case .processing:
+            Label("Processing on iPhone…", systemImage: "iphone.and.arrow.forward")
+                .font(.caption2)
+                .foregroundStyle(.orange)
+        case .success:
+            Label("Reply received", systemImage: "checkmark.circle")
+                .font(.caption2)
+                .foregroundStyle(.green)
+        case .error:
+            EmptyView()
+        case .none:
+            EmptyView()
         }
     }
 
@@ -97,6 +128,7 @@ struct WatchMainView: View {
             Text(viewModel.voiceContext.displaySessionTitle)
                 .font(.headline)
                 .multilineTextAlignment(.center)
+                .lineLimit(2)
             if viewModel.voiceContext.isDefaultExpired {
                 Text("Default expired")
                     .font(.caption2)
@@ -110,32 +142,41 @@ struct WatchRecordView: View {
     @Bindable var viewModel: WatchVoiceViewModel
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Image(systemName: "mic.fill")
-                .font(.title)
+                .font(.system(size: 36))
                 .foregroundStyle(.red)
+                .padding(.top, 4)
+
             Text("Recording")
                 .font(.headline)
+
             if let start = viewModel.recordingStartDate {
                 TimelineView(.periodic(from: start, by: 1)) { context in
                     Text(elapsed(since: start, now: context.date))
-                        .font(.caption.monospacedDigit())
+                        .font(.title3.monospacedDigit())
                 }
             }
-            MeterStrip(level: viewModel.meterLevelForDisplay())
-                .frame(height: 24)
 
-            HStack {
+            MeterStrip(level: viewModel.meterLevelForDisplay())
+                .frame(maxWidth: .infinity)
+                .frame(height: 8)
+                .padding(.horizontal, 8)
+
+            HStack(spacing: 8) {
                 Button("Cancel") {
                     viewModel.cancelRecording()
                 }
+                .frame(maxWidth: .infinity)
+
                 Button("Send") {
                     viewModel.finishRecording()
                 }
                 .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity)
             }
         }
-        .padding()
+        .padding(.horizontal, 4)
     }
 
     private func elapsed(since start: Date, now: Date) -> String {
@@ -149,10 +190,13 @@ private struct MeterStrip: View {
 
     var body: some View {
         GeometryReader { geo in
-            let width = geo.size.width * CGFloat(level)
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color.red.opacity(0.85))
-                .frame(width: max(width, 4), height: geo.size.height, alignment: .leading)
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.gray.opacity(0.25))
+                Capsule()
+                    .fill(Color.red.opacity(0.9))
+                    .frame(width: max(geo.size.width * CGFloat(level), geo.size.width * 0.04))
+            }
         }
     }
 }

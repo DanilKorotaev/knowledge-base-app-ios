@@ -51,6 +51,7 @@
 		42E5A6556C7E37D86B366541 /* KnowledgeBaseAPIE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC45859588ECAA80CFB3B7 /* KnowledgeBaseAPIE2ETests.swift */; };
 		432AA9C7E78A441CBD34EF3F /* OutputFileStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4D649862177DB7808910834 /* OutputFileStream.swift */; };
 		45F5768E165DAB72D797657A /* KBLoggerSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7796837ED7E57A491D719DC3 /* KBLoggerSettings.swift */; };
+		4605426F6977F5943C47D398 /* WatchRelayLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DD52F82E8BFBF86E2C16AD /* WatchRelayLogger.swift */; };
 		46A5CE6BBDD0C17CCE72A6C0 /* WatchConnectivityKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 596C9D69CBBA94A14032FCF8 /* WatchConnectivityKeys.swift */; };
 		46E9F085C5E58735D88D47D2 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE66E36D575D6879DC9F0F6 /* ChatView.swift */; };
 		4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E8507F60F3F1F8BE4CB3FB /* MainView.swift */; };
@@ -84,6 +85,7 @@
 		6B35DFF6233DB3889FECEA07 /* KBAppAPIErrorMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FF62394678D3FD8E287CE3 /* KBAppAPIErrorMessageTests.swift */; };
 		6C6B596A3FC2A31F76FBEDEF /* DefaultVoiceSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F1A32EC3C527B28CE3530D /* DefaultVoiceSessionStore.swift */; };
 		6C77F92D9F5B6C0DD921490D /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA439013BC5F2B88B399380 /* AppConfiguration.swift */; };
+		6ED211911B306EF1B545BCBC /* WatchRelayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A6C3330E7CE83B17F3613F /* WatchRelayLog.swift */; };
 		7276D716A7B485FA251262D9 /* ConsoleLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C547FCA30D83FF15B131AAB3 /* ConsoleLoggerTests.swift */; };
 		728D6205489725B1DAFC3DD0 /* UserDefaultsKeyRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FF4106AEF7F3C9C44D5A14B /* UserDefaultsKeyRegistry.swift */; };
 		732185B9346ACD8B44BC2D94 /* StreamTextRevealStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44C8A07C8C718776174EB209 /* StreamTextRevealStateTests.swift */; };
@@ -188,6 +190,7 @@
 		EFB906064C1CD00AD9D405CA /* WatchConnectivityKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 596C9D69CBBA94A14032FCF8 /* WatchConnectivityKeys.swift */; };
 		F1F580CDC3EFCBA71A84EB3F /* DefaultVoiceSessionTTLSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3F6839BCA62688A4276157 /* DefaultVoiceSessionTTLSheet.swift */; };
 		F46D883214BE3C7D0F4D0EB4 /* UserDefaultsInspectorSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE077D761E1B564E2775385 /* UserDefaultsInspectorSettingsView.swift */; };
+		F73098AA7696EBA484EEECDC /* WatchRelayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A6C3330E7CE83B17F3613F /* WatchRelayLog.swift */; };
 		FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */; };
 		FED1E2A93982B51A75591988 /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 092D9E142BC28FE855BC3E92 /* LoggerTests.swift */; };
 		FF527CE94888504827090D3F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7672666D764A4DF72439B805 /* AppDelegate.swift */; };
@@ -247,6 +250,7 @@
 		010424FAF1561A8D3CA6DEDA /* UserDefaultPropertyWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultPropertyWrapperTests.swift; sourceTree = "<group>"; };
 		03D0B958772CC630E7496D70 /* LoggerTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTag.swift; sourceTree = "<group>"; };
 		0446D0911187C57A67AF311A /* NotificationName+KB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationName+KB.swift"; sourceTree = "<group>"; };
+		07A6C3330E7CE83B17F3613F /* WatchRelayLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRelayLog.swift; sourceTree = "<group>"; };
 		083AE4B66B10E887F48ACF7D /* LogPreviewViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPreviewViewModelTests.swift; sourceTree = "<group>"; };
 		092D9E142BC28FE855BC3E92 /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
 		09F23EE9AB7E0B9FBE89013E /* ChatAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAPIClient.swift; sourceTree = "<group>"; };
@@ -269,6 +273,7 @@
 		24FF70CC6A65986EE353A257 /* SelectableLogTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableLogTextView.swift; sourceTree = "<group>"; };
 		279A74BF21DC5A9308080E11 /* AssistantReplyPhaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantReplyPhaseTests.swift; sourceTree = "<group>"; };
 		27D0D315E14D5A6B60588936 /* FileLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileLogger.swift; sourceTree = "<group>"; };
+		27DD52F82E8BFBF86E2C16AD /* WatchRelayLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRelayLogger.swift; sourceTree = "<group>"; };
 		299E302C61DB06A96196EAF8 /* LogPreviewDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPreviewDetailsView.swift; sourceTree = "<group>"; };
 		2B95112B8F9D178D979DF582 /* URLRequest+KBcURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+KBcURL.swift"; sourceTree = "<group>"; };
 		2C2CF74541E25419CA2E1A55 /* LogFilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilesView.swift; sourceTree = "<group>"; };
@@ -588,6 +593,7 @@
 			isa = PBXGroup;
 			children = (
 				596C9D69CBBA94A14032FCF8 /* WatchConnectivityKeys.swift */,
+				07A6C3330E7CE83B17F3613F /* WatchRelayLog.swift */,
 			);
 			path = SharedWatchConnectivity;
 			sourceTree = "<group>";
@@ -881,6 +887,7 @@
 				525C51AE342E067C1846E135 /* RecordingGestureLogic.swift */,
 				81F668021DEF209B16CAEAF9 /* VoiceRecordingService.swift */,
 				FD04BBF3695F6E725789AE24 /* VoiceSessionTargetResolver.swift */,
+				27DD52F82E8BFBF86E2C16AD /* WatchRelayLogger.swift */,
 				F3D56D0D3AECF80FD8F0A233 /* WatchVoiceRelayProcessor.swift */,
 				6E4CA74CD5565ED72504F908 /* WatchVoiceSessionContextSync.swift */,
 			);
@@ -1224,6 +1231,8 @@
 				B898112C8C35C80F2743527D /* VoiceRoutingContext.swift in Sources */,
 				89EEB90AA9DAA7B7B3FD614B /* VoiceSessionTargetResolver.swift in Sources */,
 				EFB906064C1CD00AD9D405CA /* WatchConnectivityKeys.swift in Sources */,
+				F73098AA7696EBA484EEECDC /* WatchRelayLog.swift in Sources */,
+				4605426F6977F5943C47D398 /* WatchRelayLogger.swift in Sources */,
 				352C87886184DC6713E68603 /* WatchVoiceRelayProcessor.swift in Sources */,
 				8E662397EE1E7DA89A57540D /* WatchVoiceSessionContextSync.swift in Sources */,
 			);
@@ -1297,6 +1306,7 @@
 				D19C1640EB24DD038614FC53 /* WatchMainView.swift in Sources */,
 				A4ED8FD09E9B48B1587D0A7B /* WatchPendingRecordingStore.swift in Sources */,
 				A3A4CBF00B123B44B076FDE5 /* WatchRecordingService.swift in Sources */,
+				6ED211911B306EF1B545BCBC /* WatchRelayLog.swift in Sources */,
 				3AA7CAFE673206C62E843870 /* WatchVoiceViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

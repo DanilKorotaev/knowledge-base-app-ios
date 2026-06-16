@@ -10,8 +10,10 @@ enum WatchVoiceRelayProcessor {
         chatClient: ChatAPIClientProtocol,
         sessionProvider: () async throws -> [KBSession]
     ) async throws -> String {
+        WatchRelayLogger.info("Relay processor start hintedSession=\(hintedSessionID ?? "nil")")
         let sessions = try await sessionProvider()
         let orderedIDs = sessions.map(\.id)
+        WatchRelayLogger.info("Fetched \(sessions.count) session(s) for relay")
         let store = DefaultVoiceSessionStore.shared
 
         let targetID: String?
@@ -28,14 +30,18 @@ enum WatchVoiceRelayProcessor {
         }
 
         guard let sessionID = targetID else {
+            WatchRelayLogger.error("No target session — set voice default on iPhone")
             throw WatchRelayError.noTargetSession
         }
+        WatchRelayLogger.info("Relay target sessionId=\(sessionID)")
 
         let transcription = try await chatClient.transcribeVoiceRecording(audioFileURL: audioURL)
         let trimmed = transcription.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
+            WatchRelayLogger.error("Empty transcription")
             throw WatchRelayError.emptyTranscription
         }
+        WatchRelayLogger.info("Transcription chars=\(trimmed.count)")
 
         let useKB = DefaultVoiceSessionStore.shared.load() != nil
         let stream = try await chatClient.streamVoiceMessage(

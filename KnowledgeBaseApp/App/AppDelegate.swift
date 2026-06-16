@@ -7,4 +7,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> UIInterfaceOrientationMask {
         OrientationLock.mask
     }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        #if canImport(WatchConnectivity)
+        WatchVoiceSessionContextSync.shared.activateIfNeeded()
+        #endif
+    }
 }

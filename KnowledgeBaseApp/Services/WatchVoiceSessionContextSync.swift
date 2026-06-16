@@ -1,6 +1,6 @@
 import Foundation
-
 #if canImport(WatchConnectivity)
+import UIKit
 import WatchConnectivity
 
 /// iPhone-side WCSession: default voice context sync + Watch voice file relay.
@@ -9,6 +9,7 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
 
     private var pendingPreference: DefaultVoiceSessionPreference?
     private var isProcessingRelay = false
+    private var pendingVoiceFiles: [WCSessionFile] = []
 
     private override init() {
         super.init()
@@ -22,13 +23,15 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
         }
         if session.activationState != .activated {
             session.activate()
+        } else {
+            syncContextToWatch()
         }
     }
 
     func publish(_ preference: DefaultVoiceSessionPreference?) {
         activateIfNeeded()
         pendingPreference = preference
-        flushPendingContextIfPossible()
+        syncContextToWatch()
     }
 
     // MARK: - WCSessionDelegate
@@ -38,43 +41,63 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
         activationDidCompleteWith activationState: WCSessionActivationState,
         error: Error?
     ) {
+        if let error {
+            WatchRelayLogger.error("WCSession activation failed: \(error.localizedDescription)")
+        } else {
+            WatchRelayLogger.info("WCSession activated state=\(activationState.rawValue) paired=\(session.isPaired) watchInstalled=\(session.isWatchAppInstalled)")
+        }
         if activationState == .activated {
-            flushPendingContextIfPossible()
+            syncContextToWatch()
         }
     }
 
-    func sessionDidBecomeInactive(_ session: WCSession) {}
+    func sessionDidBecomeInactive(_ session: WCSession) {
+        WatchRelayLogger.info("WCSession became inactive")
+    }
 
     func sessionDidDeactivate(_ session: WCSession) {
+        WatchRelayLogger.info("WCSession deactivated — re-activating")
         session.activate()
     }
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
+        WatchRelayLogger.info("Received voice file from Watch metadata=\(String(describing: file.metadata))")
         Task { @MainActor in
-            await handleIncomingVoiceFile(file, session: session)
+            await enqueueIncomingVoiceFile(file, session: session)
         }
     }
 
     func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: Error?) {
         if let error {
+            WatchRelayLogger.error("Outgoing file transfer failed: \(error.localizedDescription)")
             publishRelayStatus(.error, preview: nil, error: error.localizedDescription, session: session)
         }
     }
 
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any]) {
+        guard userInfo[WatchConnectivityKeys.messageType] as? String == WatchConnectivityKeys.watchLog else { return }
+        let line = userInfo[WatchConnectivityKeys.logLine] as? String ?? userInfo.description
+        WatchRelayLogger.ingestWatchLine(line)
+    }
+
     // MARK: - Context
 
-    private func flushPendingContextIfPossible() {
+    private func syncContextToWatch() {
         let session = WCSession.default
         guard session.activationState == .activated else { return }
 
-        var context = baseContext(from: pendingPreference ?? DefaultVoiceSessionStore.shared.load())
+        let preference = pendingPreference ?? DefaultVoiceSessionStore.shared.load()
+        var context = baseContext(from: preference)
         mergeRelayFields(into: &context, from: session.receivedApplicationContext)
 
         do {
             try session.updateApplicationContext(context)
             pendingPreference = nil
+            WatchRelayLogger.info(
+                "Pushed voice context sessionId=\(preference?.sessionId ?? "nil") title=\(preference?.sessionTitle ?? "nil")"
+            )
         } catch {
-            // Watch app may not be installed yet.
+            WatchRelayLogger.error("updateApplicationContext failed: \(error.localizedDescription)")
         }
     }
 
@@ -108,23 +131,56 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
     // MARK: - Relay
 
     @MainActor
-    private func handleIncomingVoiceFile(_ file: WCSessionFile, session: WCSession) async {
+    private func enqueueIncomingVoiceFile(_ file: WCSessionFile, session: WCSession) async {
+        pendingVoiceFiles.append(file)
+        await drainRelayQueue(session: session)
+    }
+
+    @MainActor
+    private func drainRelayQueue(session: WCSession) async {
         guard !isProcessingRelay else { return }
         isProcessingRelay = true
         defer { isProcessingRelay = false }
 
+        while !pendingVoiceFiles.isEmpty {
+            let file = pendingVoiceFiles.removeFirst()
+            await processIncomingVoiceFile(file, session: session)
+        }
+    }
+
+    @MainActor
+    private func processIncomingVoiceFile(_ file: WCSessionFile, session: WCSession) async {
         let metadata = file.metadata ?? [:]
         let type = metadata[WatchConnectivityKeys.messageType] as? String
-        guard type == WatchConnectivityKeys.voiceQuery else { return }
+        guard type == WatchConnectivityKeys.voiceQuery else {
+            WatchRelayLogger.info("Ignored non-voice file type=\(type ?? "nil")")
+            try? FileManager.default.removeItem(at: file.fileURL)
+            return
+        }
 
+        let recordingID = metadata[WatchConnectivityKeys.recordingID] as? String ?? "unknown"
         let hintedSessionID = metadata[WatchConnectivityKeys.defaultSessionID] as? String
+        WatchRelayLogger.info("Processing relay recordingId=\(recordingID) hintedSession=\(hintedSessionID ?? "nil")")
+
         publishRelayStatus(.processing, preview: nil, error: nil, session: session)
+
+        var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+        backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "WatchVoiceRelay") {
+            if backgroundTaskID != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                backgroundTaskID = .invalid
+            }
+        }
 
         defer {
             try? FileManager.default.removeItem(at: file.fileURL)
+            if backgroundTaskID != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTaskID)
+            }
         }
 
         guard let client = makeChatClient() else {
+            WatchRelayLogger.error("API client unavailable — check Secrets/API config on iPhone")
             publishRelayStatus(.error, preview: nil, error: "API not configured on iPhone.", session: session)
             return
         }
@@ -144,8 +200,10 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
                     return []
                 }
             )
+            WatchRelayLogger.info("Relay success recordingId=\(recordingID) previewChars=\(preview.count)")
             publishRelayStatus(.success, preview: preview, error: nil, session: session)
         } catch {
+            WatchRelayLogger.error("Relay failed recordingId=\(recordingID): \(error.localizedDescription)")
             publishRelayStatus(.error, preview: nil, error: error.localizedDescription, session: session)
         }
     }
@@ -166,7 +224,12 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
         if let error {
             context[WatchConnectivityKeys.lastResponseError] = error
         }
-        try? session.updateApplicationContext(context)
+        do {
+            try session.updateApplicationContext(context)
+            WatchRelayLogger.info("Relay status=\(status.rawValue) pushed to Watch")
+        } catch {
+            WatchRelayLogger.error("Failed pushing relay status: \(error.localizedDescription)")
+        }
     }
 
     private func makeChatClient() -> ChatAPIClientProtocol? {

@@ -93,9 +93,9 @@ final class WatchVoiceViewModel {
                 )
                 try? FileManager.default.removeItem(at: url)
                 if connectivity.isPhoneReachable {
-                    statusMessage = "Sent to iPhone"
+                    statusMessage = "Queued — iPhone will process shortly"
                 } else {
-                    statusMessage = "Queued for iPhone"
+                    statusMessage = "Queued — open iPhone app if stuck"
                 }
                 WKInterfaceDevice.current().play(.success)
                 #else
@@ -122,5 +122,18 @@ final class WatchVoiceViewModel {
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "ru-RU")
         AVSpeechSynthesizer().speak(utterance)
+    }
+
+    func syncRelayStatusMessage() {
+        switch voiceContext.relayStatus {
+        case .processing:
+            statusMessage = "iPhone is processing…"
+        case .success:
+            statusMessage = "Reply ready — tap Speak"
+        case .error:
+            statusMessage = voiceContext.lastResponseError
+        case .none:
+            break
+        }
     }
 }

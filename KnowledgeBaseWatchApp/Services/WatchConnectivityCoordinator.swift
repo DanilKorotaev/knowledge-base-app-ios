@@ -14,6 +14,12 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
 
     private override init() {
         super.init()
+        WatchRelayLog.forwardToPhone = { [weak self] line in
+            self?.forwardLogLine(line)
+        }
+        WatchRelayLog.localSink = { line in
+            print("[WatchRelay] \(line)")
+        }
     }
 
     func activateIfNeeded() {
@@ -41,15 +47,15 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
             metadata[WatchConnectivityKeys.defaultSessionID] = sessionID
         }
 
-        if session.isReachable {
-            session.transferFile(fileURL, metadata: metadata)
-        } else {
-            session.transferFile(fileURL, metadata: metadata)
-        }
+        session.transferFile(fileURL, metadata: metadata)
+        WatchRelayLog.info(
+            "transferFile queued recordingId=\(recordingID) sessionId=\(sessionID ?? "nil") reachable=\(session.isReachable) activation=\(session.activationState.rawValue)"
+        )
     }
 
     func flushPendingRecordings(_ recordings: [WatchPendingRecording]) {
         guard !recordings.isEmpty else { return }
+        WatchRelayLog.info("Flushing \(recordings.count) pending recording(s)")
         activateIfNeeded()
         let store = WatchPendingRecordingStore.shared
         for recording in recordings {
@@ -60,6 +66,17 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
                 sessionID: recording.sessionID
             )
         }
+    }
+
+    private func forwardLogLine(_ line: String) {
+        activateIfNeeded()
+        let session = WCSession.default
+        guard session.activationState == .activated else { return }
+        session.transferUserInfo([
+            WatchConnectivityKeys.messageType: WatchConnectivityKeys.watchLog,
+            WatchConnectivityKeys.logLine: line,
+            WatchConnectivityKeys.logTimestamp: Date().timeIntervalSince1970
+        ])
     }
 
     private func refreshFromSession(_ session: WCSession) {
@@ -75,6 +92,11 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
     ) {
         Task { @MainActor in
             self.activationState = activationState
+            if let error {
+                WatchRelayLog.error("WCSession activation failed: \(error.localizedDescription)")
+            } else {
+                WatchRelayLog.info("WCSession activated state=\(activationState.rawValue) reachable=\(session.isReachable)")
+            }
             refreshFromSession(session)
         }
     }
@@ -82,12 +104,15 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
     nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
         Task { @MainActor in
             isPhoneReachable = session.isReachable
+            WatchRelayLog.info("iPhone reachability changed reachable=\(session.isReachable)")
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
         Task { @MainActor in
             voiceContext = WatchVoiceContext(applicationContext: applicationContext)
+            let status = voiceContext.relayStatus?.rawValue ?? "nil"
+            WatchRelayLog.info("Received application context relayStatus=\(status) sessionId=\(voiceContext.sessionID ?? "nil")")
         }
     }
 }

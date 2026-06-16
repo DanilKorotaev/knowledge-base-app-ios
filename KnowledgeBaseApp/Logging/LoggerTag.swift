@@ -20,6 +20,7 @@ extension LoggerTag {
     static let chat = LoggerTag(rawValue: "Chat")
     static let files = LoggerTag(rawValue: "Files")
     static let voice = LoggerTag(rawValue: "Voice")
+    static let watch = LoggerTag(rawValue: "Watch")
     static let config = LoggerTag(rawValue: "Config")
     static let debug = LoggerTag(rawValue: "Debug")
     static let userDefaultsService = LoggerTag(rawValue: "UserDefaultsService")

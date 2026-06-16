@@ -12,6 +12,9 @@ struct KnowledgeBaseApp: App {
         _ = LogSession.shared
         #if canImport(WatchConnectivity)
         WatchVoiceSessionContextSync.shared.activateIfNeeded()
+        WatchRelayLog.localSink = { line in
+            WatchRelayLogger.ingestWatchLine(line)
+        }
         #endif
     }
 
