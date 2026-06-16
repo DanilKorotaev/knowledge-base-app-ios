@@ -116,6 +116,9 @@ platform :ios do
     )
 
     upload_to_testflight(
+      app_identifier: app_id,
+      # IPA embeds watchOS; altool needs an explicit platform (Xcode 15+/26).
+      app_platform: "ios",
       skip_waiting_for_build_processing: true
     )
 
