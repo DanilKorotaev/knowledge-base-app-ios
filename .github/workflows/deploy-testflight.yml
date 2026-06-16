@@ -57,6 +57,8 @@ jobs:
         continue-on-error: true
         env:
           APP_IDENTIFIER: ${{ secrets.APP_IDENTIFIER }}
+          WIDGET_APP_IDENTIFIER: ${{ secrets.WIDGET_APP_IDENTIFIER }}
+          WATCH_APP_IDENTIFIER: ${{ secrets.WATCH_APP_IDENTIFIER }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
           MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
