@@ -8,8 +8,8 @@ final class VoiceRoutingContext {
     var useKnowledgeBase: Bool = true
     /// When true, finished recordings append to the open chat composer instead of the review sheet.
     var usesComposerDraft: Bool = false
-    /// One-shot notice after TTL expiry (shown on MainView).
-    var defaultExpiredNotice: String?
+    /// One-shot notice after TTL expiry (shown on MainView; dismiss with `dismissDefaultExpiredNotice()`).
+    var defaultExpiredNotice: VoiceDefaultExpiredNotice?
     /// Voice captured on MainView; target chat consumes on appear and enqueues into the composer.
     var pendingComposerVoice: (sessionId: String, audioURL: URL)?
 
@@ -73,6 +73,10 @@ final class VoiceRoutingContext {
         WatchVoiceSessionContextSync.shared.publish(nil)
     }
 
+    func dismissDefaultExpiredNotice() {
+        defaultExpiredNotice = nil
+    }
+
     func refreshExpiryIfNeeded(now: Date = Date()) {
         guard let preference = store.load() else { return }
         guard let expiresAt = preference.expiresAt, now >= expiresAt else { return }
@@ -87,11 +91,11 @@ final class VoiceRoutingContext {
                 previousSessionTitle: nil
             )
             store.save(restored)
-            defaultExpiredNotice = "Voice default expired — restored “\(previousTitle)”."
+            defaultExpiredNotice = .restored(sessionTitle: previousTitle)
             WatchVoiceSessionContextSync.shared.publish(restored)
         } else {
             store.clear()
-            defaultExpiredNotice = "Voice default expired."
+            defaultExpiredNotice = .cleared
             WatchVoiceSessionContextSync.shared.publish(nil)
         }
     }

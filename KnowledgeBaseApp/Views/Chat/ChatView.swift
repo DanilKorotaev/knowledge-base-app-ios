@@ -35,7 +35,7 @@ struct ChatView: View {
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 10) {
                             if viewModel.hasMoreOlder {
                                 Color.clear
                                     .frame(height: 1)
@@ -68,13 +68,15 @@ struct ChatView: View {
                                 .frame(height: 1)
                                 .id(bottomScrollID)
                         }
-                        .padding()
-                        .scrollTargetLayout()
+                        .padding(.horizontal)
+                        .padding(.top, 8)
+                        .padding(.bottom, 16)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             dismissKeyboard()
                         }
                     }
+                    .scrollBounceBehavior(.basedOnSize, axes: .vertical)
                     .defaultScrollAnchor(.bottom)
                     .scrollDismissesKeyboard(.interactively)
                     .onScrollGeometryChange(for: ScrollPaginationSample.self) { geometry in

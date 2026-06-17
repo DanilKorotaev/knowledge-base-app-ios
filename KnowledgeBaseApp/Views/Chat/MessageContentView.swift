@@ -97,8 +97,8 @@ struct MessageContentView: View {
         if blocks.isEmpty {
             MarkdownTextBlockView(text: text)
         } else {
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(blocks) { block in
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
                     switch block {
                     case .text(let chunk):
                         MarkdownTextBlockView(text: chunk)

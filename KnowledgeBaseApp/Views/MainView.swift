@@ -23,7 +23,6 @@ struct MainView: View {
     @State private var renameTitle = ""
     @State private var showRenameSheet = false
     @State private var sessionPendingVoiceDefault: KBSession?
-    @State private var showVoiceDefaultTTLSheet = false
     @State private var selectedVoiceDefaultTTL: DefaultVoiceSessionTTL = .oneHour
     @State private var sessionActionError: String?
     @State private var navigationPath = NavigationPath()
@@ -61,14 +60,6 @@ struct MainView: View {
                         .padding(.vertical, 10)
                         .frame(maxWidth: .infinity)
                         .background(.yellow.opacity(0.38))
-                } else if let notice = voiceRouting.defaultExpiredNotice {
-                    Text(notice)
-                        .font(.subheadline)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity)
-                        .background(.orange.opacity(0.28))
                 }
             }
             .toolbar {
@@ -187,22 +178,18 @@ struct MainView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showVoiceDefaultTTLSheet) {
-                if let session = sessionPendingVoiceDefault {
-                    DefaultVoiceSessionTTLSheet(
-                        session: session,
-                        selectedTTL: $selectedVoiceDefaultTTL,
-                        onCancel: {
-                            showVoiceDefaultTTLSheet = false
-                            sessionPendingVoiceDefault = nil
-                        },
-                        onConfirm: {
-                            voiceRouting.setDefaultVoiceSession(session, ttl: selectedVoiceDefaultTTL)
-                            showVoiceDefaultTTLSheet = false
-                            sessionPendingVoiceDefault = nil
-                        }
-                    )
-                }
+            .sheet(item: $sessionPendingVoiceDefault) { session in
+                DefaultVoiceSessionTTLSheet(
+                    session: session,
+                    selectedTTL: $selectedVoiceDefaultTTL,
+                    onCancel: {
+                        sessionPendingVoiceDefault = nil
+                    },
+                    onConfirm: {
+                        voiceRouting.setDefaultVoiceSession(session, ttl: selectedVoiceDefaultTTL)
+                        sessionPendingVoiceDefault = nil
+                    }
+                )
             }
             .sheet(isPresented: Binding(
                 get: { voiceViewModel.showPostRecordReview },
@@ -286,8 +273,21 @@ struct MainView: View {
     }
 
     private var sessionsList: some View {
-        List(displayedSessions) { session in
-            sessionRow(session)
+        List {
+            if let notice = voiceRouting.defaultExpiredNotice {
+                VoiceDefaultExpiredBanner(notice: notice) {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        voiceRouting.dismissDefaultExpiredNotice()
+                    }
+                }
+                .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 4, trailing: 0))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+            }
+
+            ForEach(displayedSessions) { session in
+                sessionRow(session)
+            }
         }
         .refreshable {
             await loadSessions(showFullScreenLoading: false)
@@ -507,9 +507,8 @@ struct MainView: View {
 
     @MainActor
     private func beginSetVoiceDefault(_ session: KBSession) {
-        sessionPendingVoiceDefault = session
         selectedVoiceDefaultTTL = .oneHour
-        showVoiceDefaultTTLSheet = true
+        sessionPendingVoiceDefault = session
     }
 
     @MainActor

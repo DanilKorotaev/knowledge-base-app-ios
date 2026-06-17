@@ -167,7 +167,7 @@ final class VoiceRoutingContextTests: XCTestCase {
 
         XCTAssertEqual(store.load()?.sessionId, "inbox")
         XCTAssertNil(store.load()?.expiresAt)
-        XCTAssertEqual(routing.defaultExpiredNotice, "Voice default expired — restored “Inbox”.")
+        XCTAssertEqual(routing.defaultExpiredNotice, .restored(sessionTitle: "Inbox"))
     }
 
     func testExpiryClearsWhenNoPrevious() {
@@ -187,7 +187,27 @@ final class VoiceRoutingContextTests: XCTestCase {
         routing.refreshExpiryIfNeeded(now: Date())
 
         XCTAssertNil(store.load())
-        XCTAssertEqual(routing.defaultExpiredNotice, "Voice default expired.")
+        XCTAssertEqual(routing.defaultExpiredNotice, .cleared)
+    }
+
+    func testDismissDefaultExpiredNotice() {
+        let store = InMemoryVoiceDefaultStore()
+        let routing = VoiceRoutingContext(store: store)
+
+        store.save(
+            DefaultVoiceSessionPreference(
+                sessionId: "temp",
+                sessionTitle: "Temp",
+                expiresAt: Date().addingTimeInterval(-10),
+                previousSessionId: nil,
+                previousSessionTitle: nil
+            )
+        )
+        routing.refreshExpiryIfNeeded(now: Date())
+        XCTAssertEqual(routing.defaultExpiredNotice, .cleared)
+
+        routing.dismissDefaultExpiredNotice()
+        XCTAssertNil(routing.defaultExpiredNotice)
     }
 
     func testMainScreenVoiceChatSessionRequiresValidDefault() {

@@ -9,8 +9,8 @@ struct MarkdownTextBlockView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(segments) { segment in
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
                 segmentView(segment)
             }
         }
@@ -21,12 +21,11 @@ struct MarkdownTextBlockView: View {
     private func segmentView(_ segment: MarkdownSegment) -> some View {
         switch segment {
         case .blank:
-            Color.clear.frame(height: 4)
+            Color.clear.frame(height: 6)
         case .horizontalRule:
-            Rectangle()
-                .fill(Color.primary.opacity(0.15))
-                .frame(height: 1)
-                .padding(.vertical, 4)
+            Divider()
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity)
         case .header(let level, let line):
             Text(MessageContentRenderer.parseMarkdown(line))
                 .font(headerFont(level))
@@ -36,6 +35,7 @@ struct MarkdownTextBlockView: View {
         case .paragraph(let line):
             Text(MessageContentRenderer.inlineAttributedText(line))
                 .font(.body)
+                .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         case .list(let items):
@@ -116,6 +116,10 @@ struct PlainTextBlockView: View {
             ForEach(Array(text.components(separatedBy: "\n").enumerated()), id: \.offset) { _, line in
                 if line.trimmingCharacters(in: .whitespaces).isEmpty {
                     Color.clear.frame(height: 4)
+                } else if MarkdownLineParser.isThematicBreak(line) {
+                    Divider()
+                        .padding(.vertical, 6)
+                        .frame(maxWidth: .infinity)
                 } else {
                     Text(line)
                         .font(.body)

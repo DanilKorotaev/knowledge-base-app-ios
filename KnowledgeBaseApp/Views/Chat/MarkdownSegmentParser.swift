@@ -34,13 +34,17 @@ enum MarkdownSegment: Equatable, Identifiable {
 }
 
 enum MarkdownLineParser {
+    private static let thematicBreakCharacters: Set<Character> = [
+        "-", "−", "–", "—", "*", "_",
+    ]
+
     /// GFM thematic break: `---`, `***`, `___` (spaces allowed between chars).
     static func isThematicBreak(_ line: String) -> Bool {
         let compact = line
             .trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: " ", with: "")
         guard compact.count >= 3 else { return false }
-        guard let marker = compact.first, marker == "-" || marker == "*" || marker == "_" else { return false }
+        guard let marker = compact.first, thematicBreakCharacters.contains(marker) else { return false }
         return compact.allSatisfy { $0 == marker }
     }
 
@@ -110,20 +114,56 @@ enum MarkdownLineParser {
 
 enum MarkdownSegmentParser {
     static func segments(from text: String) -> [MarkdownSegment] {
-        let lines = text.components(separatedBy: "\n")
+        let lines = normalizedLines(from: text)
         var result: [MarkdownSegment] = []
         var index = 0
+        var paragraphLines: [String] = []
+
+        func flushParagraph() {
+            guard !paragraphLines.isEmpty else { return }
+            let pending = paragraphLines
+            paragraphLines.removeAll()
+            for line in pending {
+                if MarkdownLineParser.isThematicBreak(line) {
+                    appendParagraphBuffer()
+                    result.append(.horizontalRule)
+                } else if line.trimmingCharacters(in: .whitespaces).isEmpty {
+                    appendParagraphBuffer()
+                    appendBlank()
+                } else {
+                    paragraphBuffer.append(line)
+                }
+            }
+            appendParagraphBuffer()
+        }
+
+        var paragraphBuffer: [String] = []
+
+        func appendParagraphBuffer() {
+            guard !paragraphBuffer.isEmpty else { return }
+            let joined = paragraphBuffer.joined(separator: "\n")
+            paragraphBuffer.removeAll()
+            guard !joined.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+            result.append(.paragraph(joined))
+        }
+
+        func appendBlank() {
+            if case .blank = result.last { return }
+            result.append(.blank)
+        }
 
         while index < lines.count {
             let raw = lines[index]
 
             if raw.trimmingCharacters(in: .whitespaces).isEmpty {
-                result.append(.blank)
+                flushParagraph()
+                appendBlank()
                 index += 1
                 continue
             }
 
             if MarkdownLineParser.isCodeFenceOpening(raw) {
+                flushParagraph()
                 let language = MarkdownLineParser.codeFenceLanguage(raw)
                 index += 1
                 var codeLines: [String] = []
@@ -137,6 +177,7 @@ enum MarkdownSegmentParser {
             }
 
             if let first = MarkdownLineParser.parseListItem(raw) {
+                flushParagraph()
                 var items = [first]
                 index += 1
                 while index < lines.count, let next = MarkdownLineParser.parseListItem(lines[index]) {
@@ -148,6 +189,7 @@ enum MarkdownSegmentParser {
             }
 
             if MarkdownLineParser.isBlockquoteLine(raw) {
+                flushParagraph()
                 var quoteLines: [String] = []
                 while index < lines.count, MarkdownLineParser.isBlockquoteLine(lines[index]) {
                     quoteLines.append(MarkdownLineParser.blockquoteContent(lines[index]))
@@ -158,6 +200,7 @@ enum MarkdownSegmentParser {
             }
 
             if MarkdownLineParser.isThematicBreak(raw) {
+                flushParagraph()
                 result.append(.horizontalRule)
                 index += 1
                 continue
@@ -165,15 +208,30 @@ enum MarkdownSegmentParser {
 
             let hashCount = raw.prefix(while: { $0 == "#" }).count
             if hashCount > 0, hashCount <= 6, raw.dropFirst(hashCount).first == " " {
+                flushParagraph()
                 result.append(.header(level: hashCount, line: raw))
                 index += 1
                 continue
             }
 
-            result.append(.paragraph(raw))
+            paragraphLines.append(raw)
             index += 1
         }
 
+        flushParagraph()
+        trimEdgeBlanks(&result)
         return result
+    }
+
+    private static func normalizedLines(from text: String) -> [String] {
+        text
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
+    }
+
+    private static func trimEdgeBlanks(_ segments: inout [MarkdownSegment]) {
+        while segments.first == .blank { segments.removeFirst() }
+        while segments.last == .blank { segments.removeLast() }
     }
 }

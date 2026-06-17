@@ -38,7 +38,7 @@ struct RichMessageBubbleView: View {
     }
 
     private var messageContent: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             if !message.imageAttachments.isEmpty {
                 AttachmentImageGrid(
                     attachments: message.imageAttachments,

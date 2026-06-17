@@ -331,6 +331,60 @@ final class MessageContentRendererTests: XCTestCase {
         XCTAssertFalse(MarkdownLineParser.isThematicBreak("--- still text"))
     }
 
+    func testMarkdownSegmentParserThematicBreak() {
+        let segments = MarkdownSegmentParser.segments(from: "Before\n\n---\n\nAfter")
+        XCTAssertTrue(segments.contains { if case .horizontalRule = $0 { return true }; return false })
+        XCTAssertFalse(segments.contains { if case .paragraph(let text) = $0 { return text == "---" }; return false })
+
+        let unicodeDash = "Before\n\n−−−\n\nAfter"
+        let unicodeSegments = MarkdownSegmentParser.segments(from: unicodeDash)
+        XCTAssertTrue(unicodeSegments.contains { if case .horizontalRule = $0 { return true }; return false })
+    }
+
+    func testMarkdownSegmentParserThematicBreakInsideParagraphBuffer() {
+        let segments = MarkdownSegmentParser.segments(from: "Line one\n---\nLine two")
+        XCTAssertEqual(
+            segments.filter {
+                if case .horizontalRule = $0 { return true }
+                return false
+            }.count,
+            1
+        )
+    }
+
+    func testMarkdownSegmentParserParagraphGrouping() {
+        let md = """
+        Line one
+        Line two
+
+        - first
+        """
+        let segments = MarkdownSegmentParser.segments(from: md)
+        XCTAssertEqual(segments.count, 2)
+        if case .paragraph(let text) = segments[0] {
+            XCTAssertTrue(text.contains("Line one"))
+            XCTAssertTrue(text.contains("Line two"))
+        } else {
+            XCTFail("expected merged paragraph")
+        }
+        if case .list(let items) = segments[1] {
+            XCTAssertEqual(items.count, 1)
+            XCTAssertEqual(items[0].text, "first")
+        } else {
+            XCTFail("expected list")
+        }
+    }
+
+    func testMarkdownSegmentParserCollapsesRepeatedBlanks() {
+        let md = "Intro\n\n\n\n- item"
+        let segments = MarkdownSegmentParser.segments(from: md)
+        let blankCount = segments.filter {
+            if case .blank = $0 { return true }
+            return false
+        }.count
+        XCTAssertEqual(blankCount, 1)
+    }
+
     func testMarkdownSegmentParserListAndCode() {
         let md = """
         Intro line
