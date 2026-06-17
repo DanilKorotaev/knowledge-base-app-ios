@@ -68,15 +68,18 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
         }
     }
 
-    private func forwardLogLine(_ line: String) {
-        activateIfNeeded()
-        let session = WCSession.default
-        guard session.activationState == .activated else { return }
-        session.transferUserInfo([
-            WatchConnectivityKeys.messageType: WatchConnectivityKeys.watchLog,
-            WatchConnectivityKeys.logLine: line,
-            WatchConnectivityKeys.logTimestamp: Date().timeIntervalSince1970
-        ])
+    private nonisolated func forwardLogLine(_ line: String) {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            self.activateIfNeeded()
+            let session = WCSession.default
+            guard session.activationState == .activated else { return }
+            session.transferUserInfo([
+                WatchConnectivityKeys.messageType: WatchConnectivityKeys.watchLog,
+                WatchConnectivityKeys.logLine: line,
+                WatchConnectivityKeys.logTimestamp: Date().timeIntervalSince1970
+            ])
+        }
     }
 
     private func refreshFromSession(_ session: WCSession) {
