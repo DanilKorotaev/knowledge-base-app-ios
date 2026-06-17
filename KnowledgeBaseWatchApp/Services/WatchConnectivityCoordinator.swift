@@ -11,6 +11,8 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
     private(set) var voiceContext = WatchVoiceContext(applicationContext: [:])
     private(set) var isPhoneReachable = false
     private(set) var activationState: WCSessionActivationState = .notActivated
+    /// URLs passed to `transferFile` — must stay on disk until `didFinish fileTransfer`.
+    private var outgoingTransferURLs: Set<URL> = []
 
     private override init() {
         super.init()
@@ -48,8 +50,9 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
         }
 
         session.transferFile(fileURL, metadata: metadata)
+        outgoingTransferURLs.insert(fileURL)
         WatchRelayLog.info(
-            "transferFile queued recordingId=\(recordingID) sessionId=\(sessionID ?? "nil") reachable=\(session.isReachable) activation=\(session.activationState.rawValue)"
+            "transferFile queued recordingId=\(recordingID) sessionId=\(sessionID ?? "nil") reachable=\(session.isReachable) activation=\(session.activationState.rawValue) path=\(fileURL.lastPathComponent)"
         )
     }
 
@@ -116,6 +119,20 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
             voiceContext = WatchVoiceContext(applicationContext: applicationContext)
             let status = voiceContext.relayStatus?.rawValue ?? "nil"
             WatchRelayLog.info("Received application context relayStatus=\(status) sessionId=\(voiceContext.sessionID ?? "nil")")
+        }
+    }
+
+    nonisolated func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: Error?) {
+        Task { @MainActor in
+            let url = fileTransfer.file.fileURL
+            let recordingID = fileTransfer.file.metadata?[WatchConnectivityKeys.recordingID] as? String ?? "unknown"
+            outgoingTransferURLs.remove(url)
+            if let error {
+                WatchRelayLog.error("transferFile failed recordingId=\(recordingID): \(error.localizedDescription)")
+            } else {
+                WatchRelayLog.info("transferFile completed recordingId=\(recordingID)")
+                try? FileManager.default.removeItem(at: url)
+            }
         }
     }
 }

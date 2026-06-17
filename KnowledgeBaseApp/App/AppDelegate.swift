@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     func applicationDidBecomeActive(_ application: UIApplication) {
         #if canImport(WatchConnectivity)
         WatchVoiceSessionContextSync.shared.activateIfNeeded()
+        WatchVoiceSessionContextSync.shared.publish(DefaultVoiceSessionStore.shared.load())
         #endif
     }
 }

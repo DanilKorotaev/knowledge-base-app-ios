@@ -91,7 +91,7 @@ final class WatchVoiceViewModel {
                     recordingID: recordingID,
                     sessionID: sessionID
                 )
-                try? FileManager.default.removeItem(at: url)
+                // File deleted in WatchConnectivityCoordinator after transferFile completes.
                 if connectivity.isPhoneReachable {
                     statusMessage = "Queued — iPhone will process shortly"
                 } else {
