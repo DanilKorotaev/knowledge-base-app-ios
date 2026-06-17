@@ -31,6 +31,9 @@ extension UserDefaultsKey {
     // Voice routing
     static let defaultVoiceSession = UserDefaultsKey("kb.voice.default_session")
 
+    // Session list
+    static let pinnedSessionIds = UserDefaultsKey("kb.sessions.pinned_ids")
+
     // Logger settings
     static let loggerDebugConsole = UserDefaultsKey("kb.logger.isDebugLogger")
     static let loggerFileEnabled = UserDefaultsKey("kb.logger.isFileLoggerEnabled")

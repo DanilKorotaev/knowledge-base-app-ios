@@ -26,6 +26,7 @@ struct MainView: View {
     @State private var selectedVoiceDefaultTTL: DefaultVoiceSessionTTL = .oneHour
     @State private var sessionActionError: String?
     @State private var navigationPath = NavigationPath()
+    @State private var pinnedStore = PinnedSessionsStore.shared
     @Environment(\.scenePhase) private var scenePhase
 
     init(
@@ -291,6 +292,12 @@ struct MainView: View {
                 HStack(spacing: 6) {
                     Text(session.title)
                         .font(.headline)
+                    if pinnedStore.isPinned(session.id) {
+                        Image(systemName: "pin.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("Pinned")
+                    }
                     if voiceRouting.isDefaultVoiceSession(session.id) {
                         Image(systemName: "mic.fill")
                             .font(.caption)
@@ -321,6 +328,21 @@ struct MainView: View {
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if pinnedStore.isPinned(session.id) {
+                Button {
+                    unpinSession(session)
+                } label: {
+                    Label("Unpin", systemImage: "pin.slash")
+                }
+                .tint(.orange)
+            } else {
+                Button {
+                    pinSession(session)
+                } label: {
+                    Label("Pin", systemImage: "pin")
+                }
+                .tint(.indigo)
+            }
             Button(role: .destructive) {
                 sessionPendingDelete = session
             } label: {
@@ -328,6 +350,19 @@ struct MainView: View {
             }
         }
         .contextMenu {
+            if pinnedStore.isPinned(session.id) {
+                Button {
+                    unpinSession(session)
+                } label: {
+                    Label("Unpin", systemImage: "pin.slash")
+                }
+            } else {
+                Button {
+                    pinSession(session)
+                } label: {
+                    Label("Pin", systemImage: "pin")
+                }
+            }
             if voiceRouting.isDefaultVoiceSession(session.id) {
                 Button {
                     voiceRouting.clearDefaultVoiceSession()
@@ -391,11 +426,33 @@ struct MainView: View {
             }
         }
         do {
-            sessions = try await apiClient.fetchSessions()
+            let fetched = try await apiClient.fetchSessions()
+            pinnedStore.prune(validSessionIds: Set(fetched.map(\.id)))
+            sessions = applyPinnedOrder(to: fetched)
             voiceRouting.refreshExpiryIfNeeded()
         } catch {
             loadError = error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func applyPinnedOrder(to fetched: [KBSession]) -> [KBSession] {
+        SessionListSorter.displayOrder(
+            sessions: fetched,
+            pinnedIds: pinnedStore.loadOrderedIds()
+        )
+    }
+
+    @MainActor
+    private func pinSession(_ session: KBSession) {
+        pinnedStore.pin(sessionId: session.id)
+        sessions = applyPinnedOrder(to: sessions)
+    }
+
+    @MainActor
+    private func unpinSession(_ session: KBSession) {
+        pinnedStore.unpin(sessionId: session.id)
+        sessions = applyPinnedOrder(to: sessions)
     }
 
     @MainActor
@@ -461,6 +518,7 @@ struct MainView: View {
         sessionPendingDelete = nil
 
         voiceRouting.handleDeletedSession(session.id)
+        pinnedStore.remove(sessionId: session.id)
 
         let previousSessions = sessions
         let previousSearch = searchResults

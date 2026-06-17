@@ -28,6 +28,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repoâ
 | `task-ux-chat-streaming-feedback.md` | Processing spinner, typing dots, stream â†’ final message |
 | `task-ux-chat-composer-telegram.md` | Telegram-style composer, compose API, draft attachments |
 | `task-feature-default-voice-session.md` | Default voice target session + optional TTL |
+| `task-feature-pinned-sessions.md` | Pin sessions to top of list (local UserDefaults) |
 
 ## Pending (`pending/`)
 

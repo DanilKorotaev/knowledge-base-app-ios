@@ -20,6 +20,7 @@ enum UserDefaultsValueType: String, CaseIterable, Identifiable {
 enum UserDefaultsKeyCategory: String, CaseIterable, Identifiable {
     case config = "Config"
     case voice = "Voice"
+    case sessions = "Sessions"
     case logs = "Logs"
     case loggerTags = "Logger Tags"
     case inspector = "Inspector"
@@ -56,6 +57,12 @@ enum UserDefaultsKeyRegistry {
             key: .defaultVoiceSession,
             description: "Default voice target session + optional TTL (JSON)",
             category: .voice,
+            valueType: .data
+        ),
+        .init(
+            key: .pinnedSessionIds,
+            description: "Pinned session ids for list ordering (JSON array)",
+            category: .sessions,
             valueType: .data
         ),
         .init(
