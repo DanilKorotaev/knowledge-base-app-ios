@@ -3,6 +3,7 @@ import Foundation
 protocol FilesAPIClientProtocol: Sendable {
     func fetchChangedFiles() async throws -> [KBChangedFile]
     func revertFile(id: String) async throws
+    func createShareLink(fileId: String) async throws -> URL
 }
 
 enum FilesAPIError: Error, Equatable {
@@ -39,5 +40,13 @@ final class StubFilesAPIClient: FilesAPIClientProtocol, @unchecked Sendable {
 
     func revertFile(id: String) async throws {
         items.removeAll { $0.id == id }
+    }
+
+    func createShareLink(fileId: String) async throws -> URL {
+        let base = "https://nextcloud.example.com/s/"
+        guard let url = URL(string: "\(base)\(fileId)") else {
+            throw FilesAPIError.decodingFailed
+        }
+        return url
     }
 }
