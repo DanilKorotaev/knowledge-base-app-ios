@@ -119,19 +119,29 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
             voiceContext = WatchVoiceContext(applicationContext: applicationContext)
             let status = voiceContext.relayStatus?.rawValue ?? "nil"
             WatchRelayLog.info("Received application context relayStatus=\(status) sessionId=\(voiceContext.sessionID ?? "nil")")
+            if voiceContext.relayStatus == .success || voiceContext.relayStatus == .error {
+                purgeTransferredAudioFiles()
+            }
         }
+    }
+
+    private func purgeTransferredAudioFiles() {
+        for url in outgoingTransferURLs {
+            try? FileManager.default.removeItem(at: url)
+        }
+        outgoingTransferURLs.removeAll()
     }
 
     nonisolated func session(_ session: WCSession, didFinish fileTransfer: WCSessionFileTransfer, error: Error?) {
         Task { @MainActor in
             let url = fileTransfer.file.fileURL
             let recordingID = fileTransfer.file.metadata?[WatchConnectivityKeys.recordingID] as? String ?? "unknown"
-            outgoingTransferURLs.remove(url)
             if let error {
+                outgoingTransferURLs.remove(url)
+                try? FileManager.default.removeItem(at: url)
                 WatchRelayLog.error("transferFile failed recordingId=\(recordingID): \(error.localizedDescription)")
             } else {
-                WatchRelayLog.info("transferFile completed recordingId=\(recordingID)")
-                try? FileManager.default.removeItem(at: url)
+                WatchRelayLog.info("transferFile completed recordingId=\(recordingID) — keeping file until relay ack")
             }
         }
     }

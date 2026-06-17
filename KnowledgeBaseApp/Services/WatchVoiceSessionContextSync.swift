@@ -9,7 +9,13 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
 
     private var pendingPreference: DefaultVoiceSessionPreference?
     private var isProcessingRelay = false
-    private var pendingVoiceFiles: [WCSessionFile] = []
+    private var pendingVoiceRelays: [PendingVoiceRelay] = []
+
+    private struct PendingVoiceRelay {
+        let localAudioURL: URL
+        let metadata: [String: Any]
+        let recordingID: String
+    }
 
     private override init() {
         super.init()
@@ -61,9 +67,31 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
     }
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        WatchRelayLogger.info("Received voice file from Watch metadata=\(String(describing: file.metadata))")
+        let metadata = file.metadata ?? [:]
+        WatchRelayLogger.info("Received voice file from Watch metadata=\(String(describing: metadata)) path=\(file.fileURL.lastPathComponent)")
+
+        let type = metadata[WatchConnectivityKeys.messageType] as? String
+        guard type == WatchConnectivityKeys.voiceQuery else {
+            WatchRelayLogger.info("Ignored non-voice file type=\(type ?? "nil")")
+            try? FileManager.default.removeItem(at: file.fileURL)
+            return
+        }
+
+        let recordingID = metadata[WatchConnectivityKeys.recordingID] as? String ?? "unknown"
+        // WCSession inbox URLs are short-lived — copy on this callback thread before any async work.
+        guard let localAudioURL = Self.copyIncomingAudio(from: file.fileURL, recordingID: recordingID) else {
+            WatchRelayLogger.error("Failed to copy incoming audio for recordingId=\(recordingID)")
+            try? FileManager.default.removeItem(at: file.fileURL)
+            Task { @MainActor in
+                publishRelayStatus(.error, preview: nil, error: "Could not read audio from Watch.", session: session)
+            }
+            return
+        }
+        try? FileManager.default.removeItem(at: file.fileURL)
+
+        let relay = PendingVoiceRelay(localAudioURL: localAudioURL, metadata: metadata, recordingID: recordingID)
         Task { @MainActor in
-            await enqueueIncomingVoiceFile(file, session: session)
+            await enqueueIncomingVoiceRelay(relay, session: session)
         }
     }
 
@@ -131,8 +159,8 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
     // MARK: - Relay
 
     @MainActor
-    private func enqueueIncomingVoiceFile(_ file: WCSessionFile, session: WCSession) async {
-        pendingVoiceFiles.append(file)
+    private func enqueueIncomingVoiceRelay(_ relay: PendingVoiceRelay, session: WCSession) async {
+        pendingVoiceRelays.append(relay)
         await drainRelayQueue(session: session)
     }
 
@@ -142,25 +170,18 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
         isProcessingRelay = true
         defer { isProcessingRelay = false }
 
-        while !pendingVoiceFiles.isEmpty {
-            let file = pendingVoiceFiles.removeFirst()
-            await processIncomingVoiceFile(file, session: session)
+        while !pendingVoiceRelays.isEmpty {
+            let relay = pendingVoiceRelays.removeFirst()
+            await processIncomingVoiceRelay(relay, session: session)
         }
     }
 
     @MainActor
-    private func processIncomingVoiceFile(_ file: WCSessionFile, session: WCSession) async {
-        let metadata = file.metadata ?? [:]
-        let type = metadata[WatchConnectivityKeys.messageType] as? String
-        guard type == WatchConnectivityKeys.voiceQuery else {
-            WatchRelayLogger.info("Ignored non-voice file type=\(type ?? "nil")")
-            try? FileManager.default.removeItem(at: file.fileURL)
-            return
-        }
-
-        let recordingID = metadata[WatchConnectivityKeys.recordingID] as? String ?? "unknown"
-        let hintedSessionID = metadata[WatchConnectivityKeys.defaultSessionID] as? String
-        WatchRelayLogger.info("Processing relay recordingId=\(recordingID) hintedSession=\(hintedSessionID ?? "nil")")
+    private func processIncomingVoiceRelay(_ relay: PendingVoiceRelay, session: WCSession) async {
+        let recordingID = relay.recordingID
+        let hintedSessionID = relay.metadata[WatchConnectivityKeys.defaultSessionID] as? String
+        let localAudioURL = relay.localAudioURL
+        WatchRelayLogger.info("Processing relay recordingId=\(recordingID) hintedSession=\(hintedSessionID ?? "nil") path=\(localAudioURL.lastPathComponent)")
 
         publishRelayStatus(.processing, preview: nil, error: nil, session: session)
 
@@ -173,7 +194,7 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
         }
 
         defer {
-            try? FileManager.default.removeItem(at: file.fileURL)
+            try? FileManager.default.removeItem(at: localAudioURL)
             if backgroundTaskID != .invalid {
                 UIApplication.shared.endBackgroundTask(backgroundTaskID)
             }
@@ -187,7 +208,7 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
 
         do {
             let preview = try await WatchVoiceRelayProcessor.process(
-                audioURL: file.fileURL,
+                audioURL: localAudioURL,
                 hintedSessionID: hintedSessionID,
                 chatClient: client,
                 sessionProvider: {
@@ -234,6 +255,33 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
 
     private func makeChatClient() -> ChatAPIClientProtocol? {
         URLSessionKnowledgeBaseAPIClient()
+    }
+
+    private static func copyIncomingAudio(from source: URL, recordingID: String) -> URL? {
+        let sourceExists = FileManager.default.fileExists(atPath: source.path)
+        let sourceBytes = sourceExists
+            ? (try? FileManager.default.attributesOfItem(atPath: source.path)[.size] as? NSNumber)?.intValue ?? 0
+            : 0
+        guard sourceExists, sourceBytes > 0 else {
+            WatchRelayLogger.error(
+                "copyIncomingAudio source missing recordingId=\(recordingID) path=\(source.lastPathComponent) exists=\(sourceExists) bytes=\(sourceBytes)"
+            )
+            return nil
+        }
+        let inbox = FileManager.default.temporaryDirectory
+            .appendingPathComponent("watch-relay-inbox", isDirectory: true)
+        try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
+        let destination = inbox.appendingPathComponent("\(recordingID).m4a")
+        try? FileManager.default.removeItem(at: destination)
+        do {
+            try FileManager.default.copyItem(at: source, to: destination)
+            let bytes = (try? FileManager.default.attributesOfItem(atPath: destination.path)[.size] as? NSNumber)?.intValue ?? 0
+            WatchRelayLogger.info("Copied relay audio recordingId=\(recordingID) bytes=\(bytes)")
+            return destination
+        } catch {
+            WatchRelayLogger.error("copyIncomingAudio failed recordingId=\(recordingID): \(error.localizedDescription)")
+            return nil
+        }
     }
 }
 #else
