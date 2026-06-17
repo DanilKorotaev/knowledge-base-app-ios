@@ -171,6 +171,126 @@ final class KBMessageTests: XCTestCase {
         )
         XCTAssertEqual(message.bubbleTextContent, "Line one\nLine two")
     }
+
+    func testComposedVoiceTranscription_joinsMultipleVoices() {
+        let message = KBMessage(
+            id: "mv",
+            role: .user,
+            content: "Two clips",
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "v1",
+                    fileType: "voice",
+                    fileName: "a.m4a",
+                    fileSize: 10,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/a",
+                    transcription: "First"
+                ),
+                KBAttachment(
+                    id: "v2",
+                    fileType: "voice",
+                    fileName: "b.m4a",
+                    fileSize: 10,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/b",
+                    transcription: "Second"
+                )
+            ]
+        )
+
+        XCTAssertEqual(message.composedVoiceTranscription, "First\n\nSecond")
+        XCTAssertTrue(message.isCompositeAttachmentMessage)
+    }
+
+    func testContentDuplicateTranscription_prefixOverlap() {
+        let longer = String(repeating: "x", count: 100)
+        let shorter = String(repeating: "x", count: 86)
+        let message = KBMessage(
+            id: "prefix",
+            role: .user,
+            content: shorter,
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "v",
+                    fileType: "voice",
+                    fileName: "v.m4a",
+                    fileSize: 1,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/v",
+                    transcription: longer
+                )
+            ],
+            transcription: longer
+        )
+
+        XCTAssertTrue(message.contentDuplicatesVoiceTranscription)
+    }
+
+    func testVoiceOnly_voiceNoteMarker() {
+        let message = KBMessage(
+            id: "vn",
+            role: .user,
+            content: "voice note",
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "v",
+                    fileType: "voice",
+                    fileName: "v.m4a",
+                    fileSize: 1,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/v",
+                    transcription: "spoken"
+                )
+            ]
+        )
+
+        XCTAssertTrue(message.isVoiceOnly)
+    }
+
+    func testResolvedContentFormat_defaultsByRole() {
+        let assistant = KBMessage(id: "a", role: .assistant, content: "hi", createdAt: nil)
+        let user = KBMessage(id: "u", role: .user, content: "hi", createdAt: nil)
+
+        XCTAssertEqual(assistant.resolvedContentFormat, .markdown)
+        XCTAssertEqual(user.resolvedContentFormat, .plain)
+    }
+
+    func testImageAndVoiceAttachmentFilters() {
+        let message = KBMessage(
+            id: "mix",
+            role: .user,
+            content: "caption",
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "p",
+                    fileType: "photo",
+                    fileName: "p.jpg",
+                    fileSize: 1,
+                    mimeType: "image/jpeg",
+                    downloadURL: "/p",
+                    transcription: nil
+                ),
+                KBAttachment(
+                    id: "v",
+                    fileType: "voice",
+                    fileName: "v.m4a",
+                    fileSize: 1,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/v",
+                    transcription: "voice text"
+                )
+            ]
+        )
+
+        XCTAssertEqual(message.imageAttachments.count, 1)
+        XCTAssertEqual(message.voiceAttachments.count, 1)
+        XCTAssertEqual(message.effectiveTranscription, "voice text")
+    }
 }
 
 final class MessageContentRendererTests: XCTestCase {

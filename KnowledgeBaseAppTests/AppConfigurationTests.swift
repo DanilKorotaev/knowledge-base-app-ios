@@ -16,4 +16,8 @@ final class AppConfigurationTests: XCTestCase {
 
         XCTAssertNil(AppConfiguration.string(for: key))
     }
+
+    func testURLForKey_returnsNilWhenUnset() {
+        XCTAssertNil(AppConfiguration.url(for: "UNKNOWN_KEY_\(UUID().uuidString)"))
+    }
 }

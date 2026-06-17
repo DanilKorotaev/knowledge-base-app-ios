@@ -79,7 +79,7 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
 
         let recordingID = metadata[WatchConnectivityKeys.recordingID] as? String ?? "unknown"
         // WCSession inbox URLs are short-lived — copy on this callback thread before any async work.
-        guard let localAudioURL = Self.copyIncomingAudio(from: file.fileURL, recordingID: recordingID) else {
+        guard let localAudioURL = WatchRelayAudioInbox.copyIncomingAudio(from: file.fileURL, recordingID: recordingID) else {
             WatchRelayLogger.error("Failed to copy incoming audio for recordingId=\(recordingID)")
             try? FileManager.default.removeItem(at: file.fileURL)
             Task { @MainActor in
@@ -255,33 +255,6 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
 
     private func makeChatClient() -> ChatAPIClientProtocol? {
         URLSessionKnowledgeBaseAPIClient()
-    }
-
-    private static func copyIncomingAudio(from source: URL, recordingID: String) -> URL? {
-        let sourceExists = FileManager.default.fileExists(atPath: source.path)
-        let sourceBytes = sourceExists
-            ? (try? FileManager.default.attributesOfItem(atPath: source.path)[.size] as? NSNumber)?.intValue ?? 0
-            : 0
-        guard sourceExists, sourceBytes > 0 else {
-            WatchRelayLogger.error(
-                "copyIncomingAudio source missing recordingId=\(recordingID) path=\(source.lastPathComponent) exists=\(sourceExists) bytes=\(sourceBytes)"
-            )
-            return nil
-        }
-        let inbox = FileManager.default.temporaryDirectory
-            .appendingPathComponent("watch-relay-inbox", isDirectory: true)
-        try? FileManager.default.createDirectory(at: inbox, withIntermediateDirectories: true)
-        let destination = inbox.appendingPathComponent("\(recordingID).m4a")
-        try? FileManager.default.removeItem(at: destination)
-        do {
-            try FileManager.default.copyItem(at: source, to: destination)
-            let bytes = (try? FileManager.default.attributesOfItem(atPath: destination.path)[.size] as? NSNumber)?.intValue ?? 0
-            WatchRelayLogger.info("Copied relay audio recordingId=\(recordingID) bytes=\(bytes)")
-            return destination
-        } catch {
-            WatchRelayLogger.error("copyIncomingAudio failed recordingId=\(recordingID): \(error.localizedDescription)")
-            return nil
-        }
     }
 }
 #else

@@ -34,4 +34,33 @@ final class WatchVoiceContextTests: XCTestCase {
         ])
         XCTAssertEqual(parsed.lastResponsePreview, "Done.")
     }
+
+    func testStripsAnsiEscapeFromError() {
+        let parsed = WatchVoiceContext(applicationContext: [
+            WatchConnectivityKeys.lastResponseError: "Failed[?25h"
+        ])
+        XCTAssertEqual(parsed.lastResponseError, "Failed")
+    }
+
+    func testRelayStatusParsing() {
+        let parsed = WatchVoiceContext(applicationContext: [
+            WatchConnectivityKeys.relayStatus: WatchRelayStatus.processing.rawValue
+        ])
+        XCTAssertEqual(parsed.relayStatus, .processing)
+    }
+
+    func testDisplaySessionTitleAndExpiry() {
+        let fresh = WatchVoiceContext(applicationContext: [
+            WatchConnectivityKeys.defaultSessionTitle: "Session 125",
+            WatchConnectivityKeys.expiresAt: Date().addingTimeInterval(3600).timeIntervalSince1970
+        ])
+        XCTAssertEqual(fresh.displaySessionTitle, "Session 125")
+        XCTAssertFalse(fresh.isDefaultExpired)
+
+        let expired = WatchVoiceContext(applicationContext: [
+            WatchConnectivityKeys.expiresAt: Date().addingTimeInterval(-10).timeIntervalSince1970
+        ])
+        XCTAssertEqual(expired.displaySessionTitle, "No voice default")
+        XCTAssertTrue(expired.isDefaultExpired)
+    }
 }
