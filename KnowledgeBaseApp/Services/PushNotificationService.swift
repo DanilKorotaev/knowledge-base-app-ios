@@ -136,7 +136,7 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
         return nil
     }
 
-    static func parseSessionId(from url: URL) -> String? {
+    nonisolated static func parseSessionId(from url: URL) -> String? {
         guard url.scheme == "knowledgebase", url.host == "session" else { return nil }
         let id = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
         return id.isEmpty ? nil : id
