@@ -26,6 +26,7 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 fastlane/build_logs
+**/fastlane_test.log
 
 # Ruby / Bundler
 vendor/bundle/
