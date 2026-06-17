@@ -4,6 +4,7 @@ import UIKit
 struct RichMessageBubbleView: View {
     let message: KBMessage
     var attachmentLoader: KBAttachmentLoaderProtocol?
+    var assistantResponseTime: TimeInterval?
 
     @State private var fullscreenImage: IdentifiableImage?
 
@@ -13,10 +14,13 @@ struct RichMessageBubbleView: View {
                 Spacer(minLength: 16)
             }
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
-                bubbleContent
-                    .frame(maxWidth: Self.maxBubbleWidth, alignment: message.role == .user ? .trailing : .leading)
-                if let createdAt = message.createdAt {
-                    Text(createdAt, format: .dateTime.day().month(.abbreviated).hour().minute())
+                messageContent
+                    .frame(
+                        maxWidth: message.role == .assistant ? .infinity : Self.maxBubbleWidth,
+                        alignment: message.role == .user ? .trailing : .leading
+                    )
+                if let metadataText {
+                    Text(metadataText)
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                 }
@@ -33,7 +37,7 @@ struct RichMessageBubbleView: View {
         }
     }
 
-    private var bubbleContent: some View {
+    private var messageContent: some View {
         VStack(alignment: .leading, spacing: 10) {
             if !message.imageAttachments.isEmpty {
                 AttachmentImageGrid(
@@ -58,13 +62,9 @@ struct RichMessageBubbleView: View {
                 MessageContentView(message: message, contentOverride: text)
             }
         }
-        .padding(12)
-        .background(
-            message.role == .user
-                ? Color.accentColor.opacity(0.22)
-                : Color.secondary.opacity(0.14)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .padding(message.role == .user ? 12 : 0)
+        .background(message.role == .user ? Color.accentColor.opacity(0.22) : Color.clear)
+        .clipShape(message.role == .user ? AnyShape(RoundedRectangle(cornerRadius: 18, style: .continuous)) : AnyShape(Rectangle()))
     }
 
     private static var maxBubbleWidth: CGFloat {
@@ -73,9 +73,46 @@ struct RichMessageBubbleView: View {
             .first?.screen.bounds.width ?? 390
         return min(560, screenWidth * 0.90)
     }
+
+    private var metadataText: String? {
+        guard let createdAt = message.createdAt else { return nil }
+        var value = createdAt.formatted(date: .abbreviated, time: .shortened)
+        if message.role == .assistant,
+           let assistantResponseTime,
+           assistantResponseTime.isFinite,
+           assistantResponseTime >= 0 {
+            value += " · \(Self.formatAssistantResponseTime(assistantResponseTime))"
+        }
+        return value
+    }
+
+    private static func formatAssistantResponseTime(_ seconds: TimeInterval) -> String {
+        if seconds < 60 {
+            return String(format: "%.1fs", seconds)
+        }
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = [.minute, .second]
+        formatter.zeroFormattingBehavior = [.dropLeading]
+        return formatter.string(from: seconds) ?? String(format: "%.1fs", seconds)
+    }
 }
 
 private struct IdentifiableImage: Identifiable {
     let id = UUID()
     let image: UIImage
+}
+
+private struct AnyShape: Shape {
+    private let pathBuilder: (CGRect) -> Path
+
+    init<S: Shape>(_ shape: S) {
+        pathBuilder = { rect in
+            shape.path(in: rect)
+        }
+    }
+
+    func path(in rect: CGRect) -> Path {
+        pathBuilder(rect)
+    }
 }

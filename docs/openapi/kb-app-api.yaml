@@ -435,6 +435,33 @@ paths:
                   ok: { type: boolean, example: true }
                   change_id: { type: string }
                   path: { type: string }
+  /api/files/share-link:
+    post:
+      summary: Create a Nextcloud link to current file version
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file_id]
+              properties:
+                file_id:
+                  type: string
+                  description: Id from GET /api/files/changes (`items[].id`)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url, path, change_id]
+                properties:
+                  url: { type: string }
+                  path: { type: string }
+                  change_id: { type: string }
 components:
   securitySchemes:
     bearerAuth:

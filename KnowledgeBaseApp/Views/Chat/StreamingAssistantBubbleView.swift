@@ -22,14 +22,10 @@ struct StreamingAssistantBubbleView: View {
                     .font(.body)
                     .foregroundStyle(.primary)
                     .textSelection(.enabled)
-                    .frame(maxWidth: Self.maxBubbleWidth, alignment: .leading)
-                    .padding(12)
-                    .background(Color.secondary.opacity(0.14))
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 if showsTypingIndicator || isCatchingUp {
                     TypingIndicatorView()
-                        .padding(.leading, 8)
                 }
             }
             Spacer(minLength: 16)
@@ -45,12 +41,5 @@ struct StreamingAssistantBubbleView: View {
         revealState.onGrowth = onRevealedGrowth
         revealState.onComplete = onRevealComplete
         revealState.updateTarget(text, finishing: isFinishing)
-    }
-
-    private static var maxBubbleWidth: CGFloat {
-        let screenWidth = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.screen.bounds.width ?? 390
-        return min(560, screenWidth * 0.90)
     }
 }

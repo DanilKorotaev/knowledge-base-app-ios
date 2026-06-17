@@ -12,9 +12,6 @@ struct AssistantPendingBubbleView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                .padding(12)
-                .background(Color.secondary.opacity(0.14))
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             }
             Spacer(minLength: 16)
         }
