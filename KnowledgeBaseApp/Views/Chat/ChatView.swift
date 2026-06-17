@@ -173,6 +173,14 @@ struct ChatView: View {
             guard newPhase == .active else { return }
             Task { await viewModel.resumeAwaitingReplyIfNeeded() }
         }
+        .onAppear {
+            ChatSessionFocusTracker.shared.setFocusedSessionId(viewModel.session.id)
+        }
+        .onDisappear {
+            if ChatSessionFocusTracker.shared.focusedSessionId == viewModel.session.id {
+                ChatSessionFocusTracker.shared.setFocusedSessionId(nil)
+            }
+        }
         .alert("Chat", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.clearError() } }

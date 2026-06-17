@@ -1,4 +1,5 @@
 import UIKit
+import UserNotifications
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     func application(
@@ -13,5 +14,34 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         WatchVoiceSessionContextSync.shared.activateIfNeeded()
         WatchVoiceSessionContextSync.shared.publish(DefaultVoiceSessionStore.shared.load())
         #endif
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        Task { @MainActor in
+            PushNotificationService.shared.configure()
+            PushNotificationService.shared.requestAuthorizationAndRegister()
+        }
+        return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    ) {
+        Task { @MainActor in
+            PushNotificationService.shared.didRegister(deviceToken: deviceToken)
+        }
+    }
+
+    func application(
+        _ application: UIApplication,
+        didFailToRegisterForRemoteNotificationsWithError error: Error
+    ) {
+        Task { @MainActor in
+            PushNotificationService.shared.didFailToRegister(error: error)
+        }
     }
 }

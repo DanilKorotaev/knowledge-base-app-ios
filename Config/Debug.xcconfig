@@ -2,3 +2,4 @@
 #include? "Secrets.xcconfig"
 
 GCC_PREPROCESSOR_DEFINITIONS = $(inherited) DEBUG=1
+APS_ENVIRONMENT = development

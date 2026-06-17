@@ -4,6 +4,7 @@ import SwiftUI
 struct KnowledgeBaseApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var deepLinkVoiceRecording = false
+    @State private var deepLinkSessionId: String?
 
     init() {
         UserDefaultsService.shared = UserDefaultsService(settings: UserDefaultsInspectorSettings.shared)
@@ -20,13 +21,26 @@ struct KnowledgeBaseApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainView(deepLinkVoiceRecording: $deepLinkVoiceRecording)
-                .onOpenURL { url in
-                    guard url.scheme == "knowledgebase" else { return }
-                    if url.host == "record" {
-                        deepLinkVoiceRecording = true
-                    }
+            MainView(
+                deepLinkVoiceRecording: $deepLinkVoiceRecording,
+                deepLinkSessionId: $deepLinkSessionId
+            )
+            .onOpenURL { url in
+                guard url.scheme == "knowledgebase" else { return }
+                if url.host == "record" {
+                    deepLinkVoiceRecording = true
+                } else if let sessionId = PushNotificationService.parseSessionId(from: url) {
+                    deepLinkSessionId = sessionId
                 }
+            }
+            .task {
+                PushNotificationService.shared.onOpenSession = { sessionId in
+                    deepLinkSessionId = sessionId
+                }
+                if let pending = PushNotificationService.shared.consumePendingSessionId() {
+                    deepLinkSessionId = pending
+                }
+            }
         }
     }
 }

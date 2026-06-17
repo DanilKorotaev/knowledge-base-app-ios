@@ -42,6 +42,10 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Knowledge Base
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         TARGETED_DEVICE_FAMILY: "1"
+    entitlements:
+      path: KnowledgeBaseApp/KnowledgeBaseApp.entitlements
+      properties:
+        aps-environment: $(APS_ENVIRONMENT)
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
@@ -49,6 +53,10 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
         NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.coredan.KnowledgeBaseApp
+            CFBundleURLSchemes:
+              - knowledgebase
         KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
         KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
         UISupportedInterfaceOrientations:

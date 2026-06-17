@@ -6,6 +6,7 @@ struct MainView: View {
     private let filesClient: FilesAPIClientProtocol
     private let attachmentLoader: KBAttachmentLoaderProtocol?
     @Binding var deepLinkVoiceRecording: Bool
+    @Binding var deepLinkSessionId: String?
     @State private var sessions: [KBSession] = []
     @State private var searchResults: [KBSession]?
     @State private var searchText = ""
@@ -34,13 +35,15 @@ struct MainView: View {
         chatClient: ChatAPIClientProtocol = MainView.makeChatClient(),
         filesClient: FilesAPIClientProtocol = MainView.makeFilesClient(),
         attachmentLoader: KBAttachmentLoaderProtocol? = nil,
-        deepLinkVoiceRecording: Binding<Bool> = .constant(false)
+        deepLinkVoiceRecording: Binding<Bool> = .constant(false),
+        deepLinkSessionId: Binding<String?> = .constant(nil)
     ) {
         self.apiClient = apiClient
         self.chatClient = chatClient
         self.filesClient = filesClient
         self.attachmentLoader = attachmentLoader ?? MainView.makeAttachmentLoader()
         self._deepLinkVoiceRecording = deepLinkVoiceRecording
+        self._deepLinkSessionId = deepLinkSessionId
         _voiceViewModel = State(initialValue: VoiceRecordingViewModel(chatClient: chatClient))
     }
 
@@ -172,6 +175,15 @@ struct MainView: View {
                     try? await Task.sleep(for: .seconds(12))
                     await MainActor.run {
                         deepLinkVoiceRecording = false
+                    }
+                }
+            }
+            .onChange(of: deepLinkSessionId) { _, newValue in
+                guard let sessionId = newValue else { return }
+                Task {
+                    await openSessionFromDeepLink(sessionId: sessionId)
+                    await MainActor.run {
+                        deepLinkSessionId = nil
                     }
                 }
             }
@@ -468,6 +480,22 @@ struct MainView: View {
     }
 
     @MainActor
+    private func openSessionFromDeepLink(sessionId: String) async {
+        if let existing = sessions.first(where: { $0.id == sessionId }) {
+            navigationPath.append(existing)
+            return
+        }
+        await loadSessions(showFullScreenLoading: false)
+        if let found = sessions.first(where: { $0.id == sessionId }) {
+            navigationPath.append(found)
+            return
+        }
+        if let found = searchResults?.first(where: { $0.id == sessionId }) {
+            navigationPath.append(found)
+        }
+    }
+
+    @MainActor
     private func routeMainScreenVoiceToDefaultChat(audioURL: URL) -> Bool {
         guard let session = voiceRouting.mainScreenVoiceChatSession(in: sessions) else {
             return false
@@ -604,6 +632,7 @@ private struct MicBar: View {
         apiClient: StubKnowledgeBaseAPIClient(store: InMemoryKBStore()),
         chatClient: StubChatAPIClient(store: InMemoryKBStore()),
         filesClient: StubFilesAPIClient(),
-        deepLinkVoiceRecording: .constant(false)
+        deepLinkVoiceRecording: .constant(false),
+        deepLinkSessionId: .constant(nil)
     )
 }

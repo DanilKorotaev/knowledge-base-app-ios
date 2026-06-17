@@ -7,6 +7,8 @@ protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func createSession(title: String) async throws -> KBSession
     func deleteSession(id: String) async throws
     func updateSession(id: String, title: String) async throws -> KBSession
+    func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws
+    func unregisterDevice(token: String) async throws
 }
 
 enum KnowledgeBaseAPIError: Error, Equatable {
@@ -54,6 +56,10 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
         }
         return session
     }
+
+    func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws {}
+
+    func unregisterDevice(token: String) async throws {}
 }
 
 /// Remote client via Alamofire (`KBHTTPTransport`): auth headers + request/response logging.
@@ -235,6 +241,41 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
             return session
         }
         throw KnowledgeBaseAPIError.decodingFailed
+    }
+
+    func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws {
+        let url = baseURL.appendingPathComponent("api").appendingPathComponent("devices")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        struct Body: Encodable {
+            let device_token: String
+            let platform: String
+            let apns_environment: String
+            let app_version: String?
+        }
+
+        request.httpBody = try JSONEncoder().encode(
+            Body(
+                device_token: token,
+                platform: "ios",
+                apns_environment: apnsEnvironment,
+                app_version: appVersion
+            )
+        )
+        _ = try await performData(request)
+    }
+
+    func unregisterDevice(token: String) async throws {
+        let encoded = token.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? token
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("devices")
+            .appendingPathComponent(encoded)
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        _ = try await performData(request)
     }
 }
 
@@ -993,6 +1034,29 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
         request.httpBody = try JSONEncoder().encode(Body(file_id: id))
 
         _ = try await performFilesData(request)
+    }
+
+    func createShareLink(fileId: String) async throws -> URL {
+        let url = baseURL.appendingPathComponent("api/files/share-link")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        struct Body: Encodable {
+            let file_id: String
+        }
+
+        struct ResponseBody: Decodable {
+            let url: String
+        }
+
+        request.httpBody = try JSONEncoder().encode(Body(file_id: fileId))
+        let data = try await performFilesData(request)
+        let decoded = try JSONDecoder().decode(ResponseBody.self, from: data)
+        guard let link = URL(string: decoded.url) else {
+            throw FilesAPIError.decodingFailed
+        }
+        return link
     }
 }
 
