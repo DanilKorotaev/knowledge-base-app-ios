@@ -30,3 +30,8 @@ Current `KnowledgeBaseAPIE2ETests` covers `GET /health`, session CRUD smoke, and
 ## Server-side reminders
 
 - **`ACCESS_MODE=restricted`**: API user (`KB_APP_API_TELEGRAM_ID`) must have `is_allowed=true`, or set **`KB_APP_API_BYPASS_ACCESS_CHECK=true`** only for debugging (see bot `config` and `kb_app_api/deps.py`).
+
+## Backend backlog (performance / architecture)
+
+- [task-api-background-query-jobs.md](../../../knowledge-base-bot/docs/tasks/pending/task-api-background-query-jobs.md) — вынести Cursor/sync в фоновые jobs (не зависеть от числа uvicorn workers).
+- [task-api-sessions-list-performance.md](../../../knowledge-base-bot/docs/tasks/pending/task-api-sessions-list-performance.md) — `message_count` без загрузки всех сообщений.
