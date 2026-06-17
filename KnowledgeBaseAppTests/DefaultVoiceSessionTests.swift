@@ -56,6 +56,37 @@ final class VoiceSessionTargetResolverTests: XCTestCase {
         )
         XCTAssertEqual(result, "alpha")
     }
+
+    func testSkipsActiveSessionWhenNotInList() {
+        let result = VoiceSessionTargetResolver.resolve(
+            activeSessionId: "missing",
+            defaultPreference: DefaultVoiceSessionPreference(
+                sessionId: "inbox",
+                sessionTitle: "Inbox",
+                expiresAt: nil,
+                previousSessionId: nil,
+                previousSessionTitle: nil
+            ),
+            orderedSessionIds: ["inbox", "other"]
+        )
+        XCTAssertEqual(result, "inbox")
+    }
+
+    func testSkipsExpiredDefaultWhenNoActiveChat() {
+        let result = VoiceSessionTargetResolver.resolve(
+            activeSessionId: nil,
+            defaultPreference: DefaultVoiceSessionPreference(
+                sessionId: "expired",
+                sessionTitle: "Expired",
+                expiresAt: Date().addingTimeInterval(-30),
+                previousSessionId: nil,
+                previousSessionTitle: nil
+            ),
+            orderedSessionIds: ["first", "second"],
+            now: Date()
+        )
+        XCTAssertEqual(result, "first")
+    }
 }
 
 final class DefaultVoiceSessionPreferenceTests: XCTestCase {

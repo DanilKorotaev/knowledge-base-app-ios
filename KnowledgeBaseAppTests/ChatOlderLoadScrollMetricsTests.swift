@@ -43,6 +43,27 @@ final class ChatOlderLoadScrollMetricsTests: XCTestCase {
         )
     }
 
+    func testIsNearOldestLoadedEdge_whenMaxOffsetBelowThreshold_returnsFalse() {
+        XCTAssertFalse(
+            ChatOlderLoadScrollMetrics.isNearOldestLoadedEdge(
+                contentOffsetY: 0,
+                contentInsetTop: 0,
+                contentHeight: 700,
+                containerHeight: 620
+            )
+        )
+    }
+
+    func testDebugSnapshot_marksNearAsNo() {
+        let snapshot = ChatOlderLoadScrollMetrics.debugSnapshot(
+            contentOffsetY: 500,
+            contentInsetTop: 0,
+            contentHeight: 2000,
+            containerHeight: 600
+        )
+        XCTAssertTrue(snapshot.contains("near=no"))
+    }
+
     func testDebugSnapshot_includesNearFlag() {
         let snapshot = ChatOlderLoadScrollMetrics.debugSnapshot(
             contentOffsetY: -50,

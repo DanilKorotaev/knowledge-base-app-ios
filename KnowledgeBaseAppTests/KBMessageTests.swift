@@ -379,8 +379,19 @@ final class MessageContentRendererTests: XCTestCase {
         if case .table(let header, let rows) = blocks[1] {
             XCTAssertEqual(header, ["A", "B"])
             XCTAssertEqual(rows, [["1", "2"]])
+            XCTAssertTrue(blocks[1].id.hasPrefix("tbl-"))
         } else {
             XCTFail("expected table block")
+        }
+    }
+
+    func testMarkdownBlockParser_textBlockIdPrefix() {
+        let blocks = MarkdownBlockParser.blocks(from: "Hello")
+        XCTAssertEqual(blocks.count, 1)
+        if case .text = blocks[0] {
+            XCTAssertTrue(blocks[0].id.hasPrefix("t-"))
+        } else {
+            XCTFail("expected text block")
         }
     }
 

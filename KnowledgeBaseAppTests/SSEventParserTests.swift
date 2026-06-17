@@ -38,4 +38,26 @@ final class SSEventParserTests: XCTestCase {
         XCTAssertEqual(buf.append("data: a\n"), [])
         XCTAssertEqual(buf.append("\ndata: b\n\n"), ["a", "b"])
     }
+
+    func testStreamBufferResetClearsPendingData() {
+        var buf = SSEventParser.StreamBuffer()
+        _ = buf.append("data: pending")
+        buf.reset()
+        XCTAssertEqual(buf.append("\n\n"), [])
+    }
+
+    func testDataPayloadFromSingleEventBlock() {
+        let payload = SSEventParser.dataPayload(fromSingleEventBlock: "data: single\n")
+        XCTAssertEqual(payload, "single")
+    }
+
+    func testNormalizesCRLFInBody() {
+        let sse = "data: hello\r\n\r\n"
+        XCTAssertEqual(SSEventParser.dataPayloads(fromCompleteBody: sse), ["hello"])
+    }
+
+    func testIgnoresNonDataLines() {
+        let sse = "event: message\ndata: ok\n\n"
+        XCTAssertEqual(SSEventParser.dataPayloads(fromCompleteBody: sse), ["ok"])
+    }
 }
