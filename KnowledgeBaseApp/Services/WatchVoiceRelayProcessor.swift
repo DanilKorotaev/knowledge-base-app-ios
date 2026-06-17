@@ -69,7 +69,8 @@ enum WatchVoiceRelayProcessor {
             userInfo: [KBNotificationUserInfoKey.sessionId: sessionID]
         )
 
-        return String(finalText.prefix(previewLimit))
+        let cleaned = TerminalSanitizer.stripEscapeSequences(finalText)
+        return String(cleaned.prefix(previewLimit))
     }
 }
 

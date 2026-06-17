@@ -45,8 +45,18 @@ struct WatchVoiceContext: Equatable, Sendable {
             expiresAt = nil
         }
 
-        lastResponsePreview = applicationContext[WatchConnectivityKeys.lastResponsePreview] as? String
-        lastResponseError = applicationContext[WatchConnectivityKeys.lastResponseError] as? String
+        if let rawPreview = applicationContext[WatchConnectivityKeys.lastResponsePreview] as? String {
+            let cleaned = TerminalSanitizer.stripEscapeSequences(rawPreview)
+            lastResponsePreview = cleaned.isEmpty ? nil : cleaned
+        } else {
+            lastResponsePreview = nil
+        }
+        if let rawError = applicationContext[WatchConnectivityKeys.lastResponseError] as? String {
+            let cleaned = TerminalSanitizer.stripEscapeSequences(rawError)
+            lastResponseError = cleaned.isEmpty ? nil : cleaned
+        } else {
+            lastResponseError = nil
+        }
 
         if let raw = applicationContext[WatchConnectivityKeys.relayStatus] as? String {
             relayStatus = WatchRelayStatus(rawValue: raw)

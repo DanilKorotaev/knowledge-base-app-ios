@@ -27,4 +27,11 @@ final class WatchVoiceContextTests: XCTestCase {
         XCTAssertNil(parsed.sessionID)
         XCTAssertNil(parsed.sessionTitle)
     }
+
+    func testStripsAnsiEscapeFromPreview() {
+        let parsed = WatchVoiceContext(applicationContext: [
+            WatchConnectivityKeys.lastResponsePreview: "Done.\n\u{1B}[?25h"
+        ])
+        XCTAssertEqual(parsed.lastResponsePreview, "Done.")
+    }
 }
