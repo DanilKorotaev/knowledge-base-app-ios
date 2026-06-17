@@ -268,6 +268,146 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.messages.count, countBefore)
         XCTAssertNotNil(viewModel.errorMessage)
     }
+
+    func testResumeAwaitingReplyIfNeeded_pollsUntilAssistantAppears() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let user = KBMessage(id: "user-1", role: .user, content: "hi", createdAt: Date())
+        store.replaceMessages([user], sessionId: sessionId)
+
+        let client = DelayedAssistantReplyChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        viewModel.messages = [user]
+
+        XCTAssertEqual(viewModel.messages.last?.role, .user)
+        let resumed = await viewModel.resumeAwaitingReplyIfNeeded()
+
+        XCTAssertTrue(resumed)
+        XCTAssertEqual(viewModel.messages.last?.role, .assistant)
+        XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+    }
+}
+
+/// Returns user-only history on the first fetch, then appends an assistant reply (simulates late server persistence).
+private final class DelayedAssistantReplyChatAPIClient: ChatAPIClientProtocol, @unchecked Sendable {
+    let store: InMemoryKBStore
+    private var fetchCount = 0
+    private let lock = NSLock()
+
+    init(store: InMemoryKBStore) {
+        self.store = store
+    }
+
+    func fetchMessagesPage(
+        sessionId: String,
+        limit: Int,
+        beforeMessageId: String?
+    ) async throws -> KBMessagesPage {
+        lock.lock()
+        fetchCount += 1
+        let count = fetchCount
+        lock.unlock()
+
+        if count >= 1 {
+            var list = store.messages(for: sessionId)
+            if list.last?.role == .user {
+                list.append(
+                    KBMessage(
+                        id: UUID().uuidString,
+                        role: .assistant,
+                        content: "Late assistant reply",
+                        createdAt: Date()
+                    )
+                )
+                store.replaceMessages(list, sessionId: sessionId)
+            }
+        }
+
+        return try await StubChatAPIClient(store: store).fetchMessagesPage(
+            sessionId: sessionId,
+            limit: limit,
+            beforeMessageId: beforeMessageId
+        )
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        try await StubChatAPIClient(store: store).sendTextMessage(
+            sessionId: sessionId,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func sendAttachment(
+        sessionId: String,
+        fileURL: URL,
+        filename: String,
+        mimeType: String,
+        useKnowledgeBase: Bool
+    ) async throws -> [KBMessage] {
+        try await StubChatAPIClient(store: store).sendAttachment(
+            sessionId: sessionId,
+            fileURL: fileURL,
+            filename: filename,
+            mimeType: mimeType,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL)
+    }
+
+    func sendVoiceRecording(
+        sessionId: String,
+        audioFileURL: URL,
+        transcriptionHint: String,
+        useKnowledgeBase: Bool
+    ) async throws -> VoiceRecordingSendResult {
+        try await StubChatAPIClient(store: store).sendVoiceRecording(
+            sessionId: sessionId,
+            audioFileURL: audioFileURL,
+            transcriptionHint: transcriptionHint,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func streamTextMessage(
+        sessionId: String,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        try await StubChatAPIClient(store: store).streamTextMessage(
+            sessionId: sessionId,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        try await StubChatAPIClient(store: store).streamVoiceMessage(
+            sessionId: sessionId,
+            audioFileURL: audioFileURL,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<String, Error> {
+        try await StubChatAPIClient(store: store).streamComposedMessage(
+            sessionId: sessionId,
+            draft: draft,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
 }
 
 /// Defers returning the SSE stream (simulates waiting for HTTP headers from prod API).

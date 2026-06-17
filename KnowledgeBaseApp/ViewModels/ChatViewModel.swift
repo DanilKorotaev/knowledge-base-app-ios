@@ -29,6 +29,7 @@ final class ChatViewModel {
     var assistantReplyPhase: AssistantReplyPhase = .idle
 
     private var streamRevealContinuation: CheckedContinuation<Void, Never>?
+    private var isPollingForReply = false
 
     private let client: ChatAPIClientProtocol
 
@@ -60,6 +61,7 @@ final class ChatViewModel {
                 beforeMessageId: nil
             )
             apply(page: page, requestedLimit: Self.pageSize, kind: "initial")
+            await resumeAwaitingReplyIfNeeded()
         } catch {
             errorMessage = error.localizedDescription
             ChatPaginationLogger.loadFailed("initial", error: error.localizedDescription)
@@ -302,6 +304,9 @@ final class ChatViewModel {
             assistantReplyPhase = .idle
         } catch {
             assistantReplyPhase = .idle
+            if await resumeAwaitingReplyIfNeeded() {
+                return
+            }
             errorMessage = error.localizedDescription
         }
     }
@@ -358,6 +363,9 @@ final class ChatViewModel {
             assistantReplyPhase = .idle
         } catch {
             assistantReplyPhase = .idle
+            if await resumeAwaitingReplyIfNeeded() {
+                return
+            }
             errorMessage = error.localizedDescription
         }
     }
@@ -402,6 +410,9 @@ final class ChatViewModel {
             assistantReplyPhase = .idle
         } catch {
             assistantReplyPhase = .idle
+            if await resumeAwaitingReplyIfNeeded() {
+                return
+            }
             errorMessage = error.localizedDescription
         }
     }
@@ -472,6 +483,54 @@ final class ChatViewModel {
             errorMessage = error.localizedDescription
             ChatPaginationLogger.loadFailed("reloadLatest", error: error.localizedDescription)
         }
+    }
+
+    /// After SSE drops (background / leave chat), poll until the server persists the assistant reply.
+    @discardableResult
+    func resumeAwaitingReplyIfNeeded() async -> Bool {
+        guard !isSending, !isPollingForReply else { return false }
+        guard looksAwaitingAssistantReply else { return false }
+
+        isPollingForReply = true
+        assistantReplyPhase = .waiting
+        defer { isPollingForReply = false }
+
+        await pollUntilAssistantReply()
+        return true
+    }
+
+    private var looksAwaitingAssistantReply: Bool {
+        messages.last?.role == .user
+    }
+
+    private func pollUntilAssistantReply() async {
+        let maxAttempts = 150
+        let intervalNanoseconds: UInt64 = 2_000_000_000
+
+        for attempt in 0..<maxAttempts {
+            if attempt > 0 {
+                try? await Task.sleep(nanoseconds: intervalNanoseconds)
+            }
+            if Task.isCancelled { break }
+
+            let limit = max(messages.count + 2, Self.pageSize)
+            do {
+                let page = try await client.fetchMessagesPage(
+                    sessionId: session.id,
+                    limit: limit,
+                    beforeMessageId: nil
+                )
+                apply(page: page, requestedLimit: limit, kind: "pollReply")
+                if messages.last?.role == .assistant {
+                    assistantReplyPhase = .idle
+                    scrollIntent = .scrollToBottom
+                    return
+                }
+            } catch {
+                ChatPaginationLogger.loadFailed("pollReply", error: error.localizedDescription)
+            }
+        }
+        assistantReplyPhase = .idle
     }
 
     func clearError() {

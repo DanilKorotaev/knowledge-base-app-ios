@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct ChatView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(VoiceRoutingContext.self) private var voiceRouting
     @Environment(VoiceRecordingViewModel.self) private var voiceViewModel
     @State private var viewModel: ChatViewModel
@@ -167,6 +168,10 @@ struct ChatView: View {
         }
         .onChange(of: viewModel.useKnowledgeBase) { _, newValue in
             voiceRouting.useKnowledgeBase = newValue
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task { await viewModel.resumeAwaitingReplyIfNeeded() }
         }
         .alert("Chat", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
