@@ -22,9 +22,23 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) -> Bool {
         Task { @MainActor in
             PushNotificationService.shared.configure()
+            if let remote = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
+                PushNotificationService.shared.handleLaunchFromRemoteNotification(remote)
+            }
             PushNotificationService.shared.requestAuthorizationAndRegister()
         }
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        Task { @MainActor in
+            PushNotificationService.shared.handleBackgroundRemoteNotification(userInfo)
+            completionHandler(.noData)
+        }
     }
 
     func application(

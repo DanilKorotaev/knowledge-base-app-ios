@@ -16,6 +16,24 @@ final class PushNotificationPayloadTests: XCTestCase {
         let url = URL(string: "knowledgebase://record")!
         XCTAssertNil(PushNotificationService.parseSessionId(from: url))
     }
+
+    func testPayloadFormatterSerializesCustomFieldsAndAps() {
+        let userInfo: [AnyHashable: Any] = [
+            "type": "chat_reply_ready",
+            "session_id": "125",
+            "message_id": "690",
+            "aps": [
+                "alert": ["title": "Session 125", "body": "Preview"],
+                "sound": "default",
+                "thread-id": "125",
+            ] as [String: Any],
+        ]
+        let json = PushPayloadFormatter.json(userInfo)
+        XCTAssertTrue(json.contains("chat_reply_ready"))
+        XCTAssertTrue(json.contains("125"))
+        XCTAssertTrue(json.contains("690"))
+        XCTAssertTrue(json.contains("Session 125"))
+    }
 }
 
 @MainActor

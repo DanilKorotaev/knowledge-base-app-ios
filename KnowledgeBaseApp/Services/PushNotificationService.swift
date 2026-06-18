@@ -84,10 +84,36 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
         #endif
     }
 
+    /// App launched from a remote notification (cold start).
+    func handleLaunchFromRemoteNotification(_ userInfo: [AnyHashable: Any]) {
+        guard let sessionId = Self.sessionId(from: userInfo) else {
+            logger.debugInfo(
+                "[push] cold launch notification without session_id payload=\(PushPayloadFormatter.json(userInfo))"
+            )
+            return
+        }
+        pendingSessionId = sessionId
+        PushNotificationLogger.openedFromColdLaunch(userInfo: userInfo, sessionId: sessionId)
+    }
+
+    /// Background / silent remote notification delivery.
+    func handleBackgroundRemoteNotification(_ userInfo: [AnyHashable: Any]) {
+        PushNotificationLogger.receivedInBackground(userInfo: userInfo)
+    }
+
     func consumePendingSessionId() -> String? {
         let id = pendingSessionId
         pendingSessionId = nil
+        if let id {
+            PushNotificationLogger.consumedPendingSession(sessionId: id)
+        }
         return id
+    }
+
+    private func openSession(_ sessionId: String, source: String) {
+        PushNotificationLogger.navigatingToSession(sessionId: sessionId, source: source)
+        pendingSessionId = sessionId
+        onOpenSession?(sessionId)
     }
 
     // MARK: - UNUserNotificationCenterDelegate
@@ -98,10 +124,20 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
     ) async -> UNNotificationPresentationOptions {
         let userInfo = notification.request.content.userInfo
         guard let sessionId = Self.sessionId(from: userInfo) else {
+            PushNotificationLogger.receivedInForeground(
+                userInfo: userInfo,
+                focusedSessionId: nil,
+                presentation: "banner,sound"
+            )
             return [.banner, .sound]
         }
         let focused = await ChatSessionFocusTracker.shared.focusedSessionId
         if focused == sessionId {
+            PushNotificationLogger.receivedInForeground(
+                userInfo: userInfo,
+                focusedSessionId: focused,
+                presentation: "suppressed"
+            )
             await MainActor.run {
                 NotificationCenter.default.post(
                     name: .kbSessionThreadDidChange,
@@ -111,6 +147,11 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
             }
             return []
         }
+        PushNotificationLogger.receivedInForeground(
+            userInfo: userInfo,
+            focusedSessionId: focused,
+            presentation: "banner,sound"
+        )
         return [.banner, .sound]
     }
 
@@ -119,10 +160,13 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
         didReceive response: UNNotificationResponse
     ) async {
         let userInfo = response.notification.request.content.userInfo
-        guard let sessionId = Self.sessionId(from: userInfo) else { return }
+        guard let sessionId = Self.sessionId(from: userInfo) else {
+            PushNotificationLogger.userTapped(response: response, sessionId: nil)
+            return
+        }
+        PushNotificationLogger.userTapped(response: response, sessionId: sessionId)
         await MainActor.run {
-            pendingSessionId = sessionId
-            onOpenSession?(sessionId)
+            openSession(sessionId, source: "notification_tap")
         }
     }
 
