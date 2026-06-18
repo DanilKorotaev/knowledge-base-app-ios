@@ -20,11 +20,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        let remote = launchOptions?[.remoteNotification] as? [AnyHashable: Any]
+        MainActor.assumeIsolated {
+            PushNotificationService.shared.bootstrapFromLaunch(remoteNotification: remote)
+        }
         Task { @MainActor in
-            PushNotificationService.shared.configure()
-            if let remote = launchOptions?[.remoteNotification] as? [AnyHashable: Any] {
-                PushNotificationService.shared.handleLaunchFromRemoteNotification(remote)
-            }
             PushNotificationService.shared.requestAuthorizationAndRegister()
         }
         return true

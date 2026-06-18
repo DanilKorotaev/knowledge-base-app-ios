@@ -33,12 +33,9 @@ struct KnowledgeBaseApp: App {
                     deepLinkSessionId = sessionId
                 }
             }
-            .task {
-                PushNotificationService.shared.onOpenSession = { sessionId in
+            .onAppear {
+                PushNotificationService.shared.attachNavigationHandler { sessionId in
                     deepLinkSessionId = sessionId
-                }
-                if let pending = PushNotificationService.shared.consumePendingSessionId() {
-                    deepLinkSessionId = pending
                 }
             }
         }

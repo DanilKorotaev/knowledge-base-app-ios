@@ -1,6 +1,6 @@
 # Apple Watch: companion app + complication (голосовой ввод)
 
-**Статус:** In progress (2026-06-10) — MVP target + relay; complication pending
+**Статус:** In progress (2026-06-18) — relay + offline queue готовы; **осталась complication (этап 3)**
 **Приоритет:** 🟡 Средний (после E2E iPhone ↔ KB App API)  
 **Категория:** Product / watchOS  
 **Связанные документы:**

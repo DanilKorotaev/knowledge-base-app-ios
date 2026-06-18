@@ -32,10 +32,11 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 
 ## Pending (`pending/`)
 
-| File | Topic |
-|------|--------|
-| `task-backend-kb-app-api-sync.md` | Contract alignment + E2E automation (SSE, voice, compose) |
-| `task-feature-push-notifications-chat.md` | APNs when reply ready (background / other screen) |
-| `task-feature-watch-app-voice.md` | watchOS companion, complication, offline queue |
+| File | Topic | Статус (2026-06-18) |
+|------|--------|---------------------|
+| `task-backend-kb-app-api-sync.md` | Contract alignment + E2E automation | 🟡 ongoing |
+| `task-feature-push-notifications-chat.md` | APNs when reply ready | 🟡 MVP в коде, E2E на устройстве |
+| `task-feature-watch-app-voice.md` | watchOS companion, complication | 🟡 relay готов, нет complication |
+| `task-ux-chat-composer-polish.md` | Quick Look, лимиты, RU | бэклог |
 
 **Deploy / E2E checklist (Nextcloud):** `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`

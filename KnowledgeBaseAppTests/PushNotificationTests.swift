@@ -37,6 +37,48 @@ final class PushNotificationPayloadTests: XCTestCase {
 }
 
 @MainActor
+final class PushNotificationColdLaunchTests: XCTestCase {
+    func testBootstrapFromLaunchQueuesSessionId() {
+        let service = PushNotificationService.shared
+        _ = service.consumePendingSessionId()
+
+        let userInfo: [AnyHashable: Any] = [
+            "session_id": "125",
+            "type": "chat_reply_ready",
+            "message_id": "698",
+        ]
+        service.bootstrapFromLaunch(remoteNotification: userInfo)
+
+        XCTAssertEqual(service.consumePendingSessionId(), "125")
+    }
+
+    func testAttachNavigationHandlerDrainsPendingSession() {
+        let service = PushNotificationService.shared
+        _ = service.consumePendingSessionId()
+
+        service.bootstrapFromLaunch(remoteNotification: ["session_id": "56"])
+
+        var opened: String?
+        service.attachNavigationHandler { opened = $0 }
+
+        XCTAssertEqual(opened, "56")
+        XCTAssertNil(service.consumePendingSessionId())
+    }
+
+    func testAttachNavigationHandlerWiresFutureTaps() {
+        let service = PushNotificationService.shared
+        _ = service.consumePendingSessionId()
+
+        var opened: String?
+        service.attachNavigationHandler { opened = $0 }
+        XCTAssertNil(opened)
+
+        service.onOpenSession?("29")
+        XCTAssertEqual(opened, "29")
+    }
+}
+
+@MainActor
 final class ChatSessionFocusTrackerTests: XCTestCase {
     func testFocusedSessionId() {
         let tracker = ChatSessionFocusTracker.shared

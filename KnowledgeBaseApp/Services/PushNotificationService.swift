@@ -22,6 +22,22 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
         UNUserNotificationCenter.current().delegate = self
     }
 
+    /// Call synchronously from `application(_:didFinishLaunchingWithOptions:)` on the main thread
+    /// so the notification delegate is installed before iOS delivers a cold-start tap.
+    func bootstrapFromLaunch(remoteNotification: [AnyHashable: Any]?) {
+        configure()
+        guard let remoteNotification else { return }
+        handleLaunchFromRemoteNotification(remoteNotification)
+    }
+
+    /// Wire SwiftUI navigation and drain any session id queued during launch.
+    func attachNavigationHandler(_ handler: @escaping (String) -> Void) {
+        onOpenSession = handler
+        if let pending = consumePendingSessionId() {
+            handler(pending)
+        }
+    }
+
     func requestAuthorizationAndRegister() {
         Task {
             do {

@@ -169,7 +169,7 @@ struct MainView: View {
                     }
                 }
             }
-            .onChange(of: deepLinkSessionId) { _, newValue in
+            .onChange(of: deepLinkSessionId, initial: true) { _, newValue in
                 guard let sessionId = newValue else { return }
                 Task {
                     await openSessionFromDeepLink(sessionId: sessionId)
