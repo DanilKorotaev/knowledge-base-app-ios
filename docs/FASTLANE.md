@@ -77,7 +77,12 @@ export MATCH_GIT_URL="..."
 bundle exec fastlane beta
 ```
 
-On CI, use **GitHub Secrets** (same names as env vars). Manual deploy: **Actions → Deploy TestFlight → Run workflow** (see `.github/workflows/deploy-testflight.yml`).
+On CI, use **GitHub Secrets** (same names as env vars).
+
+**Deploy triggers** (`.github/workflows/deploy-testflight.yml`):
+
+- **Automatic:** after **CI** succeeds on a **push to `main`** (not on pull requests).
+- **Manual:** **Actions → Deploy TestFlight → Run workflow** (e.g. retry without waiting for CI, or deploy a specific ref).
 
 ## Telegram (CI notifications)
 

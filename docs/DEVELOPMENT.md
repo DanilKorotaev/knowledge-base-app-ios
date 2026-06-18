@@ -65,7 +65,5 @@ Match / TestFlight: include `com.coredan.KnowledgeBaseApp.watch` in `fastlane ma
 
 ## CI
 
-- Workflow: `.github/workflows/ci.yml` — Ruby + **`bundle exec fastlane test`**.
-- **No XcodeGen on CI:** the `.xcodeproj` is committed. After changing `project.yml`, run `xcodegen generate` locally and commit the project.
-- Coverage gate: **`MIN_COVERAGE`** env (default **35%**), enforced in `fastlane/Fastfile` after scan.
-- Manual TestFlight: `.github/workflows/deploy-testflight.yml` — see [FASTLANE.md](FASTLANE.md).
+- **CI** (`.github/workflows/ci.yml`): tests on every push/PR to `main`.
+- **TestFlight** (`.github/workflows/deploy-testflight.yml`): runs automatically after green CI on push to `main`; can also be started manually — see [FASTLANE.md](FASTLANE.md).
