@@ -152,13 +152,29 @@ enum MarkdownSegmentParser {
             result.append(.blank)
         }
 
+        func consumeBlankRun(from startIndex: inout Int) {
+            flushParagraph()
+            var blankRun = 0
+            while startIndex < lines.count,
+                  lines[startIndex].trimmingCharacters(in: .whitespaces).isEmpty {
+                blankRun += 1
+                startIndex += 1
+            }
+            guard blankRun > 0 else { return }
+            let nextLine = startIndex < lines.count ? lines[startIndex] : nil
+            let nextIsBlock = nextLine.map(Self.isBlockStartLine) ?? false
+            // A single blank before a block element is structural only (no extra gap).
+            // Two or more blanks collapse to one visual spacer.
+            if !nextIsBlock || blankRun >= 2 {
+                appendBlank()
+            }
+        }
+
         while index < lines.count {
             let raw = lines[index]
 
             if raw.trimmingCharacters(in: .whitespaces).isEmpty {
-                flushParagraph()
-                appendBlank()
-                index += 1
+                consumeBlankRun(from: &index)
                 continue
             }
 
@@ -228,6 +244,16 @@ enum MarkdownSegmentParser {
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
             .components(separatedBy: "\n")
+    }
+
+    private static func isBlockStartLine(_ line: String) -> Bool {
+        if MarkdownLineParser.isCodeFenceOpening(line) { return true }
+        if MarkdownLineParser.parseListItem(line) != nil { return true }
+        if MarkdownLineParser.isBlockquoteLine(line) { return true }
+        if MarkdownLineParser.isThematicBreak(line) { return true }
+        let hashCount = line.prefix(while: { $0 == "#" }).count
+        if hashCount > 0, hashCount <= 6, line.dropFirst(hashCount).first == " " { return true }
+        return false
     }
 
     private static func trimEdgeBlanks(_ segments: inout [MarkdownSegment]) {

@@ -84,9 +84,10 @@ struct ChatView: View {
                     } action: { _, current in
                         latestScrollSample = current
                         ChatPaginationLogger.scrollSample(current)
+                        considerPaginationFromScrollGeometry(current)
                     }
                     .onScrollPhaseChange { _, newPhase, _ in
-                        if newPhase == .interacting {
+                        if newPhase == .interacting || newPhase == .decelerating || newPhase == .tracking {
                             userHasScrolled = true
                         }
                     }
@@ -233,7 +234,20 @@ struct ChatView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             isChatScrollReady = true
             ChatPaginationLogger.scrollArmed(afterSeconds: 0.4)
+            if let sample = latestScrollSample, sample.isNearOldestEdge {
+                userHasScrolled = true
+                requestOlderMessagesIfNeeded(source: "post-arm-edge")
+            }
         }
+    }
+
+    /// With a plain `VStack`, `onAppear` on bubbles fires once at layout — not when scrolling to the top.
+    /// Use scroll geometry (near oldest edge) as the primary load-older trigger.
+    private func considerPaginationFromScrollGeometry(_ sample: ScrollPaginationSample) {
+        guard sample.isNearOldestEdge else { return }
+        guard isChatScrollReady else { return }
+        userHasScrolled = true
+        requestOlderMessagesIfNeeded(source: "scroll-geometry")
     }
 
     private func schedulePostSettlePaginationCheck() {
