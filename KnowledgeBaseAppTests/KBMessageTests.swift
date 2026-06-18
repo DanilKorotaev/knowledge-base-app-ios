@@ -385,6 +385,90 @@ final class MessageContentRendererTests: XCTestCase {
         XCTAssertEqual(blankCount, 1)
     }
 
+    func testMarkdownSegmentParserSingleBlankBeforeBlockElementsOmitsBlankSegment() {
+        let cases: [(String, (MarkdownSegment) -> Bool)] = [
+            ("Intro\n\n- item", { if case .list = $0 { return true }; return false }),
+            ("Intro\n\n```\ncode\n```", { if case .codeBlock = $0 { return true }; return false }),
+            ("Intro\n\n> quote", { if case .blockquote = $0 { return true }; return false }),
+            ("Intro\n\n# Title", { if case .header = $0 { return true }; return false }),
+            ("Intro\n\n---", { if case .horizontalRule = $0 { return true }; return false }),
+        ]
+        for (md, matchesBlock) in cases {
+            let segments = MarkdownSegmentParser.segments(from: md)
+            XCTAssertFalse(
+                segments.contains { if case .blank = $0 { return true }; return false },
+                "unexpected blank before block for: \(md.prefix(40))"
+            )
+            XCTAssertTrue(segments.contains(where: matchesBlock), "expected block segment for: \(md.prefix(40))")
+        }
+    }
+
+    func testMarkdownSegmentParserSingleBlankBetweenParagraphsKeepsBlank() {
+        let md = "First\n\nSecond"
+        let segments = MarkdownSegmentParser.segments(from: md)
+        XCTAssertTrue(segments.contains { if case .blank = $0 { return true }; return false })
+        XCTAssertEqual(
+            segments.filter {
+                if case .paragraph = $0 { return true }
+                return false
+            }.count,
+            2
+        )
+    }
+
+    func testMarkdownLineParserCodeFenceAndBlockquoteHelpers() {
+        XCTAssertTrue(MarkdownLineParser.isCodeFenceOpening("```swift"))
+        XCTAssertTrue(MarkdownLineParser.isCodeFenceClosing("```"))
+        XCTAssertEqual(MarkdownLineParser.codeFenceLanguage("```python"), "python")
+        XCTAssertNil(MarkdownLineParser.codeFenceLanguage("``"))
+        XCTAssertTrue(MarkdownLineParser.isBlockquoteLine("> quoted"))
+        XCTAssertEqual(MarkdownLineParser.blockquoteContent("> hello"), "hello")
+    }
+
+    func testMarkdownLineParserListItemVariants() {
+        XCTAssertEqual(MarkdownLineParser.parseListItem("1. numbered")?.text, "numbered")
+        XCTAssertEqual(MarkdownLineParser.parseListItem("+ plus item")?.text, "plus item")
+        XCTAssertNil(MarkdownLineParser.parseListItem("-"))
+        XCTAssertNil(MarkdownLineParser.parseListItem("not a list"))
+        if let nested = MarkdownLineParser.parseListItem("  - nested") {
+            XCTAssertEqual(nested.indentLevel, 1)
+            XCTAssertEqual(nested.text, "nested")
+        } else {
+            XCTFail("expected nested bullet")
+        }
+    }
+
+    func testMarkdownSegmentParserNormalizesCarriageReturns() {
+        let segments = MarkdownSegmentParser.segments(from: "One\r\nTwo\r")
+        XCTAssertTrue(segments.contains { if case .paragraph(let text) = $0 { return text.contains("One") && text.contains("Two") }; return false })
+    }
+
+    func testMarkdownSegmentParserNumberedListSegment() {
+        let segments = MarkdownSegmentParser.segments(from: "1. one\n2. two")
+        guard case .list(let items)? = segments.first else {
+            return XCTFail("expected list")
+        }
+        XCTAssertEqual(items.count, 2)
+        if case .numbered(1) = items[0].marker { } else { XCTFail("expected numbered marker") }
+    }
+
+    func testMarkdownSegmentParserHeaderSegment() {
+        let segments = MarkdownSegmentParser.segments(from: "## Subtitle")
+        guard case .header(let level, let line)? = segments.first else {
+            return XCTFail("expected header")
+        }
+        XCTAssertEqual(level, 2)
+        XCTAssertEqual(line, "## Subtitle")
+    }
+
+    func testMarkdownSegmentParserMultilineBlockquote() {
+        let segments = MarkdownSegmentParser.segments(from: "> one\n> two")
+        guard case .blockquote(let lines)? = segments.first else {
+            return XCTFail("expected blockquote")
+        }
+        XCTAssertEqual(lines, ["one", "two"])
+    }
+
     func testMarkdownSegmentParserListAndCode() {
         let md = """
         Intro line

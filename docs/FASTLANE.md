@@ -28,6 +28,8 @@ bundle exec which fastlane
 
 Runs **scan** on the **KnowledgeBaseApp** scheme, writes results under `fastlane/test_output/`, then enforces **line coverage for the `KnowledgeBaseApp.app` target only** (SPM dependencies such as Alamofire are excluded). Default minimum **35%**, override with `MIN_COVERAGE`.
 
+**This gate blocks CI** and therefore **auto TestFlight** on `main` when coverage is below the threshold (individual tests may still pass).
+
 ```bash
 bundle exec fastlane test
 ```

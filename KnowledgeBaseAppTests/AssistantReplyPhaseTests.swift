@@ -69,4 +69,12 @@ final class AssistantReplyPhaseTests: XCTestCase {
         )
         XCTAssertEqual(AssistantReplyPhaseNotification.parse(notification)?.phase, .idle)
     }
+
+    func testShowsPlaceholderAndDisplayText() {
+        XCTAssertFalse(AssistantReplyPhase.idle.showsPlaceholder)
+        XCTAssertTrue(AssistantReplyPhase.waiting.showsPlaceholder)
+        XCTAssertEqual(AssistantReplyPhase.streaming(text: "x").displayText, "x")
+        XCTAssertEqual(AssistantReplyPhase.finalizing(text: "done").displayText, "done")
+        XCTAssertNil(AssistantReplyPhase(notificationKind: "unknown", text: nil))
+    }
 }

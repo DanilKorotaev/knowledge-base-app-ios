@@ -74,4 +74,15 @@ final class ChatOlderLoadScrollMetricsTests: XCTestCase {
         XCTAssertTrue(snapshot.contains("near=YES"))
         XCTAssertTrue(snapshot.contains("offsetY="))
     }
+
+    func testIsNearOldestLoadedEdge_atInsetPlusThreshold_returnsTrue() {
+        XCTAssertTrue(
+            ChatOlderLoadScrollMetrics.isNearOldestLoadedEdge(
+                contentOffsetY: 120,
+                contentInsetTop: 0,
+                contentHeight: 900,
+                containerHeight: 600
+            )
+        )
+    }
 }

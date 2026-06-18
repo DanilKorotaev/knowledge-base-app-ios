@@ -1,0 +1,30 @@
+---
+description: CI coverage gate blocks TestFlight — run fastlane test before push
+alwaysApply: true
+---
+
+# CI coverage gate (blocks TestFlight)
+
+Push to `main` runs **CI** (`bundle exec fastlane test`). The job fails if **line coverage** for target `KnowledgeBaseApp.app` is below **`MIN_COVERAGE`** (default **35%**, set in `.github/workflows/ci.yml` and `fastlane/Fastfile`).
+
+**Deploy TestFlight** runs only after **green CI** on `main`. Failing tests or coverage below the threshold skips the TestFlight build.
+
+## Before push to `main`
+
+```bash
+bundle exec fastlane test
+```
+
+Confirm the lane ends with `Line coverage (KnowledgeBaseApp.app): …% (minimum 35%)` and all tests pass.
+
+## When adding features
+
+- Add or extend unit tests in the same change as production code.
+- If coverage drops near the gate, add focused tests (parsers, view models, services) — not UI snapshot churn.
+- Do not lower `MIN_COVERAGE` without an explicit team decision.
+
+## References
+
+- `docs/CODING_STANDARDS.md` § Test coverage
+- `docs/DEVELOPMENT.md` § CI
+- `docs/FASTLANE.md` § lane `test`

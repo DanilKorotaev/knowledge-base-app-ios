@@ -12,6 +12,12 @@ struct ScrollPaginationSample: Equatable {
         snapshot = ChatOlderLoadScrollMetrics.debugSnapshot(geometry)
     }
 
+    init(isNearOldestEdge: Bool, offsetBucket: Int, snapshot: String) {
+        self.isNearOldestEdge = isNearOldestEdge
+        self.offsetBucket = offsetBucket
+        self.snapshot = snapshot
+    }
+
     static func == (lhs: ScrollPaginationSample, rhs: ScrollPaginationSample) -> Bool {
         lhs.isNearOldestEdge == rhs.isNearOldestEdge
             && lhs.offsetBucket == rhs.offsetBucket

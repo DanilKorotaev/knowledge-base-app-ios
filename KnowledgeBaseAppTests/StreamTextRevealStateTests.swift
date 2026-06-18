@@ -29,4 +29,29 @@ final class StreamTextRevealStateTests: XCTestCase {
         await fulfillment(of: [completeExpectation], timeout: 2.0)
         XCTAssertEqual(state.revealedText, "Hi.")
     }
+
+    func testResetClearsRevealState() async {
+        let state = StreamTextRevealState()
+        state.updateTarget("chunk", finishing: false)
+        try? await Task.sleep(for: .milliseconds(40))
+        state.reset()
+        XCTAssertEqual(state.revealedText, "")
+        XCTAssertEqual(state.targetText, "")
+    }
+
+    func testEmptyTargetClearsRevealedText() {
+        let state = StreamTextRevealState()
+        state.updateTarget("visible", finishing: false)
+        state.updateTarget("", finishing: false)
+        XCTAssertEqual(state.revealedText, "")
+    }
+
+    func testTargetRewriteKeepsSharedPrefix() async {
+        let state = StreamTextRevealState()
+        state.updateTarget("Hello world", finishing: false)
+        try? await Task.sleep(for: .milliseconds(120))
+        state.updateTarget("Hello there", finishing: false)
+        try? await Task.sleep(for: .milliseconds(200))
+        XCTAssertEqual(state.revealedText, "Hello there")
+    }
 }

@@ -65,5 +65,13 @@ Match / TestFlight: include `com.coredan.KnowledgeBaseApp.watch` in `fastlane ma
 
 ## CI
 
-- **CI** (`.github/workflows/ci.yml`): tests on every push/PR to `main`.
-- **TestFlight** (`.github/workflows/deploy-testflight.yml`): runs automatically after green CI on push to `main`; can also be started manually — see [FASTLANE.md](FASTLANE.md).
+- **CI** (`.github/workflows/ci.yml`): `bundle exec fastlane test` on every push/PR to `main` — **tests + line coverage gate** (`MIN_COVERAGE`, default **35%** for `KnowledgeBaseApp.app`).
+- **TestFlight** (`.github/workflows/deploy-testflight.yml`): runs automatically **only after green CI** on push to `main`; manual **workflow_dispatch** also available — see [FASTLANE.md](FASTLANE.md).
+
+### Pre-push checklist (`main`)
+
+```bash
+bundle exec fastlane test
+```
+
+All tests must pass and coverage must be **≥ 35%**. Otherwise TestFlight will not run on push.
