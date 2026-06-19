@@ -96,7 +96,7 @@ final class ChatViewModel {
         }
 
         do {
-            let limit = kind == "initial" ? Self.pageSize : max(messages.count + 2, Self.pageSize)
+            let limit = refreshFetchLimit(kind: kind, hadLocalData: hadLocalData)
             let page = try await client.fetchMessagesPage(
                 sessionId: session.id,
                 limit: limit,
@@ -132,7 +132,17 @@ final class ChatViewModel {
         guard messages.isEmpty,
               let cached = messageCache.loadWindow(sessionId: session.id),
               !cached.messages.isEmpty else { return }
-        apply(page: cached, requestedLimit: Self.pageSize, kind: "cache")
+        apply(page: cached, requestedLimit: cached.messages.count, kind: "cache")
+    }
+
+    private func refreshFetchLimit(kind: String, hadLocalData: Bool) -> Int {
+        if kind == "initial", hadLocalData {
+            return max(messages.count + 2, Self.pageSize)
+        }
+        if kind == "initial" {
+            return Self.pageSize
+        }
+        return max(messages.count + 2, Self.pageSize)
     }
 
     func loadOlder() async {
@@ -153,6 +163,9 @@ final class ChatViewModel {
             return
         }
         guard NetworkPathMonitor.shared.isOnline else {
+            if loadOlderFromCacheIfPossible() {
+                return
+            }
             syncStatus = .offline(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id))
             ChatPaginationLogger.loadSkippedOffline("older")
             return
@@ -671,7 +684,15 @@ final class ChatViewModel {
     }
 
     private func apply(page: KBMessagesPage, requestedLimit: Int, kind: String) {
-        messages = clamp(page.messages, to: requestedLimit)
+        let nextMessages: [KBMessage]
+        if kind == "cache" {
+            nextMessages = page.messages
+        } else if messages.isEmpty {
+            nextMessages = clamp(page.messages, to: requestedLimit)
+        } else {
+            nextMessages = mergeOlderLoadedMessages(with: page.messages)
+        }
+        messages = nextMessages
         totalCount = page.total
         let hasOlderByCount = page.total > messages.count
         hasMoreOlder = page.hasMoreOlder || hasOlderByCount
@@ -687,11 +708,59 @@ final class ChatViewModel {
         )
     }
 
+    @discardableResult
+    private func loadOlderFromCacheIfPossible() -> Bool {
+        guard let cached = messageCache.loadWindow(sessionId: session.id),
+              let anchorId = messages.first?.id,
+              let anchorIndex = cached.messages.firstIndex(where: { $0.id == anchorId }),
+              anchorIndex > 0 else {
+            return false
+        }
+
+        let older = Array(cached.messages[..<anchorIndex])
+        messages = older + messages
+        totalCount = cached.total
+        hasMoreOlder = messages.first?.id != cached.messages.first?.id || cached.hasMoreOlder
+        scrollIntent = .preserve(messageId: anchorId)
+        ChatPaginationLogger.pageApplied(
+            kind: "older-cache",
+            messageIds: older.map(\.id),
+            total: cached.total,
+            hasMoreOlder: hasMoreOlder,
+            windowCount: messages.count
+        )
+        return true
+    }
+
+    private func mergeOlderLoadedMessages(with fetched: [KBMessage]) -> [KBMessage] {
+        let fetchedIds = Set(fetched.map(\.id))
+        let olderLoaded = messages.filter { !fetchedIds.contains($0.id) }
+        return olderLoaded + fetched
+    }
+
+    private func mergedMessagesForPersistence(_ inMemory: [KBMessage]) -> [KBMessage] {
+        guard let cached = messageCache.loadWindow(sessionId: session.id) else {
+            return inMemory
+        }
+        var byId = Dictionary(uniqueKeysWithValues: cached.messages.map { ($0.id, $0) })
+        for message in inMemory {
+            byId[message.id] = message
+        }
+        return byId.values.sorted { lhs, rhs in
+            let left = lhs.createdAt ?? .distantPast
+            let right = rhs.createdAt ?? .distantPast
+            if left == right { return lhs.id < rhs.id }
+            return left < right
+        }
+    }
+
     private func persistMessageWindow() {
+        let merged = mergedMessagesForPersistence(messages)
+        messages = merged
         messageCache.saveWindow(
             sessionId: session.id,
             page: KBMessagesPage(
-                messages: messages,
+                messages: merged,
                 total: totalCount,
                 hasMoreOlder: hasMoreOlder
             )

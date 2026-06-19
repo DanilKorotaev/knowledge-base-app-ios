@@ -42,39 +42,6 @@ final class ChatViewModelOfflineCacheTests: XCTestCase {
         await loadTask.value
     }
 
-    func testLoadOlderWhenOfflineDoesNotSetErrorMessage() async throws {
-        let sessionId = "offline-pagination"
-        let cache = FileOfflineCacheStore(baseURL: cacheDir)
-        let cached = (1 ... 4).map { index in
-            KBMessage(id: "m\(index)", role: .user, content: "msg \(index)", createdAt: Date())
-        } + [
-            KBMessage(id: "m5", role: .assistant, content: "reply", createdAt: Date()),
-        ]
-        cache.saveWindow(
-            sessionId: sessionId,
-            page: KBMessagesPage(messages: cached, total: 48, hasMoreOlder: true)
-        )
-
-        let client = OfflineThrowingChatAPIClient()
-        let viewModel = ChatViewModel(
-            session: KBSession(id: sessionId, title: "Test", messageCount: 48, updatedAt: Date()),
-            client: client,
-            messageCache: cache
-        )
-        await viewModel.load()
-        NetworkPathMonitor.shared.setOnlineForTesting(false)
-        defer { NetworkPathMonitor.shared.setOnlineForTesting(true) }
-
-        await viewModel.loadOlder()
-
-        XCTAssertNil(viewModel.errorMessage)
-        if case .offline = viewModel.syncStatus {
-            // expected
-        } else {
-            XCTFail("Expected offline sync status, got \(viewModel.syncStatus)")
-        }
-    }
-
     func testRefreshFromNetworkWithCacheWhenOfflineUsesOfflineStatusNotError() async throws {
         let sessionId = "offline-refresh"
         let cache = FileOfflineCacheStore(baseURL: cacheDir)
@@ -102,6 +69,107 @@ final class ChatViewModelOfflineCacheTests: XCTestCase {
         await viewModel.refresh()
 
         XCTAssertFalse(viewModel.messages.isEmpty)
+        XCTAssertNil(viewModel.errorMessage)
+        if case .offline = viewModel.syncStatus {
+            // expected
+        } else {
+            XCTFail("Expected offline sync status, got \(viewModel.syncStatus)")
+        }
+    }
+
+    func testBootstrapFromCacheRestoresAllPersistedMessages() async throws {
+        let sessionId = "full-cache"
+        let cache = FileOfflineCacheStore(baseURL: cacheDir)
+        let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let cached = (1 ... 12).map { index in
+            KBMessage(
+                id: "m\(index)",
+                role: index.isMultiple(of: 2) ? .assistant : .user,
+                content: "msg \(index)",
+                createdAt: baseDate.addingTimeInterval(TimeInterval(index))
+            )
+        }
+        cache.saveWindow(
+            sessionId: sessionId,
+            page: KBMessagesPage(messages: cached, total: 20, hasMoreOlder: true)
+        )
+
+        NetworkPathMonitor.shared.setOnlineForTesting(false)
+        defer { NetworkPathMonitor.shared.setOnlineForTesting(true) }
+
+        let viewModel = ChatViewModel(
+            session: KBSession(id: sessionId, title: "Test", messageCount: 20, updatedAt: Date()),
+            client: OfflineThrowingChatAPIClient(),
+            messageCache: cache
+        )
+        await viewModel.load()
+
+        XCTAssertEqual(viewModel.messages.count, 12)
+        XCTAssertEqual(viewModel.messages.first?.id, "m1")
+        XCTAssertEqual(viewModel.messages.last?.id, "m12")
+    }
+
+    func testLoadOlderOfflinePrependsRemainingCachedMessages() async throws {
+        let sessionId = "offline-older"
+        let cache = FileOfflineCacheStore(baseURL: cacheDir)
+        let baseDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let cached = (1 ... 10).map { index in
+            KBMessage(
+                id: "m\(index)",
+                role: index == 10 ? .assistant : .user,
+                content: "msg \(index)",
+                createdAt: baseDate.addingTimeInterval(TimeInterval(index))
+            )
+        }
+        cache.saveWindow(
+            sessionId: sessionId,
+            page: KBMessagesPage(messages: cached, total: 10, hasMoreOlder: false)
+        )
+
+        NetworkPathMonitor.shared.setOnlineForTesting(false)
+        defer { NetworkPathMonitor.shared.setOnlineForTesting(true) }
+
+        let viewModel = ChatViewModel(
+            session: KBSession(id: sessionId, title: "Test", messageCount: 10, updatedAt: Date()),
+            client: OfflineThrowingChatAPIClient(),
+            messageCache: cache
+        )
+        await viewModel.load()
+        viewModel.messages = Array(viewModel.messages.suffix(5))
+        viewModel.hasMoreOlder = true
+
+        await viewModel.loadOlder()
+
+        XCTAssertEqual(viewModel.messages.map(\.id), (1 ... 10).map { "m\($0)" })
+        XCTAssertFalse(viewModel.hasMoreOlder)
+        XCTAssertNil(viewModel.errorMessage)
+    }
+
+    func testLoadOlderWhenOfflineAndCacheExhaustedDoesNotSetErrorMessage() async throws {
+        let sessionId = "offline-pagination"
+        let cache = FileOfflineCacheStore(baseURL: cacheDir)
+        let cached = (1 ... 4).map { index in
+            KBMessage(id: "m\(index)", role: .user, content: "msg \(index)", createdAt: Date())
+        } + [
+            KBMessage(id: "m5", role: .assistant, content: "reply", createdAt: Date()),
+        ]
+        cache.saveWindow(
+            sessionId: sessionId,
+            page: KBMessagesPage(messages: cached, total: 5, hasMoreOlder: false)
+        )
+
+        let viewModel = ChatViewModel(
+            session: KBSession(id: sessionId, title: "Test", messageCount: 5, updatedAt: Date()),
+            client: OfflineThrowingChatAPIClient(),
+            messageCache: cache
+        )
+        await viewModel.load()
+        viewModel.hasMoreOlder = true
+        NetworkPathMonitor.shared.setOnlineForTesting(false)
+        defer { NetworkPathMonitor.shared.setOnlineForTesting(true) }
+
+        await viewModel.loadOlder()
+
         XCTAssertNil(viewModel.errorMessage)
         if case .offline = viewModel.syncStatus {
             // expected
