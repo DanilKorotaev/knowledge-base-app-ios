@@ -7,7 +7,7 @@
 
 ## Planned
 
-**Recommended order (2026-06-19):** 1) **SWR sync UX**; 2) **Attachment disk cache**; 3) **Push E2E**; 4) **Clickable changed files**; 5) E2E automation; 6) Watch complication; 7) Composer polish.
+**Recommended order (2026-06-19):** 1) **Attachment disk cache**; 2) **Push E2E**; 3) **Clickable changed files**; 4) E2E automation; 5) Watch complication; 6) Composer polish.
 
 ### Integration (E2E + contract)
 
@@ -33,7 +33,7 @@
 - [ ] [Apple Watch: complication](tasks/pending/task-feature-watch-app-voice.md) — см. In progress
 - [ ] [Оффлайн-режим: кэш сессий/чатов и вложений](tasks/pending/task-feature-offline-mode-cache-sync.md) — cache-first + background refresh + управление кэшем
 - [x] [Offline foundation: persistent cache](tasks/completed/task-feature-offline-cache-foundation.md) — `FileOfflineCacheStore`, cache-first list/chat
-- [ ] [SWR sync UX: статусы обновления](tasks/pending/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
+- [x] [SWR sync UX: статусы обновления](tasks/completed/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
 - [ ] [Offline attachments: disk cache management](tasks/pending/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
 - [ ] [Чат: кликабельные changed files](tasks/pending/task-ux-chat-clickable-changed-files.md) — MVP список под ответом, затем inline-ссылки
 - [ ] [Композер: polish](tasks/pending/task-ux-chat-composer-polish.md) — Quick Look, лимиты, RU

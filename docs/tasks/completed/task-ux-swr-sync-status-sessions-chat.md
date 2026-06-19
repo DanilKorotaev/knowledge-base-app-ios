@@ -1,6 +1,6 @@
 # SWR sync UX: stale-while-revalidate status on sessions and chat
 
-**Status:** Backlog  
+**Status:** Done  
 **Parent:** `task-feature-offline-mode-cache-sync.md`  
 **Depends on:** `task-feature-offline-cache-foundation.md`  
 **Priority:** High
@@ -32,7 +32,14 @@ Make cache-first behavior transparent to users with clear sync state and non-blo
 
 ## Acceptance
 
-- [ ] Cached list and chat open instantly, network refresh runs in background.
-- [ ] User sees explicit status transitions (refreshing/offline/error/updated).
-- [ ] Offline mode no longer shows only hard error when cache exists.
-- [ ] Unit tests for sync state transitions.
+- [x] Cached list and chat open instantly, network refresh runs in background.
+- [x] User sees explicit status transitions (refreshing/offline/error/updated).
+- [x] Offline mode no longer shows only hard error when cache exists.
+- [x] Unit tests for sync state transitions.
+
+## Implementation notes (2026-06-19)
+
+- `SyncStatus` + `SyncStatusBannerView` — compact status row (RU copy).
+- `NetworkPathMonitor` — `NWPathMonitor` for proactive offline detection.
+- `MainView` / `ChatViewModel` — `.refreshing` → `.upToDate` / `.offline` / `.failed`.
+- Triggers: `.refreshable`, `scenePhase == .active`, toolbar refresh.

@@ -13,6 +13,7 @@ struct MainView: View {
     @State private var isSearching = false
     @State private var loadError: String?
     @State private var isLoading = false
+    @State private var sessionsSyncStatus: SyncStatus = .idle
     @State private var didLoadSessionsOnce = false
     @State private var voiceViewModel: VoiceRecordingViewModel
     @State private var voiceRouting = VoiceRoutingContext()
@@ -156,6 +157,7 @@ struct MainView: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
                     voiceRouting.refreshExpiryIfNeeded()
+                    Task { await loadSessions(showFullScreenLoading: false) }
                 }
             }
             .onAppear {
@@ -277,6 +279,13 @@ struct MainView: View {
 
     private var sessionsList: some View {
         List {
+            if sessionsSyncStatus.showsBanner {
+                SyncStatusBannerView(status: sessionsSyncStatus)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+            }
+
             if let notice = voiceRouting.defaultExpiredNotice {
                 VoiceDefaultExpiredBanner(notice: notice) {
                     withAnimation(.easeOut(duration: 0.2)) {
@@ -433,25 +442,54 @@ struct MainView: View {
         if sessions.isEmpty, let cached = sessionCache.loadSessions(), !cached.isEmpty {
             sessions = applyPinnedOrder(to: cached)
         }
-        let showBlockingLoader = showFullScreenLoading && sessions.isEmpty
-        if showBlockingLoader {
+
+        let hasLocalData = !sessions.isEmpty
+        if hasLocalData {
+            sessionsSyncStatus = .refreshing
+        } else if showFullScreenLoading {
             isLoading = true
         }
+
         loadError = nil
+        let showBlockingLoader = showFullScreenLoading && !hasLocalData
         defer {
             if showBlockingLoader {
                 isLoading = false
             }
         }
+
+        guard NetworkPathMonitor.shared.isOnline else {
+            if hasLocalData {
+                sessionsSyncStatus = .offline(lastSyncedAt: sessionCache.lastSessionsSyncAt())
+            } else {
+                loadError = "Нет подключения к сети"
+                sessionsSyncStatus = .offline(lastSyncedAt: nil)
+            }
+            return
+        }
+
         do {
             let fetched = try await apiClient.fetchSessions()
             pinnedStore.prune(validSessionIds: Set(fetched.map(\.id)))
             sessions = applyPinnedOrder(to: fetched)
             sessionCache.saveSessions(fetched)
             voiceRouting.refreshExpiryIfNeeded()
+            sessionsSyncStatus = .upToDate(lastSyncedAt: Date())
         } catch {
-            if sessions.isEmpty {
+            let lastSynced = sessionCache.lastSessionsSyncAt()
+            if hasLocalData {
+                sessionsSyncStatus = SyncNetworkError.failureStatus(
+                    error: error,
+                    lastSyncedAt: lastSynced,
+                    isPathOnline: NetworkPathMonitor.shared.isOnline
+                )
+            } else {
                 loadError = error.localizedDescription
+                sessionsSyncStatus = SyncNetworkError.failureStatus(
+                    error: error,
+                    lastSyncedAt: nil,
+                    isPathOnline: NetworkPathMonitor.shared.isOnline
+                )
             }
         }
     }

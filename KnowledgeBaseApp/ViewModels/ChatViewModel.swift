@@ -22,6 +22,7 @@ final class ChatViewModel {
     var isSending = false
     var isTranscribingVoice = false
     var errorMessage: String?
+    var syncStatus: SyncStatus = .idle
     var totalCount = 0
     var hasMoreOlder = false
     var scrollIntent: ChatScrollIntent = .none
@@ -59,24 +60,70 @@ final class ChatViewModel {
     func load() async {
         bootstrapFromCacheIfNeeded()
         let hadCachedMessages = !messages.isEmpty
-        isLoading = !hadCachedMessages
+        if hadCachedMessages {
+            syncStatus = .refreshing
+        } else {
+            isLoading = true
+        }
         errorMessage = nil
         scrollIntent = .none
         ChatPaginationLogger.initialLoadStarted(sessionId: session.id)
         defer { isLoading = false }
+        await refreshFromNetwork(hadLocalData: hadCachedMessages, kind: "initial")
+        await resumeAwaitingReplyIfNeeded()
+    }
+
+    /// Background refresh (pull-to-refresh, app became active).
+    func refresh() async {
+        let hadLocalData = !messages.isEmpty
+        if hadLocalData {
+            syncStatus = .refreshing
+        }
+        await refreshFromNetwork(hadLocalData: hadLocalData, kind: "refresh")
+    }
+
+    private func refreshFromNetwork(hadLocalData: Bool, kind: String) async {
+        guard NetworkPathMonitor.shared.isOnline else {
+            if hadLocalData {
+                syncStatus = .offline(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id))
+            } else {
+                errorMessage = "Нет подключения к сети"
+                syncStatus = .offline(lastSyncedAt: nil)
+            }
+            ChatPaginationLogger.loadFailed(kind, error: "offline")
+            return
+        }
+
         do {
+            let limit = kind == "initial" ? Self.pageSize : max(messages.count + 2, Self.pageSize)
             let page = try await client.fetchMessagesPage(
                 sessionId: session.id,
-                limit: Self.pageSize,
+                limit: limit,
                 beforeMessageId: nil
             )
-            apply(page: page, requestedLimit: Self.pageSize, kind: "initial")
-            await resumeAwaitingReplyIfNeeded()
+            apply(
+                page: page,
+                requestedLimit: limit,
+                kind: kind == "initial" ? "initial" : "reloadLatest"
+            )
+            syncStatus = .upToDate(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id) ?? Date())
         } catch {
-            if messages.isEmpty {
+            let lastSynced = messageCache.lastSyncedAt(sessionId: session.id)
+            if hadLocalData {
+                syncStatus = SyncNetworkError.failureStatus(
+                    error: error,
+                    lastSyncedAt: lastSynced,
+                    isPathOnline: NetworkPathMonitor.shared.isOnline
+                )
+            } else {
                 errorMessage = error.localizedDescription
+                syncStatus = SyncNetworkError.failureStatus(
+                    error: error,
+                    lastSyncedAt: nil,
+                    isPathOnline: NetworkPathMonitor.shared.isOnline
+                )
             }
-            ChatPaginationLogger.loadFailed("initial", error: error.localizedDescription)
+            ChatPaginationLogger.loadFailed(kind, error: error.localizedDescription)
         }
     }
 
@@ -507,6 +554,7 @@ final class ChatViewModel {
 
     func reloadLatestWindow() async {
         let limit = max(messages.count + 2, Self.pageSize)
+        syncStatus = messages.isEmpty ? .idle : .refreshing
         do {
             let page = try await client.fetchMessagesPage(
                 sessionId: session.id,
@@ -516,8 +564,16 @@ final class ChatViewModel {
             apply(page: page, requestedLimit: limit, kind: "reloadLatest")
             scrollIntent = .scrollToBottom
             assistantReplyPhase = .idle
+            syncStatus = .upToDate(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id) ?? Date())
         } catch {
-            errorMessage = error.localizedDescription
+            if messages.isEmpty {
+                errorMessage = error.localizedDescription
+            }
+            syncStatus = SyncNetworkError.failureStatus(
+                error: error,
+                lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id),
+                isPathOnline: NetworkPathMonitor.shared.isOnline
+            )
             ChatPaginationLogger.loadFailed("reloadLatest", error: error.localizedDescription)
         }
     }

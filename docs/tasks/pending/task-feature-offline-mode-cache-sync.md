@@ -85,7 +85,7 @@ Current iOS app behavior is online-first:
 ## Execution split (recommended)
 
 - [x] `task-feature-offline-cache-foundation.md` — persistent cache data layer (sessions/messages).
-- [ ] `task-ux-swr-sync-status-sessions-chat.md` — cache-first + refresh status UX.
+- [x] `task-ux-swr-sync-status-sessions-chat.md` — cache-first + refresh status UX.
 - [ ] `task-feature-offline-attachment-disk-cache-management.md` — attachment disk cache + settings management UI.
 
 ## Not in scope (v1)

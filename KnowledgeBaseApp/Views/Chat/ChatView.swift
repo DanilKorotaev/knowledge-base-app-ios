@@ -29,6 +29,10 @@ struct ChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if viewModel.syncStatus.showsBanner {
+                SyncStatusBannerView(status: viewModel.syncStatus)
+            }
+
             if viewModel.isLoading && viewModel.messages.isEmpty {
                 ProgressView("Loading messages…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -99,6 +103,9 @@ struct ChatView: View {
                     }
                     .onChange(of: viewModel.scrollIntent) { _, intent in
                         applyScrollIntent(intent, proxy: proxy)
+                    }
+                    .refreshable {
+                        await viewModel.refresh()
                     }
                 }
             }
@@ -174,7 +181,10 @@ struct ChatView: View {
         }
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
-            Task { await viewModel.resumeAwaitingReplyIfNeeded() }
+            Task {
+                await viewModel.resumeAwaitingReplyIfNeeded()
+                await viewModel.refresh()
+            }
         }
         .onAppear {
             ChatSessionFocusTracker.shared.setFocusedSessionId(viewModel.session.id)

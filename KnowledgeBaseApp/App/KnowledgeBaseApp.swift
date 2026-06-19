@@ -17,6 +17,7 @@ struct KnowledgeBaseApp: App {
             WatchRelayLogger.ingestWatchLine(line)
         }
         #endif
+        NetworkPathMonitor.shared.start()
     }
 
     var body: some Scene {
