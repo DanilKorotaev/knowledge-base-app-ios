@@ -1,6 +1,6 @@
 # UX: отображение активности Cursor (SSE `activity`) во время долгого ответа
 
-**Status:** Done (phases A–C)
+**Status:** Done
 **Priority:** Medium (depends on backend stream-json)  
 **Category:** Chat UX / streaming  
 

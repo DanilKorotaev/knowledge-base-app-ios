@@ -7,7 +7,7 @@
 
 ## Planned
 
-**Рекомендуемый порядок (2026-06-18):** 1) **Push E2E** на устройстве; 2) **E2E automation** — расширить `KnowledgeBaseAPIE2ETests`; 3) **Watch complication**; 4) **Композер polish** (Quick Look, лимиты).
+**Recommended order (2026-06-19):** 1) **SWR sync UX**; 2) **Attachment disk cache**; 3) **Push E2E**; 4) **Clickable changed files**; 5) E2E automation; 6) Watch complication; 7) Composer polish.
 
 ### Integration (E2E + contract)
 
@@ -31,6 +31,11 @@
 - [x] [Чат: пагинация (load older)](tasks/completed/task-feature-chat.md) — fix `d49bbe7` 2026-06-18
 - [ ] [Push: ответ готов](tasks/pending/task-feature-push-notifications-chat.md) — см. In progress
 - [ ] [Apple Watch: complication](tasks/pending/task-feature-watch-app-voice.md) — см. In progress
+- [ ] [Оффлайн-режим: кэш сессий/чатов и вложений](tasks/pending/task-feature-offline-mode-cache-sync.md) — cache-first + background refresh + управление кэшем
+- [x] [Offline foundation: persistent cache](tasks/completed/task-feature-offline-cache-foundation.md) — `FileOfflineCacheStore`, cache-first list/chat
+- [ ] [SWR sync UX: статусы обновления](tasks/pending/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
+- [ ] [Offline attachments: disk cache management](tasks/pending/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
+- [ ] [Чат: кликабельные changed files](tasks/pending/task-ux-chat-clickable-changed-files.md) — MVP список под ответом, затем inline-ссылки
 - [ ] [Композер: polish](tasks/pending/task-ux-chat-composer-polish.md) — Quick Look, лимиты, RU
 
 ### Backend (`knowledge-base-bot/kb_app_api/`)

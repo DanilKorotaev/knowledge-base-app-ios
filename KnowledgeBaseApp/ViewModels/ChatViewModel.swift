@@ -34,6 +34,7 @@ final class ChatViewModel {
     private var isPollingForReply = false
 
     private let client: ChatAPIClientProtocol
+    private let messageCache: MessageCacheStoreProtocol
 
     /// Backward-compatible alias for tests and legacy call sites.
     var draft: String {
@@ -45,13 +46,20 @@ final class ChatViewModel {
         composerDraft.canSend && !isSending && !isTranscribingVoice
     }
 
-    init(session: KBSession, client: ChatAPIClientProtocol) {
+    init(
+        session: KBSession,
+        client: ChatAPIClientProtocol,
+        messageCache: MessageCacheStoreProtocol = FileOfflineCacheStore.shared
+    ) {
         self.session = session
         self.client = client
+        self.messageCache = messageCache
     }
 
     func load() async {
-        isLoading = true
+        bootstrapFromCacheIfNeeded()
+        let hadCachedMessages = !messages.isEmpty
+        isLoading = !hadCachedMessages
         errorMessage = nil
         scrollIntent = .none
         ChatPaginationLogger.initialLoadStarted(sessionId: session.id)
@@ -65,9 +73,18 @@ final class ChatViewModel {
             apply(page: page, requestedLimit: Self.pageSize, kind: "initial")
             await resumeAwaitingReplyIfNeeded()
         } catch {
-            errorMessage = error.localizedDescription
+            if messages.isEmpty {
+                errorMessage = error.localizedDescription
+            }
             ChatPaginationLogger.loadFailed("initial", error: error.localizedDescription)
         }
+    }
+
+    private func bootstrapFromCacheIfNeeded() {
+        guard messages.isEmpty,
+              let cached = messageCache.loadWindow(sessionId: session.id),
+              !cached.messages.isEmpty else { return }
+        apply(page: cached, requestedLimit: Self.pageSize, kind: "cache")
     }
 
     func loadOlder() async {
@@ -105,6 +122,7 @@ final class ChatViewModel {
             totalCount = page.total
             hasMoreOlder = page.hasMoreOlder
             scrollIntent = .preserve(messageId: anchorId)
+            persistMessageWindow()
             ChatPaginationLogger.pageApplied(
                 kind: "older",
                 messageIds: page.messages.map(\.id),
@@ -590,12 +608,26 @@ final class ChatViewModel {
         totalCount = page.total
         let hasOlderByCount = page.total > messages.count
         hasMoreOlder = page.hasMoreOlder || hasOlderByCount
+        if kind != "cache" {
+            persistMessageWindow()
+        }
         ChatPaginationLogger.pageApplied(
             kind: kind,
             messageIds: messages.map(\.id),
             total: page.total,
             hasMoreOlder: hasMoreOlder,
             windowCount: messages.count
+        )
+    }
+
+    private func persistMessageWindow() {
+        messageCache.saveWindow(
+            sessionId: session.id,
+            page: KBMessagesPage(
+                messages: messages,
+                total: totalCount,
+                hasMoreOlder: hasMoreOlder
+            )
         )
     }
 

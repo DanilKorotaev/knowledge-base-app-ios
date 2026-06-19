@@ -27,6 +27,7 @@ struct MainView: View {
     @State private var sessionActionError: String?
     @State private var navigationPath = NavigationPath()
     @State private var pinnedStore = PinnedSessionsStore.shared
+    private let sessionCache: SessionCacheStoreProtocol
     @Environment(\.scenePhase) private var scenePhase
 
     init(
@@ -34,12 +35,14 @@ struct MainView: View {
         chatClient: ChatAPIClientProtocol = MainView.makeChatClient(),
         filesClient: FilesAPIClientProtocol = MainView.makeFilesClient(),
         attachmentLoader: KBAttachmentLoaderProtocol? = nil,
+        sessionCache: SessionCacheStoreProtocol = FileOfflineCacheStore.shared,
         deepLinkVoiceRecording: Binding<Bool> = .constant(false),
         deepLinkSessionId: Binding<String?> = .constant(nil)
     ) {
         self.apiClient = apiClient
         self.chatClient = chatClient
         self.filesClient = filesClient
+        self.sessionCache = sessionCache
         self.attachmentLoader = attachmentLoader ?? MainView.makeAttachmentLoader()
         self._deepLinkVoiceRecording = deepLinkVoiceRecording
         self._deepLinkSessionId = deepLinkSessionId
@@ -427,6 +430,9 @@ struct MainView: View {
 
     @MainActor
     private func loadSessions(showFullScreenLoading: Bool) async {
+        if sessions.isEmpty, let cached = sessionCache.loadSessions(), !cached.isEmpty {
+            sessions = applyPinnedOrder(to: cached)
+        }
         let showBlockingLoader = showFullScreenLoading && sessions.isEmpty
         if showBlockingLoader {
             isLoading = true
@@ -441,9 +447,12 @@ struct MainView: View {
             let fetched = try await apiClient.fetchSessions()
             pinnedStore.prune(validSessionIds: Set(fetched.map(\.id)))
             sessions = applyPinnedOrder(to: fetched)
+            sessionCache.saveSessions(fetched)
             voiceRouting.refreshExpiryIfNeeded()
         } catch {
-            loadError = error.localizedDescription
+            if sessions.isEmpty {
+                loadError = error.localizedDescription
+            }
         }
     }
 
@@ -546,6 +555,7 @@ struct MainView: View {
 
         voiceRouting.handleDeletedSession(session.id)
         pinnedStore.remove(sessionId: session.id)
+        sessionCache.removeSession(id: session.id)
 
         let previousSessions = sessions
         let previousSearch = searchResults
