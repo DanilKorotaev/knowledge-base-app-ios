@@ -29,8 +29,8 @@ protocol ChatAPIClientProtocol: Sendable {
         useKnowledgeBase: Bool
     ) async throws -> VoiceRecordingSendResult
 
-    /// Assistant reply as token chunks. Implementations add the user message before the first yield (stub); HTTP runs `POST …/messages` first, then yields assistant text (until SSE exists).
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error>
+    /// Assistant reply as SSE events (`activity` progress + `delta` text). Implementations add the user message before the first yield (stub); HTTP runs `POST …/messages` first, then yields assistant events.
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error>
 
     /// Text + voice file: `POST …/messages/voice` (multipart + SSE). Saves audio and transcription on the server.
     func streamVoiceMessage(
@@ -38,14 +38,14 @@ protocol ChatAPIClientProtocol: Sendable {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error>
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error>
 
     /// Text + multiple files/voice clips: `POST …/messages/compose` (multipart + SSE).
     func streamComposedMessage(
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error>
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error>
 }
 
 struct StubChatAPIClient: ChatAPIClientProtocol {
@@ -173,7 +173,7 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             return AsyncThrowingStream { $0.finish() }
@@ -209,7 +209,7 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
                 let parts = fullReply.components(separatedBy: " ")
                 for (index, part) in parts.enumerated() {
                     let chunk = index == 0 ? part : " " + part
-                    continuation.yield(chunk)
+                    continuation.yield(.delta(chunk))
                     try? await Task.sleep(nanoseconds: 25_000_000)
                 }
                 var updated = store.messages(for: sessionId)
@@ -226,7 +226,7 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         }
     }
 
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             return AsyncThrowingStream { $0.finish() }
@@ -253,7 +253,7 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
                 let parts = fullReply.components(separatedBy: " ")
                 for (index, part) in parts.enumerated() {
                     let chunk = index == 0 ? part : " " + part
-                    continuation.yield(chunk)
+                    continuation.yield(.delta(chunk))
                     try? await Task.sleep(nanoseconds: 25_000_000)
                 }
                 var updated = store.messages(for: sessionId)
@@ -274,7 +274,7 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         let summary = draft.trimmedText.isEmpty
             ? "Compose: \(draft.attachments.count) files, \(draft.voiceClips.count) voice"
             : draft.trimmedText

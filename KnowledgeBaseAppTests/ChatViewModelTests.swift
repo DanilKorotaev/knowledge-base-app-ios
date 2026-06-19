@@ -285,6 +285,116 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.messages.last?.role, .assistant)
         XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
     }
+
+    func testSendText_showsCursorActivityUntilFirstDelta() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let client = ActivityStreamChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        await viewModel.load()
+        viewModel.draft = "run tests"
+
+        let sendTask = Task { await viewModel.send() }
+        try await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertEqual(viewModel.cursorActivityLabel, "Запускаю тесты…")
+        XCTAssertEqual(viewModel.assistantReplyPhase, .waiting)
+
+        await sendTask.value
+
+        XCTAssertNil(viewModel.cursorActivityLabel)
+        XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+    }
+}
+
+/// Emits activity SSE events before text deltas.
+private struct ActivityStreamChatAPIClient: ChatAPIClientProtocol {
+    let store: InMemoryKBStore
+
+    func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
+        try await StubChatAPIClient(store: store).fetchMessagesPage(
+            sessionId: sessionId,
+            limit: limit,
+            beforeMessageId: beforeMessageId
+        )
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        try await StubChatAPIClient(store: store).sendTextMessage(
+            sessionId: sessionId,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func sendAttachment(
+        sessionId: String,
+        fileURL: URL,
+        filename: String,
+        mimeType: String,
+        useKnowledgeBase: Bool
+    ) async throws -> [KBMessage] {
+        try await StubChatAPIClient(store: store).sendAttachment(
+            sessionId: sessionId,
+            fileURL: fileURL,
+            filename: filename,
+            mimeType: mimeType,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL)
+    }
+
+    func sendVoiceRecording(
+        sessionId: String,
+        audioFileURL: URL,
+        transcriptionHint: String,
+        useKnowledgeBase: Bool
+    ) async throws -> VoiceRecordingSendResult {
+        try await StubChatAPIClient(store: store).sendVoiceRecording(
+            sessionId: sessionId,
+            audioFileURL: audioFileURL,
+            transcriptionHint: transcriptionHint,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func streamTextMessage(
+        sessionId: String,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        _ = try await StubChatAPIClient(store: store).sendTextMessage(
+            sessionId: sessionId,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
+        return AsyncThrowingStream { continuation in
+            Task {
+                continuation.yield(.activity(label: "Запускаю тесты…"))
+                try? await Task.sleep(nanoseconds: 100_000_000)
+                continuation.yield(.delta("Done"))
+                continuation.finish()
+            }
+        }
+    }
+
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
+    }
 }
 
 /// Returns user-only history on the first fetch, then appends an assistant reply (simulates late server persistence).
@@ -375,7 +485,7 @@ private final class DelayedAssistantReplyChatAPIClient: ChatAPIClientProtocol, @
         sessionId: String,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await StubChatAPIClient(store: store).streamTextMessage(
             sessionId: sessionId,
             text: text,
@@ -388,7 +498,7 @@ private final class DelayedAssistantReplyChatAPIClient: ChatAPIClientProtocol, @
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await StubChatAPIClient(store: store).streamVoiceMessage(
             sessionId: sessionId,
             audioFileURL: audioFileURL,
@@ -401,7 +511,7 @@ private final class DelayedAssistantReplyChatAPIClient: ChatAPIClientProtocol, @
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await StubChatAPIClient(store: store).streamComposedMessage(
             sessionId: sessionId,
             draft: draft,
@@ -452,7 +562,7 @@ private struct SlowConnectStreamChatAPIClient: ChatAPIClientProtocol {
         VoiceRecordingSendResult(messages: [], transcription: nil)
     }
 
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         if connectDelayNanoseconds > 0 {
             try await Task.sleep(nanoseconds: connectDelayNanoseconds)
         }
@@ -468,7 +578,7 @@ private struct SlowConnectStreamChatAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
 
@@ -476,7 +586,7 @@ private struct SlowConnectStreamChatAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await StubChatAPIClient(store: store).streamComposedMessage(
             sessionId: sessionId,
             draft: draft,
@@ -523,7 +633,7 @@ private struct FailingStreamChatAPIClient: ChatAPIClientProtocol {
         VoiceRecordingSendResult(messages: [], transcription: nil)
     }
 
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         AsyncThrowingStream { continuation in
             continuation.finish(throwing: StreamError())
         }
@@ -534,7 +644,7 @@ private struct FailingStreamChatAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
 
@@ -542,7 +652,7 @@ private struct FailingStreamChatAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
@@ -579,7 +689,7 @@ private struct FailingFetchChatAPIClient: ChatAPIClientProtocol {
         VoiceRecordingSendResult(messages: [], transcription: nil)
     }
 
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         AsyncThrowingStream { $0.finish() }
     }
 
@@ -588,7 +698,7 @@ private struct FailingFetchChatAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
 
@@ -596,7 +706,7 @@ private struct FailingFetchChatAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
@@ -644,7 +754,7 @@ private struct FailingOlderFetchChatAPIClient: ChatAPIClientProtocol {
         VoiceRecordingSendResult(messages: [], transcription: nil)
     }
 
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await StubChatAPIClient(store: store).streamTextMessage(
             sessionId: sessionId,
             text: text,
@@ -657,7 +767,7 @@ private struct FailingOlderFetchChatAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
 
@@ -665,7 +775,7 @@ private struct FailingOlderFetchChatAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await StubChatAPIClient(store: store).streamComposedMessage(
             sessionId: sessionId,
             draft: draft,

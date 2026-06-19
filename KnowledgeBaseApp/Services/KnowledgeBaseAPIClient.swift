@@ -413,7 +413,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return try await messagesFromPostResponse(data: data, sessionId: sessionId)
     }
 
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             return AsyncThrowingStream { $0.finish() }
@@ -479,7 +479,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             return AsyncThrowingStream { $0.finish() }
@@ -549,7 +549,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         guard draft.canSend else {
             return AsyncThrowingStream { $0.finish() }
         }
@@ -619,13 +619,13 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return data
     }
 
-    private func streamAssistantByWord(_ full: String) -> AsyncThrowingStream<String, Error> {
+    private func streamAssistantByWord(_ full: String) -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         let parts = full.components(separatedBy: " ")
         return AsyncThrowingStream { continuation in
             Task {
                 for (index, part) in parts.enumerated() {
                     let chunk = index == 0 ? part : " " + part
-                    continuation.yield(chunk)
+                    continuation.yield(.delta(chunk))
                     try? await Task.sleep(nanoseconds: 8_000_000)
                 }
                 continuation.finish()
@@ -635,7 +635,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
     /// Разбор SSE по границам `\n\n` после нормализации `\r\n` → `\n` (иначе `\r\n\r\n` не даёт пары LF-LF в сырых байтах).
     /// `AsyncBytes.lines` здесь не подходит: пустые строки между событиями часто опускаются, и несколько `data:` сливаются в один блок.
-    private func streamAssistantChunksFromSSE(bytes: URLSession.AsyncBytes) -> AsyncThrowingStream<String, Error> {
+    private func streamAssistantChunksFromSSE(bytes: URLSession.AsyncBytes) -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         AsyncThrowingStream { continuation in
             Task {
                 do {
@@ -677,7 +677,10 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
     }
 
     /// - Returns: `true` if the stream ended with `done` (continuation already finished).
-    private static func handleSSEChatPayload(_ payload: String, continuation: AsyncThrowingStream<String, Error>.Continuation) -> Bool {
+    private static func handleSSEChatPayload(
+        _ payload: String,
+        continuation: AsyncThrowingStream<AssistantStreamEvent, Error>.Continuation
+    ) -> Bool {
         let trimmed = payload.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
         if let jsonData = trimmed.data(using: .utf8),
@@ -689,8 +692,13 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             if evt.status != nil {
                 return false
             }
+            if let activity = evt.activity, !activity.isEmpty,
+               let label = evt.label, !label.isEmpty {
+                continuation.yield(.activity(label: label))
+                return false
+            }
             if let d = evt.delta, !d.isEmpty {
-                continuation.yield(d)
+                continuation.yield(.delta(d))
             }
             if evt.done == true {
                 continuation.finish()
@@ -698,7 +706,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             }
             return false
         }
-        continuation.yield(trimmed)
+        continuation.yield(.delta(trimmed))
         return false
     }
 

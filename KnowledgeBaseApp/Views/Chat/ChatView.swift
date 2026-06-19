@@ -147,7 +147,7 @@ struct ChatView: View {
         .onReceive(NotificationCenter.default.publisher(for: AssistantReplyPhaseNotification.name)) { notification in
             guard let parsed = AssistantReplyPhaseNotification.parse(notification),
                   parsed.sessionId == viewModel.session.id else { return }
-            viewModel.applyExternalAssistantPhase(parsed.phase)
+            viewModel.applyExternalAssistantPhase(parsed.phase, activityLabel: parsed.activityLabel)
         }
         .onAppear {
             voiceRouting.activeSessionId = viewModel.session.id
@@ -202,10 +202,10 @@ struct ChatView: View {
         case .idle:
             EmptyView()
         case .waiting:
-            AssistantPendingBubbleView()
+            AssistantPendingBubbleView(activityLabel: viewModel.cursorActivityLabel)
                 .id("__kb_assistant_waiting__")
         case .streaming(let text) where text.isEmpty:
-            AssistantPendingBubbleView()
+            AssistantPendingBubbleView(activityLabel: viewModel.cursorActivityLabel)
                 .id("__kb_assistant_streaming_empty__")
         case .streaming(let text), .finalizing(let text):
             StreamingAssistantBubbleView(

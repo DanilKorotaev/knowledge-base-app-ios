@@ -1,6 +1,6 @@
 # UX: отображение активности Cursor (SSE `activity`) во время долгого ответа
 
-**Status:** Partial — contract + `ChatSSEEvent` fields (UI in [task-ux-cursor-activity-streaming.md](task-ux-cursor-activity-streaming.md))
+**Status:** Done (phases A–C)
 **Priority:** Medium (depends on backend stream-json)  
 **Category:** Chat UX / streaming  
 
@@ -27,18 +27,18 @@ Show **what the agent is doing** under the pending bubble (or inline status), wi
 
 - [x] Extend `ChatSSEEvent` (`Networking/ChatSSEEvent.swift`): `activity`, `label`
 - [x] Update `docs/KB_APP_API_CONTRACT.md`
-- [ ] `KnowledgeBaseAPIClient.handleSSEChatPayload`: surface activity to ViewModel
+- [x] `KnowledgeBaseAPIClient.handleSSEChatPayload`: surface activity to ViewModel
 
 ### Phase B — ViewModel + UI
 
-- [ ] `ChatViewModel` / streaming state: `cursorActivityLabel: String?` updated on `activity` events; cleared on first `delta` or `done`.
-- [ ] `AssistantPendingBubbleView`: optional subtitle under «Обработка…» (`activityLabel`).
-- [ ] Accessibility: announce activity changes sparingly (avoid VoiceOver spam).
+- [x] `ChatViewModel` / streaming state: `cursorActivityLabel: String?` updated on `activity` events; cleared on first `delta` or `done`.
+- [x] `AssistantPendingBubbleView`: optional subtitle under «Обработка…» (`activityLabel`).
+- [x] Accessibility: announce activity changes sparingly (avoid VoiceOver spam).
 
 ### Phase C — Tests
 
-- [ ] Unit: decode SSE payload with `activity` + `label`.
-- [ ] Unit: `ChatViewModel` sets/clears activity label through mock stream.
+- [x] Unit: decode SSE payload with `activity` + `label`.
+- [x] Unit: `ChatViewModel` sets/clears activity label through mock stream.
 - [ ] Optional UI test: pending bubble shows subtitle when activity present.
 
 ## Out of scope
@@ -49,9 +49,9 @@ Show **what the agent is doing** under the pending bubble (or inline status), wi
 
 ## Acceptance
 
-- [ ] During a long backend job, user sees updating status lines (e.g. «Читаю …», «Выполняю …») before answer text streams.
-- [ ] When `delta` arrives, activity line hides; streaming bubble behaves as today.
-- [ ] Client works if server sends only `processing` / `delta` / `done` (no `activity`) — no regression.
+- [x] During a long backend job, user sees updating status lines (e.g. «Читаю …», «Выполняю …») before answer text streams.
+- [x] When `delta` arrives, activity line hides; streaming bubble behaves as today.
+- [x] Client works if server sends only `processing` / `delta` / `done` (no `activity`) — no regression.
 
 ## Depends on
 

@@ -52,8 +52,8 @@ enum WatchVoiceRelayProcessor {
         )
 
         var finalText = trimmed
-        try await AssistantReplyStreamConsumer.consume(stream) { phase in
-            switch phase {
+        try await AssistantReplyStreamConsumer.consume(stream) { update in
+            switch update.phase {
             case .finalizing(let text):
                 finalText = text
             case .streaming(let text) where !text.isEmpty:

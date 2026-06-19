@@ -9,4 +9,5 @@ enum KBNotificationUserInfoKey {
     static let sessionId = "sessionId"
     static let assistantReplyPhaseKind = "assistantReplyPhaseKind"
     static let assistantReplyPhaseText = "assistantReplyPhaseText"
+    static let assistantReplyActivityLabel = "assistantReplyActivityLabel"
 }

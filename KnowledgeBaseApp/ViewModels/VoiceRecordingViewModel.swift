@@ -152,7 +152,7 @@ final class VoiceRecordingViewModel {
             do {
                 AssistantReplyPhaseNotification.post(sessionId: sessionId, phase: .waiting)
                 let audioURL = lastRecordedFileURL
-                let stream: AsyncThrowingStream<String, Error>
+                let stream: AsyncThrowingStream<AssistantStreamEvent, Error>
                 if let audioURL {
                     stream = try await chatClient.streamVoiceMessage(
                         sessionId: sessionId,
@@ -167,8 +167,8 @@ final class VoiceRecordingViewModel {
                         useKnowledgeBase: useKnowledgeBase
                     )
                 }
-                try await AssistantReplyStreamConsumer.consume(stream) { phase in
-                    AssistantReplyPhaseNotification.post(sessionId: sessionId, phase: phase)
+                try await AssistantReplyStreamConsumer.consume(stream) { update in
+                    AssistantReplyPhaseNotification.post(sessionId: sessionId, update: update)
                 }
 
                 if let url = lastRecordedFileURL {

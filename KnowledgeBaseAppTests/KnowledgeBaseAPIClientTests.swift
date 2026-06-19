@@ -239,13 +239,65 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let stream = try await client.streamTextMessage(sessionId: "s1", text: "hello", useKnowledgeBase: true)
 
         var parts: [String] = []
-        for try await chunk in stream {
-            parts.append(chunk)
+        for try await event in stream {
+            if case .delta(let chunk) = event {
+                parts.append(chunk)
+            }
         }
 
         XCTAssertEqual(parts, ["Hi", "!"])
 
         MockURLProtocol.requestHandler = nil
+    }
+
+    func testStreamTextMessageParsesSSEActivityEvents() async throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+
+        let sse = """
+        data: {"activity":"tool","label":"Запускаю тесты…"}
+
+
+        data: {"delta":"Hi"}
+
+
+        data: {"done":true}
+
+
+        """.data(using: .utf8)!
+
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "text/event-stream; charset=utf-8"]
+            )!
+            return (response, sse)
+        }
+
+        let base = URL(string: "https://kb.test")!
+        let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: "tok", urlSession: URLSession(configuration: config))
+        let stream = try await client.streamTextMessage(sessionId: "s1", text: "hello", useKnowledgeBase: true)
+
+        var events: [AssistantStreamEvent] = []
+        for try await event in stream {
+            events.append(event)
+        }
+
+        XCTAssertEqual(events, [
+            .activity(label: "Запускаю тесты…"),
+            .delta("Hi"),
+        ])
+
+        MockURLProtocol.requestHandler = nil
+    }
+
+    func testChatSSEEventDecodesActivityPayload() throws {
+        let json = #"{"activity":"tool","label":"Читаю README.md…"}"#.data(using: .utf8)!
+        let event = try JSONDecoder().decode(ChatSSEEvent.self, from: json)
+        XCTAssertEqual(event.activity, "tool")
+        XCTAssertEqual(event.label, "Читаю README.md…")
     }
 
     /// Серверы часто разделяют SSE-события `\r\n\r\n`; поиск только `\n\n` в сырых байтах их пропускает.
@@ -272,8 +324,10 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let stream = try await client.streamTextMessage(sessionId: "s1", text: "hello", useKnowledgeBase: true)
 
         var parts: [String] = []
-        for try await chunk in stream {
-            parts.append(chunk)
+        for try await event in stream {
+            if case .delta(let chunk) = event {
+                parts.append(chunk)
+            }
         }
 
         XCTAssertEqual(parts, ["Hi", "!"])
@@ -305,8 +359,10 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let stream = try await client.streamTextMessage(sessionId: "s1", text: "x", useKnowledgeBase: true)
 
         var accumulated = ""
-        for try await chunk in stream {
-            accumulated += chunk
+        for try await event in stream {
+            if case .delta(let chunk) = event {
+                accumulated += chunk
+            }
         }
 
         XCTAssertEqual(accumulated, "One two")

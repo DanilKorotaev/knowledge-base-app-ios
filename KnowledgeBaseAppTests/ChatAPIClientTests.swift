@@ -78,8 +78,10 @@ final class ChatAPIClientTests: XCTestCase {
             useKnowledgeBase: true
         )
         var accumulated = ""
-        for try await chunk in stream {
-            accumulated += chunk
+        for try await event in stream {
+            if case .delta(let chunk) = event {
+                accumulated += chunk
+            }
         }
         let page = try await client.fetchMessagesPage(sessionId: sessionId, limit: 20, beforeMessageId: nil)
         XCTAssertEqual(page.messages.count, 2)

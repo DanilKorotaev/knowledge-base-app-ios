@@ -27,6 +27,8 @@ final class ChatViewModel {
     var scrollIntent: ChatScrollIntent = .none
     /// In-flight assistant reply UI (spinner, streaming text, finalize).
     var assistantReplyPhase: AssistantReplyPhase = .idle
+    /// Cursor tool progress label from SSE `activity` events (hidden after first text delta).
+    var cursorActivityLabel: String?
 
     private var streamRevealContinuation: CheckedContinuation<Void, Never>?
     private var isPollingForReply = false
@@ -148,11 +150,22 @@ final class ChatViewModel {
     }
 
     /// Applies streaming phase from voice send (`AssistantReplyPhaseNotification`).
-    func applyExternalAssistantPhase(_ phase: AssistantReplyPhase) {
+    func applyExternalAssistantPhase(_ phase: AssistantReplyPhase, activityLabel: String? = nil) {
         assistantReplyPhase = phase
+        if let activityLabel {
+            cursorActivityLabel = activityLabel
+        } else if !phase.showsPendingSpinner {
+            cursorActivityLabel = nil
+        }
         if phase.showsPlaceholder {
             scrollIntent = .scrollToBottom
         }
+    }
+
+    private func applyStreamUpdate(_ update: AssistantReplyStreamUpdate) {
+        assistantReplyPhase = update.phase
+        cursorActivityLabel = update.activityLabel
+        scrollIntent = .scrollToBottom
     }
 
     func send() async {
@@ -288,6 +301,7 @@ final class ChatViewModel {
             )
             messages.append(optimisticUser)
             assistantReplyPhase = .waiting
+            cursorActivityLabel = nil
             scrollIntent = .scrollToBottom
 
             let stream = try await client.streamTextMessage(
@@ -295,15 +309,16 @@ final class ChatViewModel {
                 text: text,
                 useKnowledgeBase: useKnowledgeBase
             )
-            try await AssistantReplyStreamConsumer.consume(stream) { phase in
-                assistantReplyPhase = phase
-                scrollIntent = .scrollToBottom
+            try await AssistantReplyStreamConsumer.consume(stream) { update in
+                applyStreamUpdate(update)
             }
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
             assistantReplyPhase = .idle
+            cursorActivityLabel = nil
         } catch {
             assistantReplyPhase = .idle
+            cursorActivityLabel = nil
             if await resumeAwaitingReplyIfNeeded() {
                 return
             }
@@ -346,6 +361,7 @@ final class ChatViewModel {
             )
             messages.append(optimisticUser)
             assistantReplyPhase = .waiting
+            cursorActivityLabel = nil
             scrollIntent = .scrollToBottom
 
             let stream = try await client.streamVoiceMessage(
@@ -354,15 +370,16 @@ final class ChatViewModel {
                 text: text,
                 useKnowledgeBase: useKnowledgeBase
             )
-            try await AssistantReplyStreamConsumer.consume(stream) { phase in
-                assistantReplyPhase = phase
-                scrollIntent = .scrollToBottom
+            try await AssistantReplyStreamConsumer.consume(stream) { update in
+                applyStreamUpdate(update)
             }
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
             assistantReplyPhase = .idle
+            cursorActivityLabel = nil
         } catch {
             assistantReplyPhase = .idle
+            cursorActivityLabel = nil
             if await resumeAwaitingReplyIfNeeded() {
                 return
             }
@@ -394,6 +411,7 @@ final class ChatViewModel {
         do {
             messages.append(optimisticUser)
             assistantReplyPhase = .waiting
+            cursorActivityLabel = nil
             scrollIntent = .scrollToBottom
 
             let stream = try await client.streamComposedMessage(
@@ -401,15 +419,16 @@ final class ChatViewModel {
                 draft: draft,
                 useKnowledgeBase: useKnowledgeBase
             )
-            try await AssistantReplyStreamConsumer.consume(stream) { phase in
-                assistantReplyPhase = phase
-                scrollIntent = .scrollToBottom
+            try await AssistantReplyStreamConsumer.consume(stream) { update in
+                applyStreamUpdate(update)
             }
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
             assistantReplyPhase = .idle
+            cursorActivityLabel = nil
         } catch {
             assistantReplyPhase = .idle
+            cursorActivityLabel = nil
             if await resumeAwaitingReplyIfNeeded() {
                 return
             }

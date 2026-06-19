@@ -177,7 +177,7 @@ private struct RelayWatchChatAPIClient: ChatAPIClientProtocol {
         VoiceRecordingSendResult(messages: [], transcription: nil)
     }
 
-    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<String, Error> {
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         AsyncThrowingStream { $0.finish() }
     }
 
@@ -186,11 +186,11 @@ private struct RelayWatchChatAPIClient: ChatAPIClientProtocol {
         audioFileURL: URL,
         text: String,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         AsyncThrowingStream { continuation in
             let chunks = streamChunks ?? [streamReply]
             for chunk in chunks {
-                continuation.yield(chunk)
+                continuation.yield(.delta(chunk))
             }
             continuation.finish()
         }
@@ -200,7 +200,7 @@ private struct RelayWatchChatAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
-    ) async throws -> AsyncThrowingStream<String, Error> {
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         AsyncThrowingStream { $0.finish() }
     }
 }
