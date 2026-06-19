@@ -6,4 +6,7 @@ struct ChatSSEEvent: Decodable, Sendable {
     let done: Bool?
     let status: String?
     let error: String?
+    /// Cursor tool progress (`activity` + `label`) while waiting for first text delta.
+    let activity: String?
+    let label: String?
 }
