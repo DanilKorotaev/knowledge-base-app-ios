@@ -647,10 +647,8 @@ struct MainView: View {
     }
 
     private static func makeAttachmentLoader() -> KBAttachmentLoaderProtocol? {
-        if let remote = remoteBundle() {
-            return remote
-        }
-        return StubAttachmentLoader()
+        let inner: KBAttachmentLoaderProtocol = remoteBundle() ?? StubAttachmentLoader()
+        return CachingAttachmentLoader(inner: inner, cache: FileAttachmentDiskCache.shared)
     }
 }
 

@@ -32,6 +32,8 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-ux-cursor-activity-streaming.md` | Cursor tool activity label during long SSE replies |
 | `task-feature-offline-cache-foundation.md` | File-backed offline cache for sessions/messages |
 | `task-ux-swr-sync-status-sessions-chat.md` | SWR sync status banners on list and chat |
+| `task-feature-offline-attachment-disk-cache-management.md` | Attachment disk cache + Settings management |
+| `task-feature-offline-mode-cache-sync.md` | Offline mode epic (v1) |
 
 ## Pending (`pending/`)
 
@@ -40,8 +42,6 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-backend-kb-app-api-sync.md` | Contract alignment + E2E automation | 🟡 ongoing |
 | `task-feature-push-notifications-chat.md` | APNs when reply ready | 🟡 MVP в коде, E2E на устройстве |
 | `task-feature-watch-app-voice.md` | watchOS companion, complication | 🟡 relay готов, нет complication |
-| `task-feature-offline-mode-cache-sync.md` | Offline cache + attachment management | 🚧 attachments next |
-| `task-feature-offline-attachment-disk-cache-management.md` | Attachment disk cache + selective cleanup | бэклог |
 | `task-ux-chat-clickable-changed-files.md` | Chat: clickable changed files (MVP → inline) | бэклог |
 | `task-ux-chat-composer-polish.md` | Quick Look, лимиты, RU | бэклог |
 

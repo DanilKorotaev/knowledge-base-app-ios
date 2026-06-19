@@ -55,6 +55,16 @@ struct SettingsView: View {
                 Text("When no chat is open, the mic bar sends to this session. Optional TTL resets automatically.")
             }
 
+            Section {
+                NavigationLink("Manage offline cache") {
+                    OfflineCacheManagementView()
+                }
+            } header: {
+                Text("Offline")
+            } footer: {
+                Text("Images and voice messages you open are saved locally for offline viewing.")
+            }
+
             Section("Developer") {
                 NavigationLink("Debug menu") {
                     DebugMenuView()

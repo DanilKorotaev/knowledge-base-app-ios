@@ -31,10 +31,10 @@
 - [x] [Чат: пагинация (load older)](tasks/completed/task-feature-chat.md) — fix `d49bbe7` 2026-06-18
 - [ ] [Push: ответ готов](tasks/pending/task-feature-push-notifications-chat.md) — см. In progress
 - [ ] [Apple Watch: complication](tasks/pending/task-feature-watch-app-voice.md) — см. In progress
-- [ ] [Оффлайн-режим: кэш сессий/чатов и вложений](tasks/pending/task-feature-offline-mode-cache-sync.md) — cache-first + background refresh + управление кэшем
+- [x] [Оффлайн-режим v1](tasks/completed/task-feature-offline-mode-cache-sync.md) — cache-first, SWR, attachment disk cache
 - [x] [Offline foundation: persistent cache](tasks/completed/task-feature-offline-cache-foundation.md) — `FileOfflineCacheStore`, cache-first list/chat
 - [x] [SWR sync UX: статусы обновления](tasks/completed/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
-- [ ] [Offline attachments: disk cache management](tasks/pending/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
+- [x] [Offline attachments: disk cache management](tasks/completed/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
 - [ ] [Чат: кликабельные changed files](tasks/pending/task-ux-chat-clickable-changed-files.md) — MVP список под ответом, затем inline-ссылки
 - [ ] [Композер: polish](tasks/pending/task-ux-chat-composer-polish.md) — Quick Look, лимиты, RU
 

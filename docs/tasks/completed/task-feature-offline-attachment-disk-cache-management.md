@@ -1,6 +1,6 @@
 # Offline attachments: disk cache and selective cleanup
 
-**Status:** Backlog  
+**Status:** Done  
 **Parent:** `task-feature-offline-mode-cache-sync.md`  
 **Depends on:** `task-feature-offline-cache-foundation.md`  
 **Priority:** High
@@ -32,8 +32,14 @@ Keep viewed attachments available offline and provide user control over storage.
 
 ## Acceptance
 
-- [ ] Previously opened image/voice attachments are accessible offline.
-- [ ] User can inspect cache size and entries.
-- [ ] User can delete one item and clear all cache.
-- [ ] LRU cleanup works when cache exceeds configured limit.
-- [ ] Unit tests for cache hit/miss/eviction + settings actions.
+- [x] Previously opened image/voice attachments are accessible offline.
+- [x] User can inspect cache size and entries.
+- [x] User can delete one item and clear all cache.
+- [x] LRU cleanup works when cache exceeds configured limit.
+- [x] Unit tests for cache hit/miss/eviction + settings actions.
+
+## Implementation notes (2026-06-19)
+
+- `FileAttachmentDiskCache` — 256 MB soft limit, JSON index, LRU eviction.
+- `CachingAttachmentLoader` — read-through wrapper used by `MainView.makeAttachmentLoader()`.
+- `OfflineCacheManagementView` — Settings → Offline → manage list, swipe delete, clear all.

@@ -1,6 +1,6 @@
 # Offline mode: sessions, chat history, attachment cache management
 
-**Status:** Partial — foundation done; SWR UX + attachment cache pending  
+**Status:** Done (v1)  
 **Priority:** High (UX/performance)  
 **Related UX reference:** Telegram-like stale-while-revalidate flow ("show cached now, refresh in background")
 
@@ -86,7 +86,7 @@ Current iOS app behavior is online-first:
 
 - [x] `task-feature-offline-cache-foundation.md` — persistent cache data layer (sessions/messages).
 - [x] `task-ux-swr-sync-status-sessions-chat.md` — cache-first + refresh status UX.
-- [ ] `task-feature-offline-attachment-disk-cache-management.md` — attachment disk cache + settings management UI.
+- [x] `task-feature-offline-attachment-disk-cache-management.md` — attachment disk cache + settings management UI.
 
 ## Not in scope (v1)
 
@@ -104,12 +104,12 @@ Current iOS app behavior is online-first:
 
 ## Acceptance criteria
 
-- [ ] With network disabled after prior usage, app opens and shows sessions + previously opened chats from cache.
-- [ ] Attachments that were previously opened (image/voice) are viewable/playable offline.
-- [ ] On reconnect, list/chat refresh automatically and status transitions from offline/stale to up-to-date.
-- [ ] User can view total cache size and cached attachments list in Settings.
-- [ ] User can delete a single cached attachment and clear all cache.
-- [ ] Unit tests for repository/cache logic + at least one UI/integration smoke for cache management flow.
+- [x] With network disabled after prior usage, app opens and shows sessions + previously opened chats from cache.
+- [x] Attachments that were previously opened (image/voice) are viewable/playable offline.
+- [x] On reconnect, list/chat refresh automatically and status transitions from offline/stale to up-to-date.
+- [x] User can view total cache size and cached attachments list in Settings.
+- [x] User can delete a single cached attachment and clear all cache.
+- [x] Unit tests for repository/cache logic + at least one UI/integration smoke for cache management flow.
 
 ## Dependencies / follow-ups
 
