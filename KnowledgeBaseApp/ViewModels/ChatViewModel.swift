@@ -86,11 +86,12 @@ final class ChatViewModel {
         guard NetworkPathMonitor.shared.isOnline else {
             if hadLocalData {
                 syncStatus = .offline(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id))
+                ChatPaginationLogger.loadSkippedOffline(kind)
             } else {
                 errorMessage = "Нет подключения к сети"
                 syncStatus = .offline(lastSyncedAt: nil)
+                ChatPaginationLogger.loadSkippedOffline(kind)
             }
-            ChatPaginationLogger.loadFailed(kind, error: "offline")
             return
         }
 
@@ -151,6 +152,11 @@ final class ChatViewModel {
             ChatPaginationLogger.requestBlocked("messages.first=nil", context: "viewModel.loadOlder")
             return
         }
+        guard NetworkPathMonitor.shared.isOnline else {
+            syncStatus = .offline(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id))
+            ChatPaginationLogger.loadSkippedOffline("older")
+            return
+        }
         isLoadingOlder = true
         defer { isLoadingOlder = false }
         do {
@@ -178,8 +184,13 @@ final class ChatViewModel {
                 windowCount: messages.count
             )
         } catch {
-            errorMessage = error.localizedDescription
-            ChatPaginationLogger.loadFailed("older", error: error.localizedDescription)
+            if SyncNetworkError.isOffline(error) || !NetworkPathMonitor.shared.isOnline {
+                syncStatus = .offline(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id))
+                ChatPaginationLogger.loadSkippedOffline("older")
+            } else {
+                errorMessage = error.localizedDescription
+                ChatPaginationLogger.loadFailed("older", error: error.localizedDescription)
+            }
         }
     }
 

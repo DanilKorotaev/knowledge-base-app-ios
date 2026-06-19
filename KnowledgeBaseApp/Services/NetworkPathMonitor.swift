@@ -30,4 +30,10 @@ final class NetworkPathMonitor {
     func stop() {
         monitor.cancel()
     }
+
+    #if DEBUG
+    func setOnlineForTesting(_ online: Bool) {
+        isOnline = online
+    }
+    #endif
 }

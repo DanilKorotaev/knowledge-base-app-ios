@@ -306,6 +306,10 @@ struct ChatView: View {
             ChatPaginationLogger.requestBlocked("isLoading=true", context: source)
             return
         }
+        if !NetworkPathMonitor.shared.isOnline {
+            ChatPaginationLogger.requestBlocked("offline", context: source)
+            return
+        }
         ChatPaginationLogger.requestStarted(
             source: source,
             anchorId: viewModel.messages.first?.id

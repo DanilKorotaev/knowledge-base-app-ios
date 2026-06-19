@@ -74,6 +74,10 @@ enum ChatPaginationLogger {
         logger.debugError("[pagination] \(kind) FAILED: \(error)")
     }
 
+    static func loadSkippedOffline(_ kind: String) {
+        logger.debugInfo("[pagination] \(kind) skipped (offline)")
+    }
+
     static func streamingDelta(index: Int, deltaChars: Int, totalChars: Int) {
         logger.debugInfo("[streaming] delta #\(index) +\(deltaChars) total=\(totalChars)")
     }
