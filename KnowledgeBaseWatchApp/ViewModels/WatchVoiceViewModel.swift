@@ -19,17 +19,22 @@ final class WatchVoiceViewModel {
     private(set) var recordingStartDate: Date?
     private(set) var pendingRecordings: [WatchPendingRecording] = []
     private(set) var statusMessage: String?
+    private(set) var voiceContext: WatchVoiceContext
+    private(set) var isPhoneReachable: Bool
 
     private let recordingService = WatchRecordingService()
     private let connectivity = WatchConnectivityCoordinator.shared
     private let pendingStore = WatchPendingRecordingStore.shared
 
-    var voiceContext: WatchVoiceContext {
-        connectivity.voiceContext
-    }
-
-    var isPhoneReachable: Bool {
-        connectivity.isPhoneReachable
+    init() {
+        voiceContext = connectivity.voiceContext
+        isPhoneReachable = connectivity.isPhoneReachable
+        connectivity.onVoiceContextDidChange = { [weak self] context in
+            self?.applyVoiceContext(context)
+        }
+        connectivity.onReachabilityDidChange = { [weak self] reachable in
+            self?.isPhoneReachable = reachable
+        }
     }
 
     var pendingCount: Int {
@@ -38,6 +43,8 @@ final class WatchVoiceViewModel {
 
     func onAppear() {
         connectivity.activateIfNeeded()
+        applyVoiceContext(connectivity.voiceContext)
+        isPhoneReachable = connectivity.isPhoneReachable
         reloadPending()
     }
 
@@ -134,6 +141,15 @@ final class WatchVoiceViewModel {
             statusMessage = voiceContext.lastResponseError
         case .none:
             break
+        }
+    }
+
+    private func applyVoiceContext(_ context: WatchVoiceContext) {
+        let previousStatus = voiceContext.relayStatus
+        voiceContext = context
+        syncRelayStatusMessage()
+        if context.relayStatus == .success, previousStatus != .success {
+            WKInterfaceDevice.current().play(.success)
         }
     }
 }

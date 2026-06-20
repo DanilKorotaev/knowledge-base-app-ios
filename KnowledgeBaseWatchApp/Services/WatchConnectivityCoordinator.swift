@@ -11,6 +11,10 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
     private(set) var voiceContext = WatchVoiceContext(applicationContext: [:])
     private(set) var isPhoneReachable = false
     private(set) var activationState: WCSessionActivationState = .notActivated
+    /// Called on the main actor whenever `voiceContext` changes (application context from iPhone).
+    var onVoiceContextDidChange: ((WatchVoiceContext) -> Void)?
+    /// Called on the main actor when iPhone reachability changes.
+    var onReachabilityDidChange: ((Bool) -> Void)?
     /// URLs passed to `transferFile` — must stay on disk until `didFinish fileTransfer`.
     private var outgoingTransferURLs: Set<URL> = []
 
@@ -103,7 +107,12 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
     private func refreshFromSession(_ session: WCSession) {
         activationState = session.activationState
         isPhoneReachable = session.isReachable
-        voiceContext = WatchVoiceContext(applicationContext: session.receivedApplicationContext)
+        applyVoiceContext(WatchVoiceContext(applicationContext: session.receivedApplicationContext))
+    }
+
+    private func applyVoiceContext(_ newContext: WatchVoiceContext) {
+        voiceContext = newContext
+        onVoiceContextDidChange?(newContext)
     }
 
     nonisolated func session(
@@ -126,12 +135,13 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
         Task { @MainActor in
             isPhoneReachable = session.isReachable
             WatchRelayLog.info("iPhone reachability changed reachable=\(session.isReachable)")
+            onReachabilityDidChange?(session.isReachable)
         }
     }
 
     nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
         Task { @MainActor in
-            voiceContext = WatchVoiceContext(applicationContext: applicationContext)
+            applyVoiceContext(WatchVoiceContext(applicationContext: applicationContext))
             let status = voiceContext.relayStatus?.rawValue ?? "nil"
             WatchRelayLog.info("Received application context relayStatus=\(status) sessionId=\(voiceContext.sessionID ?? "nil")")
             if voiceContext.relayStatus == .success || voiceContext.relayStatus == .error {
