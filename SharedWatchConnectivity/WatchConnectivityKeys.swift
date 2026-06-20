@@ -4,6 +4,7 @@ import Foundation
 enum WatchConnectivityKeys {
     static let messageType = "type"
     static let voiceQuery = "voice_query"
+    static let voiceQueryWake = "voice_query_wake"
     static let watchLog = "watch_log"
     static let recordingID = "recording_id"
     static let logLine = "log_line"

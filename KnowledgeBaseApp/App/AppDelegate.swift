@@ -20,6 +20,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        #if canImport(WatchConnectivity)
+        WatchVoiceSessionContextSync.shared.activateIfNeeded()
+        #endif
         let remote = launchOptions?[.remoteNotification] as? [AnyHashable: Any]
         MainActor.assumeIsolated {
             PushNotificationService.shared.bootstrapFromLaunch(remoteNotification: remote)

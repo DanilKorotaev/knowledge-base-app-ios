@@ -49,6 +49,21 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
             metadata[WatchConnectivityKeys.defaultSessionID] = sessionID
         }
 
+        if session.isReachable {
+            var wakeMetadata = metadata
+            wakeMetadata[WatchConnectivityKeys.messageType] = WatchConnectivityKeys.voiceQueryWake
+            session.sendMessage(
+                wakeMetadata,
+                replyHandler: { _ in
+                    WatchRelayLog.info("iPhone ack wake recordingId=\(recordingID)")
+                },
+                errorHandler: { error in
+                    WatchRelayLog.error("sendMessage wake failed recordingId=\(recordingID): \(error.localizedDescription)")
+                }
+            )
+            WatchRelayLog.info("sendMessage wake queued recordingId=\(recordingID)")
+        }
+
         session.transferFile(fileURL, metadata: metadata)
         outgoingTransferURLs.insert(fileURL)
         WatchRelayLog.info(

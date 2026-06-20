@@ -1,6 +1,5 @@
 import Foundation
 
-@MainActor
 enum WatchVoiceRelayProcessor {
     private static let previewLimit = 200
 

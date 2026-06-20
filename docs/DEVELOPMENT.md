@@ -47,7 +47,7 @@ Raw `xcodebuild test` still works if you prefer.
 
 - **Target:** `KnowledgeBaseWatchApp` (`com.coredan.KnowledgeBaseApp.watch`), embedded in the iOS app.
 - **Sync:** `WatchVoiceSessionContextSync` on iPhone pushes default voice session via `WCSession.updateApplicationContext`.
-- **Relay:** Watch records → `transferFile` → iPhone `WatchVoiceRelayProcessor` → transcribe + `streamVoiceMessage` → preview back on Watch.
+- **Relay:** Watch records → `transferFile` (+ `sendMessage` wake when reachable) → iPhone `WatchVoiceRelayProcessor` in background → preview back on Watch.
 - **Offline:** `WatchPendingRecordingStore` on Watch queues clips when iPhone is unreachable.
 - **Deep link:** `knowledgebase://record` opens recording (same scheme as iPhone widget).
 - **Complication:** `KnowledgeBaseWatchWidgetExtension` (`com.coredan.KnowledgeBaseApp.watch.widget`) — `accessoryCircular` mic + `widgetURL("knowledgebase://record")`; embedded in Watch app.
