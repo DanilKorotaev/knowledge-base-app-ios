@@ -20,6 +20,8 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
     let attachments: [KBAttachment]?
     let contentFormat: ContentFormat?
     let transcription: String?
+    let relatedChangedFiles: [KBChangedFile]?
+    let relatedChangedFilesSource: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -29,6 +31,8 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         case attachments
         case contentFormat = "content_format"
         case transcription
+        case relatedChangedFiles = "related_changed_files"
+        case relatedChangedFilesSource = "related_changed_files_source"
     }
 
     init(
@@ -38,7 +42,9 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         createdAt: Date?,
         attachments: [KBAttachment]? = nil,
         contentFormat: ContentFormat? = nil,
-        transcription: String? = nil
+        transcription: String? = nil,
+        relatedChangedFiles: [KBChangedFile]? = nil,
+        relatedChangedFilesSource: String? = nil
     ) {
         self.id = id
         self.role = role
@@ -47,6 +53,8 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         self.attachments = attachments
         self.contentFormat = contentFormat
         self.transcription = transcription
+        self.relatedChangedFiles = relatedChangedFiles
+        self.relatedChangedFilesSource = relatedChangedFilesSource
     }
 
     var imageAttachments: [KBAttachment] {
@@ -167,5 +175,9 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
 
     var resolvedContentFormat: ContentFormat {
         contentFormat ?? (role == .assistant ? .markdown : .plain)
+    }
+
+    var showsRecentChangedFilesFallback: Bool {
+        relatedChangedFilesSource == "recent"
     }
 }

@@ -3,6 +3,7 @@ import UIKit
 
 struct RichMessageBubbleView: View {
     let message: KBMessage
+    var filesClient: FilesAPIClientProtocol = Self.makeFilesClient()
     var attachmentLoader: KBAttachmentLoaderProtocol?
     var assistantResponseTime: TimeInterval?
 
@@ -61,6 +62,19 @@ struct RichMessageBubbleView: View {
             if let text = message.bubbleTextContent {
                 MessageContentView(message: message, contentOverride: text)
             }
+            if message.role == .assistant,
+               let changedFiles = message.relatedChangedFiles,
+               !changedFiles.isEmpty {
+                ChangedFilesListView(
+                    files: changedFiles,
+                    filesClient: filesClient,
+                    title: message.showsRecentChangedFilesFallback
+                        ? "Recent changed files"
+                        : "Changed files in this reply"
+                )
+            } else if message.role == .assistant {
+                OpenChangedFilesFallbackButton(filesClient: filesClient)
+            }
         }
         .padding(message.role == .user ? 12 : 0)
         .background(message.role == .user ? Color.accentColor.opacity(0.22) : Color.clear)
@@ -95,6 +109,66 @@ struct RichMessageBubbleView: View {
         formatter.allowedUnits = [.minute, .second]
         formatter.zeroFormattingBehavior = [.dropLeading]
         return formatter.string(from: seconds) ?? String(format: "%.1fs", seconds)
+    }
+}
+
+private extension RichMessageBubbleView {
+    static func makeFilesClient() -> FilesAPIClientProtocol {
+        URLSessionKnowledgeBaseAPIClient() ?? StubFilesAPIClient()
+    }
+}
+
+private struct ChangedFilesListView: View {
+    let files: [KBChangedFile]
+    let filesClient: FilesAPIClientProtocol
+    let title: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            ForEach(files) { file in
+                NavigationLink {
+                    FileDiffView(file: file, filesClient: filesClient, onReverted: {})
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "doc.text")
+                            .foregroundStyle(.secondary)
+                        Text(file.path)
+                            .font(.caption)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Spacer(minLength: 0)
+                        Text(file.changeKind)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .background(Color.secondary.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.top, 4)
+    }
+}
+
+private struct OpenChangedFilesFallbackButton: View {
+    let filesClient: FilesAPIClientProtocol
+
+    var body: some View {
+        NavigationLink {
+            ChangedFilesView(filesClient: filesClient)
+        } label: {
+            Label("Open changed files", systemImage: "doc.text.magnifyingglass")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.blue)
+                .padding(.top, 4)
+        }
+        .buttonStyle(.plain)
     }
 }
 
