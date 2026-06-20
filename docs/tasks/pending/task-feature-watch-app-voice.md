@@ -1,6 +1,6 @@
 # Apple Watch: companion app + complication (голосовой ввод)
 
-**Статус:** In progress (2026-06-18) — relay + offline queue готовы; **осталась complication (этап 3)**
+**Статус:** In progress (2026-06-20) — этапы 1–2.5 и polish (TTS/haptic) готовы; **остался этап 3: WidgetKit complication**
 **Приоритет:** 🟡 Средний (после E2E iPhone ↔ KB App API)  
 **Категория:** Product / watchOS  
 **Связанные документы:**
@@ -13,7 +13,7 @@
 
 ## Контекст
 
-На iPhone уже есть виджеты и App Intent с микрофоном (`StartVoiceRecordingIntent`, `knowledgebase://record`). Отдельное **watchOS-приложение** ещё не заведено в Xcode-проекте — есть только концепт-документ с чеклистом этапов.
+На iPhone уже есть виджеты и App Intent с микрофоном (`StartVoiceRecordingIntent`, `knowledgebase://record`). **watchOS companion** (`KnowledgeBaseWatchApp`) в проекте: запись, relay на iPhone, offline-очередь, deep link handler.
 
 Целевой UX: **complication на циферблате с иконкой микрофона** → тап → приложение на часах открывается **сразу в режиме записи** → голос уходит на iPhone → iPhone шлёт на KB App API в **дефолтную сессию** (см. отдельную задачу).
 
@@ -47,8 +47,10 @@
 
 ### Этап 3 — Complication
 
-- [ ] `accessoryCircular` с `mic.fill`, `widgetURL` → `knowledgebase://record` (отдельный widget extension — follow-up).
-- [ ] `onOpenURL` в Watch App → `startRecordingImmediately()`.
+- [ ] Widget extension target для watchOS (`KnowledgeBaseWatchWidgetExtension`, bundle id `…watch.widget`).
+- [ ] `accessoryCircular` с `mic.fill`, `widgetURL("knowledgebase://record")`.
+- [x] `onOpenURL` в Watch App → `startRecordingImmediately()` (`KnowledgeBaseWatchApp` + `WatchMainView`).
+- [ ] Добавить complication в галерею циферблатов (симулятор / TestFlight).
 - [ ] Опционально: `accessoryInline` — имя дефолтной сессии; corner — счётчик pending.
 
 ### Этап 4 — Polish
@@ -68,13 +70,13 @@
 ## Acceptance
 
 - [ ] Complication на симуляторе/устройстве: тап → запись стартует без лишних экранов.
-- [ ] Аудио с Watch попадает в правильную сессию на сервере (через iPhone relay).
-- [ ] При отсутствии iPhone запись сохраняется и доотправляется позже.
-- [ ] Документация: `docs/DEVELOPMENT.md` + ссылка из README.
+- [x] Аудио с Watch попадает в дефолтную сессию на сервере (через iPhone relay) — проверено в dev.
+- [x] При отсутствии iPhone запись сохраняется и доотправляется позже (`WatchPendingRecordingStore`).
+- [x] Документация: `docs/DEVELOPMENT.md` + ссылка из README.
 
-## Связанные файлы (ожидаемые)
+## Связанные файлы
 
-- `KnowledgeBaseWatchApp/` (новый target)
-- `Shared/WatchConnectivity/` — протокол relay
-- `KnowledgeBaseApp/Services/WatchRelayService.swift` — приём аудио на iPhone
-- `KnowledgeBaseWidgetExtension/` — переиспользование deep link scheme
+- `KnowledgeBaseWatchApp/` — companion UI, запись, deep link
+- `SharedWatchConnectivity/` — ключи WCSession + `WatchVoiceContext`
+- `KnowledgeBaseApp/Services/WatchVoiceRelayProcessor.swift` — приём аудио на iPhone
+- `KnowledgeBaseWidget/` — iPhone widgets (схема `knowledgebase://record`; для Watch нужен **отдельный** watch widget target)

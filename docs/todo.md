@@ -7,7 +7,7 @@
 
 ## Planned
 
-**Recommended order (2026-06-19):** 1) **Attachment disk cache**; 2) **Push E2E**; 3) **Clickable changed files**; 4) E2E automation; 5) Watch complication; 6) Composer polish.
+**Recommended order (2026-06-20):** 1) **Push E2E**; 2) **Clickable changed files**; 3) **Watch complication**; 4) E2E automation; 5) Composer polish.
 
 ### Integration (E2E + contract)
 

@@ -115,3 +115,12 @@ Current iOS app behavior is online-first:
 
 - Optional backend optimization later: incremental sync cursors (`updated_since`) for sessions/messages.
 - Coordinate with `task-backend-kb-app-api-sync.md` if API adds delta endpoints.
+
+## Post-v1 fixes (2026-06-20, TestFlight)
+
+Shipped after initial v1; still within epic scope (offline chat usability):
+
+- [x] **Offline pagination:** no API retry loop when offline; no chat error alert on blocked `loadOlder` (`0afec0f`).
+- [x] **Full loaded history in cache:** persist and restore all messages the user had paginated online, not only the latest `pageSize` window; `loadOlder` reads remaining pages from disk when offline (`18779e0`).
+
+**Known limitation (by design):** offline shows messages **already fetched on device**, not the full server thread until the user scrolls up online at least once.

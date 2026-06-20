@@ -37,11 +37,11 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 
 ## Pending (`pending/`)
 
-| File | Topic | Статус (2026-06-18) |
+| File | Topic | Статус (2026-06-20) |
 |------|--------|---------------------|
 | `task-backend-kb-app-api-sync.md` | Contract alignment + E2E automation | 🟡 ongoing |
 | `task-feature-push-notifications-chat.md` | APNs when reply ready | 🟡 MVP в коде, E2E на устройстве |
-| `task-feature-watch-app-voice.md` | watchOS companion, complication | 🟡 relay готов, нет complication |
+| `task-feature-watch-app-voice.md` | watchOS companion, complication | 🟡 relay + deep link готовы; **нет WidgetKit complication** |
 | `task-ux-chat-clickable-changed-files.md` | Chat: clickable changed files (MVP → inline) | бэклог |
 | `task-ux-chat-composer-polish.md` | Quick Look, лимиты, RU | бэклог |
 

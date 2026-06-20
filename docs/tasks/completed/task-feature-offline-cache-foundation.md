@@ -38,3 +38,9 @@ Build production-grade local persistence so the app can render sessions/chats wi
 - `FileOfflineCacheStore` — JSON in Application Support (`sessions.json`, `messages/{id}.json`).
 - `MainView.loadSessions()` — cache-first, no blocking spinner when cache exists; network failure keeps cache.
 - `ChatViewModel.load()` — bootstrap from cache; `apply` / `loadOlder` write-through after API success.
+
+## Implementation notes (2026-06-20)
+
+- Cache file stores the **union** of all messages loaded via pagination (merge on persist, no shrink on refresh).
+- Bootstrap restores the **full** cached window, not `pageSize` (5) only.
+- Offline `loadOlder` prepends remaining messages from the cache file when the network is down.
