@@ -1,6 +1,6 @@
 # Apple Watch: companion app + complication (голосовой ввод)
 
-**Статус:** In progress (2026-06-20) — этапы 1–2.5 и polish (TTS/haptic) готовы; **остался этап 3: WidgetKit complication**
+**Статус:** In progress (2026-06-20) — complication target в коде; **осталась приёмка на Watch / TestFlight**
 **Приоритет:** 🟡 Средний (после E2E iPhone ↔ KB App API)  
 **Категория:** Product / watchOS  
 **Связанные документы:**
@@ -47,10 +47,11 @@
 
 ### Этап 3 — Complication
 
-- [ ] Widget extension target для watchOS (`KnowledgeBaseWatchWidgetExtension`, bundle id `…watch.widget`).
-- [ ] `accessoryCircular` с `mic.fill`, `widgetURL("knowledgebase://record")`.
+- [x] Widget extension target для watchOS (`KnowledgeBaseWatchWidgetExtension`, bundle id `com.coredan.KnowledgeBaseApp.watch.widget`).
+- [x] `accessoryCircular` с `mic.fill`, `widgetURL("knowledgebase://record")`.
 - [x] `onOpenURL` в Watch App → `startRecordingImmediately()` (`KnowledgeBaseWatchApp` + `WatchMainView`).
-- [ ] Добавить complication в галерею циферблатов (симулятор / TestFlight).
+- [x] URL scheme `knowledgebase` зарегистрирован в Watch app Info.plist.
+- [ ] Проверка на устройстве / TestFlight: complication в галерею циферблата → тап → запись.
 - [ ] Опционально: `accessoryInline` — имя дефолтной сессии; corner — счётчик pending.
 
 ### Этап 4 — Polish
@@ -79,4 +80,4 @@
 - `KnowledgeBaseWatchApp/` — companion UI, запись, deep link
 - `SharedWatchConnectivity/` — ключи WCSession + `WatchVoiceContext`
 - `KnowledgeBaseApp/Services/WatchVoiceRelayProcessor.swift` — приём аудио на iPhone
-- `KnowledgeBaseWidget/` — iPhone widgets (схема `knowledgebase://record`; для Watch нужен **отдельный** watch widget target)
+- `KnowledgeBaseWatchWidget/` — watchOS WidgetKit complication (`accessoryCircular` mic)

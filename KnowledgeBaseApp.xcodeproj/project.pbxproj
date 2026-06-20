@@ -40,6 +40,7 @@
 		352C87886184DC6713E68603 /* WatchVoiceRelayProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D56D0D3AECF80FD8F0A233 /* WatchVoiceRelayProcessor.swift */; };
 		366AB847DA19D3225603589C /* SearchTextFieldConfigurator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916CB4865EF5D7C9534296F3 /* SearchTextFieldConfigurator.swift */; };
 		369161ED876B4F81DECBE80B /* MarkdownCodeBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1434E608570E5AE19C695 /* MarkdownCodeBlockView.swift */; };
+		382813C8E5C2D99E3DC5C731 /* KnowledgeBaseWatchWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0DD5FBD530CEA180BA272E76 /* KnowledgeBaseWatchWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		3A363C72CB2772F3B98B145F /* AssistantReplyPhaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279A74BF21DC5A9308080E11 /* AssistantReplyPhaseTests.swift */; };
 		3A5B775E1E1FB8503C07EE77 /* LogTagsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2F945D81839C273CE774D0 /* LogTagsView.swift */; };
 		3AA7CAFE673206C62E843870 /* WatchVoiceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FB793982908FAB851E71572 /* WatchVoiceViewModel.swift */; };
@@ -119,6 +120,7 @@
 		82FB060EF8C9C6959928DCAA /* ChatAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1BDEE39C2A096C09D9AEB7A /* ChatAPIClientTests.swift */; };
 		8350C58A5AC81D0291B67B39 /* VoiceDefaultSessionIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1A8F05C5B1D04E7700B124 /* VoiceDefaultSessionIndicator.swift */; };
 		85616DC8224DD90E57EB2973 /* LoggerTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03D0B958772CC630E7496D70 /* LoggerTag.swift */; };
+		85E9C6ABC738279DB8390CC3 /* KnowledgeBaseWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0918361EBC76BB3D5E095F37 /* KnowledgeBaseWatchWidgets.swift */; };
 		867A69F3A1AA6F7B7E5905A6 /* MarkdownTextBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFF88AB53A3C8CD731FCF09 /* MarkdownTextBlockView.swift */; };
 		89EEB90AA9DAA7B7B3FD614B /* VoiceSessionTargetResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD04BBF3695F6E725789AE24 /* VoiceSessionTargetResolver.swift */; };
 		8A2C3ACBAD904B5C198DD917 /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F56F73720756CA11B8BFA8 /* ChatViewModelTests.swift */; };
@@ -226,6 +228,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		09A5232C916030BB671D1526 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EBAA649C262B1FB720473A74 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FC7C542520938DAE55A84E10;
+			remoteInfo = KnowledgeBaseWatchWidgetExtension;
+		};
 		508B8A6ED66E1969C0E9B657 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = EBAA649C262B1FB720473A74 /* Project object */;
@@ -272,6 +281,17 @@
 			name = "Embed Watch Content";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BE3D1344AF7775970C3710D7 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				382813C8E5C2D99E3DC5C731 /* KnowledgeBaseWatchWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -283,10 +303,12 @@
 		07A6C3330E7CE83B17F3613F /* WatchRelayLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRelayLog.swift; sourceTree = "<group>"; };
 		07DC47B07311C6648AA2521C /* SessionListSorterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListSorterTests.swift; sourceTree = "<group>"; };
 		083AE4B66B10E887F48ACF7D /* LogPreviewViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPreviewViewModelTests.swift; sourceTree = "<group>"; };
+		0918361EBC76BB3D5E095F37 /* KnowledgeBaseWatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseWatchWidgets.swift; sourceTree = "<group>"; };
 		092D9E142BC28FE855BC3E92 /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
 		09F23EE9AB7E0B9FBE89013E /* ChatAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAPIClient.swift; sourceTree = "<group>"; };
 		0A693442AD2D8D1A6EE3D948 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		0D7169961AEE7E4804E45E32 /* ConsoleLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleLogger.swift; sourceTree = "<group>"; };
+		0DD5FBD530CEA180BA272E76 /* KnowledgeBaseWatchWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KnowledgeBaseWatchWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DF413F8ECCFD209149CF809 /* WatchRecordingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRecordingService.swift; sourceTree = "<group>"; };
 		0EA466A7869F7E268F52C361 /* FileBatchWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBatchWriterTests.swift; sourceTree = "<group>"; };
 		0F402A7D191773857BCD1B01 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
@@ -340,6 +362,7 @@
 		4A03BA7674F950C6849BB6E4 /* NSRegularExpression+Matches.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSRegularExpression+Matches.swift"; sourceTree = "<group>"; };
 		4A06F8FFB7BA92925DF5D9AA /* KBAppAPIErrorMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBAppAPIErrorMessage.swift; sourceTree = "<group>"; };
 		4D2D2AD5AA3D84C34E89245C /* Collection+Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+Group.swift"; sourceTree = "<group>"; };
+		4D83F7A80C0FC87480F47547 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4ED8182EE976DA1B0EFF6133 /* UserDefaultsInspectorLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsInspectorLogger.swift; sourceTree = "<group>"; };
 		4F008E17EC813EABABBE43C3 /* KBApiLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBApiLogger.swift; sourceTree = "<group>"; };
 		51B5A816DD8C216C25D98149 /* WatchConnectivityCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchConnectivityCoordinator.swift; sourceTree = "<group>"; };
@@ -514,6 +537,7 @@
 				160117490E0F8809EC811C14 /* KnowledgeBaseApp.app */,
 				E256BEA838E1C097EDA85500 /* KnowledgeBaseAppTests.xctest */,
 				B5F8A5D637B351CCDE077576 /* KnowledgeBaseWatchApp.app */,
+				0DD5FBD530CEA180BA272E76 /* KnowledgeBaseWatchWidgetExtension.appex */,
 				3A4EA6DF116DD5766350E873 /* KnowledgeBaseWidgetExtension.appex */,
 			);
 			name = Products;
@@ -751,6 +775,15 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
+		55F8AC0D88F7F376AB798825 /* KnowledgeBaseWatchWidget */ = {
+			isa = PBXGroup;
+			children = (
+				4D83F7A80C0FC87480F47547 /* Info.plist */,
+				0918361EBC76BB3D5E095F37 /* KnowledgeBaseWatchWidgets.swift */,
+			);
+			path = KnowledgeBaseWatchWidget;
+			sourceTree = "<group>";
+		};
 		5B91348EE82090A0C4E4CF9D /* Debug */ = {
 			isa = PBXGroup;
 			children = (
@@ -833,6 +866,7 @@
 				1AC9680746CD7C19EBFF5C1B /* KnowledgeBaseApp */,
 				61E6FE726E79E36BD03D3698 /* KnowledgeBaseAppTests */,
 				FFF4373B871A3566B369A48E /* KnowledgeBaseWatchApp */,
+				55F8AC0D88F7F376AB798825 /* KnowledgeBaseWatchWidget */,
 				1A5CB232D6F0E1302C39B802 /* KnowledgeBaseWidget */,
 				471AADBB89749458FF3B8B2B /* SharedIntents */,
 				3ABC21BB96DCCB3AD802E7F7 /* SharedWatchConnectivity */,
@@ -1088,10 +1122,12 @@
 			buildPhases = (
 				F9182F7AAEA658D1A9145EFD /* Sources */,
 				EC6161246A1C337E0739F00E /* Resources */,
+				BE3D1344AF7775970C3710D7 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				88B065CDA14FFE47EF466A88 /* PBXTargetDependency */,
 			);
 			name = KnowledgeBaseWatchApp;
 			packageProductDependencies = (
@@ -1099,6 +1135,23 @@
 			productName = KnowledgeBaseWatchApp;
 			productReference = B5F8A5D637B351CCDE077576 /* KnowledgeBaseWatchApp.app */;
 			productType = "com.apple.product-type.application";
+		};
+		FC7C542520938DAE55A84E10 /* KnowledgeBaseWatchWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1E6F9B8A40CC53B3D599A754 /* Build configuration list for PBXNativeTarget "KnowledgeBaseWatchWidgetExtension" */;
+			buildPhases = (
+				930E706E553A4CA69858E485 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KnowledgeBaseWatchWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = KnowledgeBaseWatchWidgetExtension;
+			productReference = 0DD5FBD530CEA180BA272E76 /* KnowledgeBaseWatchWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		FE9D83765768DB95FA88CAF9 /* KnowledgeBaseWidgetExtension */ = {
 			isa = PBXNativeTarget;
@@ -1137,6 +1190,10 @@
 						DevelopmentTeam = 66C9VGAZR5;
 						ProvisioningStyle = Automatic;
 					};
+					FC7C542520938DAE55A84E10 = {
+						DevelopmentTeam = 66C9VGAZR5;
+						ProvisioningStyle = Automatic;
+					};
 					FE9D83765768DB95FA88CAF9 = {
 						DevelopmentTeam = 66C9VGAZR5;
 						ProvisioningStyle = Automatic;
@@ -1163,6 +1220,7 @@
 				EDB92A55E331816AC354E70E /* KnowledgeBaseApp */,
 				44F6EDC2898840F0AF989B34 /* KnowledgeBaseAppTests */,
 				F6F83AC71EF5CF7FF9EF0BD8 /* KnowledgeBaseWatchApp */,
+				FC7C542520938DAE55A84E10 /* KnowledgeBaseWatchWidgetExtension */,
 				FE9D83765768DB95FA88CAF9 /* KnowledgeBaseWidgetExtension */,
 			);
 		};
@@ -1411,6 +1469,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		930E706E553A4CA69858E485 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				85E9C6ABC738279DB8390CC3 /* KnowledgeBaseWatchWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F9182F7AAEA658D1A9145EFD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1440,6 +1506,11 @@
 			target = F6F83AC71EF5CF7FF9EF0BD8 /* KnowledgeBaseWatchApp */;
 			targetProxy = 508B8A6ED66E1969C0E9B657 /* PBXContainerItemProxy */;
 		};
+		88B065CDA14FFE47EF466A88 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FC7C542520938DAE55A84E10 /* KnowledgeBaseWatchWidgetExtension */;
+			targetProxy = 09A5232C916030BB671D1526 /* PBXContainerItemProxy */;
+		};
 		FB50E9FB835D1649458DE00C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = FE9D83765768DB95FA88CAF9 /* KnowledgeBaseWidgetExtension */;
@@ -1448,6 +1519,25 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		212F0E2215523EE5E32B76D2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 66C9VGAZR5;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = KnowledgeBaseWatchWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coredan.KnowledgeBaseApp.watch.widget;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
 		3C6317B14E1F04C93E294495 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 467CF93A5C5C1E490410CEFA /* Debug.xcconfig */;
@@ -1530,6 +1620,25 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KnowledgeBaseApp.app/KnowledgeBaseApp";
 			};
 			name = Debug;
+		};
+		4AC953272EA05941AA9374AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 66C9VGAZR5;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = KnowledgeBaseWatchWidget/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.coredan.KnowledgeBaseApp.watch.widget;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
 		};
 		569CB4CDF14D28812AE838BE /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1724,6 +1833,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1E6F9B8A40CC53B3D599A754 /* Build configuration list for PBXNativeTarget "KnowledgeBaseWatchWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				212F0E2215523EE5E32B76D2 /* Debug */,
+				4AC953272EA05941AA9374AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		9F0CADBD7082722B8EBA6CE1 /* Build configuration list for PBXProject "KnowledgeBaseApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

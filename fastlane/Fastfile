@@ -41,6 +41,9 @@ platform :ios do
     watch_id = ENV["WATCH_APP_IDENTIFIER"].to_s.strip
     watch_id = "com.coredan.KnowledgeBaseApp.watch" if watch_id.empty?
 
+    watch_widget_id = ENV["WATCH_WIDGET_APP_IDENTIFIER"].to_s.strip
+    watch_widget_id = "com.coredan.KnowledgeBaseApp.watch.widget" if watch_widget_id.empty?
+
     app_store_connect_api_key(
       key_id: ENV.fetch("ASC_KEY_ID"),
       issuer_id: ENV.fetch("ASC_ISSUER_ID"),
@@ -51,7 +54,7 @@ platform :ios do
     match_params = {
       type: "appstore",
       readonly: is_ci,
-      app_identifier: [app_id, widget_id, watch_id]
+      app_identifier: [app_id, widget_id, watch_id, watch_widget_id]
     }
     if ENV["MATCH_GIT_URL"] && !ENV["MATCH_GIT_URL"].empty?
       match_params[:git_url] = ENV["MATCH_GIT_URL"]
@@ -76,7 +79,8 @@ platform :ios do
       main_prof = mapping[app_id]
       widget_prof = mapping[widget_id]
       watch_prof = mapping[watch_id]
-      UI.user_error!("Match did not set provisioning profile mapping for app targets") unless main_prof && widget_prof && watch_prof
+      watch_widget_prof = mapping[watch_widget_id]
+      UI.user_error!("Match did not set provisioning profile mapping for app targets") unless main_prof && widget_prof && watch_prof && watch_widget_prof
 
       update_code_signing_settings(
         path: "KnowledgeBaseApp.xcodeproj",
@@ -104,6 +108,15 @@ platform :ios do
         team_id: team_id,
         code_sign_identity: "Apple Distribution",
         profile_name: watch_prof
+      )
+      update_code_signing_settings(
+        path: "KnowledgeBaseApp.xcodeproj",
+        use_automatic_signing: false,
+        targets: ["KnowledgeBaseWatchWidgetExtension"],
+        build_configurations: ["Release"],
+        team_id: team_id,
+        code_sign_identity: "Apple Distribution",
+        profile_name: watch_widget_prof
       )
     end
 

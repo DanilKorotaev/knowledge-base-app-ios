@@ -50,7 +50,7 @@ Raw `xcodebuild test` still works if you prefer.
 - **Relay:** Watch records → `transferFile` → iPhone `WatchVoiceRelayProcessor` → transcribe + `streamVoiceMessage` → preview back on Watch.
 - **Offline:** `WatchPendingRecordingStore` on Watch queues clips when iPhone is unreachable.
 - **Deep link:** `knowledgebase://record` opens recording (same scheme as iPhone widget).
-- **Complication:** not shipped — needs separate **watchOS Widget Extension** (`KnowledgeBaseWatchWidgetExtension`, `accessoryCircular` + `widgetURL("knowledgebase://record")`). Deep link → auto-record is already wired in `KnowledgeBaseWatchApp` / `WatchMainView`.
+- **Complication:** `KnowledgeBaseWatchWidgetExtension` (`com.coredan.KnowledgeBaseApp.watch.widget`) — `accessoryCircular` mic + `widgetURL("knowledgebase://record")`; embedded in Watch app.
 
 Match / TestFlight: include `com.coredan.KnowledgeBaseApp.watch` in `fastlane match appstore --app_identifier …`.
 

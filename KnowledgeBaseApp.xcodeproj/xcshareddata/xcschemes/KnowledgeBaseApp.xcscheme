@@ -35,6 +35,20 @@
                ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FC7C542520938DAE55A84E10"
+               BuildableName = "KnowledgeBaseWatchWidgetExtension.appex"
+               BlueprintName = "KnowledgeBaseWatchWidgetExtension"
+               ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction

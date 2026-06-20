@@ -96,12 +96,32 @@ targets:
         CFBundleDisplayName: Knowledge Base
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+  KnowledgeBaseWatchWidgetExtension:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - path: KnowledgeBaseWatchWidget
+    settings:
+      base:
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: "66C9VGAZR5"
+        PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp.watch.widget
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: KnowledgeBaseWatchWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Knowledge Base
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
   KnowledgeBaseWatchApp:
     type: application
     platform: watchOS
     sources:
       - path: KnowledgeBaseWatchApp
       - path: SharedWatchConnectivity
+    dependencies:
+      - target: KnowledgeBaseWatchWidgetExtension
+        embed: true
     settings:
       base:
         CODE_SIGN_STYLE: Automatic
@@ -118,6 +138,10 @@ targets:
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.coredan.KnowledgeBaseApp
         NSMicrophoneUsageDescription: Микрофон нужен для записи голосового сообщения на Apple Watch.
+        CFBundleURLTypes:
+          - CFBundleURLName: com.coredan.KnowledgeBaseApp.watch
+            CFBundleURLSchemes:
+              - knowledgebase
 
 schemes:
   KnowledgeBaseApp:
@@ -125,6 +149,7 @@ schemes:
       targets:
         KnowledgeBaseApp: all
         KnowledgeBaseWatchApp: all
+        KnowledgeBaseWatchWidgetExtension: all
     run:
       config: Debug
     test:
@@ -151,10 +176,24 @@ schemes:
       config: Debug
     archive:
       config: Release
+  KnowledgeBaseWatchWidgetExtension:
+    build:
+      targets:
+        KnowledgeBaseWatchWidgetExtension: all
+        KnowledgeBaseWatchApp: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
   KnowledgeBaseWatchApp:
     build:
       targets:
         KnowledgeBaseWatchApp: all
+        KnowledgeBaseWatchWidgetExtension: all
     run:
       config: Debug
     profile:

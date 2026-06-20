@@ -3,7 +3,7 @@
 ## In progress
 
 - [ ] [Push: ответ готов](tasks/pending/task-feature-push-notifications-chat.md) — MVP в коде; приёмка E2E на устройстве
-- [ ] [Apple Watch: complication](tasks/pending/task-feature-watch-app-voice.md) — relay готов, нет виджета на циферблате
+- [ ] [Apple Watch: complication](tasks/pending/task-feature-watch-app-voice.md) — target в коде; **приёмка на Watch / TestFlight**
 
 ## Planned
 
