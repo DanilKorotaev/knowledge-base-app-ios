@@ -94,7 +94,7 @@ struct WatchMainView: View {
                         .multilineTextAlignment(.center)
                 }
 
-                if !viewModel.isPhoneReachable {
+                if !viewModel.isPhoneReachable, viewModel.voiceContext.relayStatus != .processing {
                     Text("iPhone not reachable — file still queues via Bluetooth")
                         .font(.caption2)
                         .foregroundStyle(.secondary)

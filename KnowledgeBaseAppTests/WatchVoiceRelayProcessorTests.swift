@@ -143,15 +143,70 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
 
         XCTAssertEqual(preview, "Hello watch")
     }
+
+    func testProcess_recoversViaPollWhenStreamFails() async throws {
+        let audioURL = try makeAudioFile()
+        defer { try? FileManager.default.removeItem(at: audioURL) }
+
+        let client = RelayWatchChatAPIClient(
+            transcription: "Еще один тест",
+            streamShouldFail: true,
+            polledAssistantReply: "Принято. Можем прогнать следующий шаг теста."
+        )
+
+        let preview = try await WatchVoiceRelayProcessor.process(
+            audioURL: audioURL,
+            hintedSessionID: "125",
+            chatClient: client,
+            sessionProvider: { self.makeSessions() }
+        )
+
+        XCTAssertEqual(preview, "Принято. Можем прогнать следующий шаг теста.")
+    }
 }
 
-private struct RelayWatchChatAPIClient: ChatAPIClientProtocol {
+private final class RelayWatchChatAPIClient: ChatAPIClientProtocol {
     var transcription: String
     var streamReply: String = ""
     var streamChunks: [String]?
+    var streamShouldFail = false
+    var polledAssistantReply: String?
+    private var fetchCount = 0
+
+    init(
+        transcription: String,
+        streamReply: String = "",
+        streamChunks: [String]? = nil,
+        streamShouldFail: Bool = false,
+        polledAssistantReply: String? = nil
+    ) {
+        self.transcription = transcription
+        self.streamReply = streamReply
+        self.streamChunks = streamChunks
+        self.streamShouldFail = streamShouldFail
+        self.polledAssistantReply = polledAssistantReply
+    }
 
     func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
-        KBMessagesPage(messages: [], total: 0, hasMoreOlder: false)
+        fetchCount += 1
+        if fetchCount == 1 {
+            return KBMessagesPage(
+                messages: [KBMessage(id: "802", role: .assistant, content: "Previous reply", createdAt: nil)],
+                total: 1,
+                hasMoreOlder: false
+            )
+        }
+        if let polledAssistantReply {
+            return KBMessagesPage(
+                messages: [
+                    KBMessage(id: "803", role: .user, content: transcription, createdAt: nil),
+                    KBMessage(id: "804", role: .assistant, content: polledAssistantReply, createdAt: nil),
+                ],
+                total: 2,
+                hasMoreOlder: false
+            )
+        }
+        return KBMessagesPage(messages: [], total: 0, hasMoreOlder: false)
     }
 
     func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] { [] }
@@ -187,7 +242,12 @@ private struct RelayWatchChatAPIClient: ChatAPIClientProtocol {
         text: String,
         useKnowledgeBase: Bool
     ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
-        AsyncThrowingStream { continuation in
+        if streamShouldFail {
+            return AsyncThrowingStream { continuation in
+                continuation.finish(throwing: URLError(.networkConnectionLost))
+            }
+        }
+        return AsyncThrowingStream { continuation in
             let chunks = streamChunks ?? [streamReply]
             for chunk in chunks {
                 continuation.yield(.delta(chunk))

@@ -42,6 +42,13 @@ enum WatchVoiceRelayProcessor {
         }
         WatchRelayLogger.info("Transcription chars=\(trimmed.count)")
 
+        let baselinePage = try await chatClient.fetchMessagesPage(
+            sessionId: sessionID,
+            limit: 5,
+            beforeMessageId: nil
+        )
+        let baselineLastMessageId = baselinePage.messages.last?.id
+
         let useKB = DefaultVoiceSessionStore.shared.load() != nil
         let stream = try await chatClient.streamVoiceMessage(
             sessionId: sessionID,
@@ -51,14 +58,30 @@ enum WatchVoiceRelayProcessor {
         )
 
         var finalText = trimmed
-        try await AssistantReplyStreamConsumer.consume(stream) { update in
-            switch update.phase {
-            case .finalizing(let text):
-                finalText = text
-            case .streaming(let text) where !text.isEmpty:
-                finalText = text
-            default:
-                break
+        do {
+            try await AssistantReplyStreamConsumer.consume(stream) { update in
+                switch update.phase {
+                case .finalizing(let text):
+                    finalText = text
+                case .streaming(let text) where !text.isEmpty:
+                    finalText = text
+                default:
+                    break
+                }
+            }
+        } catch {
+            WatchRelayLogger.info(
+                "Stream interrupted, polling for persisted reply: \(error.localizedDescription)"
+            )
+            if let polled = try await pollAssistantReplyAfterVoice(
+                sessionId: sessionID,
+                chatClient: chatClient,
+                baselineLastMessageId: baselineLastMessageId
+            ) {
+                finalText = polled
+                WatchRelayLogger.info("Recovered reply via poll chars=\(polled.count)")
+            } else {
+                throw error
             }
         }
 
@@ -70,6 +93,41 @@ enum WatchVoiceRelayProcessor {
 
         let cleaned = TerminalSanitizer.stripEscapeSequences(finalText)
         return String(cleaned.prefix(previewLimit))
+    }
+
+    /// When SSE drops in background, the server may already have persisted the assistant reply.
+    private static func pollAssistantReplyAfterVoice(
+        sessionId: String,
+        chatClient: ChatAPIClientProtocol,
+        baselineLastMessageId: String?,
+        maxAttempts: Int = 45,
+        intervalNanoseconds: UInt64 = 2_000_000_000
+    ) async throws -> String? {
+        for attempt in 0..<maxAttempts {
+            if attempt > 0 {
+                try await Task.sleep(nanoseconds: intervalNanoseconds)
+            }
+            if Task.isCancelled { return nil }
+
+            let page = try await chatClient.fetchMessagesPage(
+                sessionId: sessionId,
+                limit: 5,
+                beforeMessageId: nil
+            )
+            guard let last = page.messages.last,
+                  last.role == .assistant,
+                  !last.content.isEmpty
+            else { continue }
+
+            if let baselineLastMessageId {
+                if last.id != baselineLastMessageId {
+                    return last.content
+                }
+            } else {
+                return last.content
+            }
+        }
+        return nil
     }
 }
 
