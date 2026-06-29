@@ -303,6 +303,26 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.cursorActivityLabel)
         XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
     }
+
+    func testReloadLatestWindow_capsFetchLimitTo100() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let recorder = FetchLimitRecorder()
+        let client = LimitProbeChatAPIClient(store: store, recorder: recorder)
+        for index in 1 ... 60 {
+            _ = try await StubChatAPIClient(store: store).sendTextMessage(
+                sessionId: sessionId,
+                text: "msg \(index)",
+                useKnowledgeBase: false
+            )
+        }
+
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        viewModel.messages = store.messages(for: sessionId)
+        await viewModel.reloadLatestWindow()
+
+        let latest = await recorder.lastLimit()
+        XCTAssertEqual(latest, 100)
+    }
 }
 
 /// Emits activity SSE events before text deltas.
@@ -769,6 +789,108 @@ private struct FailingOlderFetchChatAPIClient: ChatAPIClientProtocol {
         useKnowledgeBase: Bool
     ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await StubChatAPIClient(store: store).streamComposedMessage(
+            sessionId: sessionId,
+            draft: draft,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+}
+
+private actor FetchLimitRecorder {
+    private var limits: [Int] = []
+
+    func append(_ value: Int) {
+        limits.append(value)
+    }
+
+    func lastLimit() -> Int? {
+        limits.last
+    }
+}
+
+private struct LimitProbeChatAPIClient: ChatAPIClientProtocol {
+    let store: InMemoryKBStore
+    let recorder: FetchLimitRecorder
+
+    func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
+        await recorder.append(limit)
+        return try await StubChatAPIClient(store: store).fetchMessagesPage(
+            sessionId: sessionId,
+            limit: limit,
+            beforeMessageId: beforeMessageId
+        )
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        try await StubChatAPIClient(store: store).sendTextMessage(
+            sessionId: sessionId,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func sendAttachment(
+        sessionId: String,
+        fileURL: URL,
+        filename: String,
+        mimeType: String,
+        useKnowledgeBase: Bool
+    ) async throws -> [KBMessage] {
+        try await StubChatAPIClient(store: store).sendAttachment(
+            sessionId: sessionId,
+            fileURL: fileURL,
+            filename: filename,
+            mimeType: mimeType,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL)
+    }
+
+    func sendVoiceRecording(
+        sessionId: String,
+        audioFileURL: URL,
+        transcriptionHint: String,
+        useKnowledgeBase: Bool
+    ) async throws -> VoiceRecordingSendResult {
+        try await StubChatAPIClient(store: store).sendVoiceRecording(
+            sessionId: sessionId,
+            audioFileURL: audioFileURL,
+            transcriptionHint: transcriptionHint,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await StubChatAPIClient(store: store).streamTextMessage(
+            sessionId: sessionId,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
+
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await StubChatAPIClient(store: store).streamVoiceMessage(
+            sessionId: sessionId,
+            audioFileURL: audioFileURL,
+            text: text,
+            useKnowledgeBase: useKnowledgeBase
+        )
     }
 
     func streamComposedMessage(

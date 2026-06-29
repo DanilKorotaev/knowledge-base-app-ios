@@ -12,6 +12,7 @@ enum ChatScrollIntent: Equatable {
 @Observable
 final class ChatViewModel {
     static let pageSize = 5
+    static let maxMessagePageLimit = 100
 
     let session: KBSession
     var messages: [KBMessage] = []
@@ -137,12 +138,12 @@ final class ChatViewModel {
 
     private func refreshFetchLimit(kind: String, hadLocalData: Bool) -> Int {
         if kind == "initial", hadLocalData {
-            return max(messages.count + 2, Self.pageSize)
+            return normalizedFetchLimit(messages.count + 2)
         }
         if kind == "initial" {
             return Self.pageSize
         }
-        return max(messages.count + 2, Self.pageSize)
+        return normalizedFetchLimit(messages.count + 2)
     }
 
     func loadOlder() async {
@@ -577,7 +578,7 @@ final class ChatViewModel {
     }
 
     func reloadLatestWindow() async {
-        let limit = max(messages.count + 2, Self.pageSize)
+        let limit = normalizedFetchLimit(messages.count + 2)
         syncStatus = messages.isEmpty ? .idle : .refreshing
         do {
             let page = try await client.fetchMessagesPage(
@@ -631,13 +632,14 @@ final class ChatViewModel {
             if Task.isCancelled { break }
 
             let limit = max(messages.count + 2, Self.pageSize)
+            let normalizedLimit = normalizedFetchLimit(limit)
             do {
                 let page = try await client.fetchMessagesPage(
                     sessionId: session.id,
-                    limit: limit,
+                    limit: normalizedLimit,
                     beforeMessageId: nil
                 )
-                apply(page: page, requestedLimit: limit, kind: "pollReply")
+                apply(page: page, requestedLimit: normalizedLimit, kind: "pollReply")
                 if messages.last?.role == .assistant {
                     assistantReplyPhase = .idle
                     scrollIntent = .scrollToBottom
@@ -770,5 +772,9 @@ final class ChatViewModel {
     private func clamp(_ list: [KBMessage], to limit: Int) -> [KBMessage] {
         guard list.count > limit else { return list }
         return Array(list.suffix(limit))
+    }
+
+    private func normalizedFetchLimit(_ raw: Int) -> Int {
+        min(max(raw, Self.pageSize), Self.maxMessagePageLimit)
     }
 }

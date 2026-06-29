@@ -66,7 +66,7 @@
 
 | Метод | Путь | Запрос | Успех |
 |-------|------|--------|--------|
-| GET | `/api/sessions/{session_id}/messages` | Query: `limit` (1…100, default 20), опц. `before` (id сообщения) | `200` — `{ "messages", "total", "has_more_older" }` |
+| GET | `/api/sessions/{session_id}/messages` | Query: `limit` (>= 1, default 20), опц. `before` (id сообщения) | `200` — `{ "messages", "total", "has_more_older" }` |
 | POST | `/api/sessions/{session_id}/messages` | JSON: `{ "content", "use_knowledge_base" }` | `201` JSON или SSE (см. ниже) |
 
 **Пагинация GET:** без `before` — последние `limit` сообщений (хронологический порядок); с `before={message_id}` — ещё `limit` сообщений **старше** указанного id.
