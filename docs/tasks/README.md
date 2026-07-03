@@ -44,5 +44,8 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-feature-watch-app-voice.md` | watchOS companion, complication | 🟡 relay + deep link готовы; **нет WidgetKit complication** |
 | `task-ux-chat-clickable-changed-files.md` | Chat: clickable changed files (MVP → inline) | бэклог |
 | `task-ux-chat-composer-polish.md` | Quick Look, лимиты, RU | бэклог |
+| `task-feature-voice-recording-pause-resume-locked.md` | Voice: pause/resume in LOCKED mode | бэклог |
+| `task-ux-voice-transcription-retry-without-loss.md` | Voice: inline retry on transcription/send errors | completed 2026-07-03 |
+| `task-ux-session-kb-mode-persistent.md` | Move `Use Knowledge Base` to session creation | бэклог |
 
 **Deploy / E2E checklist (Nextcloud):** `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`

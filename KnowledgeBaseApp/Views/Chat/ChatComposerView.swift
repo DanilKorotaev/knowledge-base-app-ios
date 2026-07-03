@@ -27,7 +27,9 @@ struct ChatComposerView: View {
     }
 
     private var hasDraftMedia: Bool {
-        !viewModel.composerDraft.attachments.isEmpty || !viewModel.composerDraft.voiceClips.isEmpty
+        !viewModel.composerDraft.attachments.isEmpty
+            || !viewModel.composerDraft.voiceClips.isEmpty
+            || !viewModel.pendingVoiceCaptures.isEmpty
     }
 
     var body: some View {
@@ -93,8 +95,13 @@ struct ChatComposerView: View {
                 ComposerAttachmentStripView(
                     attachments: viewModel.composerDraft.attachments,
                     voiceClips: viewModel.composerDraft.voiceClips,
+                    pendingVoiceCaptures: viewModel.pendingVoiceCaptures,
                     onRemoveAttachment: { viewModel.removeAttachment(id: $0) },
                     onRemoveVoiceClip: { viewModel.removeVoiceClip(id: $0) },
+                    onRetryPendingVoiceCapture: { id in
+                        Task { await viewModel.retryPendingVoiceCaptureTranscription(id: id) }
+                    },
+                    onDiscardPendingVoiceCapture: { viewModel.discardPendingVoiceCapture(id: $0) },
                     onTapImage: { previewImageItem = PreviewImageItem(url: $0) }
                 )
             }

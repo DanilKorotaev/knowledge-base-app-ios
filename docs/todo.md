@@ -7,7 +7,7 @@
 
 ## Planned
 
-**Recommended order (2026-06-20):** 1) **Push E2E**; 2) **Clickable changed files**; 3) **Watch complication**; 4) E2E automation; 5) Composer polish.
+**Recommended order (2026-06-22):** 1) **Push E2E**; 2) **Voice retry without loss**; 3) **Voice pause/resume in LOCKED**; 4) **Session KB mode persistent**; 5) **Clickable changed files**; 6) Watch complication; 7) E2E automation; 8) Composer polish.
 
 ### Integration (E2E + contract)
 
@@ -36,6 +36,9 @@
 - [x] [SWR sync UX: статусы обновления](tasks/completed/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
 - [x] [Offline attachments: disk cache management](tasks/completed/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
 - [ ] [Чат: кликабельные changed files](tasks/pending/task-ux-chat-clickable-changed-files.md) — MVP список под ответом, затем inline-ссылки
+- [ ] [Voice: pause/resume в LOCKED](tasks/pending/task-feature-voice-recording-pause-resume-locked.md) — одна запись из нескольких сегментов
+- [x] [Voice: retry без потери записи](tasks/completed/task-ux-voice-transcription-retry-without-loss.md) — completed 2026-07-03
+- [ ] [Session KB mode: перманентный выбор при создании](tasks/pending/task-ux-session-kb-mode-persistent.md) — убрать toggle из navbar чата
 - [ ] [Композер: polish](tasks/pending/task-ux-chat-composer-polish.md) — Quick Look, лимиты, RU
 
 ### Backend (`knowledge-base-bot/kb_app_api/`)

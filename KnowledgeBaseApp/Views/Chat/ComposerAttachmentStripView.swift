@@ -3,8 +3,11 @@ import SwiftUI
 struct ComposerAttachmentStripView: View {
     let attachments: [PendingAttachment]
     let voiceClips: [PendingVoiceClip]
+    let pendingVoiceCaptures: [PendingVoiceCapture]
     var onRemoveAttachment: (String) -> Void
     var onRemoveVoiceClip: (String) -> Void
+    var onRetryPendingVoiceCapture: (String) -> Void
+    var onDiscardPendingVoiceCapture: (String) -> Void
     var onTapImage: (URL) -> Void
 
     var body: some View {
@@ -12,6 +15,13 @@ struct ComposerAttachmentStripView: View {
             HStack(spacing: 10) {
                 ForEach(attachments) { attachment in
                     attachmentPreview(attachment)
+                }
+                ForEach(pendingVoiceCaptures) { capture in
+                    ComposerPendingVoiceCaptureView(
+                        capture: capture,
+                        onRetry: { onRetryPendingVoiceCapture(capture.id) },
+                        onDiscard: { onDiscardPendingVoiceCapture(capture.id) }
+                    )
                 }
                 ForEach(voiceClips) { clip in
                     ComposerVoiceChipView(clip: clip) {

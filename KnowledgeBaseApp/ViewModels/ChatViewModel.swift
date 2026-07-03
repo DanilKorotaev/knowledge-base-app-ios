@@ -22,6 +22,7 @@ final class ChatViewModel {
     var isLoadingOlder = false
     var isSending = false
     var isTranscribingVoice = false
+    var pendingVoiceCaptures: [PendingVoiceCapture] = []
     var errorMessage: String?
     var syncStatus: SyncStatus = .idle
     var totalCount = 0
@@ -45,7 +46,19 @@ final class ChatViewModel {
     }
 
     var canSendComposer: Bool {
-        composerDraft.canSend && !isSending && !isTranscribingVoice
+        composerDraft.canSend
+            && !isSending
+            && !isTranscribingVoice
+            && !hasBlockingPendingVoiceCapture
+    }
+
+    private var hasBlockingPendingVoiceCapture: Bool {
+        pendingVoiceCaptures.contains {
+            switch $0.state {
+            case .transcribing, .failed:
+                return true
+            }
+        }
     }
 
     init(
@@ -268,9 +281,24 @@ final class ChatViewModel {
 
     func removeVoiceClip(id: String) {
         if let clip = composerDraft.voiceClips.first(where: { $0.id == id }) {
-            try? FileManager.default.removeItem(at: clip.audioURL)
+            PendingVoiceStore.deleteRecording(at: clip.audioURL)
         }
         composerDraft.voiceClips.removeAll { $0.id == id }
+    }
+
+    func discardPendingVoiceCapture(id: String) {
+        if let capture = pendingVoiceCaptures.first(where: { $0.id == id }) {
+            PendingVoiceStore.deleteRecording(at: capture.audioURL)
+        }
+        pendingVoiceCaptures.removeAll { $0.id == id }
+        syncTranscribingVoiceFlag()
+    }
+
+    func retryPendingVoiceCaptureTranscription(id: String) async {
+        guard let index = pendingVoiceCaptures.firstIndex(where: { $0.id == id }) else { return }
+        pendingVoiceCaptures[index].state = .transcribing
+        syncTranscribingVoiceFlag()
+        await transcribePendingVoiceCapture(id: id)
     }
 
     func addPendingAttachment(_ attachment: PendingAttachment) {
@@ -339,17 +367,51 @@ final class ChatViewModel {
     }
 
     func enqueueVoiceRecording(audioURL: URL) async {
-        isTranscribingVoice = true
-        errorMessage = nil
-        defer { isTranscribingVoice = false }
+        let captureID: String
+        do {
+            let persistedURL = try PendingVoiceStore.persistRecording(from: audioURL)
+            if persistedURL != audioURL {
+                try? FileManager.default.removeItem(at: audioURL)
+            }
+            let capture = PendingVoiceCapture(audioURL: persistedURL, state: .transcribing)
+            captureID = capture.id
+            pendingVoiceCaptures.append(capture)
+        } catch {
+            errorMessage = VoicePipelineErrorMessage.forTranscription(error)
+            return
+        }
+
+        syncTranscribingVoiceFlag()
+        await transcribePendingVoiceCapture(id: captureID)
+    }
+
+    private func transcribePendingVoiceCapture(id: String) async {
+        guard let index = pendingVoiceCaptures.firstIndex(where: { $0.id == id }) else { return }
+        let audioURL = pendingVoiceCaptures[index].audioURL
+        pendingVoiceCaptures[index].state = .transcribing
+        syncTranscribingVoiceFlag()
+
         do {
             let transcription = try await client.transcribeVoiceRecording(audioFileURL: audioURL)
+            guard pendingVoiceCaptures.contains(where: { $0.id == id }) else { return }
+            pendingVoiceCaptures.removeAll { $0.id == id }
             let clip = PendingVoiceClip(audioURL: audioURL, transcriptionSegment: transcription)
             composerDraft.voiceClips.append(clip)
             composerDraft.appendTranscription(transcription)
         } catch {
-            try? FileManager.default.removeItem(at: audioURL)
-            errorMessage = error.localizedDescription
+            guard let failedIndex = pendingVoiceCaptures.firstIndex(where: { $0.id == id }) else { return }
+            pendingVoiceCaptures[failedIndex].state = .failed(
+                message: VoicePipelineErrorMessage.forTranscription(error)
+            )
+        }
+
+        syncTranscribingVoiceFlag()
+    }
+
+    private func syncTranscribingVoiceFlag() {
+        isTranscribingVoice = pendingVoiceCaptures.contains {
+            if case .transcribing = $0.state { return true }
+            return false
         }
     }
 
@@ -365,23 +427,27 @@ final class ChatViewModel {
         scrollIntent = .none
         defer { isSending = false }
 
-        composerDraft.clear()
-
+        let succeeded: Bool
         switch route {
         case .unsupported:
             return
         case .textOnly(let text):
-            await sendStreamingText(text, optimisticContent: text)
+            succeeded = await sendStreamingText(text, optimisticContent: text)
         case .singleAttachment(let attachment):
-            await sendSingleAttachment(attachment)
+            succeeded = await sendSingleAttachment(attachment)
         case .singleVoice(let clip, let text):
-            await sendSingleVoice(clip: clip, text: text)
+            succeeded = await sendSingleVoice(clip: clip, text: text)
         case .compose(let draft):
-            await sendComposedMessage(draft)
+            succeeded = await sendComposedMessage(draft)
+        }
+
+        if succeeded {
+            composerDraft.clear()
         }
     }
 
-    private func sendStreamingText(_ text: String, optimisticContent: String) async {
+    @discardableResult
+    private func sendStreamingText(_ text: String, optimisticContent: String) async -> Bool {
         do {
             let optimisticUser = KBMessage(
                 id: "kb-optimistic-\(UUID().uuidString)",
@@ -406,23 +472,25 @@ final class ChatViewModel {
             await reloadLatestWindow()
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
+            return true
         } catch {
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
             if await resumeAwaitingReplyIfNeeded() {
-                return
+                return true
             }
             errorMessage = error.localizedDescription
+            return false
         }
     }
 
-    private func sendSingleAttachment(_ attachment: PendingAttachment) async {
+    @discardableResult
+    private func sendSingleAttachment(_ attachment: PendingAttachment) async -> Bool {
         let scoped = attachment.localURL.startAccessingSecurityScopedResource()
         defer {
             if scoped {
                 attachment.localURL.stopAccessingSecurityScopedResource()
             }
-            try? FileManager.default.removeItem(at: attachment.localURL)
         }
         do {
             _ = try await client.sendAttachment(
@@ -432,16 +500,18 @@ final class ChatViewModel {
                 mimeType: attachment.mimeType,
                 useKnowledgeBase: useKnowledgeBase
             )
+            try? FileManager.default.removeItem(at: attachment.localURL)
             await reloadLatestWindow()
+            return true
         } catch {
             errorMessage = error.localizedDescription
+            composerDraft.attachments = [attachment]
+            return false
         }
     }
 
-    private func sendSingleVoice(clip: PendingVoiceClip, text: String) async {
-        defer {
-            try? FileManager.default.removeItem(at: clip.audioURL)
-        }
+    @discardableResult
+    private func sendSingleVoice(clip: PendingVoiceClip, text: String) async -> Bool {
         do {
             let optimisticUser = KBMessage(
                 id: "kb-optimistic-\(UUID().uuidString)",
@@ -467,27 +537,27 @@ final class ChatViewModel {
             await reloadLatestWindow()
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
+            PendingVoiceStore.deleteRecording(at: clip.audioURL)
+            return true
         } catch {
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
             if await resumeAwaitingReplyIfNeeded() {
-                return
+                return true
             }
-            errorMessage = error.localizedDescription
+            errorMessage = VoicePipelineErrorMessage.forSend(error)
+            composerDraft.voiceClips = [clip]
+            composerDraft.appendTranscription(text)
+            return false
         }
     }
 
-    private func sendComposedMessage(_ draft: ChatComposerDraft) async {
+    @discardableResult
+    private func sendComposedMessage(_ draft: ChatComposerDraft) async -> Bool {
         var scopedURLs: [URL] = []
         defer {
             for url in scopedURLs {
                 url.stopAccessingSecurityScopedResource()
-            }
-            for attachment in draft.attachments {
-                try? FileManager.default.removeItem(at: attachment.localURL)
-            }
-            for clip in draft.voiceClips {
-                try? FileManager.default.removeItem(at: clip.audioURL)
             }
         }
 
@@ -516,13 +586,22 @@ final class ChatViewModel {
             await reloadLatestWindow()
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
+            for attachment in draft.attachments {
+                try? FileManager.default.removeItem(at: attachment.localURL)
+            }
+            for clip in draft.voiceClips {
+                PendingVoiceStore.deleteRecording(at: clip.audioURL)
+            }
+            return true
         } catch {
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
             if await resumeAwaitingReplyIfNeeded() {
-                return
+                return true
             }
-            errorMessage = error.localizedDescription
+            errorMessage = VoicePipelineErrorMessage.forSend(error)
+            composerDraft = draft
+            return false
         }
     }
 

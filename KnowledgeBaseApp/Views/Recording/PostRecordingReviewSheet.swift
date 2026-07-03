@@ -20,39 +20,59 @@ struct PostRecordingReviewSheet: View {
                     Section {
                         HStack {
                             ProgressView()
-                            Text("Transcribing…")
+                            Text("Распознаём речь…")
                         }
+                    }
+                }
+
+                if let failure = viewModel.transcriptionFailureMessage {
+                    Section {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Label("Не удалось распознать", systemImage: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                                .font(.subheadline.weight(.semibold))
+                            Text(failure)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Button("Повторить") {
+                                Task { await viewModel.retryTranscription() }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(viewModel.isTranscribing)
+                        }
+                    } footer: {
+                        Text("Запись сохранена на устройстве. Включите VPN при необходимости и нажмите «Повторить».")
                     }
                 }
 
                 Section {
                     TextField(
-                        "Transcription",
+                        "Текст сообщения",
                         text: $viewModel.transcriptionDraft,
                         axis: .vertical
                     )
                     .lineLimit(4 ... 12)
                     .disabled(viewModel.isTranscribing)
                 } header: {
-                    Text("Review")
+                    Text("Проверка")
                 } footer: {
                     if let title = resolvedSessionTitle {
-                        Text("Will send to “\(title)”. Edit the text, then tap Send to chat.")
+                        Text("Отправится в «\(title)». Можно отредактировать текст вручную.")
                     } else if sessions.isEmpty {
-                        Text("Create a session first, then send your message.")
+                        Text("Сначала создайте чат, затем отправьте сообщение.")
                     } else {
-                        Text("Edit the text, then tap Send to chat.")
+                        Text("Отредактируйте текст и нажмите «Отправить в чат».")
                     }
                 }
             }
-            .navigationTitle("Voice note")
+            .navigationTitle("Голосовое")
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.transcribeRecordedAudioIfNeeded()
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Discard") {
+                    Button("Удалить") {
                         viewModel.dismissPostRecordReview()
                     }
                     .disabled(viewModel.isSendingVoice)
@@ -61,7 +81,7 @@ struct PostRecordingReviewSheet: View {
                     if viewModel.isSendingVoice {
                         ProgressView()
                     } else {
-                        Button("Send to chat") {
+                        Button("Отправить в чат") {
                             viewModel.confirmPostRecordUpload(
                                 sessionId: resolvedSessionId,
                                 useKnowledgeBase: voiceRouting.useKnowledgeBase

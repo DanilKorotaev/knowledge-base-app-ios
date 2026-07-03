@@ -1,6 +1,13 @@
 import SwiftUI
 import UIKit
 
+enum VoiceTranscriptionPhase: Equatable {
+    case idle
+    case loading
+    case ready
+    case failed(String)
+}
+
 /// Coordinates mic gestures, AV capture, Whisper transcribe, and post-record review before sending text to chat.
 @MainActor
 @Observable
@@ -16,6 +23,7 @@ final class VoiceRecordingViewModel {
     private(set) var showPostRecordReview = false
     private(set) var isTranscribing = false
     private(set) var isSendingVoice = false
+    private(set) var transcriptionPhase: VoiceTranscriptionPhase = .idle
     private(set) var lastRecordedFileURL: URL?
     var transcriptionDraft: String = ""
     private let recordingService: VoiceRecordingServiceProtocol
@@ -55,6 +63,14 @@ final class VoiceRecordingViewModel {
         !transcriptionDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !isTranscribing
             && !isSendingVoice
+            && transcriptionPhase != .loading
+    }
+
+    var transcriptionFailureMessage: String? {
+        if case .failed(let message) = transcriptionPhase {
+            return message
+        }
+        return nil
     }
 
     func recordingStartTime() -> Date? {
@@ -128,13 +144,21 @@ final class VoiceRecordingViewModel {
         guard !didStartTranscriptionForReview else { return }
         didStartTranscriptionForReview = true
         isTranscribing = true
+        transcriptionPhase = .loading
         errorMessage = nil
         defer { isTranscribing = false }
         do {
             transcriptionDraft = try await chatClient.transcribeVoiceRecording(audioFileURL: url)
+            transcriptionPhase = .ready
         } catch {
-            errorMessage = error.localizedDescription
+            transcriptionPhase = .failed(VoicePipelineErrorMessage.forTranscription(error))
         }
+    }
+
+    func retryTranscription() async {
+        didStartTranscriptionForReview = false
+        transcriptionPhase = .idle
+        await transcribeRecordedAudioIfNeeded()
     }
 
     /// Sends edited text; keeps the recording as a voice attachment when the audio file is still available.
@@ -172,12 +196,13 @@ final class VoiceRecordingViewModel {
                 }
 
                 if let url = lastRecordedFileURL {
-                    try? FileManager.default.removeItem(at: url)
+                    PendingVoiceStore.deleteRecording(at: url)
                     lastRecordedFileURL = nil
                 }
                 transcriptionDraft = ""
                 showPostRecordReview = false
                 didStartTranscriptionForReview = false
+                transcriptionPhase = .idle
 
                 NotificationCenter.default.post(
                     name: .kbSessionThreadDidChange,
@@ -187,19 +212,21 @@ final class VoiceRecordingViewModel {
                 notification.notificationOccurred(.success)
             } catch {
                 AssistantReplyPhaseNotification.post(sessionId: sessionId, phase: .idle)
-                errorMessage = error.localizedDescription
+                errorMessage = VoicePipelineErrorMessage.forSend(error)
             }
         }
     }
 
     func dismissPostRecordReview() {
         if let url = lastRecordedFileURL {
+            PendingVoiceStore.deleteRecording(at: url)
             try? FileManager.default.removeItem(at: url)
             lastRecordedFileURL = nil
         }
         transcriptionDraft = ""
         showPostRecordReview = false
         didStartTranscriptionForReview = false
+        transcriptionPhase = .idle
     }
 
     // MARK: - Private
@@ -233,9 +260,17 @@ final class VoiceRecordingViewModel {
         guard !cancelledByGesture else { return }
         do {
             let url = try await recordingService.stopRecording()
-            lastRecordedFileURL = url
+            if let persisted = try? PendingVoiceStore.persistRecording(from: url) {
+                if persisted != url {
+                    try? FileManager.default.removeItem(at: url)
+                }
+                lastRecordedFileURL = persisted
+            } else {
+                lastRecordedFileURL = url
+            }
             transcriptionDraft = ""
             didStartTranscriptionForReview = false
+            transcriptionPhase = .idle
             phase = .idle
             recordingStartDate = nil
             notification.notificationOccurred(.success)
