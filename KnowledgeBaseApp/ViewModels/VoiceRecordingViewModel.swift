@@ -18,7 +18,13 @@ final class VoiceRecordingViewModel {
         case locked
     }
 
+    enum LockedRecordingState: Equatable {
+        case recording
+        case paused
+    }
+
     private(set) var phase: Phase = .idle
+    private(set) var lockedRecordingState: LockedRecordingState?
     private(set) var errorMessage: String?
     private(set) var showPostRecordReview = false
     private(set) var isTranscribing = false
@@ -77,6 +83,14 @@ final class VoiceRecordingViewModel {
         recordingStartDate
     }
 
+    func recordingElapsedDuration(at date: Date = Date()) -> TimeInterval {
+        recordingService.elapsedDuration(at: date)
+    }
+
+    var isLockedRecordingPaused: Bool {
+        lockedRecordingState == .paused
+    }
+
     /// Read-only metering sample for waveform UI (safe to call from `TimelineView` body).
     func currentMeterLevelForDisplay() -> Float {
         recordingService.updateMetering()
@@ -104,6 +118,7 @@ final class VoiceRecordingViewModel {
         if RecordingGestureLogic.shouldTriggerLock(translation: translation, isLocked: lockedByGesture, alreadyCancelled: cancelledByGesture) {
             lockedByGesture = true
             phase = .locked
+            lockedRecordingState = .recording
             impactMedium.impactOccurred()
         }
     }
@@ -116,6 +131,7 @@ final class VoiceRecordingViewModel {
 
         if lockedByGesture {
             phase = .locked
+            lockedRecordingState = .recording
             resetGestureFlagsPreservingLockedPhase()
             return
         }
@@ -136,6 +152,32 @@ final class VoiceRecordingViewModel {
 
     func sendLockedSession() {
         Task { await finishHoldAndOpenReview() }
+    }
+
+    func pauseLockedSession() {
+        Task { await pauseLockedSessionAsync() }
+    }
+
+    func resumeLockedSession() {
+        Task { await resumeLockedSessionAsync() }
+    }
+
+    func handleScenePhaseChange(_ scenePhase: ScenePhase) {
+        guard phase == .locked else { return }
+        let isPaused = lockedRecordingState == .paused
+        guard VoiceRecordingSessionLogic.shouldAutoPauseOnBackground(
+            isLocked: true,
+            isPaused: isPaused
+        ) else { return }
+
+        switch scenePhase {
+        case .background, .inactive:
+            Task { await pauseLockedSessionAsync() }
+        case .active:
+            break
+        @unknown default:
+            break
+        }
     }
 
     /// Called when the post-record sheet appears — uploads audio for Whisper only.
@@ -239,6 +281,7 @@ final class VoiceRecordingViewModel {
                 errorMessage = error.localizedDescription
             }
             phase = .idle
+            lockedRecordingState = nil
             recordingStartDate = nil
         }
     }
@@ -251,9 +294,38 @@ final class VoiceRecordingViewModel {
     private func cancelRecordingCleanup() async {
         try? await recordingService.cancelRecording()
         phase = .idle
+        lockedRecordingState = nil
         recordingStartDate = nil
         lastRecordedFileURL = nil
         didStartTranscriptionForReview = false
+    }
+
+    private func pauseLockedSessionAsync() async {
+        guard VoiceRecordingSessionLogic.canManualPause(
+            isLocked: phase == .locked,
+            isPaused: lockedRecordingState == .paused
+        ) else { return }
+        do {
+            try await recordingService.pauseRecording()
+            lockedRecordingState = .paused
+            impactLight.impactOccurred()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func resumeLockedSessionAsync() async {
+        guard VoiceRecordingSessionLogic.canResume(
+            isLocked: phase == .locked,
+            isPaused: lockedRecordingState == .paused
+        ) else { return }
+        do {
+            try await recordingService.resumeRecording()
+            lockedRecordingState = .recording
+            impactLight.impactOccurred()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func finishHoldAndOpenReview() async {
@@ -272,6 +344,7 @@ final class VoiceRecordingViewModel {
             didStartTranscriptionForReview = false
             transcriptionPhase = .idle
             phase = .idle
+            lockedRecordingState = nil
             recordingStartDate = nil
             notification.notificationOccurred(.success)
 
@@ -291,6 +364,7 @@ final class VoiceRecordingViewModel {
             errorMessage = error.localizedDescription
             try? await recordingService.cancelRecording()
             phase = .idle
+            lockedRecordingState = nil
             recordingStartDate = nil
         }
     }

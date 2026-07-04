@@ -155,6 +155,7 @@ struct MainView: View {
                 Task { await loadSessions(showFullScreenLoading: false) }
             }
             .onChange(of: scenePhase) { _, newPhase in
+                voiceViewModel.handleScenePhaseChange(newPhase)
                 if newPhase == .active {
                     voiceRouting.refreshExpiryIfNeeded()
                     Task { await loadSessions(showFullScreenLoading: false) }

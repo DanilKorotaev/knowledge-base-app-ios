@@ -183,6 +183,7 @@ struct ChatView: View {
             viewModel.scheduleComposerDraftSave()
         }
         .onChange(of: scenePhase) { _, newPhase in
+            voiceViewModel.handleScenePhaseChange(newPhase)
             if newPhase == .background || newPhase == .inactive {
                 viewModel.persistComposerDraftNow()
             }

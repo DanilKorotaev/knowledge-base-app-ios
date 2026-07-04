@@ -26,17 +26,7 @@ struct MicRecordControl: View {
             Text("Swipe up to lock")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            TimelineView(.periodic(from: .now, by: 0.05)) { context in
-                VStack(spacing: 6) {
-                    RecordingWaveformView(level: viewModel.currentMeterLevelForDisplay())
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 36)
-                    Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))
-                        .font(.system(.title3, design: .monospaced))
-                        .monospacedDigit()
-                }
-                .frame(maxWidth: .infinity)
-            }
+            recordingTimeline
             Text("Swipe left to cancel · Release to review")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
@@ -46,26 +36,37 @@ struct MicRecordControl: View {
 
     private var lockedPanel: some View {
         VStack(spacing: 12) {
-            Label("Locked recording", systemImage: "lock.fill")
-                .font(.headline)
-            TimelineView(.periodic(from: .now, by: 0.05)) { context in
-                VStack(spacing: 6) {
-                    RecordingWaveformView(level: viewModel.currentMeterLevelForDisplay())
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 36)
-                    Text(durationLabel(start: viewModel.recordingStartTime(), end: context.date))
-                        .font(.system(.title3, design: .monospaced))
-                        .monospacedDigit()
-                }
-                .frame(maxWidth: .infinity)
-            }
-            HStack(spacing: 24) {
+            Label(
+                viewModel.isLockedRecordingPaused ? "Recording paused" : "Locked recording",
+                systemImage: viewModel.isLockedRecordingPaused ? "pause.circle.fill" : "lock.fill"
+            )
+            .font(.headline)
+
+            recordingTimeline
+
+            HStack(spacing: 12) {
                 Button(role: .cancel) {
                     viewModel.cancelLockedSession()
                 } label: {
                     Label("Cancel", systemImage: "xmark.circle.fill")
                 }
                 .buttonStyle(.bordered)
+
+                if viewModel.isLockedRecordingPaused {
+                    Button {
+                        viewModel.resumeLockedSession()
+                    } label: {
+                        Label("Resume", systemImage: "play.circle.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                } else {
+                    Button {
+                        viewModel.pauseLockedSession()
+                    } label: {
+                        Label("Pause", systemImage: "pause.circle.fill")
+                    }
+                    .buttonStyle(.bordered)
+                }
 
                 Button {
                     viewModel.sendLockedSession()
@@ -77,6 +78,21 @@ struct MicRecordControl: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
+    }
+
+    private var recordingTimeline: some View {
+        TimelineView(.periodic(from: .now, by: 0.05)) { context in
+            VStack(spacing: 6) {
+                RecordingWaveformView(level: viewModel.currentMeterLevelForDisplay())
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 36)
+                    .opacity(viewModel.isLockedRecordingPaused ? 0.35 : 1)
+                Text(durationLabel(at: context.date))
+                    .font(.system(.title3, design: .monospaced))
+                    .monospacedDigit()
+            }
+            .frame(maxWidth: .infinity)
+        }
     }
 
     private var micButton: some View {
@@ -106,9 +122,17 @@ struct MicRecordControl: View {
         }
     }
 
-    private func durationLabel(start: Date?, end: Date) -> String {
-        guard let start else { return "0:00" }
-        let sec = max(0, Int(end.timeIntervalSince(start)))
+    private func durationLabel(at date: Date) -> String {
+        if viewModel.phase == .locked || viewModel.phase == .holding {
+            return formatDuration(viewModel.recordingElapsedDuration(at: date))
+        }
+        guard let start = viewModel.recordingStartTime() else { return "0:00" }
+        let sec = max(0, Int(date.timeIntervalSince(start)))
+        return formatDuration(TimeInterval(sec))
+    }
+
+    private func formatDuration(_ interval: TimeInterval) -> String {
+        let sec = max(0, Int(interval.rounded(.down)))
         return String(format: "%d:%02d", sec / 60, sec % 60)
     }
 }
