@@ -369,9 +369,14 @@ final class ChatViewModel {
     func enqueueVoiceRecording(audioURL: URL) async {
         let captureID: String
         do {
-            let persistedURL = try PendingVoiceStore.persistRecording(from: audioURL)
-            if persistedURL != audioURL {
-                try? FileManager.default.removeItem(at: audioURL)
+            let persistedURL: URL
+            if PendingVoiceStore.isManagedURL(audioURL) {
+                persistedURL = audioURL
+            } else {
+                persistedURL = try PendingVoiceStore.persistRecording(from: audioURL)
+                if persistedURL != audioURL {
+                    try? FileManager.default.removeItem(at: audioURL)
+                }
             }
             let capture = PendingVoiceCapture(audioURL: persistedURL, state: .transcribing)
             captureID = capture.id

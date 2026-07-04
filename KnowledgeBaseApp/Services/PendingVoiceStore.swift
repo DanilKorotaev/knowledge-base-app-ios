@@ -36,4 +36,10 @@ enum PendingVoiceStore {
         guard let root, url.path.hasPrefix(root) else { return }
         try? FileManager.default.removeItem(at: url)
     }
+
+    /// Whether `url` already lives in the pending-voice cache (safe to hand to transcription without re-copying).
+    static func isManagedURL(_ url: URL) -> Bool {
+        guard let root = try? directoryURL().path else { return false }
+        return url.path.hasPrefix(root)
+    }
 }

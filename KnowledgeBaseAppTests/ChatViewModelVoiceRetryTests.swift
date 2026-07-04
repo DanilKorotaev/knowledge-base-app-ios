@@ -33,6 +33,27 @@ final class ChatViewModelVoiceRetryTests: XCTestCase {
         XCTAssertFalse(viewModel.composerDraft.trimmedText.isEmpty)
     }
 
+    func testEnqueueVoiceRecordingAcceptsAlreadyPersistedURL() async throws {
+        let store = InMemoryKBStore(demoSession: false)
+        let session = KBSession(id: "1", title: "Chat", messageCount: 0, updatedAt: nil)
+
+        let source = FileManager.default.temporaryDirectory
+            .appendingPathComponent("voice-handoff-\(UUID().uuidString).m4a")
+        try Data("voice-bytes".utf8).write(to: source)
+        let persisted = try PendingVoiceStore.persistRecording(from: source)
+        try FileManager.default.removeItem(at: source)
+
+        let client = SuccessTranscribeChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: session, client: client)
+
+        await viewModel.enqueueVoiceRecording(audioURL: persisted)
+
+        XCTAssertTrue(viewModel.pendingVoiceCaptures.isEmpty)
+        XCTAssertEqual(viewModel.composerDraft.voiceClips.count, 1)
+        XCTAssertFalse(viewModel.composerDraft.trimmedText.isEmpty)
+        XCTAssertNil(viewModel.errorMessage)
+    }
+
     func testDiscardPendingVoiceCaptureDeletesStoredAudio() async throws {
         let store = InMemoryKBStore(demoSession: false)
         let session = KBSession(id: "1", title: "Chat", messageCount: 0, updatedAt: nil)
@@ -52,6 +73,47 @@ final class ChatViewModelVoiceRetryTests: XCTestCase {
 
         XCTAssertTrue(viewModel.pendingVoiceCaptures.isEmpty)
         XCTAssertFalse(FileManager.default.fileExists(atPath: audioURL.path))
+    }
+}
+
+@MainActor
+private final class SuccessTranscribeChatAPIClient: ChatAPIClientProtocol, @unchecked Sendable {
+    let store: InMemoryKBStore
+
+    init(store: InMemoryKBStore) {
+        self.store = store
+    }
+
+    func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
+        KBMessagesPage(messages: store.messages(for: sessionId), total: 0, hasMoreOlder: false)
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func sendAttachment(sessionId: String, fileURL: URL, filename: String, mimeType: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        "Транскрипция после handoff"
+    }
+
+    func sendVoiceRecording(sessionId: String, audioFileURL: URL, transcriptionHint: String, useKnowledgeBase: Bool) async throws -> VoiceRecordingSendResult {
+        VoiceRecordingSendResult(messages: [], transcription: transcriptionHint)
+    }
+
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        AsyncThrowingStream { $0.finish() }
+    }
+
+    func streamVoiceMessage(sessionId: String, audioFileURL: URL, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(sessionId: String, draft: ChatComposerDraft, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
 

@@ -25,6 +25,15 @@ final class PendingVoiceStoreTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: source.path))
     }
 
+    func testIsManagedURLRecognizesPersistedFiles() throws {
+        let source = tempRoot.appendingPathComponent("source.m4a")
+        try Data("audio".utf8).write(to: source)
+        let persisted = try PendingVoiceStore.persistRecording(from: source)
+
+        XCTAssertTrue(PendingVoiceStore.isManagedURL(persisted))
+        XCTAssertFalse(PendingVoiceStore.isManagedURL(source))
+    }
+
     func testDeleteRecordingRemovesOnlyPendingStoreFiles() throws {
         let source = tempRoot.appendingPathComponent("source.m4a")
         try Data("audio".utf8).write(to: source)

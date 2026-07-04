@@ -275,12 +275,14 @@ final class VoiceRecordingViewModel {
             recordingStartDate = nil
             notification.notificationOccurred(.success)
 
+            let handoffURL = lastRecordedFileURL ?? url
+
             if deferToComposer {
-                onComposerRecordingFinished?(url)
+                onComposerRecordingFinished?(handoffURL)
                 return
             }
 
-            if recordingFinishedOutsideChatHandler?(url) == true {
+            if recordingFinishedOutsideChatHandler?(handoffURL) == true {
                 return
             }
 
