@@ -17,7 +17,7 @@ final class ChatViewModel {
     let session: KBSession
     var messages: [KBMessage] = []
     var composerDraft = ChatComposerDraft()
-    var useKnowledgeBase = true
+    let useKnowledgeBase: Bool
     var isLoading = false
     var isLoadingOlder = false
     var isSending = false
@@ -39,6 +39,7 @@ final class ChatViewModel {
     private let client: ChatAPIClientProtocol
     private let messageCache: MessageCacheStoreProtocol
     private let composerDraftStore: ComposerDraftStoreProtocol
+    private let sessionKBModeStore: SessionKBModeStoreProtocol
     private var composerDraftSaveTask: Task<Void, Never>?
 
     /// Backward-compatible alias for tests and legacy call sites.
@@ -67,12 +68,15 @@ final class ChatViewModel {
         session: KBSession,
         client: ChatAPIClientProtocol,
         messageCache: MessageCacheStoreProtocol = FileOfflineCacheStore.shared,
-        composerDraftStore: ComposerDraftStoreProtocol = ComposerDraftStore.shared
+        composerDraftStore: ComposerDraftStoreProtocol = ComposerDraftStore.shared,
+        sessionKBModeStore: SessionKBModeStoreProtocol = SessionKBModeStore.shared
     ) {
         self.session = session
         self.client = client
         self.messageCache = messageCache
         self.composerDraftStore = composerDraftStore
+        self.sessionKBModeStore = sessionKBModeStore
+        self.useKnowledgeBase = sessionKBModeStore.useKnowledgeBase(for: session)
         restoreComposerDraftIfNeeded()
     }
 

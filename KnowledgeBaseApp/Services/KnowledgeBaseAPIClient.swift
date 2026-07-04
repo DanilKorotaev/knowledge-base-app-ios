@@ -4,7 +4,7 @@ import Foundation
 protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func fetchSessions() async throws -> [KBSession]
     func searchSessions(query: String) async throws -> [KBSession]
-    func createSession(title: String) async throws -> KBSession
+    func createSession(title: String, useKnowledgeBase: Bool) async throws -> KBSession
     func deleteSession(id: String) async throws
     func updateSession(id: String, title: String) async throws -> KBSession
     func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws
@@ -37,8 +37,8 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
         }
     }
 
-    func createSession(title: String) async throws -> KBSession {
-        store.createSession(title: title)
+    func createSession(title: String, useKnowledgeBase: Bool = true) async throws -> KBSession {
+        store.createSession(title: title, useKnowledgeBase: useKnowledgeBase)
     }
 
     func deleteSession(id: String) async throws {
@@ -169,7 +169,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         return payload.items ?? payload.sessions ?? []
     }
 
-    func createSession(title: String) async throws -> KBSession {
+    func createSession(title: String, useKnowledgeBase: Bool = true) async throws -> KBSession {
         let url = baseURL.appendingPathComponent("api/sessions")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -177,10 +177,16 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
 
         struct Body: Encodable {
             let title: String
+            let useKnowledgeBase: Bool
+
+            enum CodingKeys: String, CodingKey {
+                case title
+                case useKnowledgeBase = "use_knowledge_base"
+            }
         }
 
         let encoder = JSONEncoder()
-        request.httpBody = try encoder.encode(Body(title: title))
+        request.httpBody = try encoder.encode(Body(title: title, useKnowledgeBase: useKnowledgeBase))
 
         let data = try await performData(request)
 

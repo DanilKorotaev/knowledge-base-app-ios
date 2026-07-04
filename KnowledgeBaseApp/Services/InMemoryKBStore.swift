@@ -23,7 +23,13 @@ final class InMemoryKBStore: @unchecked Sendable {
         defer { lock.unlock() }
         return _sessions.map { s in
             let n = _messages[s.id]?.count ?? 0
-            return KBSession(id: s.id, title: s.title, messageCount: n, updatedAt: s.updatedAt)
+            return KBSession(
+                id: s.id,
+                title: s.title,
+                messageCount: n,
+                updatedAt: s.updatedAt,
+                useKnowledgeBase: s.useKnowledgeBase
+            )
         }
     }
 
@@ -55,19 +61,26 @@ final class InMemoryKBStore: @unchecked Sendable {
             id: old.id,
             title: title,
             messageCount: _messages[id]?.count ?? old.messageCount,
-            updatedAt: Date()
+            updatedAt: Date(),
+            useKnowledgeBase: old.useKnowledgeBase
         )
     }
 
     /// Appends a new session (stub / offline).
     @discardableResult
-    func createSession(title: String) -> KBSession {
+    func createSession(title: String, useKnowledgeBase: Bool = true) -> KBSession {
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let name = trimmed.isEmpty ? "New session" : trimmed
         lock.lock()
         defer { lock.unlock() }
         let id = "local-\(UUID().uuidString)"
-        let session = KBSession(id: id, title: name, messageCount: 0, updatedAt: Date())
+        let session = KBSession(
+            id: id,
+            title: name,
+            messageCount: 0,
+            updatedAt: Date(),
+            useKnowledgeBase: useKnowledgeBase
+        )
         _sessions.insert(session, at: 0)
         return session
     }

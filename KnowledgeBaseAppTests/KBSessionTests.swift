@@ -5,7 +5,7 @@ final class KBSessionTests: XCTestCase {
     func testDecodeArrayJSON() throws {
         let json = """
         [
-          {"id":"s1","title":"Workout","message_count":12,"updated_at":"2026-03-29T10:00:00Z"}
+          {"id":"s1","title":"Workout","message_count":12,"updated_at":"2026-03-29T10:00:00Z","use_knowledge_base":false}
         ]
         """.data(using: .utf8)!
 
@@ -17,7 +17,17 @@ final class KBSessionTests: XCTestCase {
         XCTAssertEqual(sessions[0].id, "s1")
         XCTAssertEqual(sessions[0].title, "Workout")
         XCTAssertEqual(sessions[0].messageCount, 12)
+        XCTAssertFalse(sessions[0].useKnowledgeBase)
         XCTAssertNotNil(sessions[0].updatedAt)
+    }
+
+    func testDecodeDefaultsUseKnowledgeBaseToTrue() throws {
+        let json = """
+        [{"id":"s1","title":"Workout","message_count":0}]
+        """.data(using: .utf8)!
+
+        let session = try JSONDecoder().decode([KBSession].self, from: json)[0]
+        XCTAssertTrue(session.useKnowledgeBase)
     }
 
     func testDecodePagedItemsWrapper() throws {

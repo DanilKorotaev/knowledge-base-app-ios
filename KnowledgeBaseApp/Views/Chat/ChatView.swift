@@ -127,15 +127,6 @@ struct ChatView: View {
         }
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Toggle(isOn: $viewModel.useKnowledgeBase) {
-                    Label("Knowledge base", systemImage: "books.vertical")
-                }
-                .labelsHidden()
-                .accessibilityLabel("Use knowledge base")
-            }
-        }
         .task(id: viewModel.session.id) {
             ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
             resetChatScrollState()
@@ -175,9 +166,6 @@ struct ChatView: View {
             voiceRouting.usesComposerDraft = false
             voiceViewModel.deferToComposer = false
             voiceViewModel.onComposerRecordingFinished = nil
-        }
-        .onChange(of: viewModel.useKnowledgeBase) { _, newValue in
-            voiceRouting.useKnowledgeBase = newValue
         }
         .onChange(of: viewModel.composerDraft.text) { _, _ in
             viewModel.scheduleComposerDraftSave()

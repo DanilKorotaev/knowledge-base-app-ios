@@ -19,6 +19,7 @@ struct MainView: View {
     @State private var voiceRouting = VoiceRoutingContext()
     @State private var showNewSession = false
     @State private var newSessionTitle = ""
+    @State private var newSessionUseKnowledgeBase = true
     @State private var sessionPendingDelete: KBSession?
     @State private var sessionPendingRename: KBSession?
     @State private var renameTitle = ""
@@ -101,6 +102,7 @@ struct MainView: View {
             .sheet(isPresented: $showNewSession) {
                 NewSessionSheet(
                     title: $newSessionTitle,
+                    useKnowledgeBase: $newSessionUseKnowledgeBase,
                     onCancel: { showNewSession = false },
                     onCreate: { Task { await createSessionAndDismiss() } }
                 )
@@ -330,7 +332,7 @@ struct MainView: View {
                             .accessibilityLabel("Default for voice")
                     }
                 }
-                Text("\(session.messageCount) messages")
+                Text("\(session.messageCount) messages · \(session.kbModeSubtitle)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -472,6 +474,7 @@ struct MainView: View {
         do {
             let fetched = try await apiClient.fetchSessions()
             pinnedStore.prune(validSessionIds: Set(fetched.map(\.id)))
+            SessionKBModeStore.shared.prune(validSessionIds: Set(fetched.map(\.id)))
             sessions = applyPinnedOrder(to: fetched)
             sessionCache.saveSessions(fetched)
             voiceRouting.refreshExpiryIfNeeded()
@@ -518,8 +521,14 @@ struct MainView: View {
     @MainActor
     private func createSessionAndDismiss() async {
         do {
-            _ = try await apiClient.createSession(title: newSessionTitle)
+            let useKB = newSessionUseKnowledgeBase
+            let created = try await apiClient.createSession(
+                title: newSessionTitle,
+                useKnowledgeBase: useKB
+            )
+            SessionKBModeStore.shared.save(sessionId: created.id, useKnowledgeBase: useKB)
             newSessionTitle = ""
+            newSessionUseKnowledgeBase = true
             showNewSession = false
             await loadSessions(showFullScreenLoading: false)
         } catch {
@@ -594,6 +603,7 @@ struct MainView: View {
 
         voiceRouting.handleDeletedSession(session.id)
         pinnedStore.remove(sessionId: session.id)
+        SessionKBModeStore.shared.remove(sessionId: session.id)
         sessionCache.removeSession(id: session.id)
 
         let previousSessions = sessions
