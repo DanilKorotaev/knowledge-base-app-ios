@@ -446,6 +446,10 @@ final class ChatViewModel {
         scrollIntent = .none
         defer { isSending = false }
 
+        // Clear composer immediately so voice/photo chips do not linger while the
+        // assistant reply streams (including after backgrounding the app).
+        detachComposerForSend()
+
         let succeeded: Bool
         switch route {
         case .unsupported:
@@ -499,6 +503,8 @@ final class ChatViewModel {
                 return true
             }
             errorMessage = error.localizedDescription
+            composerDraft.text = text
+            scheduleComposerDraftSave()
             return false
         }
     }
@@ -768,6 +774,7 @@ final class ChatViewModel {
 
     func persistComposerDraftNow() {
         composerDraftSaveTask?.cancel()
+        guard shouldPersistComposerDraft else { return }
         if let normalized = composerDraftStore.save(
             sessionId: session.id,
             draft: composerDraft,
@@ -795,6 +802,20 @@ final class ChatViewModel {
         for id in transcribingIDs {
             Task { await transcribePendingVoiceCapture(id: id) }
         }
+    }
+
+    private var shouldPersistComposerDraft: Bool {
+        !isSending && !assistantReplyPhase.showsPlaceholder && !isPollingForReply
+    }
+
+    /// Clears composer UI and on-disk draft when a send starts.
+    /// Does not delete audio files — route handlers still reference them until upload finishes.
+    private func detachComposerForSend() {
+        composerDraftSaveTask?.cancel()
+        composerDraft.clear()
+        pendingVoiceCaptures = []
+        syncTranscribingVoiceFlag()
+        composerDraftStore.clear(sessionId: session.id)
     }
 
     private func clearSavedComposerDraft() {
