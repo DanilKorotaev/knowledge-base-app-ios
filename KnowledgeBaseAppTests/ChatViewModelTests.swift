@@ -57,6 +57,26 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.messages.contains { $0.role == .assistant })
     }
 
+    func testStructuredUIFlow_startAndConfirmYes() async {
+        let (store, sessionId) = emptyStoreWithSession()
+        let client = StubChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+
+        await viewModel.startStructuredUIFlow()
+        XCTAssertFalse(viewModel.isSendingUIEvent)
+        XCTAssertNil(viewModel.errorMessage)
+        let welcome = viewModel.messages.last(where: { $0.role == .assistant })
+        XCTAssertEqual(welcome?.structuredUI?.screen.supportedChildren.first(where: { $0.type == "button" })?.label, "Yes")
+
+        await viewModel.sendStructuredUIEvent(actionId: "confirm_yes", componentId: "btn_yes")
+        XCTAssertTrue(viewModel.messages.contains { $0.role == .user && $0.content == "[UI] Yes" })
+        let confirmed = viewModel.messages.last(where: { $0.role == .assistant })
+        XCTAssertEqual(
+            confirmed?.structuredUI?.screen.supportedChildren.first(where: { $0.type == "text" })?.text,
+            "Confirmed"
+        )
+    }
+
     func testSend_onError_keepsOptimisticOffersRetryWithoutRestoringComposer() async throws {
         let (store, sessionId) = emptyStoreWithSession()
         let client = FailingStreamChatAPIClient(store: store)

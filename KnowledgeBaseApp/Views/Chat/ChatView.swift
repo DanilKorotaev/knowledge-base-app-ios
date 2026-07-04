@@ -59,7 +59,16 @@ struct ChatView: View {
                                 VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 6) {
                                     RichMessageBubbleView(
                                         message: message,
-                                        attachmentLoader: attachmentLoader
+                                        attachmentLoader: attachmentLoader,
+                                        isStructuredUISending: viewModel.isSendingUIEvent,
+                                        onStructuredUIAction: { actionId, componentId in
+                                            Task {
+                                                await viewModel.sendStructuredUIEvent(
+                                                    actionId: actionId,
+                                                    componentId: componentId
+                                                )
+                                            }
+                                        }
                                     )
                                     if viewModel.shouldShowSendRetry(for: message) {
                                         MessageSendRetryBar(
@@ -138,6 +147,14 @@ struct ChatView: View {
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("structured_ui.toolbar_start") {
+                    Task { await viewModel.startStructuredUIFlow() }
+                }
+                .disabled(viewModel.isSendingUIEvent)
+            }
+        }
         .task(id: viewModel.session.id) {
             ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
             resetChatScrollState()

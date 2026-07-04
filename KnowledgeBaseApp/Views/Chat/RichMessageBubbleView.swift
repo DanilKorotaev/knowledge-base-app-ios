@@ -6,6 +6,8 @@ struct RichMessageBubbleView: View {
     var filesClient: FilesAPIClientProtocol = Self.makeFilesClient()
     var attachmentLoader: KBAttachmentLoaderProtocol?
     var assistantResponseTime: TimeInterval?
+    var isStructuredUISending: Bool = false
+    var onStructuredUIAction: ((String, String) -> Void)?
 
     @State private var fullscreenImage: IdentifiableImage?
     @State private var copySheetText: IdentifiableCopyText?
@@ -89,6 +91,15 @@ struct RichMessageBubbleView: View {
 
             if let text = message.bubbleTextContent {
                 MessageContentView(message: message, contentOverride: text)
+            }
+            if message.role == .assistant, let structuredUI = message.structuredUI {
+                StructuredUIPanelView(
+                    document: structuredUI,
+                    isSending: isStructuredUISending,
+                    onAction: { actionId, componentId in
+                        onStructuredUIAction?(actionId, componentId)
+                    }
+                )
             }
             if message.role == .assistant,
                let changedFiles = message.relatedChangedFiles,
