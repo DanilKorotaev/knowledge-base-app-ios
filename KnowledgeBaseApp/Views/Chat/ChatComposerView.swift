@@ -22,8 +22,8 @@ struct ChatComposerView: View {
         viewModel.isSending || viewModel.isTranscribingVoice || voiceViewModel.isSendingVoice
     }
 
-    private var showsTranscribingIndicator: Bool {
-        viewModel.isTranscribingVoice || voiceViewModel.isTranscribing
+    private var showsTextFieldTranscribingIndicator: Bool {
+        voiceViewModel.isTranscribing
     }
 
     private var hasDraftMedia: Bool {
@@ -113,7 +113,7 @@ struct ChatComposerView: View {
                     .disabled(isBusy)
                     .padding(.horizontal, 2)
 
-                if showsTranscribingIndicator {
+                if showsTextFieldTranscribingIndicator {
                     ProgressView()
                         .controlSize(.small)
                         .padding(.trailing, 4)

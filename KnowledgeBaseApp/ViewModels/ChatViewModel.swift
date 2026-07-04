@@ -38,6 +38,8 @@ final class ChatViewModel {
 
     private let client: ChatAPIClientProtocol
     private let messageCache: MessageCacheStoreProtocol
+    private let composerDraftStore: ComposerDraftStoreProtocol
+    private var composerDraftSaveTask: Task<Void, Never>?
 
     /// Backward-compatible alias for tests and legacy call sites.
     var draft: String {
@@ -64,11 +66,14 @@ final class ChatViewModel {
     init(
         session: KBSession,
         client: ChatAPIClientProtocol,
-        messageCache: MessageCacheStoreProtocol = FileOfflineCacheStore.shared
+        messageCache: MessageCacheStoreProtocol = FileOfflineCacheStore.shared,
+        composerDraftStore: ComposerDraftStoreProtocol = ComposerDraftStore.shared
     ) {
         self.session = session
         self.client = client
         self.messageCache = messageCache
+        self.composerDraftStore = composerDraftStore
+        restoreComposerDraftIfNeeded()
     }
 
     func load() async {
@@ -276,7 +281,11 @@ final class ChatViewModel {
     }
 
     func removeAttachment(id: String) {
+        if let attachment = composerDraft.attachments.first(where: { $0.id == id }) {
+            try? FileManager.default.removeItem(at: attachment.localURL)
+        }
         composerDraft.attachments.removeAll { $0.id == id }
+        scheduleComposerDraftSave()
     }
 
     func removeVoiceClip(id: String) {
@@ -284,6 +293,7 @@ final class ChatViewModel {
             PendingVoiceStore.deleteRecording(at: clip.audioURL)
         }
         composerDraft.voiceClips.removeAll { $0.id == id }
+        scheduleComposerDraftSave()
     }
 
     func discardPendingVoiceCapture(id: String) {
@@ -292,6 +302,7 @@ final class ChatViewModel {
         }
         pendingVoiceCaptures.removeAll { $0.id == id }
         syncTranscribingVoiceFlag()
+        scheduleComposerDraftSave()
     }
 
     func retryPendingVoiceCaptureTranscription(id: String) async {
@@ -303,6 +314,7 @@ final class ChatViewModel {
 
     func addPendingAttachment(_ attachment: PendingAttachment) {
         composerDraft.attachments.append(attachment)
+        scheduleComposerDraftSave()
     }
 
     func addPhotoData(_ data: Data, filename: String = "photo.jpg") {
@@ -388,6 +400,7 @@ final class ChatViewModel {
 
         syncTranscribingVoiceFlag()
         await transcribePendingVoiceCapture(id: captureID)
+        scheduleComposerDraftSave()
     }
 
     private func transcribePendingVoiceCapture(id: String) async {
@@ -411,6 +424,7 @@ final class ChatViewModel {
         }
 
         syncTranscribingVoiceFlag()
+        scheduleComposerDraftSave()
     }
 
     private func syncTranscribingVoiceFlag() {
@@ -447,7 +461,7 @@ final class ChatViewModel {
         }
 
         if succeeded {
-            composerDraft.clear()
+            clearSavedComposerDraft()
         }
     }
 
@@ -511,6 +525,7 @@ final class ChatViewModel {
         } catch {
             errorMessage = error.localizedDescription
             composerDraft.attachments = [attachment]
+            scheduleComposerDraftSave()
             return false
         }
     }
@@ -553,6 +568,7 @@ final class ChatViewModel {
             errorMessage = VoicePipelineErrorMessage.forSend(error)
             composerDraft.voiceClips = [clip]
             composerDraft.appendTranscription(text)
+            scheduleComposerDraftSave()
             return false
         }
     }
@@ -606,6 +622,7 @@ final class ChatViewModel {
             }
             errorMessage = VoicePipelineErrorMessage.forSend(error)
             composerDraft = draft
+            scheduleComposerDraftSave()
             return false
         }
     }
@@ -738,6 +755,60 @@ final class ChatViewModel {
 
     func clearError() {
         errorMessage = nil
+    }
+
+    func scheduleComposerDraftSave() {
+        composerDraftSaveTask?.cancel()
+        composerDraftSaveTask = Task {
+            try? await Task.sleep(for: .milliseconds(350))
+            guard !Task.isCancelled else { return }
+            persistComposerDraftNow()
+        }
+    }
+
+    func persistComposerDraftNow() {
+        composerDraftSaveTask?.cancel()
+        if let normalized = composerDraftStore.save(
+            sessionId: session.id,
+            draft: composerDraft,
+            pendingVoiceCaptures: pendingVoiceCaptures
+        ) {
+            composerDraft = normalized.draft
+            pendingVoiceCaptures = normalized.pendingVoiceCaptures
+            syncTranscribingVoiceFlag()
+        }
+    }
+
+    private func restoreComposerDraftIfNeeded() {
+        guard let loaded = composerDraftStore.load(sessionId: session.id) else { return }
+        composerDraft = loaded.draft
+        pendingVoiceCaptures = loaded.pendingVoiceCaptures
+        syncTranscribingVoiceFlag()
+        resumeInterruptedTranscriptions()
+    }
+
+    private func resumeInterruptedTranscriptions() {
+        let transcribingIDs = pendingVoiceCaptures.compactMap { capture -> String? in
+            if case .transcribing = capture.state { return capture.id }
+            return nil
+        }
+        for id in transcribingIDs {
+            Task { await transcribePendingVoiceCapture(id: id) }
+        }
+    }
+
+    private func clearSavedComposerDraft() {
+        composerDraftSaveTask?.cancel()
+        for clip in composerDraft.voiceClips {
+            PendingVoiceStore.deleteRecording(at: clip.audioURL)
+        }
+        for capture in pendingVoiceCaptures {
+            PendingVoiceStore.deleteRecording(at: capture.audioURL)
+        }
+        composerDraft.clear()
+        pendingVoiceCaptures = []
+        syncTranscribingVoiceFlag()
+        composerDraftStore.clear(sessionId: session.id)
     }
 
     func reportError(_ message: String) {

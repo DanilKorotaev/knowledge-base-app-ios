@@ -1,6 +1,6 @@
 import Foundation
 
-enum PendingVoiceCaptureState: Equatable {
+enum PendingVoiceCaptureState: Equatable, Codable {
     case transcribing
     case failed(message: String)
 }

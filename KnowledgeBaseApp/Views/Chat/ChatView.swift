@@ -179,7 +179,13 @@ struct ChatView: View {
         .onChange(of: viewModel.useKnowledgeBase) { _, newValue in
             voiceRouting.useKnowledgeBase = newValue
         }
+        .onChange(of: viewModel.composerDraft.text) { _, _ in
+            viewModel.scheduleComposerDraftSave()
+        }
         .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background || newPhase == .inactive {
+                viewModel.persistComposerDraftNow()
+            }
             guard newPhase == .active else { return }
             Task {
                 await viewModel.resumeAwaitingReplyIfNeeded()
@@ -190,6 +196,7 @@ struct ChatView: View {
             ChatSessionFocusTracker.shared.setFocusedSessionId(viewModel.session.id)
         }
         .onDisappear {
+            viewModel.persistComposerDraftNow()
             if ChatSessionFocusTracker.shared.focusedSessionId == viewModel.session.id {
                 ChatSessionFocusTracker.shared.setFocusedSessionId(nil)
             }
