@@ -317,16 +317,16 @@ final class ChatViewModel {
     }
 
     func addPendingAttachment(_ attachment: PendingAttachment) {
-        composerDraft.attachments.append(attachment)
-        scheduleComposerDraftSave()
+        _ = tryAddPendingAttachment(attachment)
     }
 
-    func addPhotoData(_ data: Data, filename: String = "photo.jpg") {
+    @discardableResult
+    func addPhotoData(_ data: Data, filename: String = "photo.jpg") -> Bool {
         let path = FileManager.default.temporaryDirectory
             .appendingPathComponent("\(UUID().uuidString).jpg")
         do {
             try data.write(to: path)
-            addPendingAttachment(
+            return tryAddPendingAttachment(
                 PendingAttachment(
                     localURL: path,
                     kind: .image,
@@ -337,6 +337,41 @@ final class ChatViewModel {
             )
         } catch {
             reportError(error.localizedDescription)
+            return false
+        }
+    }
+
+    var remainingComposerAttachmentSlots: Int {
+        ComposerAttachmentLimits.remainingFileSlots(currentCount: composerDraft.attachments.count)
+    }
+
+    func reportAttachmentLimitReached() {
+        reportError(
+            ComposerAttachmentLimits.ValidationError.tooManyFiles(
+                max: ComposerAttachmentLimits.maxFileAttachments
+            ).message
+        )
+    }
+
+    @discardableResult
+    private func tryAddPendingAttachment(_ attachment: PendingAttachment) -> Bool {
+        if let error = ComposerAttachmentLimits.validateAdding(
+            currentAttachments: composerDraft.attachments,
+            newAttachment: attachment
+        ) {
+            reportError(error.message)
+            cleanupRejectedAttachment(at: attachment.localURL)
+            return false
+        }
+        composerDraft.attachments.append(attachment)
+        scheduleComposerDraftSave()
+        return true
+    }
+
+    private func cleanupRejectedAttachment(at url: URL) {
+        let tempRoot = FileManager.default.temporaryDirectory.standardizedFileURL
+        if url.standardizedFileURL.path.hasPrefix(tempRoot.path) {
+            try? FileManager.default.removeItem(at: url)
         }
     }
 
@@ -349,7 +384,12 @@ final class ChatViewModel {
     }
 
     func addFiles(from urls: [URL]) async {
+        var skippedLimit = false
         for url in urls {
+            if remainingComposerAttachmentSlots == 0 {
+                skippedLimit = true
+                break
+            }
             let scoped = url.startAccessingSecurityScopedResource()
             defer {
                 if scoped {
@@ -367,18 +407,25 @@ final class ChatViewModel {
                     .int64Value
                 let mime = dest.kbPreferredMIMEType
                 let kind: PendingAttachmentKind = mime.hasPrefix("image/") ? .image : .file
-                addPendingAttachment(
-                    PendingAttachment(
-                        localURL: dest,
-                        kind: kind,
-                        filename: url.lastPathComponent,
-                        mimeType: mime,
-                        fileSize: size
-                    )
+                let attachment = PendingAttachment(
+                    localURL: dest,
+                    kind: kind,
+                    filename: url.lastPathComponent,
+                    mimeType: mime,
+                    fileSize: size
                 )
+                if !tryAddPendingAttachment(attachment) {
+                    try? FileManager.default.removeItem(at: dest)
+                    if remainingComposerAttachmentSlots == 0 {
+                        skippedLimit = true
+                    }
+                }
             } catch {
                 reportError(error.localizedDescription)
             }
+        }
+        if skippedLimit {
+            reportAttachmentLimitReached()
         }
     }
 

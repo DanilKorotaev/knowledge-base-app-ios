@@ -65,6 +65,10 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         attachments?.filter(\.isVoice) ?? []
     }
 
+    var documentAttachments: [KBAttachment] {
+        attachments?.filter { !$0.isImage && !$0.isVoice } ?? []
+    }
+
     var effectiveTranscription: String? {
         if let transcription, !transcription.isEmpty { return transcription }
         return voiceAttachments.compactMap(\.transcription).first

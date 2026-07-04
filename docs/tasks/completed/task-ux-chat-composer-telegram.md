@@ -52,8 +52,8 @@ Redesign chat input: centered `TextField`, `+` menu (attachments), mic + send on
 
 ## Follow-up (optional polish)
 
-- [ ] Quick Look for non-image file attachments in thread
-- [ ] Client-side attachment count / size limits before send
+- [x] Quick Look for non-image file attachments in thread → `task-ux-chat-composer-polish.md`
+- [x] Client-side attachment count / size limits before send → `task-ux-chat-composer-polish.md`
 - [ ] UI test: sheet actions add to strip without network
 
 ## Tests

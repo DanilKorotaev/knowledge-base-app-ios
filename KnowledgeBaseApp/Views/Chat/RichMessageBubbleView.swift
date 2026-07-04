@@ -59,6 +59,13 @@ struct RichMessageBubbleView: View {
                 )
             }
 
+            if !message.documentAttachments.isEmpty {
+                MessageDocumentAttachmentsView(
+                    attachments: message.documentAttachments,
+                    loader: attachmentLoader
+                )
+            }
+
             if let text = message.bubbleTextContent {
                 MessageContentView(message: message, contentOverride: text)
             }

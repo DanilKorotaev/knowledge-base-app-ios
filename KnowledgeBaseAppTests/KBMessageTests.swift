@@ -544,4 +544,45 @@ final class MessageContentRendererTests: XCTestCase {
         let attr = MessageContentRenderer.attributedText(for: message)
         XCTAssertTrue(String(attr.characters).contains("Hi"))
     }
+
+    func testDocumentAttachments_excludesImagesAndVoice() {
+        let message = KBMessage(
+            id: "1",
+            role: .user,
+            content: "Files",
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "1",
+                    fileType: "photo",
+                    fileName: "a.jpg",
+                    fileSize: 10,
+                    mimeType: "image/jpeg",
+                    downloadURL: "/a",
+                    transcription: nil
+                ),
+                KBAttachment(
+                    id: "2",
+                    fileType: "voice",
+                    fileName: "v.m4a",
+                    fileSize: 20,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/v",
+                    transcription: "hi"
+                ),
+                KBAttachment(
+                    id: "3",
+                    fileType: "document",
+                    fileName: "notes.pdf",
+                    fileSize: 30,
+                    mimeType: "application/pdf",
+                    downloadURL: "/d",
+                    transcription: nil
+                ),
+            ]
+        )
+
+        XCTAssertEqual(message.documentAttachments.count, 1)
+        XCTAssertEqual(message.documentAttachments.first?.fileName, "notes.pdf")
+    }
 }

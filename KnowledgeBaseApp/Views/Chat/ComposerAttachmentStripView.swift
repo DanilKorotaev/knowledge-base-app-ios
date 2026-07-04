@@ -9,6 +9,7 @@ struct ComposerAttachmentStripView: View {
     var onRetryPendingVoiceCapture: (String) -> Void
     var onDiscardPendingVoiceCapture: (String) -> Void
     var onTapImage: (URL) -> Void
+    var onTapFile: (URL) -> Void
 
     private var hasScrollableMedia: Bool {
         !attachments.isEmpty || !voiceClips.isEmpty
@@ -71,8 +72,21 @@ struct ComposerAttachmentStripView: View {
                 .offset(x: 6, y: -6)
             }
         case .file:
-            ComposerFileChipView(attachment: attachment) {
-                onRemoveAttachment(attachment.id)
+            ZStack(alignment: .topTrailing) {
+                Button {
+                    onTapFile(attachment.localURL)
+                } label: {
+                    ComposerFileChipView(attachment: attachment, onRemove: {})
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    onRemoveAttachment(attachment.id)
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .offset(x: 4, y: -4)
             }
         }
     }

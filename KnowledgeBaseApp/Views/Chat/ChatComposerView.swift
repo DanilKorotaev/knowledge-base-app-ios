@@ -17,6 +17,13 @@ struct ChatComposerView: View {
     @State private var showGalleryPicker = false
     @State private var photoPickerItems: [PhotosPickerItem] = []
     @State private var previewImageItem: PreviewImageItem?
+    @State private var quickLookFileURL: URL?
+
+    private var remainingAttachmentSlots: Int {
+        ComposerAttachmentLimits.remainingFileSlots(
+            currentCount: viewModel.composerDraft.attachments.count
+        )
+    }
 
     private var isBusy: Bool {
         viewModel.isSending || viewModel.isTranscribingVoice || voiceViewModel.isSendingVoice
@@ -42,18 +49,28 @@ struct ChatComposerView: View {
             .photosPicker(
                 isPresented: $showGalleryPicker,
                 selection: $photoPickerItems,
-                maxSelectionCount: 10,
+                maxSelectionCount: max(1, remainingAttachmentSlots),
                 matching: .images
             )
             .onChange(of: photoPickerItems) { _, items in
                 guard !items.isEmpty else { return }
                 Task {
+                    var skippedLimit = false
                     for item in items {
+                        if viewModel.remainingComposerAttachmentSlots == 0 {
+                            skippedLimit = true
+                            break
+                        }
                         guard let data = try? await item.loadTransferable(type: Data.self) else {
                             viewModel.reportError("Could not read photo.")
                             continue
                         }
-                        viewModel.addPhotoData(data)
+                        if !viewModel.addPhotoData(data) {
+                            skippedLimit = true
+                        }
+                    }
+                    if skippedLimit {
+                        viewModel.reportAttachmentLimitReached()
                     }
                     photoPickerItems = []
                 }
@@ -83,6 +100,7 @@ struct ChatComposerView: View {
             .sheet(item: $previewImageItem) { item in
                 ImagePreviewSheet(imageURL: item.url)
             }
+            .quickLookPreview($quickLookFileURL)
     }
 
     private var composerPanelShape: some Shape {
@@ -102,7 +120,8 @@ struct ChatComposerView: View {
                         Task { await viewModel.retryPendingVoiceCaptureTranscription(id: id) }
                     },
                     onDiscardPendingVoiceCapture: { viewModel.discardPendingVoiceCapture(id: $0) },
-                    onTapImage: { previewImageItem = PreviewImageItem(url: $0) }
+                    onTapImage: { previewImageItem = PreviewImageItem(url: $0) },
+                    onTapFile: { quickLookFileURL = $0 }
                 )
             }
 
@@ -139,6 +158,7 @@ struct ChatComposerView: View {
             } label: {
                 Label("Photos", systemImage: "photo.on.rectangle")
             }
+            .disabled(remainingAttachmentSlots == 0)
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 Button {
                     showCamera = true
@@ -151,6 +171,7 @@ struct ChatComposerView: View {
             } label: {
                 Label("Files", systemImage: "folder")
             }
+            .disabled(remainingAttachmentSlots == 0)
         } label: {
             Image(systemName: "plus")
                 .font(.title2.weight(.medium))
