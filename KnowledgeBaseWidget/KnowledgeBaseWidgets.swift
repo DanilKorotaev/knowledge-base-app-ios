@@ -30,8 +30,8 @@ struct QuickRecordWidget: Widget {
         StaticConfiguration(kind: kind, provider: QuickRecordProvider()) { entry in
             QuickRecordWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Быстрая запись")
-        .description("Открыть приложение для голосового запроса (App Intent + URL).")
+        .configurationDisplayName(LocalizedStringResource("widget.quick_record.title"))
+        .description(LocalizedStringResource("widget.quick_record.description"))
         .supportedFamilies([.systemSmall, .accessoryCircular])
     }
 }
@@ -56,7 +56,7 @@ struct QuickRecordWidgetEntryView: View {
                         VStack(spacing: 6) {
                             Image(systemName: "mic.fill")
                                 .font(.title2)
-                            Text("Record")
+                            Text(L10n.string("widget.record_button"))
                                 .font(.caption2)
                         }
                     }
@@ -70,7 +70,7 @@ struct QuickRecordWidgetEntryView: View {
     }
 }
 
-// MARK: - Current session (medium; copy updates when App Group is wired)
+// MARK: - Current session (medium; session title via App Group — pending task)
 
 struct SessionEntry: TimelineEntry {
     let date: Date
@@ -98,8 +98,8 @@ struct CurrentSessionWidget: Widget {
         StaticConfiguration(kind: kind, provider: SessionProvider()) { entry in
             SessionWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Текущая сессия")
-        .description("Ярлык сессии и быстрый доступ к записи.")
+        .configurationDisplayName(LocalizedStringResource("widget.current_session.title"))
+        .description(LocalizedStringResource("widget.current_session.description"))
         .supportedFamilies([.systemMedium])
     }
 }

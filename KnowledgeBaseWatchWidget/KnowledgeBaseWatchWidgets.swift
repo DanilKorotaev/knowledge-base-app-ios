@@ -29,8 +29,8 @@ struct WatchRecordComplication: Widget {
         StaticConfiguration(kind: kind, provider: WatchRecordProvider()) { _ in
             WatchRecordComplicationView()
         }
-        .configurationDisplayName("Запись")
-        .description("Открыть приложение и начать голосовую запись.")
+        .configurationDisplayName(LocalizedStringResource("watch_widget.record.title"))
+        .description(LocalizedStringResource("watch_widget.record.description"))
         .supportedFamilies([.accessoryCircular, .accessoryCorner])
     }
 }

@@ -5,9 +5,20 @@ struct SettingsView: View {
     @State private var authToken: String = AppConfiguration.string(for: AppConfiguration.Keys.authToken) ?? ""
     @State private var voiceDefaultTitle: String?
     @State private var voiceDefaultExpiry: String?
+    @Bindable private var languageStore = AppLanguageStore.shared
 
     var body: some View {
         Form {
+            Section {
+                Picker("settings.language", selection: languagePreferenceBinding) {
+                    Text("settings.language.system").tag(AppLanguagePreference.system)
+                    Text("settings.language.english").tag(AppLanguagePreference.english)
+                    Text("settings.language.russian").tag(AppLanguagePreference.russian)
+                }
+            } header: {
+                Text("settings.language")
+            }
+
             Section {
                 TextField("API base URL (https://…)", text: $apiBaseURL)
                     .textContentType(.URL)
@@ -90,6 +101,13 @@ struct SettingsView: View {
         } else {
             voiceDefaultExpiry = nil
         }
+    }
+
+    private var languagePreferenceBinding: Binding<AppLanguagePreference> {
+        Binding(
+            get: { languageStore.override },
+            set: { languageStore.setOverride($0) }
+        )
     }
 }
 

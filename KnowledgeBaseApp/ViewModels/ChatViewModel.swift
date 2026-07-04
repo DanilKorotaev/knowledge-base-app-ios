@@ -111,7 +111,7 @@ final class ChatViewModel {
                 syncStatus = .offline(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id))
                 ChatPaginationLogger.loadSkippedOffline(kind)
             } else {
-                errorMessage = "Нет подключения к сети"
+                errorMessage = L10n.string("network.no_connection")
                 syncStatus = .offline(lastSyncedAt: nil)
                 ChatPaginationLogger.loadSkippedOffline(kind)
             }

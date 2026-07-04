@@ -465,7 +465,7 @@ struct MainView: View {
             if hasLocalData {
                 sessionsSyncStatus = .offline(lastSyncedAt: sessionCache.lastSessionsSyncAt())
             } else {
-                loadError = "Нет подключения к сети"
+                loadError = L10n.string("network.no_connection")
                 sessionsSyncStatus = .offline(lastSyncedAt: nil)
             }
             return

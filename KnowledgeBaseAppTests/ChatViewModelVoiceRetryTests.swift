@@ -205,19 +205,35 @@ private final class AlwaysFailingTranscribeChatAPIClient: ChatAPIClientProtocol,
 }
 
 final class VoicePipelineErrorMessageTests: XCTestCase {
+    override func tearDown() {
+        AppLanguageStore.shared.resetForTesting()
+        super.tearDown()
+    }
+
     func testTimeoutStatusCodeIsShort() {
+        AppLanguageStore.shared.setOverride(.russian)
         let message = VoicePipelineErrorMessage.forTranscription(
             KnowledgeBaseAPIError.invalidResponse(statusCode: 504, apiMessage: nil)
         )
         XCTAssertEqual(message, "Таймаут сервера (504).")
     }
 
+    func testTimeoutStatusCodeIsShortEnglish() {
+        AppLanguageStore.shared.setOverride(.english)
+        let message = VoicePipelineErrorMessage.forTranscription(
+            KnowledgeBaseAPIError.invalidResponse(statusCode: 504, apiMessage: nil)
+        )
+        XCTAssertEqual(message, "Server timeout (504).")
+    }
+
     func testURLErrorNotConnectedIsShort() {
+        AppLanguageStore.shared.setOverride(.russian)
         let message = VoicePipelineErrorMessage.forTranscription(URLError(.notConnectedToInternet))
         XCTAssertEqual(message, "Нет подключения к интернету.")
     }
 
     func testDoesNotIncludeRetryInstructions() {
+        AppLanguageStore.shared.setOverride(.russian)
         let message = VoicePipelineErrorMessage.forTranscription(URLError(.notConnectedToInternet))
         XCTAssertFalse(message.contains("Повторить"))
         XCTAssertFalse(message.contains("VPN"))

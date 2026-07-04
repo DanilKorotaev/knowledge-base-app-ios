@@ -19,6 +19,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check for hard-coded Cyrillic UI strings
+        run: bash scripts/ci/check_no_hardcoded_cyrillic.sh
+
       - name: Select Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:

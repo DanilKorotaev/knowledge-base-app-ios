@@ -10,7 +10,7 @@ struct AssistantPendingBubbleView: View {
                 HStack(spacing: 10) {
                     ProgressView()
                         .controlSize(.small)
-                    Text("Обработка…")
+                    Text("assistant.processing")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -26,12 +26,8 @@ struct AssistantPendingBubbleView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(pendingAccessibilityLabel)
+        .accessibilityLabel(Text("assistant.processing_a11y"))
         .accessibilityValue(activityAccessibilityValue)
-    }
-
-    private var pendingAccessibilityLabel: String {
-        "Обработка ответа"
     }
 
     private var activityAccessibilityValue: String {

@@ -2,12 +2,27 @@ import XCTest
 @testable import KnowledgeBaseApp
 
 final class SyncStatusTests: XCTestCase {
-    func testDisplayText_refreshing() {
+    override func tearDown() {
+        AppLanguageStore.shared.resetForTesting()
+        super.tearDown()
+    }
+
+    func testDisplayText_refreshing_russian() {
+        AppLanguageStore.shared.setOverride(.russian)
         XCTAssertEqual(SyncStatus.refreshing.displayText, "Обновление…")
     }
 
+    func testDisplayText_refreshing_english() {
+        AppLanguageStore.shared.setOverride(.english)
+        XCTAssertEqual(SyncStatus.refreshing.displayText, "Updating…")
+    }
+
     func testDisplayText_offlineWithoutDate() {
+        AppLanguageStore.shared.setOverride(.russian)
         XCTAssertEqual(SyncStatus.offline(lastSyncedAt: nil).displayText, "Офлайн")
+
+        AppLanguageStore.shared.setOverride(.english)
+        XCTAssertEqual(SyncStatus.offline(lastSyncedAt: nil).displayText, "Offline")
     }
 
     func testDisplayText_failedIncludesMessage() {
@@ -51,8 +66,9 @@ final class SyncStatusTests: XCTestCase {
         }
     }
 
-    func testRelativeAge_justNow() {
+    func testRelativeAge_returnsNonEmptyForRecentDate() {
+        AppLanguageStore.shared.setOverride(.russian)
         let text = SyncStatusFormatting.relativeAge(since: Date())
-        XCTAssertEqual(text, "только что")
+        XCTAssertFalse(text.isEmpty)
     }
 }

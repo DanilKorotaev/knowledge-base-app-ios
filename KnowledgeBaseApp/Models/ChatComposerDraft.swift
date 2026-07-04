@@ -94,7 +94,7 @@ enum ChatComposerSendPlanner {
 
         if attachmentCount == 0 && voiceCount == 0 {
             guard !draft.trimmedText.isEmpty else {
-                return .unsupported("Добавьте текст, файл или голосовое.")
+                return .unsupported(L10n.string("composer.add_content"))
             }
             return .textOnly(draft.trimmedText)
         }
@@ -106,13 +106,13 @@ enum ChatComposerSendPlanner {
         if voiceCount == 1 && attachmentCount == 0 {
             let text = draft.trimmedText.isEmpty ? draft.voiceClips[0].transcriptionSegment : draft.trimmedText
             guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                return .unsupported("Голосовое сообщение не удалось расшифровать.")
+                return .unsupported(L10n.string("composer.voice_transcription_failed"))
             }
             return .singleVoice(draft.voiceClips[0], text: text)
         }
 
         guard draft.canSend else {
-            return .unsupported("Добавьте текст, файл или голосовое.")
+            return .unsupported(L10n.string("composer.add_content"))
         }
         return .compose(draft)
     }

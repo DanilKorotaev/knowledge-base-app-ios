@@ -39,7 +39,7 @@ struct ComposerVoiceChipView: View {
         HStack(spacing: 8) {
             Image(systemName: "waveform")
                 .foregroundStyle(.secondary)
-            Text(clip.transcriptionSegment.isEmpty ? "Голосовое" : clip.transcriptionSegment)
+            Text(clip.transcriptionSegment.isEmpty ? String(localized: "voice.note") : clip.transcriptionSegment)
                 .font(.caption)
                 .lineLimit(2)
                 .frame(maxWidth: 140, alignment: .leading)

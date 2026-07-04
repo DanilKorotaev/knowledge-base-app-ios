@@ -5,6 +5,10 @@ packages:
     from: 5.9.0
 options:
   bundleIdPrefix: com.coredan
+  developmentLanguage: en
+  knownRegions:
+    - en
+    - ru
   deploymentTarget:
     iOS: "18.0"
     watchOS: "10.0"
@@ -13,6 +17,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.9"
+    SWIFT_EMIT_LOC_STRINGS: YES
     CURRENT_PROJECT_VERSION: "1"
     MARKETING_VERSION: "0.1.0"
     DEVELOPMENT_TEAM: "66C9VGAZR5"
@@ -27,6 +32,7 @@ targets:
       - path: KnowledgeBaseApp
       - path: SharedIntents
       - path: SharedWatchConnectivity
+      - path: SharedLocalization
     dependencies:
       - package: Alamofire
       - target: KnowledgeBaseWidgetExtension
@@ -84,6 +90,7 @@ targets:
     sources:
       - path: KnowledgeBaseWidget
       - path: SharedIntents
+      - path: SharedLocalization
     settings:
       base:
         CODE_SIGN_STYLE: Automatic
@@ -101,6 +108,7 @@ targets:
     platform: watchOS
     sources:
       - path: KnowledgeBaseWatchWidget
+      - path: SharedLocalization
     settings:
       base:
         CODE_SIGN_STYLE: Automatic

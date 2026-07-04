@@ -5,6 +5,7 @@ struct KnowledgeBaseApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var deepLinkVoiceRecording = false
     @State private var deepLinkSessionId: String?
+    @Bindable private var languageStore = AppLanguageStore.shared
 
     init() {
         UserDefaultsService.shared = UserDefaultsService(settings: UserDefaultsInspectorSettings.shared)
@@ -26,6 +27,8 @@ struct KnowledgeBaseApp: App {
                 deepLinkVoiceRecording: $deepLinkVoiceRecording,
                 deepLinkSessionId: $deepLinkSessionId
             )
+            .environment(\.locale, languageStore.resolvedLocale)
+            .environment(languageStore)
             .onOpenURL { url in
                 guard url.scheme == "knowledgebase" else { return }
                 if url.host == "record" {

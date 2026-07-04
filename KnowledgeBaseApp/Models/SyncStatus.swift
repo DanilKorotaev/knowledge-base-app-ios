@@ -36,36 +36,32 @@ enum SyncStatus: Equatable {
         case .idle:
             return ""
         case .refreshing:
-            return "Обновление…"
+            return L10n.string("sync.updating")
         case .upToDate(let date):
-            return "Обновлено \(SyncStatusFormatting.relativeAge(since: date))"
+            return L10n.format("sync.updated_format", SyncStatusFormatting.relativeAge(since: date))
         case .offline(let date):
             if let date {
-                return "Офлайн · данные от \(SyncStatusFormatting.relativeAge(since: date))"
+                return L10n.format("sync.offline_data_format", SyncStatusFormatting.relativeAge(since: date))
             }
-            return "Офлайн"
+            return L10n.string("sync.offline")
         case .failed(let message, let date):
-            let base = message.isEmpty ? "Не удалось обновить" : message
+            let base = message.isEmpty ? L10n.string("sync.failed_default") : message
             guard let date else { return base }
-            return "\(base) · данные от \(SyncStatusFormatting.relativeAge(since: date))"
+            return L10n.format(
+                "sync.failed_data_format",
+                base,
+                SyncStatusFormatting.relativeAge(since: date)
+            )
         }
     }
 }
 
 enum SyncStatusFormatting {
-    static func relativeAge(since date: Date) -> String {
-        let seconds = max(0, Int(Date().timeIntervalSince(date)))
-        if seconds < 60 { return "только что" }
-        let minutes = seconds / 60
-        if minutes < 60 {
-            return "\(minutes) мин назад"
-        }
-        let hours = minutes / 60
-        if hours < 24 {
-            return "\(hours) ч назад"
-        }
-        let days = hours / 24
-        return "\(days) дн назад"
+    static func relativeAge(since date: Date, locale: Locale = AppLanguageStore.shared.resolvedLocale) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.locale = locale
+        formatter.unitsStyle = .short
+        return formatter.localizedString(for: date, relativeTo: Date())
     }
 }
 

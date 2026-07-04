@@ -7,6 +7,7 @@
 - `KnowledgeBaseWidget/` — WidgetKit extension; **`NSExtension` / `widgetkit-extension`** is declared in `Info.plist` and merged from **`project.yml`** (`info.properties`); simulator install fails without it.
 - `KnowledgeBaseWatchApp/` — watchOS companion (`com.coredan.KnowledgeBaseApp.watch`), embedded in the iOS app.
 - `SharedWatchConnectivity/` — WCSession metadata keys + `WatchVoiceContext` (iOS + watchOS).
+- `SharedLocalization/` — `Localizable.xcstrings` (EN base + RU), `AppLanguageStore`, `L10n` helper.
 - `project.yml` — XcodeGen specification
 - `Config/` — shared `xcconfig` files for Debug/Release
 
@@ -62,6 +63,14 @@ Match / TestFlight: include `com.coredan.KnowledgeBaseApp.watch` in `fastlane ma
 - **Main-screen recording:** when a valid voice default is set, finishing a recording opens that session’s chat and enqueues the clip into the composer (transcription in the message field). Without a default, the post-record review sheet is used (widget / Watch keep the sheet path later).
 - **TTL expiry:** checked on foreground (`scenePhase`) and after session list refresh; restores `previousSessionId` when set.
 - **Watch:** `WatchVoiceSessionContextSync` pushes `default_session_id` / `expires_at` via `WCSession.updateApplicationContext` when Watch app is paired.
+
+## Localization
+
+- **Catalog:** `SharedLocalization/Localizable.xcstrings` — English (base) + Russian. Linked from the iOS app, widget, and watch widget targets via `project.yml`.
+- **Runtime override:** Settings → **Language** (`System default` / English / Russian). Stored in app `UserDefaults` key `kb.app.language_override`. Widgets follow **system locale** until App Group is added (`task-infra-app-group-shared-defaults.md`).
+- **Views:** prefer `Text("catalog.key")` (uses `environment(\.locale)`). ViewModels/services: `L10n.string("catalog.key")` or `L10n.format("catalog.key", args…)`.
+- **New UI copy:** add EN + RU entries to the catalog — no inline Cyrillic in `Views/` / `ViewModels/` (CI checks with `scripts/ci/check_no_hardcoded_cyrillic.sh`).
+- **Siri phrases:** bilingual phrase list in `KnowledgeBaseAppShortcuts.swift` is intentional (allowlisted in the Cyrillic check).
 
 ## CI
 

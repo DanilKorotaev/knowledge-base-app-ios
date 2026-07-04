@@ -23,7 +23,7 @@ struct ComposerPendingVoiceCaptureView: View {
                 .font(.body)
                 .foregroundStyle(Color.accentColor)
 
-            Text("Распознаём речь…")
+            Text("voice.transcribing")
                 .font(.subheadline.weight(.medium))
 
             Spacer(minLength: 8)
@@ -45,7 +45,7 @@ struct ComposerPendingVoiceCaptureView: View {
                     .foregroundStyle(.orange)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Голосовое не распознано")
+                    Text("voice.not_recognized")
                         .font(.subheadline.weight(.semibold))
                     Text(message)
                         .font(.caption)
@@ -55,10 +55,10 @@ struct ComposerPendingVoiceCaptureView: View {
             }
 
             HStack(spacing: 10) {
-                Button("Повторить", action: onRetry)
+                Button("voice.retry", action: onRetry)
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
-                Button("Удалить", role: .destructive, action: onDiscard)
+                Button("voice.delete", role: .destructive, action: onDiscard)
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }

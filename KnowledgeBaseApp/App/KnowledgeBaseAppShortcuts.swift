@@ -11,7 +11,7 @@ struct KnowledgeBaseAppShortcuts: AppShortcutsProvider {
                 "Запись в \(.applicationName)",
                 "Voice request in \(.applicationName)"
             ],
-            shortTitle: "Голос KB",
+            shortTitle: LocalizedStringResource("shortcut.voice_short_title"),
             systemImageName: "mic.fill"
         )
     }

@@ -1,0 +1,312 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "assistant.processing" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Processing…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обработка…" } }
+      }
+    },
+    "assistant.processing_a11y" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Processing reply" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обработка ответа" } }
+      }
+    },
+    "composer.add_content" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add text, a file, or a voice note." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Добавьте текст, файл или голосовое." } }
+      }
+    },
+    "composer.voice_transcription_failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not transcribe the voice note." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Голосовое сообщение не удалось расшифровать." } }
+      }
+    },
+    "error.api_not_configured" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "API is not configured." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "API не настроен." } }
+      }
+    },
+    "error.connection_lost" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Connection lost." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Соединение потеряно." } }
+      }
+    },
+    "error.invalid_server_response" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Invalid server response." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неверный ответ сервера." } }
+      }
+    },
+    "error.network_generic" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Network error." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ошибка сети." } }
+      }
+    },
+    "error.network_not_allowed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Network not available for this app." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сеть недоступна для приложения." } }
+      }
+    },
+    "error.no_internet" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No internet connection." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нет подключения к интернету." } }
+      }
+    },
+    "error.send_failed" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not send the message." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось отправить сообщение." } }
+      }
+    },
+    "error.send_failed_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Could not send: %@" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось отправить: %@" } }
+      }
+    },
+    "error.server_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Server error (%lld)." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ошибка сервера (%lld)." } }
+      }
+    },
+    "error.server_timeout_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Server timeout (%lld)." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Таймаут сервера (%lld)." } }
+      }
+    },
+    "error.server_unavailable" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Server unavailable." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сервер недоступен." } }
+      }
+    },
+    "error.speech_not_recognized" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Speech was not recognized in the recording." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Речь в записи не распознана." } }
+      }
+    },
+    "error.timeout" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Timed out." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Таймаут." } }
+      }
+    },
+    "error.unknown" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Unknown error." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Неизвестная ошибка." } }
+      }
+    },
+    "intent.quick_record.description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open Knowledge Base for a voice request" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть Knowledge Base для голосового запроса" } }
+      }
+    },
+    "intent.quick_record.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quick record" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Быстрая запись" } }
+      }
+    },
+    "network.no_connection" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "No network connection" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нет подключения к сети" } }
+      }
+    },
+    "settings.language" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Язык" } }
+      }
+    },
+    "settings.language.english" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "English" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "English" } }
+      }
+    },
+    "settings.language.russian" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Russian" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Русский" } }
+      }
+    },
+    "settings.language.system" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "System default" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Как в системе" } }
+      }
+    },
+    "shortcut.voice_short_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Voice KB" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Голос KB" } }
+      }
+    },
+    "sync.failed_data_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "%1$@ · data from %2$@" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "%1$@ · данные от %2$@" } }
+      }
+    },
+    "sync.failed_default" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Update failed" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось обновить" } }
+      }
+    },
+    "sync.offline" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Offline" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Офлайн" } }
+      }
+    },
+    "sync.offline_data_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Offline · data from %@" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Офлайн · данные от %@" } }
+      }
+    },
+    "sync.updated_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Updated %@" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обновлено %@" } }
+      }
+    },
+    "sync.updating" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Updating…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обновление…" } }
+      }
+    },
+    "voice.delete" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить" } }
+      }
+    },
+    "voice.message_placeholder" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Message text" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Текст сообщения" } }
+      }
+    },
+    "voice.note" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Voice note" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Голосовое" } }
+      }
+    },
+    "voice.not_recognized" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Voice not recognized" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Голосовое не распознано" } }
+      }
+    },
+    "voice.retry" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторить" } }
+      }
+    },
+    "voice.review_create_chat_first" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Create a chat first, then send." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сначала создайте чат, затем отправьте сообщение." } }
+      }
+    },
+    "voice.review_edit_and_send" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Edit the text and tap Send to chat." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отредактируйте текст и нажмите «Отправить в чат»." } }
+      }
+    },
+    "voice.review_section" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Review" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Проверка" } }
+      }
+    },
+    "voice.review_send_to_format" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Will send to \"%@\". You can edit the text." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отправится в «%@». Можно отредактировать текст вручную." } }
+      }
+    },
+    "voice.send_to_chat" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Send to chat" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отправить в чат" } }
+      }
+    },
+    "voice.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Voice note" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Голосовое" } }
+      }
+    },
+    "voice.transcribing" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Transcribing…" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Распознаём речь…" } }
+      }
+    },
+    "watch_widget.record.description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open the app and start voice recording." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть приложение и начать голосовую запись." } }
+      }
+    },
+    "watch_widget.record.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Запись" } }
+      }
+    },
+    "widget.current_session.description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Session shortcut and quick access to recording." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ярлык сессии и быстрый доступ к записи." } }
+      }
+    },
+    "widget.current_session.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Current session" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Текущая сессия" } }
+      }
+    },
+    "widget.quick_record.description" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open the app for a voice request (App Intent + URL)." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть приложение для голосового запроса (App Intent + URL)." } }
+      }
+    },
+    "widget.quick_record.title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Quick record" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Быстрая запись" } }
+      }
+    },
+    "widget.record_button" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Record" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Запись" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

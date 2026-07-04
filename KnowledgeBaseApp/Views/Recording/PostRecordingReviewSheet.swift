@@ -20,7 +20,7 @@ struct PostRecordingReviewSheet: View {
                     Section {
                         HStack {
                             ProgressView()
-                            Text("Распознаём речь…")
+                            Text("voice.transcribing")
                         }
                     }
                 }
@@ -28,12 +28,12 @@ struct PostRecordingReviewSheet: View {
                 if let failure = viewModel.transcriptionFailureMessage {
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Голосовое не распознано")
+                            Text("voice.not_recognized")
                                 .font(.subheadline.weight(.semibold))
                             Text(failure)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Button("Повторить") {
+                            Button("voice.retry") {
                                 Task { await viewModel.retryTranscription() }
                             }
                             .buttonStyle(.borderedProminent)
@@ -44,32 +44,32 @@ struct PostRecordingReviewSheet: View {
 
                 Section {
                     TextField(
-                        "Текст сообщения",
+                        "voice.message_placeholder",
                         text: $viewModel.transcriptionDraft,
                         axis: .vertical
                     )
                     .lineLimit(4 ... 12)
                     .disabled(viewModel.isTranscribing)
                 } header: {
-                    Text("Проверка")
+                    Text("voice.review_section")
                 } footer: {
                     if let title = resolvedSessionTitle {
-                        Text("Отправится в «\(title)». Можно отредактировать текст вручную.")
+                        Text(L10n.format("voice.review_send_to_format", title))
                     } else if sessions.isEmpty {
-                        Text("Сначала создайте чат, затем отправьте сообщение.")
+                        Text("voice.review_create_chat_first")
                     } else {
-                        Text("Отредактируйте текст и нажмите «Отправить в чат».")
+                        Text("voice.review_edit_and_send")
                     }
                 }
             }
-            .navigationTitle("Голосовое")
+            .navigationTitle("voice.title")
             .navigationBarTitleDisplayMode(.inline)
             .task {
                 await viewModel.transcribeRecordedAudioIfNeeded()
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Удалить") {
+                    Button("voice.delete") {
                         viewModel.dismissPostRecordReview()
                     }
                     .disabled(viewModel.isSendingVoice)
@@ -78,7 +78,7 @@ struct PostRecordingReviewSheet: View {
                     if viewModel.isSendingVoice {
                         ProgressView()
                     } else {
-                        Button("Отправить в чат") {
+                        Button("voice.send_to_chat") {
                             viewModel.confirmPostRecordUpload(
                                 sessionId: resolvedSessionId,
                                 useKnowledgeBase: voiceRouting.useKnowledgeBase
