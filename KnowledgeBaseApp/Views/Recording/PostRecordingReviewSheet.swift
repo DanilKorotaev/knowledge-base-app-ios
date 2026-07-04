@@ -27,9 +27,8 @@ struct PostRecordingReviewSheet: View {
 
                 if let failure = viewModel.transcriptionFailureMessage {
                     Section {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Label("Не удалось распознать", systemImage: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Голосовое не распознано")
                                 .font(.subheadline.weight(.semibold))
                             Text(failure)
                                 .font(.caption)
@@ -40,8 +39,6 @@ struct PostRecordingReviewSheet: View {
                             .buttonStyle(.borderedProminent)
                             .disabled(viewModel.isTranscribing)
                         }
-                    } footer: {
-                        Text("Запись сохранена на устройстве. Включите VPN при необходимости и нажмите «Повторить».")
                     }
                 }
 

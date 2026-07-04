@@ -2,23 +2,27 @@ import Foundation
 
 /// User-facing copy for voice transcription / upload failures.
 enum VoicePipelineErrorMessage {
+    /// Short factual reason shown under a fixed title like «Голосовое не распознано».
     static func forTranscription(_ error: Error) -> String {
         if let api = error as? KnowledgeBaseAPIError {
             switch api {
             case .invalidResponse(let statusCode, let apiMessage):
                 if statusCode == 502 || statusCode == 504 {
-                    return "Не удалось распознать речь: сервер не ответил вовремя. Проверьте сеть и VPN, затем нажмите «Повторить»."
+                    return "Таймаут сервера (\(statusCode))."
                 }
                 if statusCode == 422 {
-                    return "Не удалось распознать речь в записи. Попробуйте записать ещё раз или повторите позже."
+                    return "Речь в записи не распознана."
                 }
                 if let apiMessage, !apiMessage.isEmpty {
                     return apiMessage
                 }
+                if statusCode > 0 {
+                    return "Ошибка сервера (\(statusCode))."
+                }
             case .missingBaseURL:
-                return "API не настроен. Проверьте подключение к серверу."
+                return "API не настроен."
             case .decodingFailed:
-                return "Не удалось обработать ответ сервера при распознавании речи."
+                return "Неверный ответ сервера."
             }
         }
 
@@ -26,33 +30,36 @@ enum VoicePipelineErrorMessage {
             return forNetwork(urlError)
         }
 
-        let text = error.localizedDescription.lowercased()
-        if text.contains("timed out") || text.contains("timeout") {
-            return "Таймаут при распознавании речи. Проверьте VPN и интернет, затем нажмите «Повторить»."
-        }
-        if text.contains("offline") || text.contains("internet") || text.contains("connection") {
-            return "Нет соединения с сервером. Проверьте сеть и VPN, затем нажмите «Повторить»."
+        let text = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !text.isEmpty {
+            return text
         }
 
-        return "Не удалось распознать речь. Нажмите «Повторить» или удалите запись."
+        return "Неизвестная ошибка."
     }
 
     static func forSend(_ error: Error) -> String {
         if let urlError = error as? URLError {
             return "Не удалось отправить: \(forNetwork(urlError))"
         }
-        return "Не удалось отправить сообщение. Запись сохранена — попробуйте ещё раз."
+        return "Не удалось отправить сообщение."
     }
 
-    private static func forNetwork(_ error: Error) -> String {
-        let code = (error as? URLError)?.code
-        switch code {
-        case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed:
+    private static func forNetwork(_ error: URLError) -> String {
+        switch error.code {
+        case .notConnectedToInternet:
             return "Нет подключения к интернету."
+        case .networkConnectionLost:
+            return "Соединение потеряно."
         case .timedOut:
-            return "Превышено время ожидания ответа сервера."
+            return "Таймаут."
+        case .cannotFindHost, .cannotConnectToHost:
+            return "Сервер недоступен."
+        case .dataNotAllowed:
+            return "Сеть недоступна для приложения."
         default:
-            return "Проблема с сетью (\(error.localizedDescription))."
+            let text = error.localizedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+            return text.isEmpty ? "Ошибка сети." : text
         }
     }
 }

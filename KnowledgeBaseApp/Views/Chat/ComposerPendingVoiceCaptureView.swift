@@ -6,76 +6,69 @@ struct ComposerPendingVoiceCaptureView: View {
     var onDiscard: () -> Void
 
     var body: some View {
+        Group {
+            switch capture.state {
+            case .transcribing:
+                transcribingRow
+            case .failed(let message):
+                failedCard(message: message)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var transcribingRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "waveform")
+                .font(.body)
+                .foregroundStyle(Color.accentColor)
+
+            Text("Распознаём речь…")
+                .font(.subheadline.weight(.medium))
+
+            Spacer(minLength: 8)
+
+            ProgressView()
+                .controlSize(.small)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.accentColor.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func failedCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 10) {
-                Image(systemName: "waveform")
-                    .font(.title3)
-                    .foregroundStyle(stateColor)
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: "waveform.badge.exclamationmark")
+                    .font(.body)
+                    .foregroundStyle(.orange)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Голосовое не распознано")
                         .font(.subheadline.weight(.semibold))
-                    if case .failed(let message) = capture.state {
-                        Text(message)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
-                Spacer(minLength: 0)
-
-                if case .transcribing = capture.state {
-                    ProgressView()
-                        .controlSize(.small)
+                    Text(message)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
 
-            if case .failed = capture.state {
-                HStack(spacing: 10) {
-                    Button("Повторить", action: onRetry)
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.small)
-                    Button("Удалить", role: .destructive, action: onDiscard)
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                }
+            HStack(spacing: 10) {
+                Button("Повторить", action: onRetry)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                Button("Удалить", role: .destructive, action: onDiscard)
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
             }
         }
         .padding(12)
-        .frame(maxWidth: 280, alignment: .leading)
-        .background(backgroundColor)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(Color.orange.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(stateColor.opacity(0.35), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.orange.opacity(0.35), lineWidth: 1)
         )
-    }
-
-    private var title: String {
-        switch capture.state {
-        case .transcribing:
-            return "Распознаём речь…"
-        case .failed:
-            return "Голосовое не распознано"
-        }
-    }
-
-    private var stateColor: Color {
-        switch capture.state {
-        case .transcribing:
-            return .accentColor
-        case .failed:
-            return .orange
-        }
-    }
-
-    private var backgroundColor: Color {
-        switch capture.state {
-        case .transcribing:
-            return Color.accentColor.opacity(0.08)
-        case .failed:
-            return Color.orange.opacity(0.1)
-        }
     }
 }

@@ -203,3 +203,23 @@ private final class AlwaysFailingTranscribeChatAPIClient: ChatAPIClientProtocol,
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
+
+final class VoicePipelineErrorMessageTests: XCTestCase {
+    func testTimeoutStatusCodeIsShort() {
+        let message = VoicePipelineErrorMessage.forTranscription(
+            KnowledgeBaseAPIError.invalidResponse(statusCode: 504, apiMessage: nil)
+        )
+        XCTAssertEqual(message, "Таймаут сервера (504).")
+    }
+
+    func testURLErrorNotConnectedIsShort() {
+        let message = VoicePipelineErrorMessage.forTranscription(URLError(.notConnectedToInternet))
+        XCTAssertEqual(message, "Нет подключения к интернету.")
+    }
+
+    func testDoesNotIncludeRetryInstructions() {
+        let message = VoicePipelineErrorMessage.forTranscription(URLError(.notConnectedToInternet))
+        XCTAssertFalse(message.contains("Повторить"))
+        XCTAssertFalse(message.contains("VPN"))
+    }
+}

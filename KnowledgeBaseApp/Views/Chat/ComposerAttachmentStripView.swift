@@ -10,26 +10,35 @@ struct ComposerAttachmentStripView: View {
     var onDiscardPendingVoiceCapture: (String) -> Void
     var onTapImage: (URL) -> Void
 
+    private var hasScrollableMedia: Bool {
+        !attachments.isEmpty || !voiceClips.isEmpty
+    }
+
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                ForEach(attachments) { attachment in
-                    attachmentPreview(attachment)
-                }
-                ForEach(pendingVoiceCaptures) { capture in
-                    ComposerPendingVoiceCaptureView(
-                        capture: capture,
-                        onRetry: { onRetryPendingVoiceCapture(capture.id) },
-                        onDiscard: { onDiscardPendingVoiceCapture(capture.id) }
-                    )
-                }
-                ForEach(voiceClips) { clip in
-                    ComposerVoiceChipView(clip: clip) {
-                        onRemoveVoiceClip(clip.id)
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(pendingVoiceCaptures) { capture in
+                ComposerPendingVoiceCaptureView(
+                    capture: capture,
+                    onRetry: { onRetryPendingVoiceCapture(capture.id) },
+                    onDiscard: { onDiscardPendingVoiceCapture(capture.id) }
+                )
+            }
+
+            if hasScrollableMedia {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(attachments) { attachment in
+                            attachmentPreview(attachment)
+                        }
+                        ForEach(voiceClips) { clip in
+                            ComposerVoiceChipView(clip: clip) {
+                                onRemoveVoiceClip(clip.id)
+                            }
+                        }
                     }
+                    .padding(.horizontal, 2)
                 }
             }
-            .padding(.horizontal, 2)
         }
     }
 
