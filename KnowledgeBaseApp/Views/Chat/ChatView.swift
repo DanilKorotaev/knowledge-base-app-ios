@@ -149,7 +149,7 @@ struct ChatView: View {
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("structured_ui.toolbar_start") {
+                Button("structured_ui.toolbar") {
                     Task { await viewModel.startStructuredUIFlow() }
                 }
                 .disabled(viewModel.isSendingUIEvent)

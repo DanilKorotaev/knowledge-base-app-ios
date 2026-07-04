@@ -206,6 +206,29 @@ paths:
                 description: |
                   SSE `data:` lines with JSON objects (see ChatSSEEvent):
                   `{"status":"processing"}`, `{"delta":"…"}`, `{"error":"…"}`, `{"done":true}`.
+  /api/sessions/{session_id}/ui-events:
+    parameters:
+      - $ref: "#/components/parameters/SessionId"
+    post:
+      summary: Structured UI button/action event (mock FSM in MVP)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UIEventRequest"
+      responses:
+        "200":
+          description: Next screen snapshot and updated message thread
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UIEventResponse"
+        "400":
+          description: Unknown action or unsupported client schema version
+        "422":
+          description: Invalid screen document after transition
   /api/sessions/{session_id}/messages/voice:
     parameters:
       - $ref: "#/components/parameters/SessionId"
@@ -502,6 +525,54 @@ components:
         attachments:
           type: array
           items: { $ref: "#/components/schemas/Attachment" }
+        structured_ui:
+          $ref: "#/components/schemas/StructuredUIDocument"
+          description: Optional interactive screen attached to assistant messages
+    StructuredUIDocument:
+      type: object
+      required: [schema_version, screen]
+      properties:
+        schema_version:
+          type: integer
+          example: 1
+        screen:
+          $ref: "#/components/schemas/StructuredUINode"
+    StructuredUINode:
+      type: object
+      required: [type, id]
+      properties:
+        type:
+          type: string
+          enum: [vstack, text, button]
+        id: { type: string }
+        text: { type: string }
+        label: { type: string }
+        action_id: { type: string }
+        children:
+          type: array
+          items: { $ref: "#/components/schemas/StructuredUINode" }
+    UIEventRequest:
+      type: object
+      required: [action_id, component_id]
+      properties:
+        action_id: { type: string, maxLength: 128 }
+        component_id: { type: string, maxLength: 128 }
+        client_schema_version:
+          type: integer
+          minimum: 1
+          maximum: 99
+          default: 1
+        metadata:
+          type: object
+          additionalProperties: true
+    UIEventResponse:
+      type: object
+      required: [screen, messages]
+      properties:
+        screen: { $ref: "#/components/schemas/StructuredUIDocument" }
+        messages:
+          type: array
+          items: { $ref: "#/components/schemas/Message" }
     Attachment:
       type: object
       required: [id, file_type, download_url]

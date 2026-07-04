@@ -9,7 +9,7 @@ struct StructuredUIPanelView: View {
         VStack(alignment: .leading, spacing: 8) {
             if !document.isSupportedByClient {
                 Label(
-                    "Update the app to use this interactive screen.",
+                    L10n.string("structured_ui.unsupported_schema"),
                     systemImage: "exclamationmark.triangle"
                 )
                 .font(.caption)
@@ -23,7 +23,7 @@ struct StructuredUIPanelView: View {
         .background(Color.secondary.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Interactive screen")
+        .accessibilityLabel(Text("structured_ui.panel_a11y"))
     }
 }
 

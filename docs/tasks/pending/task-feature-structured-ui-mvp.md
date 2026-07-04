@@ -17,6 +17,8 @@ Render assistant `structured_ui` in chat, send button taps via `POST /api/sessio
 - [x] Chat panel + toolbar entry «Interactive UI» (mock bootstrap `action_id: start`)
 - [x] Unit tests (decode + ViewModel)
 - [x] Unsupported `schema_version` banner (no crash)
+- [x] L10n EN/RU for toolbar and panel strings
+- [x] OpenAPI + contract (`docs/openapi/kb-app-api.yaml`, `KB_APP_API_CONTRACT.md`)
 
 ## Deploy
 

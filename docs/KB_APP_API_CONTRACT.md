@@ -97,6 +97,42 @@
 
 `content_format`: `markdown` | `html` | `plain`.
 
+Опционально у сообщений ассистента — **`structured_ui`** (backend-driven UI, schema v1):
+
+```json
+{
+  "schema_version": 1,
+  "screen": {
+    "type": "vstack",
+    "id": "root",
+    "children": [
+      { "type": "text", "id": "title", "text": "Choose an action" },
+      { "type": "button", "id": "btn_yes", "label": "Yes", "action_id": "confirm_yes" }
+    ]
+  }
+}
+```
+
+Типы нод v1: `vstack`, `text`, `button`. JSON Schema: `knowledge-base-bot/kb_app_api/structured_ui/schema_v1.json`.
+
+### Structured UI events
+
+| Метод | Путь | Запрос | Успех |
+|-------|------|--------|--------|
+| POST | `/api/sessions/{session_id}/ui-events` | JSON ниже | `200` — `{ "screen", "messages" }` |
+
+**Тело события:**
+
+```json
+{
+  "action_id": "confirm_yes",
+  "component_id": "btn_yes",
+  "client_schema_version": 1
+}
+```
+
+Сервер может добавить короткую user-заглушку в историю (`[UI] Yes`) и новое assistant-сообщение с `structured_ui`. MVP: mock FSM без LLM (`start`, `confirm_yes`, `confirm_no`, `done`).
+
 Для `file_type=voice` в `attachments[]` допускается `transcription`; на уровне сообщения — `transcription` (voice-only).
 
 ### Стриминг ответа ассистента (SSE)
