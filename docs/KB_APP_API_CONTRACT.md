@@ -131,9 +131,9 @@
 }
 ```
 
-Сервер может добавить короткую user-заглушку в историю (`[UI] Yes`) и новое assistant-сообщение с `structured_ui`. MVP: mock FSM без LLM (`start`, `confirm_yes`, `confirm_no`, `done`).
-
 Для `file_type=voice` в `attachments[]` допускается `transcription`; на уровне сообщения — `transcription` (voice-only).
+
+**Agent (опционально):** при `STRUCTURED_UI_AGENT_ENABLED=true` сервер генерирует экран через Cursor CLI (`run_simple_prompt`); при ошибке — mock FSM если `STRUCTURED_UI_AGENT_MOCK_FALLBACK=true`. Промпт: `agent/structured_ui_agent_prompt.md`.
 
 ### Стриминг ответа ассистента (SSE)
 
