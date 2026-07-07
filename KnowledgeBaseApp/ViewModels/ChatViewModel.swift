@@ -553,6 +553,7 @@ final class ChatViewModel {
             if await resumeAwaitingReplyIfNeeded() {
                 return true
             }
+            removeOptimisticMessages()
             errorMessage = error.localizedDescription
             composerDraft.text = text
             scheduleComposerDraftSave()
@@ -622,6 +623,7 @@ final class ChatViewModel {
             if await resumeAwaitingReplyIfNeeded() {
                 return true
             }
+            removeOptimisticMessages()
             errorMessage = VoicePipelineErrorMessage.forSend(error)
             composerDraft.voiceClips = [clip]
             composerDraft.appendTranscription(text)
@@ -677,6 +679,7 @@ final class ChatViewModel {
             if await resumeAwaitingReplyIfNeeded() {
                 return true
             }
+            removeOptimisticMessages()
             errorMessage = VoicePipelineErrorMessage.forSend(error)
             composerDraft = draft
             scheduleComposerDraftSave()
@@ -859,14 +862,16 @@ final class ChatViewModel {
         !isSending && !assistantReplyPhase.showsPlaceholder && !isPollingForReply
     }
 
-    /// Clears composer UI and on-disk draft when a send starts.
-    /// Does not delete audio files — route handlers still reference them until upload finishes.
+    /// Clears in-memory composer UI when a send starts. On-disk draft files stay until send succeeds.
     private func detachComposerForSend() {
         composerDraftSaveTask?.cancel()
         composerDraft.clear()
         pendingVoiceCaptures = []
         syncTranscribingVoiceFlag()
-        composerDraftStore.clear(sessionId: session.id)
+    }
+
+    private func removeOptimisticMessages() {
+        messages.removeAll { $0.id.hasPrefix("kb-optimistic-") }
     }
 
     private func clearSavedComposerDraft() {

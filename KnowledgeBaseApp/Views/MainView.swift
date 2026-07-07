@@ -332,7 +332,7 @@ struct MainView: View {
                             .accessibilityLabel("Default for voice")
                     }
                 }
-                Text("\(session.messageCount) messages · \(session.kbModeSubtitle)")
+                Text("\(session.messageCount) messages · \(session.kbModeSubtitle())")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

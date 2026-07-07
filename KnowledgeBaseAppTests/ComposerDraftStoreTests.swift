@@ -127,11 +127,81 @@ final class ChatViewModelComposerDraftTests: XCTestCase {
 
         XCTAssertTrue(viewModel.composerDraft.voiceClips.isEmpty)
         XCTAssertTrue(viewModel.composerDraft.trimmedText.isEmpty)
-        XCTAssertNil(draftStore.load(sessionId: session.id))
+        XCTAssertNotNil(draftStore.load(sessionId: session.id))
         XCTAssertTrue(viewModel.assistantReplyPhase.showsPlaceholder)
 
         await sendTask.value
         XCTAssertTrue(viewModel.composerDraft.voiceClips.isEmpty)
+    }
+
+    func testFailedSendKeepsDraftStoreFilesForRetry() async throws {
+        let storeRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("composer-draft-fail-\(UUID().uuidString)", isDirectory: true)
+        let draftStore = ComposerDraftStore(baseURL: storeRoot)
+        defer { try? FileManager.default.removeItem(at: storeRoot) }
+
+        let audio = storeRoot.appendingPathComponent("voice.m4a")
+        try Data("audio".utf8).write(to: audio)
+
+        let kbStore = InMemoryKBStore(demoSession: false)
+        let session = KBSession(id: "fail-session", title: "Chat", messageCount: 0, updatedAt: nil)
+        let client = FailingStreamChatAPIClient(store: kbStore)
+        let viewModel = ChatViewModel(session: session, client: client, composerDraftStore: draftStore)
+        viewModel.composerDraft.voiceClips = [
+            PendingVoiceClip(audioURL: audio, transcriptionSegment: "retry me")
+        ]
+        viewModel.composerDraft.appendTranscription("retry me")
+        viewModel.persistComposerDraftNow()
+
+        await viewModel.sendComposed()
+
+        let loaded = try XCTUnwrap(draftStore.load(sessionId: session.id))
+        XCTAssertEqual(loaded.draft.voiceClips.count, 1)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: loaded.draft.voiceClips[0].audioURL.path))
+        XCTAssertFalse(viewModel.messages.contains { $0.id.hasPrefix("kb-optimistic-") })
+    }
+}
+
+@MainActor
+private final class FailingStreamChatAPIClient: ChatAPIClientProtocol, @unchecked Sendable {
+    let store: InMemoryKBStore
+
+    init(store: InMemoryKBStore) {
+        self.store = store
+    }
+
+    func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
+        KBMessagesPage(messages: store.messages(for: sessionId), total: 0, hasMoreOlder: false)
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func sendAttachment(sessionId: String, fileURL: URL, filename: String, mimeType: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        "ok"
+    }
+
+    func sendVoiceRecording(sessionId: String, audioFileURL: URL, transcriptionHint: String, useKnowledgeBase: Bool) async throws -> VoiceRecordingSendResult {
+        VoiceRecordingSendResult(messages: [], transcription: transcriptionHint)
+    }
+
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        AsyncThrowingStream { continuation in
+            continuation.finish(throwing: URLError(.notConnectedToInternet))
+        }
+    }
+
+    func streamVoiceMessage(sessionId: String, audioFileURL: URL, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(sessionId: String, draft: ChatComposerDraft, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
 
