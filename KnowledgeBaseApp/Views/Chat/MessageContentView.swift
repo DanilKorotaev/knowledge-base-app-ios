@@ -63,6 +63,18 @@ enum MessageContentRenderer {
         }
         return AttributedString(ns)
     }
+
+    /// Markdown mislabeled as HTML (e.g. `<ul>` inside backticks) often renders almost empty.
+    static func shouldFallbackHTMLToMarkdown(source: String, htmlRendered: AttributedString) -> Bool {
+        let sourceLen = sanitizedContent(source)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .count
+        guard sourceLen > 40 else { return false }
+        let renderedLen = String(htmlRendered.characters)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .count
+        return renderedLen < min(80, sourceLen / 4)
+    }
 }
 
 struct MessageContentView: View {
@@ -79,16 +91,31 @@ struct MessageContentView: View {
     }
 
     var body: some View {
-        switch format {
+        switch effectiveFormat {
         case .markdown:
             markdownBody
         case .plain:
             PlainTextBlockView(text: text)
         case .html:
-            Text(MessageContentRenderer.attributedText(from: text, format: format))
-                .font(.body)
-                .textSelection(.enabled)
+            htmlBody
         }
+    }
+
+    private var effectiveFormat: ContentFormat {
+        guard format == .html else { return format }
+        let htmlRendered = MessageContentRenderer.attributedText(from: text, format: .html)
+        if MessageContentRenderer.shouldFallbackHTMLToMarkdown(source: text, htmlRendered: htmlRendered) {
+            return .markdown
+        }
+        return .html
+    }
+
+    @ViewBuilder
+    private var htmlBody: some View {
+        let attributed = MessageContentRenderer.attributedText(from: text, format: .html)
+        Text(attributed)
+            .font(.body)
+            .textSelection(.enabled)
     }
 
     @ViewBuilder

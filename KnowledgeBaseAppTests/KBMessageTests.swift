@@ -322,6 +322,18 @@ final class MessageContentRendererTests: XCTestCase {
         XCTAssertTrue(plain.contains("жирный"))
     }
 
+    func testFallbackHTMLToMarkdownWhenMislabeled() {
+        let markdown = """
+        ## Сценарий
+        **6. Чтение** — append слился в один `<ul>`
+        - 🎤 с голоса: «добавь лимоны»
+        """
+        let htmlRendered = MessageContentRenderer.attributedText(from: markdown, format: .html)
+        XCTAssertTrue(
+            MessageContentRenderer.shouldFallbackHTMLToMarkdown(source: markdown, htmlRendered: htmlRendered)
+        )
+    }
+
     func testMarkdownThematicBreak() {
         XCTAssertTrue(MarkdownLineParser.isThematicBreak("---"))
         XCTAssertTrue(MarkdownLineParser.isThematicBreak("- - -"))
