@@ -57,7 +57,7 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.messages.contains { $0.role == .assistant })
     }
 
-    func testSend_onError_resetsPhaseAndKeepsOptimisticUser() async throws {
+    func testSend_onError_resetsPhaseClearsOptimisticAndRestoresDraft() async throws {
         let (store, sessionId) = emptyStoreWithSession()
         let client = FailingStreamChatAPIClient(store: store)
         let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
@@ -67,9 +67,9 @@ final class ChatViewModelTests: XCTestCase {
 
         XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
         XCTAssertNotNil(viewModel.errorMessage)
-        XCTAssertEqual(viewModel.messages.count, 1)
-        XCTAssertEqual(viewModel.messages.first?.role, .user)
-        XCTAssertEqual(viewModel.messages.first?.content, "fail")
+        XCTAssertTrue(viewModel.messages.isEmpty)
+        XCTAssertFalse(viewModel.messages.contains { $0.id.hasPrefix("kb-optimistic-") })
+        XCTAssertEqual(viewModel.draft, "fail")
     }
 
     func testApplyExternalAssistantPhase_scrollsToBottomWhenActive() {

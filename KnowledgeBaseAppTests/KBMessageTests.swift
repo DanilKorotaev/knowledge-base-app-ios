@@ -332,6 +332,27 @@ final class MessageContentRendererTests: XCTestCase {
         XCTAssertTrue(
             MessageContentRenderer.shouldFallbackHTMLToMarkdown(source: markdown, htmlRendered: htmlRendered)
         )
+        XCTAssertTrue(MessageContentRenderer.looksLikeMarkdown(markdown))
+    }
+
+    func testHTMLAttributedStripsForcedBlackForeground() {
+        let html = #"<p style="color:#000000">Visible on dark</p>"#
+        let attr = MessageContentRenderer.attributedText(from: html, format: .html)
+        var sawForcedBlack = false
+        for run in attr.runs {
+            if let color = run.foregroundColor {
+                // After strip, SwiftUI may still synthesize a semantic color — just ensure we
+                // did not keep an opaque near-black from WebKit document styling.
+                let resolved = UIColor(color)
+                var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+                resolved.getRed(&r, green: &g, blue: &b, alpha: &a)
+                if a > 0.9, r < 0.08, g < 0.08, b < 0.08 {
+                    sawForcedBlack = true
+                }
+            }
+        }
+        XCTAssertFalse(sawForcedBlack)
+        XCTAssertTrue(String(attr.characters).contains("Visible on dark"))
     }
 
     func testMarkdownThematicBreak() {

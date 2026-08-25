@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum MessageContentRenderer {
     /// Full markdown block (headers, lists, bold, etc.).
@@ -61,7 +62,22 @@ enum MessageContentRenderer {
         guard let ns = try? NSAttributedString(data: data, options: options, documentAttributes: nil) else {
             return nil
         }
-        return AttributedString(ns)
+        // WebKit HTML import often bakes in black Times text — invisible on dark chat backgrounds
+        // and ignores SwiftUI `.font` / `.foregroundStyle`. Strip those so the bubble stays readable.
+        let mutable = NSMutableAttributedString(attributedString: ns)
+        let fullRange = NSRange(location: 0, length: mutable.length)
+        mutable.enumerateAttributes(in: fullRange, options: []) { attrs, range, _ in
+            if attrs[.foregroundColor] != nil {
+                mutable.removeAttribute(.foregroundColor, range: range)
+            }
+            if attrs[.backgroundColor] != nil {
+                mutable.removeAttribute(.backgroundColor, range: range)
+            }
+            if attrs[.font] != nil {
+                mutable.removeAttribute(.font, range: range)
+            }
+        }
+        return AttributedString(mutable)
     }
 
     /// Markdown mislabeled as HTML (e.g. `<ul>` inside backticks) often renders poorly:
@@ -71,32 +87,19 @@ enum MessageContentRenderer {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard cleaned.count > 40 else { return false }
 
+        // Cursor replies are markdown; prefer the markdown pipeline whenever signals are clear.
+        if looksLikeMarkdown(cleaned) {
+            return true
+        }
+
         let rendered = String(htmlRendered.characters)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Classic near-empty HTML render of substantial markdown source.
-        if rendered.count < min(80, cleaned.count / 4) {
-            return true
-        }
-
-        guard looksLikeMarkdown(cleaned) else { return false }
-
-        // Real HTML rarely leaves markdown heading/emphasis markers literal.
-        if rendered.contains("**") || rendered.contains("##") {
-            return true
-        }
-
-        // Backtick-wrapped tags were parsed as HTML and stripped from visible text.
-        if cleaned.range(of: #"`<[^`]+>`"#, options: .regularExpression) != nil,
-           cleaned.contains("<"),
-           !rendered.contains("<") {
-            return true
-        }
-
-        return false
+        // Classic near-empty HTML render of substantial source.
+        return rendered.count < min(80, cleaned.count / 4)
     }
 
-    private static func looksLikeMarkdown(_ source: String) -> Bool {
+    static func looksLikeMarkdown(_ source: String) -> Bool {
         if source.hasPrefix("#") || source.contains("\n#") { return true }
         if source.contains("**") { return true }
         if source.range(of: #"(?m)^\s*[-*+]\s+\S"#, options: .regularExpression) != nil {
@@ -135,6 +138,9 @@ struct MessageContentView: View {
 
     private var effectiveFormat: ContentFormat {
         guard format == .html else { return format }
+        if MessageContentRenderer.looksLikeMarkdown(text) {
+            return .markdown
+        }
         let htmlRendered = MessageContentRenderer.attributedText(from: text, format: .html)
         if MessageContentRenderer.shouldFallbackHTMLToMarkdown(source: text, htmlRendered: htmlRendered) {
             return .markdown
@@ -147,6 +153,7 @@ struct MessageContentView: View {
         let attributed = MessageContentRenderer.attributedText(from: text, format: .html)
         Text(attributed)
             .font(.body)
+            .foregroundStyle(.primary)
             .textSelection(.enabled)
     }
 
