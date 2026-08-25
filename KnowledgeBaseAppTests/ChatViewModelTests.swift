@@ -323,6 +323,73 @@ final class ChatViewModelTests: XCTestCase {
         let latest = await recorder.lastLimit()
         XCTAssertEqual(latest, 100)
     }
+
+    func testReloadLatestWindow_dropsOptimisticUserWhenServerHasUser() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        _ = try await StubChatAPIClient(store: store).sendTextMessage(
+            sessionId: sessionId,
+            text: "hello once",
+            useKnowledgeBase: false
+        )
+        let serverMessages = store.messages(for: sessionId)
+        let client = StubChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        viewModel.messages = [
+            KBMessage(id: "kb-optimistic-1", role: .user, content: "hello once", createdAt: Date()),
+        ] + serverMessages
+
+        await viewModel.reloadLatestWindow()
+
+        let userMessages = viewModel.messages.filter { $0.role == .user }
+        XCTAssertEqual(userMessages.count, 1)
+        XCTAssertFalse(userMessages[0].id.hasPrefix("kb-optimistic-"))
+        XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+    }
+
+    func testResumeAwaitingReply_clearsStreamingPlaceholderWhenAssistantAlreadyInFeed() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let user = KBMessage(id: "user-1", role: .user, content: "hi", createdAt: Date())
+        let assistant = KBMessage(
+            id: "assistant-1",
+            role: .assistant,
+            content: "Done with **files**",
+            createdAt: Date()
+        )
+        store.replaceMessages([user, assistant], sessionId: sessionId)
+
+        let client = StubChatAPIClient(store: store)
+        let inFlight = ChatViewModelTestsMemoryInFlightStore()
+        inFlight.save(
+            InFlightReplyState(sessionId: sessionId, startedAt: Date(), partialText: "Done with")
+        )
+        let viewModel = ChatViewModel(
+            session: makeSession(id: sessionId),
+            client: client,
+            inFlightReplyStore: inFlight
+        )
+        viewModel.messages = [user]
+        viewModel.assistantReplyPhase = .streaming(text: "Done with")
+
+        _ = await viewModel.resumeAwaitingReplyIfNeeded()
+
+        XCTAssertEqual(viewModel.messages.last?.role, .assistant)
+        XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+        XCTAssertNil(inFlight.load(sessionId: sessionId))
+    }
+}
+
+@MainActor
+private final class ChatViewModelTestsMemoryInFlightStore: InFlightReplyStoreProtocol, @unchecked Sendable {
+    var map: [String: InFlightReplyState] = [:]
+
+    func load(sessionId: String) -> InFlightReplyState? { map[sessionId] }
+    func save(_ state: InFlightReplyState) { map[state.sessionId] = state }
+    func updatePartial(sessionId: String, text: String) {
+        guard var state = map[sessionId] else { return }
+        state.partialText = text
+        map[sessionId] = state
+    }
+    func clear(sessionId: String) { map.removeValue(forKey: sessionId) }
 }
 
 /// Emits activity SSE events before text deltas.

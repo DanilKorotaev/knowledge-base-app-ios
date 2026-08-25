@@ -837,6 +837,7 @@ final class ChatViewModel {
             if messages.last?.role == .assistant {
                 clearInFlightReply()
                 assistantReplyPhase = .idle
+                cursorActivityLabel = nil
             } else if inFlightReplyStore.load(sessionId: session.id) != nil, looksAwaitingAssistantReply {
                 restoreInFlightReplyUIIfNeeded()
             } else {
@@ -906,8 +907,6 @@ final class ChatViewModel {
                 )
                 apply(page: page, requestedLimit: normalizedLimit, kind: "pollReply")
                 if messages.last?.role == .assistant {
-                    clearInFlightReply()
-                    assistantReplyPhase = .idle
                     scrollIntent = .scrollToBottom
                     return
                 }
@@ -1042,6 +1041,7 @@ final class ChatViewModel {
         let hasOlderByCount = page.total > messages.count
         hasMoreOlder = page.hasMoreOlder || hasOlderByCount
         if kind != "cache" {
+            reconcileAssistantReplyPhaseAfterServerSync()
             persistMessageWindow()
         }
         ChatPaginationLogger.pageApplied(
@@ -1051,6 +1051,14 @@ final class ChatViewModel {
             hasMoreOlder: hasMoreOlder,
             windowCount: messages.count
         )
+    }
+
+    /// Server pages replace optimistic bubbles; once assistant is persisted, hide the SSE placeholder.
+    private func reconcileAssistantReplyPhaseAfterServerSync() {
+        guard messages.last?.role == .assistant else { return }
+        clearInFlightReply()
+        assistantReplyPhase = .idle
+        cursorActivityLabel = nil
     }
 
     @discardableResult
@@ -1079,7 +1087,14 @@ final class ChatViewModel {
 
     private func mergeOlderLoadedMessages(with fetched: [KBMessage]) -> [KBMessage] {
         let fetchedIds = Set(fetched.map(\.id))
-        let olderLoaded = messages.filter { !fetchedIds.contains($0.id) }
+        let serverHasUser = fetched.contains { $0.role == .user }
+        let olderLoaded = messages.filter { message in
+            if message.id.hasPrefix("kb-optimistic-") {
+                // Optimistic user bubble is superseded once the server persisted the real turn.
+                return !serverHasUser
+            }
+            return !fetchedIds.contains(message.id)
+        }
         return olderLoaded + fetched
     }
 
