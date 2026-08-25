@@ -55,6 +55,9 @@ final class StreamInterruptionClassifierTests: XCTestCase {
         struct Boom: Error {}
         XCTAssertFalse(StreamInterruptionClassifier.isResumable(Boom()))
         XCTAssertFalse(StreamInterruptionClassifier.isResumable(URLError(.badServerResponse)))
+        // Hard connectivity failures before the request is in flight — keep draft for retry.
+        XCTAssertFalse(StreamInterruptionClassifier.isResumable(URLError(.notConnectedToInternet)))
+        XCTAssertFalse(StreamInterruptionClassifier.isResumable(URLError(.cannotConnectToHost)))
     }
 }
 

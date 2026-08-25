@@ -982,17 +982,7 @@ final class ChatViewModel {
     }
 
     private func removeOptimisticMessages() {
-        messages.removeAll(where: isGhostOptimisticMessage)
-    }
-
-    private func isGhostOptimisticMessage(_ message: KBMessage) -> Bool {
-        guard message.id.hasPrefix("kb-optimistic-") else { return false }
-        if message.bubbleTextContent != nil { return false }
-        if !message.voiceAttachments.isEmpty || !message.imageAttachments.isEmpty {
-            return true
-        }
-        let trimmed = message.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.hasPrefix("🎤") || trimmed.hasPrefix("📎")
+        messages.removeAll { $0.id.hasPrefix("kb-optimistic-") }
     }
 
     private func clearSavedComposerDraft() {

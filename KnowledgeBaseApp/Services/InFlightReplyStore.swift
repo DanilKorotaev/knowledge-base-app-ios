@@ -81,7 +81,9 @@ final class InFlightReplyStore: InFlightReplyStoreProtocol, @unchecked Sendable 
 }
 
 enum StreamInterruptionClassifier {
-    /// Network / lifecycle drops where the server may still finish the reply.
+    /// Mid-stream / lifecycle drops where the server may still finish the reply.
+    /// Do **not** treat "never connected" errors as resumable — those are hard send
+    /// failures and must keep the composer draft for retry.
     static func isResumable(_ error: Error) -> Bool {
         if error is CancellationError {
             return true
@@ -91,12 +93,7 @@ enum StreamInterruptionClassifier {
             switch ns.code {
             case URLError.cancelled.rawValue,
                  URLError.timedOut.rawValue,
-                 URLError.networkConnectionLost.rawValue,
-                 URLError.notConnectedToInternet.rawValue,
-                 URLError.cannotConnectToHost.rawValue,
-                 URLError.cannotFindHost.rawValue,
-                 URLError.dnsLookupFailed.rawValue,
-                 URLError.dataNotAllowed.rawValue:
+                 URLError.networkConnectionLost.rawValue:
                 return true
             default:
                 break
@@ -104,8 +101,7 @@ enum StreamInterruptionClassifier {
         }
         if let urlError = error as? URLError {
             switch urlError.code {
-            case .cancelled, .timedOut, .networkConnectionLost, .notConnectedToInternet,
-                 .cannotConnectToHost, .cannotFindHost, .dnsLookupFailed, .dataNotAllowed:
+            case .cancelled, .timedOut, .networkConnectionLost:
                 return true
             default:
                 return false

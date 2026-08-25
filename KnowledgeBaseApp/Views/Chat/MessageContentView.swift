@@ -64,16 +64,48 @@ enum MessageContentRenderer {
         return AttributedString(ns)
     }
 
-    /// Markdown mislabeled as HTML (e.g. `<ul>` inside backticks) often renders almost empty.
+    /// Markdown mislabeled as HTML (e.g. `<ul>` inside backticks) often renders poorly:
+    /// WebKit may eat the tag and leave raw `##` / `**` markers, or collapse to near-empty.
     static func shouldFallbackHTMLToMarkdown(source: String, htmlRendered: AttributedString) -> Bool {
-        let sourceLen = sanitizedContent(source)
+        let cleaned = sanitizedContent(source)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .count
-        guard sourceLen > 40 else { return false }
-        let renderedLen = String(htmlRendered.characters)
+        guard cleaned.count > 40 else { return false }
+
+        let rendered = String(htmlRendered.characters)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            .count
-        return renderedLen < min(80, sourceLen / 4)
+
+        // Classic near-empty HTML render of substantial markdown source.
+        if rendered.count < min(80, cleaned.count / 4) {
+            return true
+        }
+
+        guard looksLikeMarkdown(cleaned) else { return false }
+
+        // Real HTML rarely leaves markdown heading/emphasis markers literal.
+        if rendered.contains("**") || rendered.contains("##") {
+            return true
+        }
+
+        // Backtick-wrapped tags were parsed as HTML and stripped from visible text.
+        if cleaned.range(of: #"`<[^`]+>`"#, options: .regularExpression) != nil,
+           cleaned.contains("<"),
+           !rendered.contains("<") {
+            return true
+        }
+
+        return false
+    }
+
+    private static func looksLikeMarkdown(_ source: String) -> Bool {
+        if source.hasPrefix("#") || source.contains("\n#") { return true }
+        if source.contains("**") { return true }
+        if source.range(of: #"(?m)^\s*[-*+]\s+\S"#, options: .regularExpression) != nil {
+            return true
+        }
+        if source.range(of: #"`<[^`]+>`"#, options: .regularExpression) != nil {
+            return true
+        }
+        return false
     }
 }
 
