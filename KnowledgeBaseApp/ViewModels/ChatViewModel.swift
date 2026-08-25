@@ -35,11 +35,15 @@ final class ChatViewModel {
 
     private var streamRevealContinuation: CheckedContinuation<Void, Never>?
     private var isPollingForReply = false
+    /// Overridable in tests to avoid long background polls.
+    var replyPollMaxAttempts = 150
+    var replyPollIntervalNanoseconds: UInt64 = 2_000_000_000
 
     private let client: ChatAPIClientProtocol
     private let messageCache: MessageCacheStoreProtocol
     private let composerDraftStore: ComposerDraftStoreProtocol
     private let sessionKBModeStore: SessionKBModeStoreProtocol
+    private let inFlightReplyStore: InFlightReplyStoreProtocol
     private var composerDraftSaveTask: Task<Void, Never>?
 
     /// Backward-compatible alias for tests and legacy call sites.
@@ -69,15 +73,18 @@ final class ChatViewModel {
         client: ChatAPIClientProtocol,
         messageCache: MessageCacheStoreProtocol = FileOfflineCacheStore.shared,
         composerDraftStore: ComposerDraftStoreProtocol = ComposerDraftStore.shared,
-        sessionKBModeStore: SessionKBModeStoreProtocol = SessionKBModeStore.shared
+        sessionKBModeStore: SessionKBModeStoreProtocol = SessionKBModeStore.shared,
+        inFlightReplyStore: InFlightReplyStoreProtocol = InFlightReplyStore.shared
     ) {
         self.session = session
         self.client = client
         self.messageCache = messageCache
         self.composerDraftStore = composerDraftStore
         self.sessionKBModeStore = sessionKBModeStore
+        self.inFlightReplyStore = inFlightReplyStore
         self.useKnowledgeBase = sessionKBModeStore.useKnowledgeBase(for: session)
         restoreComposerDraftIfNeeded()
+        restoreInFlightReplyUIIfNeeded()
     }
 
     func load() async {
@@ -93,7 +100,8 @@ final class ChatViewModel {
         ChatPaginationLogger.initialLoadStarted(sessionId: session.id)
         defer { isLoading = false }
         await refreshFromNetwork(hadLocalData: hadCachedMessages, kind: "initial")
-        await resumeAwaitingReplyIfNeeded()
+        restoreInFlightReplyUIIfNeeded()
+        await resumeAwaitingReplyIfNeeded(allowWhileSending: false)
     }
 
     /// Background refresh (pull-to-refresh, app became active).
@@ -278,6 +286,71 @@ final class ChatViewModel {
         assistantReplyPhase = update.phase
         cursorActivityLabel = update.activityLabel
         scrollIntent = .scrollToBottom
+        let partial = update.phase.displayText
+        if !partial.isEmpty {
+            inFlightReplyStore.updatePartial(sessionId: session.id, text: partial)
+        }
+    }
+
+    private func beginInFlightReply() {
+        inFlightReplyStore.save(
+            InFlightReplyState(sessionId: session.id, startedAt: Date(), partialText: nil)
+        )
+    }
+
+    /// Snapshot current streaming text before the process may be suspended.
+    func persistInFlightReplySnapshot() {
+        guard assistantReplyPhase.showsPlaceholder || looksAwaitingAssistantReply else { return }
+        let partial = assistantReplyPhase.displayText.trimmingCharacters(in: .whitespacesAndNewlines)
+        inFlightReplyStore.save(
+            InFlightReplyState(
+                sessionId: session.id,
+                startedAt: inFlightReplyStore.load(sessionId: session.id)?.startedAt ?? Date(),
+                partialText: partial.isEmpty ? nil : partial
+            )
+        )
+    }
+
+    private func clearInFlightReply() {
+        inFlightReplyStore.clear(sessionId: session.id)
+    }
+
+    private func restoreInFlightReplyUIIfNeeded() {
+        guard let state = inFlightReplyStore.load(sessionId: session.id) else { return }
+        if !messages.isEmpty, !looksAwaitingAssistantReply {
+            clearInFlightReply()
+            return
+        }
+        if let partial = state.partialText?.trimmingCharacters(in: .whitespacesAndNewlines), !partial.isEmpty {
+            assistantReplyPhase = .streaming(text: partial)
+        } else {
+            assistantReplyPhase = .waiting
+        }
+        scrollIntent = .scrollToBottom
+    }
+
+    /// SSE drop while the server may still finish — keep waiting UI, poll, no error alert.
+    @discardableResult
+    private func handleResumableStreamInterruption(
+        _ error: Error,
+        partialText: String
+    ) async -> Bool {
+        guard StreamInterruptionClassifier.isResumable(error) else { return false }
+        errorMessage = nil
+        let trimmed = partialText.trimmingCharacters(in: .whitespacesAndNewlines)
+        inFlightReplyStore.save(
+            InFlightReplyState(
+                sessionId: session.id,
+                startedAt: Date(),
+                partialText: trimmed.isEmpty ? nil : trimmed
+            )
+        )
+        assistantReplyPhase = trimmed.isEmpty ? .waiting : .streaming(text: trimmed)
+        cursorActivityLabel = nil
+        scrollIntent = .scrollToBottom
+        // Poll in the background so `isSending` can clear and the composer stays usable.
+        Task { await self.resumeAwaitingReplyIfNeeded(allowWhileSending: true) }
+        return true
     }
 
     func send() async {
@@ -533,6 +606,7 @@ final class ChatViewModel {
             assistantReplyPhase = .waiting
             cursorActivityLabel = nil
             scrollIntent = .scrollToBottom
+            beginInFlightReply()
 
             let stream = try await client.streamTextMessage(
                 sessionId: session.id,
@@ -544,15 +618,18 @@ final class ChatViewModel {
             }
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
+            clearInFlightReply()
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
             return true
         } catch {
-            assistantReplyPhase = .idle
-            cursorActivityLabel = nil
-            if await resumeAwaitingReplyIfNeeded() {
+            let partial = assistantReplyPhase.displayText
+            if await handleResumableStreamInterruption(error, partialText: partial) {
                 return true
             }
+            clearInFlightReply()
+            assistantReplyPhase = .idle
+            cursorActivityLabel = nil
             removeOptimisticMessages()
             errorMessage = error.localizedDescription
             composerDraft.text = text
@@ -601,6 +678,7 @@ final class ChatViewModel {
             assistantReplyPhase = .waiting
             cursorActivityLabel = nil
             scrollIntent = .scrollToBottom
+            beginInFlightReply()
 
             let stream = try await client.streamVoiceMessage(
                 sessionId: session.id,
@@ -613,16 +691,19 @@ final class ChatViewModel {
             }
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
+            clearInFlightReply()
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
             PendingVoiceStore.deleteRecording(at: clip.audioURL)
             return true
         } catch {
-            assistantReplyPhase = .idle
-            cursorActivityLabel = nil
-            if await resumeAwaitingReplyIfNeeded() {
+            let partial = assistantReplyPhase.displayText
+            if await handleResumableStreamInterruption(error, partialText: partial) {
                 return true
             }
+            clearInFlightReply()
+            assistantReplyPhase = .idle
+            cursorActivityLabel = nil
             removeOptimisticMessages()
             errorMessage = VoicePipelineErrorMessage.forSend(error)
             composerDraft.voiceClips = [clip]
@@ -653,6 +734,7 @@ final class ChatViewModel {
             assistantReplyPhase = .waiting
             cursorActivityLabel = nil
             scrollIntent = .scrollToBottom
+            beginInFlightReply()
 
             let stream = try await client.streamComposedMessage(
                 sessionId: session.id,
@@ -664,6 +746,7 @@ final class ChatViewModel {
             }
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
+            clearInFlightReply()
             assistantReplyPhase = .idle
             cursorActivityLabel = nil
             for attachment in draft.attachments {
@@ -674,11 +757,13 @@ final class ChatViewModel {
             }
             return true
         } catch {
-            assistantReplyPhase = .idle
-            cursorActivityLabel = nil
-            if await resumeAwaitingReplyIfNeeded() {
+            let partial = assistantReplyPhase.displayText
+            if await handleResumableStreamInterruption(error, partialText: partial) {
                 return true
             }
+            clearInFlightReply()
+            assistantReplyPhase = .idle
+            cursorActivityLabel = nil
             removeOptimisticMessages()
             errorMessage = VoicePipelineErrorMessage.forSend(error)
             composerDraft = draft
@@ -749,7 +834,14 @@ final class ChatViewModel {
             )
             apply(page: page, requestedLimit: limit, kind: "reloadLatest")
             scrollIntent = .scrollToBottom
-            assistantReplyPhase = .idle
+            if messages.last?.role == .assistant {
+                clearInFlightReply()
+                assistantReplyPhase = .idle
+            } else if inFlightReplyStore.load(sessionId: session.id) != nil, looksAwaitingAssistantReply {
+                restoreInFlightReplyUIIfNeeded()
+            } else {
+                assistantReplyPhase = .idle
+            }
             syncStatus = .upToDate(lastSyncedAt: messageCache.lastSyncedAt(sessionId: session.id) ?? Date())
         } catch {
             if messages.isEmpty {
@@ -765,13 +857,25 @@ final class ChatViewModel {
     }
 
     /// After SSE drops (background / leave chat), poll until the server persists the assistant reply.
+    /// - Parameter allowWhileSending: call from stream `catch` while `isSending` is still true.
     @discardableResult
-    func resumeAwaitingReplyIfNeeded() async -> Bool {
-        guard !isSending, !isPollingForReply else { return false }
-        guard looksAwaitingAssistantReply else { return false }
+    func resumeAwaitingReplyIfNeeded(allowWhileSending: Bool = false) async -> Bool {
+        if isPollingForReply { return false }
+        if isSending, !allowWhileSending { return false }
+        let hasMarker = inFlightReplyStore.load(sessionId: session.id) != nil
+        guard looksAwaitingAssistantReply || hasMarker else { return false }
+        guard looksAwaitingAssistantReply else {
+            clearInFlightReply()
+            return false
+        }
 
         isPollingForReply = true
-        assistantReplyPhase = .waiting
+        if !assistantReplyPhase.showsPlaceholder {
+            restoreInFlightReplyUIIfNeeded()
+            if !assistantReplyPhase.showsPlaceholder {
+                assistantReplyPhase = .waiting
+            }
+        }
         defer { isPollingForReply = false }
 
         await pollUntilAssistantReply()
@@ -783,11 +887,11 @@ final class ChatViewModel {
     }
 
     private func pollUntilAssistantReply() async {
-        let maxAttempts = 150
-        let intervalNanoseconds: UInt64 = 2_000_000_000
+        let maxAttempts = max(1, replyPollMaxAttempts)
+        let intervalNanoseconds = replyPollIntervalNanoseconds
 
         for attempt in 0..<maxAttempts {
-            if attempt > 0 {
+            if attempt > 0, intervalNanoseconds > 0 {
                 try? await Task.sleep(nanoseconds: intervalNanoseconds)
             }
             if Task.isCancelled { break }
@@ -802,6 +906,7 @@ final class ChatViewModel {
                 )
                 apply(page: page, requestedLimit: normalizedLimit, kind: "pollReply")
                 if messages.last?.role == .assistant {
+                    clearInFlightReply()
                     assistantReplyPhase = .idle
                     scrollIntent = .scrollToBottom
                     return
@@ -810,7 +915,13 @@ final class ChatViewModel {
                 ChatPaginationLogger.loadFailed("pollReply", error: error.localizedDescription)
             }
         }
-        assistantReplyPhase = .idle
+        // Keep marker so a later return to chat can resume; leave waiting UI if still awaiting.
+        if looksAwaitingAssistantReply {
+            assistantReplyPhase = .waiting
+        } else {
+            clearInFlightReply()
+            assistantReplyPhase = .idle
+        }
     }
 
     func clearError() {

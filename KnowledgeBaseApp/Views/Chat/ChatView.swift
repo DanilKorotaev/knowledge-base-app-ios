@@ -174,6 +174,7 @@ struct ChatView: View {
             voiceViewModel.handleScenePhaseChange(newPhase)
             if newPhase == .background || newPhase == .inactive {
                 viewModel.persistComposerDraftNow()
+                viewModel.persistInFlightReplySnapshot()
             }
             guard newPhase == .active else { return }
             Task {
@@ -183,6 +184,7 @@ struct ChatView: View {
         }
         .onAppear {
             ChatSessionFocusTracker.shared.setFocusedSessionId(viewModel.session.id)
+            Task { await viewModel.resumeAwaitingReplyIfNeeded() }
         }
         .onDisappear {
             viewModel.persistComposerDraftNow()

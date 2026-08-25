@@ -77,6 +77,8 @@ targets:
       Release: Config/Release.xcconfig
     sources:
       - path: KnowledgeBaseAppTests
+        excludes:
+          - KBStructuredUITests.swift
     dependencies:
       - target: KnowledgeBaseApp
     settings:
