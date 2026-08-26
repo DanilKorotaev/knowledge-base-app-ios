@@ -53,6 +53,7 @@
 
 - [x] [Match + ASC + TestFlight](tasks/completed/task-ops-fastlane-testflight.md) — CI/CD deploy, completed 2026-06-10
 - [x] [MIT LICENSE](tasks/completed/task-sessions-attachments-license.md)
+- [x] [SemVer + changelog + git-flow](tasks/completed/task-ops-semver-versioning-changelog-gitflow.md) — completed 2026-08-26
 
 ### Documentation
 

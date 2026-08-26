@@ -21,6 +21,7 @@ Native SwiftUI client for the personal knowledge base stack: same PostgreSQL ses
 
 ## Fastlane & TestFlight
 
+- **Versioning:** push to `main` auto-releases (PATCH + changelog + TestFlight). See [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md).
 - **Tests (CI gate):** `bundle exec fastlane test` — must pass with coverage ≥ 35%.
 - **TestFlight:** uploaded automatically after green CI on `main`, or manually via Actions → **Deploy TestFlight**.
 - Full checklist: [docs/FASTLANE.md](docs/FASTLANE.md).

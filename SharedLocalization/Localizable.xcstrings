@@ -169,6 +169,30 @@
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Язык" } }
       }
     },
+    "settings.about" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "About" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "О приложении" } }
+      }
+    },
+    "settings.about.version" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Version" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Версия" } }
+      }
+    },
+    "settings.about.copy_hint" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Tap the version to copy it for support." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нажмите на версию, чтобы скопировать её для поддержки." } }
+      }
+    },
+    "settings.about.copied" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copied to clipboard." } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скопировано в буфер обмена." } }
+      }
+    },
     "settings.language.english" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "English" } },

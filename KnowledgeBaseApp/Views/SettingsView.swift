@@ -1,11 +1,17 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct SettingsView: View {
     @State private var apiBaseURL: String = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL) ?? ""
     @State private var authToken: String = AppConfiguration.string(for: AppConfiguration.Keys.authToken) ?? ""
     @State private var voiceDefaultTitle: String?
     @State private var voiceDefaultExpiry: String?
+    @State private var didCopyVersion = false
     @Bindable private var languageStore = AppLanguageStore.shared
+
+    private var clientMeta: KBClientMetadata { KBClientMetadata.current }
 
     var body: some View {
         Form {
@@ -76,6 +82,26 @@ struct SettingsView: View {
                 Text("Images and voice messages you open are saved locally for offline viewing.")
             }
 
+            Section {
+                Button {
+                    copyVersionToPasteboard()
+                } label: {
+                    HStack {
+                        Text("settings.about.version")
+                        Spacer()
+                        Text(clientMeta.versionBuildLabel)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                }
+                .accessibilityLabel(Text("settings.about.version"))
+                .accessibilityValue(Text(clientMeta.versionBuildLabel))
+            } header: {
+                Text("settings.about")
+            } footer: {
+                Text(didCopyVersion ? "settings.about.copied" : "settings.about.copy_hint")
+            }
+
             Section("Developer") {
                 NavigationLink("Debug menu") {
                     DebugMenuView()
@@ -86,6 +112,17 @@ struct SettingsView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             reloadVoiceDefaultSummary()
+        }
+    }
+
+    private func copyVersionToPasteboard() {
+        #if canImport(UIKit)
+        UIPasteboard.general.string = clientMeta.versionBuildLabel
+        #endif
+        didCopyVersion = true
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            didCopyVersion = false
         }
     }
 

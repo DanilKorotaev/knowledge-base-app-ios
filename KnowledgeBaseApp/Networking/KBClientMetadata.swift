@@ -19,6 +19,11 @@ struct KBClientMetadata: Equatable, Sendable {
         "KnowledgeBaseApp/\(appVersion) (\(platform) \(osVersion); build \(buildNumber))"
     }
 
+    /// Human-readable label for Settings / support: `1.0.0 (90)`.
+    var versionBuildLabel: String {
+        "\(appVersion) (\(buildNumber))"
+    }
+
     static var current: KBClientMetadata {
         let info = Bundle.main.infoDictionary
         let version = (info?["CFBundleShortVersionString"] as? String)?

@@ -231,6 +231,12 @@ def build_testflight_message(outcome: str, output_dir: Path) -> str:
     version = str(meta.get("marketing_version", "?"))
     build = str(meta.get("build_number", "?"))
     app_id = str(meta.get("app_identifier", ""))
+    file_version = ""
+    version_path = REPO_ROOT / "VERSION"
+    if version_path.is_file():
+        file_version = version_path.read_text(encoding="utf-8").strip()
+    if version in ("", "?"):
+        version = file_version or "?"
 
     success = outcome == "success"
     title = (
@@ -248,6 +254,16 @@ def build_testflight_message(outcome: str, output_dir: Path) -> str:
     ]
     if app_id:
         lines.append(f"Bundle ID: <code>{html_escape(app_id)}</code>")
+
+    repo = os.environ.get("GITHUB_REPOSITORY", "").strip()
+    server = os.environ.get("GITHUB_SERVER_URL", "https://github.com").rstrip("/")
+    if repo:
+        changelog_url = f"{server}/{repo}/blob/main/CHANGELOG.md"
+        lines.append(f'<a href="{html_escape(changelog_url)}">CHANGELOG</a>')
+        if version not in ("", "?"):
+            tag = f"ios/v{version}"
+            tag_url = f"{server}/{repo}/releases/tag/{tag}"
+            lines.append(f'Tag: <a href="{html_escape(tag_url)}"><code>{html_escape(tag)}</code></a>')
 
     if success:
         lines.append("")

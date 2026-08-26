@@ -34,6 +34,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-ux-swr-sync-status-sessions-chat.md` | SWR sync status banners on list and chat |
 | `task-feature-offline-attachment-disk-cache-management.md` | Attachment disk cache + Settings management |
 | `task-feature-offline-mode-cache-sync.md` | Offline mode epic (v1) |
+| `task-ops-semver-versioning-changelog-gitflow.md` | SemVer + changelog + git-flow (вариант A) |
 
 ## Pending (`pending/`)
 
@@ -54,6 +55,5 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-bug-composer-send-voice-attachments-failure.md` | Voice/photo send fail (draft files cleared too early) | partially fixed |
 | `task-feature-api-client-version-metadata.md` | API client version headers for debugging | бэклог |
 | `task-feature-structured-ui-mvp.md` | Structured UI MVP | бэклог |
-| `task-ops-semver-versioning-changelog-gitflow.md` | SemVer + changelog + git-flow | бэклог |
 
 **Deploy / E2E checklist (Nextcloud):** `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`

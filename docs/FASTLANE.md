@@ -42,6 +42,21 @@ SCAN_DEVICE="iPhone 15" bundle exec fastlane test
 
 On GitHub Actions, `SCAN_DEVICE` is set automatically before Fastlane runs.
 
+## Versioning (SemVer)
+
+Default path: **push to `main`** → CI → Deploy TestFlight → **auto PATCH** + changelog from commits → tag `ios/v*`. No PR required. Full rules: [RELEASE_PROCESS.md](RELEASE_PROCESS.md).
+
+- **Marketing version** is written to [`VERSION`](../VERSION) by `scripts/ci/prepare_release.py` on deploy (then committed after a successful upload).
+- **Build number** on CI is `GITHUB_RUN_NUMBER` (`increment_build_number`). Do not encode SemVer into the build field.
+- Human-readable history: [`CHANGELOG.md`](../CHANGELOG.md). Build ↔ tag mapping: [`RELEASES.md`](RELEASES.md).
+- Intentional **minor/major**: edit `VERSION`, or commit trailer `release-bump: minor|major`, or Actions → Deploy TestFlight → bump input.
+
+After editing `VERSION` locally (rare):
+
+```bash
+bash scripts/ci/sync_marketing_version.sh
+```
+
 ## Lane: `beta` (TestFlight)
 
 **Before the first run:**
@@ -96,7 +111,7 @@ After **CI** (`test`) and **Deploy TestFlight** (`beta`), the workflow sends a m
 
 **Tests message:** branch, event, passed / failed / skipped counts, app line coverage %, link to the workflow run. On failure, lists failed test identifiers from the `.xcresult` bundle (up to 25).
 
-**TestFlight message:** marketing version + build number (from `fastlane/test_output/ci_testflight.json` after upload), bundle id, success or failure.
+**TestFlight message:** marketing version + build number (from `fastlane/test_output/ci_testflight.json` after upload), bundle id, CHANGELOG / tag links, success or failure. On success, deploy commits `VERSION` + changelog and tags `ios/v{VERSION}` (with `[skip ci]`).
 
 Local dry-run (no network):
 

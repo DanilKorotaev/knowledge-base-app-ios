@@ -4,7 +4,7 @@
 **Приоритет:** Средний  
 **Категория:** Observability, API, поддержка
 
-**Зависит от:** `task-ops-semver-versioning-changelog-gitflow.md` — без осмысленного SemVer в git заголовки мало помогают (сейчас marketing version почти не меняется, только CI build number).
+**Зависит от:** `task-ops-semver-versioning-changelog-gitflow.md` (completed 2026-08-26) — SemVer in `VERSION` now feeds marketing version / headers.
 
 ## Зачем
 

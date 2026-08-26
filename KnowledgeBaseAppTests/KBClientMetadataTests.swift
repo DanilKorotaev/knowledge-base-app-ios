@@ -23,6 +23,16 @@ final class KBClientMetadataTests: XCTestCase {
         )
     }
 
+    func testVersionBuildLabel() {
+        let meta = KBClientMetadata(
+            appVersion: "1.0.0",
+            buildNumber: "90",
+            platform: "ios",
+            osVersion: "18.7"
+        )
+        XCTAssertEqual(meta.versionBuildLabel, "1.0.0 (90)")
+    }
+
     func testInterceptorAddsClientMetadata() {
         let expectation = expectation(description: "adapt")
         let meta = KBClientMetadata(

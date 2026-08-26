@@ -5,6 +5,7 @@
 - [Repository skeleton + CI](tasks/completed/task-skeleton-repo-ci.md)
 - [Fastlane test + beta lanes](tasks/completed/task-fastlane-setup.md)
 - [TestFlight via CI/CD](tasks/completed/task-ops-fastlane-testflight.md)
+- [SemVer + changelog + release process](tasks/completed/task-ops-semver-versioning-changelog-gitflow.md)
 - [New session, attachments MVP, MIT license](tasks/completed/task-sessions-attachments-license.md)
 - [KB App API contract + OpenAPI subset + client error parsing](tasks/completed/task-doc-kb-app-api-contract.md)
 - [KB App API MVP (FastAPI in knowledge-base-bot)](tasks/completed/task-backend-kb-app-api-mvp.md)
