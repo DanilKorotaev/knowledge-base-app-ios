@@ -31,6 +31,36 @@
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторить" } }
       }
     },
+    "chat.copy_all" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copy all" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скопировать всё" } }
+      }
+    },
+    "chat.copy_done" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Copied" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скопировано" } }
+      }
+    },
+    "chat.open_to_copy" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Open to copy" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Открыть для копирования" } }
+      }
+    },
+    "chat.copy_sheet_title" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Message" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сообщение" } }
+      }
+    },
+    "chat.copy_sheet_done" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Готово" } }
+      }
+    },
     "error.api_not_configured" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "API is not configured." } },

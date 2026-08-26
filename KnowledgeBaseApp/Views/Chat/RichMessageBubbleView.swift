@@ -8,6 +8,7 @@ struct RichMessageBubbleView: View {
     var assistantResponseTime: TimeInterval?
 
     @State private var fullscreenImage: IdentifiableImage?
+    @State private var copySheetText: IdentifiableCopyText?
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 0) {
@@ -31,10 +32,30 @@ struct RichMessageBubbleView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: message.role == .user ? .trailing : .leading)
+        .contentShape(Rectangle())
+        .contextMenu {
+            if MessageCopyContent.text(for: message) != nil {
+                Button {
+                    _ = MessageCopyContent.copyToPasteboard(message)
+                } label: {
+                    Label(L10n.string("chat.copy_all"), systemImage: "doc.on.doc")
+                }
+                Button {
+                    if let text = MessageCopyContent.text(for: message) {
+                        copySheetText = IdentifiableCopyText(text: text)
+                    }
+                } label: {
+                    Label(L10n.string("chat.open_to_copy"), systemImage: "text.viewfinder")
+                }
+            }
+        }
         .fullScreenCover(item: $fullscreenImage) { item in
             FullscreenImageViewer(image: item.image) {
                 fullscreenImage = nil
             }
+        }
+        .sheet(item: $copySheetText) { item in
+            MessageCopySheet(text: item.text)
         }
     }
 
@@ -182,6 +203,11 @@ private struct OpenChangedFilesFallbackButton: View {
 private struct IdentifiableImage: Identifiable {
     let id = UUID()
     let image: UIImage
+}
+
+private struct IdentifiableCopyText: Identifiable {
+    let id = UUID()
+    let text: String
 }
 
 private struct AnyShape: Shape {

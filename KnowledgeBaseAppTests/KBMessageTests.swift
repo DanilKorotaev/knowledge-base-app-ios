@@ -275,6 +275,39 @@ final class KBMessageTests: XCTestCase {
         XCTAssertTrue(PipelineErrorMessageClassifier.isPipelineErrorMessage("An error occurred. Try again later."))
     }
 
+    func testMessageCopyContent_usesFullMarkdownSource() {
+        let markdown = """
+        ## Title
+        **bold**
+
+        - one
+        - two
+        """
+        let message = KBMessage(id: "a", role: .assistant, content: markdown, createdAt: nil)
+        XCTAssertEqual(MessageCopyContent.text(for: message), markdown)
+    }
+
+    func testMessageCopyContent_fallsBackToVoiceTranscription() {
+        let message = KBMessage(
+            id: "v",
+            role: .user,
+            content: "🎤",
+            createdAt: nil,
+            attachments: [
+                KBAttachment(
+                    id: "a1",
+                    fileType: "voice",
+                    fileName: "v.m4a",
+                    fileSize: 1,
+                    mimeType: "audio/mp4",
+                    downloadURL: "/v",
+                    transcription: "hello from voice"
+                )
+            ]
+        )
+        XCTAssertEqual(MessageCopyContent.text(for: message), "hello from voice")
+    }
+
     func testImageAndVoiceAttachmentFilters() {
         let message = KBMessage(
             id: "mix",
