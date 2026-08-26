@@ -7,14 +7,15 @@
 ## Решение
 
 - Long-press на bubble → **Copy all** / **Open to copy**
-- Copy all кладёт `message.content` (markdown/plain source) или transcription для voice-only
-- Sheet: selectable full text + кнопка Copy all
+- Copy all кладёт plain `message.content` (markdown/plain source) или transcription для voice-only
+- Sheet: `UITextView` (plain text) — выделение произвольного диапазона; Copy всегда пишет `UIPasteboard.general.string` (не RTFD)
 - EN/RU в `Localizable.xcstrings`
 
 ## Acceptance
 
 - [x] Long-press assistant → Copy all
-- [x] Sheet Open to copy с выделением
+- [x] Sheet Open to copy с выделением фрагмента (UITextView)
+- [x] Copy из sheet → plain text (не RTFD)
 - [x] User bubble тоже
 - [x] Unit: markdown source + voice transcription fallback
 - [ ] Ручная приёмка TestFlight
