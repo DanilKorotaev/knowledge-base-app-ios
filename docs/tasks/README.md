@@ -48,8 +48,8 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-ux-voice-transcription-retry-without-loss.md` | Voice: inline retry on transcription/send errors | completed 2026-07-03 |
 | `task-ux-session-kb-mode-persistent.md` | Move `Use Knowledge Base` to session creation | бэклог |
 | `task-ux-chat-resume-streaming-after-background.md` | Resume streaming UI after background / leave chat | completed |
-| `task-ux-chat-error-retry-instead-of-draft-restore.md` | Error/timeout: Retry on bubble, don’t refill composer | in progress |
-| `task-ux-chat-copy-message.md` | Copy entire message + optional copy sheet | бэклог |
+| `task-ux-chat-error-retry-instead-of-draft-restore.md` | Error/timeout: Retry on bubble, don’t refill composer | code done |
+| `task-ux-chat-copy-message.md` | Copy entire message + optional copy sheet | code done |
 | `task-bug-chat-empty-message-bubble.md` | Empty bubble (space without content) | бэклог |
 | `task-bug-composer-send-voice-attachments-failure.md` | Voice/photo send fail (draft files cleared too early) | partially fixed |
 | `task-feature-api-client-version-metadata.md` | API client version headers for debugging | бэклог |
