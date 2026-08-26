@@ -158,7 +158,11 @@ final class ChatViewModelComposerDraftTests: XCTestCase {
         let loaded = try XCTUnwrap(draftStore.load(sessionId: session.id))
         XCTAssertEqual(loaded.draft.voiceClips.count, 1)
         XCTAssertTrue(FileManager.default.fileExists(atPath: loaded.draft.voiceClips[0].audioURL.path))
-        XCTAssertFalse(viewModel.messages.contains { $0.id.hasPrefix("kb-optimistic-") })
+        XCTAssertTrue(viewModel.composerDraft.trimmedText.isEmpty)
+        XCTAssertTrue(viewModel.composerDraft.voiceClips.isEmpty)
+        XCTAssertNotNil(viewModel.pendingSendRetry)
+        // Optimistic bubble stays so Retry has an anchor.
+        XCTAssertTrue(viewModel.messages.contains { $0.id.hasPrefix("kb-optimistic-") })
     }
 }
 

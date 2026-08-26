@@ -259,6 +259,22 @@ final class KBMessageTests: XCTestCase {
         XCTAssertEqual(user.resolvedContentFormat, .plain)
     }
 
+    func testPipelineErrorMessageClassifier() {
+        let error = KBMessage(
+            id: "e",
+            role: .assistant,
+            content: "❌ Произошла ошибка. Попробуйте позже или обратитесь к администратору.",
+            createdAt: nil
+        )
+        let ok = KBMessage(id: "ok", role: .assistant, content: "Готово, всё записано.", createdAt: nil)
+        let user = KBMessage(id: "u", role: .user, content: "❌ Произошла ошибка", createdAt: nil)
+
+        XCTAssertTrue(error.isPipelineErrorMessage)
+        XCTAssertFalse(ok.isPipelineErrorMessage)
+        XCTAssertFalse(user.isPipelineErrorMessage)
+        XCTAssertTrue(PipelineErrorMessageClassifier.isPipelineErrorMessage("An error occurred. Try again later."))
+    }
+
     func testImageAndVoiceAttachmentFilters() {
         let message = KBMessage(
             id: "mix",

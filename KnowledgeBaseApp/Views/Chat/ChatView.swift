@@ -56,10 +56,20 @@ struct ChatView: View {
                             }
 
                             ForEach(viewModel.messages) { message in
-                                RichMessageBubbleView(
-                                    message: message,
-                                    attachmentLoader: attachmentLoader
-                                )
+                                VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 6) {
+                                    RichMessageBubbleView(
+                                        message: message,
+                                        attachmentLoader: attachmentLoader
+                                    )
+                                    if viewModel.shouldShowSendRetry(for: message) {
+                                        MessageSendRetryBar(
+                                            errorText: viewModel.pendingSendRetry?.errorDescription,
+                                            isBusy: viewModel.isSending
+                                        ) {
+                                            Task { await viewModel.retryFailedSend() }
+                                        }
+                                    }
+                                }
                                 .id(message.id)
                                 .onAppear {
                                     oldestMessageDidAppear(message.id)
@@ -193,7 +203,7 @@ struct ChatView: View {
             }
         }
         .alert("Chat", isPresented: Binding(
-            get: { viewModel.errorMessage != nil },
+            get: { viewModel.errorMessage != nil && viewModel.pendingSendRetry == nil },
             set: { if !$0 { viewModel.clearError() } }
         )) {
             Button("OK", role: .cancel) {

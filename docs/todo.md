@@ -7,7 +7,7 @@
 
 ## Planned
 
-**Recommended order (2026-08-25):** 1) **Resume streaming after background**; 2) **Error → Retry, no draft restore**; 3) **Copy full message**; 4) Push E2E; 5) Watch complication; 6) E2E automation.
+**Recommended order (2026-08-26):** 1) ~~Resume streaming~~ (done); 2) **Error → Retry, no draft restore** (in progress); 3) **Copy full message**; 4) Push E2E; 5) Watch complication; 6) E2E automation.
 
 ### Integration (E2E + contract)
 
@@ -40,8 +40,8 @@
 - [x] [Voice: retry без потери записи](tasks/completed/task-ux-voice-transcription-retry-without-loss.md) — completed 2026-07-03
 - [ ] [Session KB mode: перманентный выбор при создании](tasks/pending/task-ux-session-kb-mode-persistent.md) — убрать toggle из navbar чата
 - [ ] [Композер: polish](tasks/pending/task-ux-chat-composer-polish.md) — Quick Look, лимиты, RU
-- [ ] [Стриминг: resume после фона / ухода с чата](tasks/pending/task-ux-chat-resume-streaming-after-background.md) — без «connection lost», живой waiting/streaming
-- [ ] [Ошибка ответа: Retry на bubble, не возвращать draft в input](tasks/pending/task-ux-chat-error-retry-instead-of-draft-restore.md)
+- [x] [Стриминг: resume после фона / ухода с чата](tasks/completed/task-ux-chat-resume-streaming-after-background.md) — completed 2026-08-26
+- [ ] [Ошибка ответа: Retry на bubble, не возвращать draft в input](tasks/pending/task-ux-chat-error-retry-instead-of-draft-restore.md) — реализовано в коде; нужна приёмка TestFlight
 - [ ] [Копирование сообщения целиком + sheet](tasks/pending/task-ux-chat-copy-message.md)
 
 ### Backend (`knowledge-base-bot/kb_app_api/`)

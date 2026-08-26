@@ -1,6 +1,6 @@
 # UX: возобновление стриминга ответа после фона / ухода с чата
 
-**Статус:** Реализовано (клиент) — 2026-08-25  
+**Статус:** Completed — 2026-08-26  
 **Приоритет:** Высокий  
 **Категория:** UX чата, стриминг, жизненный цикл приложения
 
@@ -26,7 +26,7 @@ Backend не менялся (достаточно клиентского poll me
 - [x] Unit: network drop mid-stream → нет errorMessage, placeholder/waiting, partial сохранён
 - [x] Unit: init восстанавливает streaming UI из маркера
 - [x] Unit: store save/load/expire; classifier
-- [ ] Ручная приёмка на TestFlight: свернуть во время ответа → вернуться без alert, виден waiting/streaming
+- [x] Ручная приёмка на TestFlight: свернуть во время ответа → вернуться без alert, виден waiting/streaming (2026-08-26)
 
 ## Затронутые файлы
 

@@ -24,6 +24,8 @@ final class ChatViewModel {
     var isTranscribingVoice = false
     var pendingVoiceCaptures: [PendingVoiceCapture] = []
     var errorMessage: String?
+    /// Hard send failure / pipeline-error reply: Retry on bubble, composer stays empty.
+    var pendingSendRetry: FailedSendRetry?
     var syncStatus: SyncStatus = .idle
     var totalCount = 0
     var hasMoreOlder = false
@@ -567,8 +569,12 @@ final class ChatViewModel {
 
         isSending = true
         errorMessage = nil
+        pendingSendRetry = nil
         scrollIntent = .none
         defer { isSending = false }
+
+        // Snapshot before detach — needed for Retry without stuffing the composer.
+        let sendSnapshot = composerDraft
 
         // Clear composer immediately so voice/photo chips do not linger while the
         // assistant reply streams (including after backgrounding the app).
@@ -579,29 +585,105 @@ final class ChatViewModel {
         case .unsupported:
             return
         case .textOnly(let text):
-            succeeded = await sendStreamingText(text, optimisticContent: text)
+            succeeded = await sendStreamingText(
+                text,
+                optimisticContent: text,
+                retryDraft: ChatComposerDraft(text: text)
+            )
         case .singleAttachment(let attachment):
-            succeeded = await sendSingleAttachment(attachment)
+            succeeded = await sendSingleAttachment(attachment, retryDraft: sendSnapshot)
         case .singleVoice(let clip, let text):
-            succeeded = await sendSingleVoice(clip: clip, text: text)
+            succeeded = await sendSingleVoice(clip: clip, text: text, retryDraft: sendSnapshot)
         case .compose(let draft):
             succeeded = await sendComposedMessage(draft)
         }
 
         if succeeded {
             clearSavedComposerDraft()
+            offerPipelineErrorRetryIfNeeded()
+        }
+    }
+
+    func shouldShowSendRetry(for message: KBMessage) -> Bool {
+        pendingSendRetry?.anchorMessageId == message.id
+    }
+
+    func retryFailedSend() async {
+        guard let retry = pendingSendRetry else { return }
+        pendingSendRetry = nil
+        errorMessage = nil
+
+        switch retry.kind {
+        case .draft(let draft):
+            await resendFailedDraft(draft)
+        case .text(let text):
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            isSending = true
+            defer { isSending = false }
+            let ok = await sendStreamingText(
+                trimmed,
+                optimisticContent: trimmed,
+                retryDraft: ChatComposerDraft(text: trimmed)
+            )
+            if ok {
+                clearSavedComposerDraft()
+                offerPipelineErrorRetryIfNeeded()
+            }
+        }
+    }
+
+    private func resendFailedDraft(_ draft: ChatComposerDraft) async {
+        let route = ChatComposerSendPlanner.route(for: draft)
+        if case .unsupported(let message) = route {
+            errorMessage = message
+            return
+        }
+
+        isSending = true
+        errorMessage = nil
+        scrollIntent = .none
+        defer { isSending = false }
+
+        removeOptimisticMessages()
+
+        let succeeded: Bool
+        switch route {
+        case .unsupported:
+            return
+        case .textOnly(let text):
+            succeeded = await sendStreamingText(
+                text,
+                optimisticContent: text,
+                retryDraft: ChatComposerDraft(text: text)
+            )
+        case .singleAttachment(let attachment):
+            succeeded = await sendSingleAttachment(attachment, retryDraft: draft)
+        case .singleVoice(let clip, let text):
+            succeeded = await sendSingleVoice(clip: clip, text: text, retryDraft: draft)
+        case .compose(let composed):
+            succeeded = await sendComposedMessage(composed)
+        }
+
+        if succeeded {
+            clearSavedComposerDraft()
+            offerPipelineErrorRetryIfNeeded()
         }
     }
 
     @discardableResult
-    private func sendStreamingText(_ text: String, optimisticContent: String) async -> Bool {
+    private func sendStreamingText(
+        _ text: String,
+        optimisticContent: String,
+        retryDraft: ChatComposerDraft
+    ) async -> Bool {
+        let optimisticUser = KBMessage(
+            id: "kb-optimistic-\(UUID().uuidString)",
+            role: .user,
+            content: optimisticContent,
+            createdAt: Date()
+        )
         do {
-            let optimisticUser = KBMessage(
-                id: "kb-optimistic-\(UUID().uuidString)",
-                role: .user,
-                content: optimisticContent,
-                createdAt: Date()
-            )
             messages.append(optimisticUser)
             assistantReplyPhase = .waiting
             cursorActivityLabel = nil
@@ -627,19 +709,20 @@ final class ChatViewModel {
             if await handleResumableStreamInterruption(error, partialText: partial) {
                 return true
             }
-            clearInFlightReply()
-            assistantReplyPhase = .idle
-            cursorActivityLabel = nil
-            removeOptimisticMessages()
-            errorMessage = error.localizedDescription
-            composerDraft.text = text
-            scheduleComposerDraftSave()
-            return false
+            return await finishHardSendFailure(
+                error: error,
+                retryDraft: retryDraft,
+                optimisticMessageId: optimisticUser.id,
+                errorText: error.localizedDescription
+            )
         }
     }
 
     @discardableResult
-    private func sendSingleAttachment(_ attachment: PendingAttachment) async -> Bool {
+    private func sendSingleAttachment(
+        _ attachment: PendingAttachment,
+        retryDraft: ChatComposerDraft
+    ) async -> Bool {
         let scoped = attachment.localURL.startAccessingSecurityScopedResource()
         defer {
             if scoped {
@@ -658,22 +741,24 @@ final class ChatViewModel {
             await reloadLatestWindow()
             return true
         } catch {
-            errorMessage = error.localizedDescription
-            composerDraft.attachments = [attachment]
-            scheduleComposerDraftSave()
-            return false
+            return await finishHardSendFailure(
+                error: error,
+                retryDraft: retryDraft,
+                optimisticMessageId: messages.last(where: { $0.role == .user })?.id,
+                errorText: error.localizedDescription
+            )
         }
     }
 
     @discardableResult
-    private func sendSingleVoice(clip: PendingVoiceClip, text: String) async -> Bool {
+    private func sendSingleVoice(clip: PendingVoiceClip, text: String, retryDraft: ChatComposerDraft) async -> Bool {
+        let optimisticUser = KBMessage(
+            id: "kb-optimistic-\(UUID().uuidString)",
+            role: .user,
+            content: text,
+            createdAt: Date()
+        )
         do {
-            let optimisticUser = KBMessage(
-                id: "kb-optimistic-\(UUID().uuidString)",
-                role: .user,
-                content: text,
-                createdAt: Date()
-            )
             messages.append(optimisticUser)
             assistantReplyPhase = .waiting
             cursorActivityLabel = nil
@@ -701,15 +786,12 @@ final class ChatViewModel {
             if await handleResumableStreamInterruption(error, partialText: partial) {
                 return true
             }
-            clearInFlightReply()
-            assistantReplyPhase = .idle
-            cursorActivityLabel = nil
-            removeOptimisticMessages()
-            errorMessage = VoicePipelineErrorMessage.forSend(error)
-            composerDraft.voiceClips = [clip]
-            composerDraft.appendTranscription(text)
-            scheduleComposerDraftSave()
-            return false
+            return await finishHardSendFailure(
+                error: error,
+                retryDraft: retryDraft,
+                optimisticMessageId: optimisticUser.id,
+                errorText: VoicePipelineErrorMessage.forSend(error)
+            )
         }
     }
 
@@ -761,15 +843,72 @@ final class ChatViewModel {
             if await handleResumableStreamInterruption(error, partialText: partial) {
                 return true
             }
-            clearInFlightReply()
-            assistantReplyPhase = .idle
-            cursorActivityLabel = nil
+            return await finishHardSendFailure(
+                error: error,
+                retryDraft: draft,
+                optimisticMessageId: optimisticUser.id,
+                errorText: VoicePipelineErrorMessage.forSend(error)
+            )
+        }
+    }
+
+    /// Hard failure: keep composer empty, offer Retry on bubble; drop optimistic only if server already has a turn.
+    @discardableResult
+    private func finishHardSendFailure(
+        error: Error,
+        retryDraft: ChatComposerDraft,
+        optimisticMessageId: String?,
+        errorText: String
+    ) async -> Bool {
+        clearInFlightReply()
+        assistantReplyPhase = .idle
+        cursorActivityLabel = nil
+
+        await reloadLatestWindow()
+
+        if messages.last?.role == .assistant {
+            // User turn was accepted and a reply (including pipeline error) already exists.
             removeOptimisticMessages()
-            errorMessage = VoicePipelineErrorMessage.forSend(error)
-            composerDraft = draft
-            scheduleComposerDraftSave()
+            clearSavedComposerDraft()
+            if messages.last?.isPipelineErrorMessage == true {
+                offerPipelineErrorRetryIfNeeded(errorText: errorText)
+            } else {
+                pendingSendRetry = nil
+            }
+            // Composer stays empty — no draft restore.
             return false
         }
+
+        let anchorId = messages.last(where: { $0.id.hasPrefix("kb-optimistic-") })?.id
+            ?? optimisticMessageId
+            ?? messages.last(where: { $0.role == .user })?.id
+        if let anchorId {
+            pendingSendRetry = FailedSendRetry(
+                kind: .draft(retryDraft),
+                anchorMessageId: anchorId,
+                errorDescription: errorText
+            )
+        } else {
+            // Nothing visible to attach Retry to — last-resort restore so the user does not lose content.
+            composerDraft = retryDraft
+            scheduleComposerDraftSave()
+            errorMessage = errorText
+        }
+        return false
+    }
+
+    private func offerPipelineErrorRetryIfNeeded(errorText: String? = nil) {
+        guard let assistant = messages.last, assistant.isPipelineErrorMessage else {
+            return
+        }
+        guard let user = messages.last(where: { $0.role == .user }) else { return }
+        let text = user.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        pendingSendRetry = FailedSendRetry(
+            kind: .text(text),
+            anchorMessageId: assistant.id,
+            errorDescription: errorText ?? assistant.content
+        )
     }
 
     private func composedOptimisticPlaceholder(for draft: ChatComposerDraft) -> String {

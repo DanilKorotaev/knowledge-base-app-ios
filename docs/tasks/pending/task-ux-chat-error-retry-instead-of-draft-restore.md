@@ -1,6 +1,6 @@
 # UX: ошибка ответа — Retry на bubble, без возврата текста в композер
 
-**Статус:** Запланировано  
+**Статус:** Реализовано (клиент) — 2026-08-26  
 **Приоритет:** Высокий  
 **Категория:** UX чата, ошибки, composer draft
 
@@ -11,55 +11,36 @@
 1. **Сервер записал в чат сообщение-ошибку** («произошла ошибка, обратитесь к администратору») — пайплайн формально «завершён», ошибка уже в ленте.
 2. **Таймаут / обрыв клиента**, после чего ответ всё же появляется (или ошибка уже в истории).
 
-Сейчас клиент часто:
+Раньше клиент часто:
 
-- считает send failed;
-- **восстанавливает черновик** в поле ввода (`composerDraft = draft` + `scheduleComposerDraftSave`);
-- пользователю приходится вручную чистить композер, хотя сообщение уже «ушло» / ответ (пусть ошибочный) уже в чате.
+- считал send failed;
+- **восстанавливал черновик** в поле ввода;
+- пользователю приходилось вручную чистить композер.
 
-Это неудобно: композер захламляется старым текстом.
+## Решение (iOS)
 
-## Цель
-
-- Если пользовательский запрос уже принят / в ленте есть соответствующий user (+ assistant error или финальный ответ) — **не возвращать текст в input**.
-- Для recoverable failure показать **кнопку «Повторить» на bubble** (user или assistant-error), а не наполнять композер.
-- Поле ввода остаётся пустым (как после успешного detach), пока пользователь сам не начнёт новый ввод.
-
-## Предлагаемый подход (анализ)
-
-Разделить исходы send:
-
-| Исход | Композер | Bubble |
-|-------|----------|--------|
-| Успех (assistant OK) | clear draft store | обычный |
-| Серверная ошибка **как сообщение в чате** | clear draft | опционально Retry / «спросить снова» |
-| Клиентский fail **до** принятия (нет user в БД) | можно вернуть draft **или** Retry на optimistic | Retry предпочтительнее |
-| SSE drop, но reply still in flight | **не** restore draft | см. resume-streaming task |
-
-Конкретно:
-
-1. После catch: если `resumeAwaitingReplyIfNeeded()` / reload показывает assistant (в т.ч. error text) — `clearSavedComposerDraft()`, без restore в UI.
-2. Классифицировать assistant content как `isPipelineErrorMessage` (эвристика / `error.code` с API, если появится).
-3. UI: `Retry` на user bubble или на error-assistant → повторный send того же payload (хранить last sent snapshot отдельно от «живого» draft).
-4. Не путать с voice transcription retry (`task-ux-voice-transcription-retry-without-loss` — уже про запись до send).
+1. Hard send failure → composer остаётся пустым; optimistic bubble сохраняется; `pendingSendRetry` + кнопка «Повторить» под bubble.
+2. Если после fail reload уже видит assistant (в т.ч. pipeline error) → draft очищен, Retry на error-assistant («спросить снова» тем же текстом).
+3. Resumable SSE drop → без restore draft (см. resume-streaming).
+4. Alert не показывается, пока есть `pendingSendRetry` (ошибка рядом с Retry).
 
 ## Acceptance
 
-- [ ] Серверная ошибка в ленте → input пустой, draft на диске очищен.
-- [ ] Таймаут SSE при уже принятом user → нет автозаполнения композера старым текстом.
-- [ ] Есть кнопка «Повторить» для последнего failed/error turn; повтор создаёт новый запрос без ручного copy-paste из input.
-- [ ] Реальный fail «не дошло до сервера» — Retry или явный restore draft (зафиксировать один UX в реализации).
-- [ ] Тест: mock stream fail + messages already contain assistant error → composer empty.
+- [x] Серверная ошибка в ленте → input пустой, draft на диске очищен; Retry на assistant.
+- [x] Hard fail до ответа → optimistic + Retry, composer пустой (не restore draft).
+- [x] Unit: classifier pipeline error; fail без restore; fail + assistant error → Retry text.
+- [ ] Ручная приёмка TestFlight: offline/fail send → Retry; pipeline error → Retry.
 
-## Затронутые файлы (ориентир)
+## Затронутые файлы
 
-- `ChatViewModel.swift` — catch в `sendStreamingText` / `sendSingleVoice` / `sendComposedMessage`
-- `ComposerDraftStore` / `clearSavedComposerDraft`
-- `RichMessageBubbleView` / новый `MessageRetryBar`
-- опционально API: структурированный `error` в assistant message (backend task)
+- `KnowledgeBaseApp/Models/FailedSendRetry.swift`
+- `KnowledgeBaseApp/ViewModels/ChatViewModel.swift`
+- `KnowledgeBaseApp/Views/Chat/ChatView.swift`
+- `KnowledgeBaseApp/Views/Chat/MessageSendRetryBar.swift`
+- `SharedLocalization/Localizable.xcstrings`
+- tests
 
 ## Связанные задачи
 
-- `task-ux-chat-resume-streaming-after-background.md`
-- `task-bug-composer-send-voice-attachments-failure.md`
-- `task-ux-voice-transcription-retry-without-loss.md` (completed)
+- `task-ux-chat-resume-streaming-after-background.md` (completed)
+- `task-ux-chat-copy-message.md` — следующая

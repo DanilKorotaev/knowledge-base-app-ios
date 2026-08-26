@@ -57,7 +57,7 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.messages.contains { $0.role == .assistant })
     }
 
-    func testSend_onError_resetsPhaseClearsOptimisticAndRestoresDraft() async throws {
+    func testSend_onError_keepsOptimisticOffersRetryWithoutRestoringComposer() async throws {
         let (store, sessionId) = emptyStoreWithSession()
         let client = FailingStreamChatAPIClient(store: store)
         let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
@@ -66,10 +66,40 @@ final class ChatViewModelTests: XCTestCase {
         await viewModel.send()
 
         XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
-        XCTAssertNotNil(viewModel.errorMessage)
-        XCTAssertTrue(viewModel.messages.isEmpty)
+        XCTAssertTrue(viewModel.composerDraft.trimmedText.isEmpty)
+        XCTAssertEqual(viewModel.messages.count, 1)
+        XCTAssertEqual(viewModel.messages.first?.role, .user)
+        XCTAssertEqual(viewModel.messages.first?.content, "fail")
+        XCTAssertNotNil(viewModel.pendingSendRetry)
+        XCTAssertEqual(viewModel.pendingSendRetry?.anchorMessageId, viewModel.messages.first?.id)
+    }
+
+    func testSend_onError_whenAssistantAlreadyInFeed_clearsComposerAndOffersPipelineRetry() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let user = KBMessage(id: "u1", role: .user, content: "fail", createdAt: Date())
+        let assistant = KBMessage(
+            id: "a1",
+            role: .assistant,
+            content: "❌ Произошла ошибка. Попробуйте позже или обратитесь к администратору.",
+            createdAt: Date()
+        )
+        store.replaceMessages([user, assistant], sessionId: sessionId)
+
+        let client = FailingStreamChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        viewModel.draft = "fail"
+
+        await viewModel.send()
+
+        XCTAssertTrue(viewModel.composerDraft.trimmedText.isEmpty)
+        XCTAssertEqual(viewModel.messages.last?.role, .assistant)
         XCTAssertFalse(viewModel.messages.contains { $0.id.hasPrefix("kb-optimistic-") })
-        XCTAssertEqual(viewModel.draft, "fail")
+        XCTAssertNotNil(viewModel.pendingSendRetry)
+        if case .text(let text) = viewModel.pendingSendRetry?.kind {
+            XCTAssertEqual(text, "fail")
+        } else {
+            XCTFail("Expected text retry for pipeline error")
+        }
     }
 
     func testApplyExternalAssistantPhase_scrollsToBottomWhenActive() {

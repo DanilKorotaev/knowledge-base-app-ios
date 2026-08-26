@@ -25,6 +25,12 @@
         "ru" : { "stringUnit" : { "state" : "translated", "value" : "Голосовое сообщение не удалось расшифровать." } }
       }
     },
+    "chat.retry" : {
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } },
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторить" } }
+      }
+    },
     "error.api_not_configured" : {
       "localizations" : {
         "en" : { "stringUnit" : { "state" : "translated", "value" : "API is not configured." } },
