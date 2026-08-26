@@ -7,7 +7,7 @@
 
 ## Planned
 
-**Recommended order (2026-08-26):** 1) ~~Resume streaming~~ (done); 2) ~~Error → Retry~~ (code done, TestFlight); 3) ~~Copy full message~~ (code done, TestFlight); 4) Push E2E; 5) Watch complication; 6) E2E automation.
+**Recommended order (2026-08-26):** 1–3 chat UX done (resume / retry / copy); 4) **API client version headers** (done); 5) Push E2E; 6) Watch complication acceptance; 7) E2E automation.
 
 ### Integration (E2E + contract)
 
@@ -41,8 +41,9 @@
 - [ ] [Session KB mode: перманентный выбор при создании](tasks/pending/task-ux-session-kb-mode-persistent.md) — убрать toggle из navbar чата
 - [ ] [Композер: polish](tasks/pending/task-ux-chat-composer-polish.md) — Quick Look, лимиты, RU
 - [x] [Стриминг: resume после фона / ухода с чата](tasks/completed/task-ux-chat-resume-streaming-after-background.md) — completed 2026-08-26
-- [ ] [Ошибка ответа: Retry на bubble, не возвращать draft в input](tasks/pending/task-ux-chat-error-retry-instead-of-draft-restore.md) — реализовано в коде; нужна приёмка TestFlight
-- [ ] [Копирование сообщения целиком + sheet](tasks/pending/task-ux-chat-copy-message.md) — реализовано в коде; нужна приёмка TestFlight
+- [x] [Ошибка ответа: Retry на bubble, не возвращать draft в input](tasks/completed/task-ux-chat-error-retry-instead-of-draft-restore.md) — completed 2026-08-26
+- [x] [Копирование сообщения целиком + sheet](tasks/completed/task-ux-chat-copy-message.md) — completed 2026-08-26
+- [x] [API: версия клиента в заголовках](tasks/pending/task-feature-api-client-version-metadata.md) — completed 2026-08-26
 
 ### Backend (`knowledge-base-bot/kb_app_api/`)
 

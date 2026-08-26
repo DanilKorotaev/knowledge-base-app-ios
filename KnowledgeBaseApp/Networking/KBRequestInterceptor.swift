@@ -5,12 +5,20 @@ final class KBRequestInterceptor: RequestInterceptor, @unchecked Sendable {
     private let requestId: String
     private let authToken: String?
     private let useE2EIntegrationUser: Bool
+    private let clientMetadata: KBClientMetadata
     private let apiLogger: KBApiLogger
 
-    init(requestId: String, authToken: String?, useE2EIntegrationUser: Bool, apiLogger: KBApiLogger) {
+    init(
+        requestId: String,
+        authToken: String?,
+        useE2EIntegrationUser: Bool,
+        clientMetadata: KBClientMetadata = .current,
+        apiLogger: KBApiLogger
+    ) {
         self.requestId = requestId
         self.authToken = authToken
         self.useE2EIntegrationUser = useE2EIntegrationUser
+        self.clientMetadata = clientMetadata
         self.apiLogger = apiLogger
     }
 
@@ -22,6 +30,7 @@ final class KBRequestInterceptor: RequestInterceptor, @unchecked Sendable {
         if useE2EIntegrationUser {
             request.setValue("1", forHTTPHeaderField: "X-KB-App-E2E")
         }
+        clientMetadata.apply(to: &request)
         apiLogger.log(request: request, id: requestId)
         completion(.success(request))
     }

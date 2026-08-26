@@ -10,13 +10,20 @@ final class KBHTTPTransport: @unchecked Sendable {
     private let session: Session
     private let streamingSession: URLSession
     private let apiLogger = KBApiLogger(logger: makeLogger(tags: [.network, .http]))
+    private let clientMetadata: KBClientMetadata
     private let lock = NSLock()
     private var authToken: String?
     private var useE2EIntegrationUser: Bool
 
-    init(authToken: String?, useE2EIntegrationUser: Bool = false, urlSession: URLSession = .shared) {
+    init(
+        authToken: String?,
+        useE2EIntegrationUser: Bool = false,
+        clientMetadata: KBClientMetadata = .current,
+        urlSession: URLSession = .shared
+    ) {
         self.authToken = authToken
         self.useE2EIntegrationUser = useE2EIntegrationUser
+        self.clientMetadata = clientMetadata
         let configuration = urlSession.configuration.copy() as! URLSessionConfiguration
         configuration.timeoutIntervalForRequest = Self.streamingRequestTimeout
         configuration.timeoutIntervalForResource = 3600
@@ -60,7 +67,7 @@ final class KBHTTPTransport: @unchecked Sendable {
         let id = UUID().uuidString
         let start = CACurrentMediaTime()
         var adapted = request
-        applyAuthHeaders(to: &adapted)
+        applyCommonHeaders(to: &adapted)
         apiLogger.log(request: adapted, id: id)
         do {
             let (bytes, response) = try await streamingSession.bytes(for: adapted)
@@ -84,11 +91,12 @@ final class KBHTTPTransport: @unchecked Sendable {
             requestId: requestId,
             authToken: token,
             useE2EIntegrationUser: e2e,
+            clientMetadata: clientMetadata,
             apiLogger: apiLogger
         )
     }
 
-    private func applyAuthHeaders(to request: inout URLRequest) {
+    private func applyCommonHeaders(to request: inout URLRequest) {
         lock.lock()
         let token = authToken
         let e2e = useE2EIntegrationUser
@@ -99,5 +107,6 @@ final class KBHTTPTransport: @unchecked Sendable {
         if e2e {
             request.setValue("1", forHTTPHeaderField: "X-KB-App-E2E")
         }
+        clientMetadata.apply(to: &request)
     }
 }
