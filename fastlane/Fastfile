@@ -65,7 +65,10 @@ platform :ios do
     match(**match_params)
 
     marketing = read_marketing_version!
-    sh("bash scripts/ci/sync_marketing_version.sh")
+    # Fastlane cwd is often `fastlane/`; resolve scripts from repo root via Fastfile dir.
+    sync_script = File.expand_path("../scripts/ci/sync_marketing_version.sh", __dir__)
+    UI.user_error!("Missing #{sync_script}") unless File.file?(sync_script)
+    sh("bash", sync_script)
     increment_version_number(
       xcodeproj: "KnowledgeBaseApp.xcodeproj",
       version_number: marketing
