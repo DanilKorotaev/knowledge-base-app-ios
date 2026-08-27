@@ -53,21 +53,134 @@ struct MainView: View {
     }
 
     var body: some View {
-        @Bindable var debugQuickActions = debugQuickActions
         NavigationStack(path: $navigationPath) {
-            mainStackContent
+            mainListWithDebugChrome
+                .navigationDestination(for: KBSession.self) { session in
+                    ChatView(
+                        session: session,
+                        chatClient: chatClient,
+                        attachmentLoader: attachmentLoader
+                    )
+                }
+        }
+        .environment(voiceRouting)
+        .environment(voiceViewModel)
+    }
+
+    /// Split modifiers across helpers so the Swift type checker stays fast.
+    private var mainListWithDebugChrome: some View {
+        mainListWithVoiceChrome
+            .sheet(isPresented: debugMenuPresented) {
+                debugMenuSheet
+            }
+            .onChange(of: navigationPath.count) { _, count in
+                updateMainScreenDebugGesture(isOnMainList: count == 0)
+            }
+            .onDisappear {
+                ThreeFingerSwipeDownInstaller.shared.setEnabled(false) {}
+            }
+    }
+
+    private var mainListWithVoiceChrome: some View {
+        mainListWithSessionChrome
+            .onChange(of: scenePhase) { _, newPhase in
+                handleScenePhaseChange(newPhase)
+            }
+            .onAppear {
+                configureMainListOnAppear()
+            }
+            .onChange(of: deepLinkVoiceRecording) { _, newValue in
+                scheduleDeepLinkVoiceBannerClear(ifEnabled: newValue)
+            }
+            .onChange(of: deepLinkSessionId, initial: true) { _, newValue in
+                openDeepLinkedSessionIfNeeded(newValue)
+            }
+            .sheet(item: $sessionPendingVoiceDefault) { session in
+                DefaultVoiceSessionTTLSheet(
+                    session: session,
+                    selectedTTL: $selectedVoiceDefaultTTL,
+                    onCancel: {
+                        sessionPendingVoiceDefault = nil
+                    },
+                    onConfirm: {
+                        voiceRouting.setDefaultVoiceSession(session, ttl: selectedVoiceDefaultTTL)
+                        sessionPendingVoiceDefault = nil
+                    }
+                )
+            }
+            .sheet(isPresented: postRecordReviewPresented) {
+                postRecordReviewSheet
+            }
+            .alert("Recording", isPresented: recordingErrorPresented) {
+                Button("OK", role: .cancel) {
+                    voiceViewModel.clearError()
+                }
+            } message: {
+                Text(voiceViewModel.errorMessage ?? "")
+            }
+    }
+
+    private var mainListWithSessionChrome: some View {
+        mainListBase
+            .sheet(isPresented: $showNewSession) {
+                NewSessionSheet(
+                    title: $newSessionTitle,
+                    useKnowledgeBase: $newSessionUseKnowledgeBase,
+                    onCancel: { showNewSession = false },
+                    onCreate: { Task { await createSessionAndDismiss() } }
+                )
+            }
+            .sheet(isPresented: $showRenameSheet) {
+                RenameSessionSheet(
+                    title: $renameTitle,
+                    sessionName: sessionPendingRename?.title ?? "",
+                    onCancel: {
+                        showRenameSheet = false
+                        sessionPendingRename = nil
+                    },
+                    onSave: { Task { await saveRenameAndDismiss() } }
+                )
+            }
+            .alert("Delete session?", isPresented: deleteConfirmPresented) {
+                Button("Delete", role: .destructive) {
+                    guard let session = sessionPendingDelete else { return }
+                    Task { await deleteSessionConfirmed(session) }
+                }
+                Button("Cancel", role: .cancel) {
+                    sessionPendingDelete = nil
+                }
+            } message: {
+                if let session = sessionPendingDelete {
+                    Text("“\(session.title)” will be removed from your list. This cannot be undone from the app.")
+                }
+            }
+            .alert("Session", isPresented: sessionActionErrorPresented) {
+                Button("OK", role: .cancel) {
+                    sessionActionError = nil
+                }
+            } message: {
+                Text(sessionActionError ?? "")
+            }
+            .searchable(text: $searchText, prompt: "ID or message text")
+            .task {
+                guard !didLoadSessionsOnce else { return }
+                didLoadSessionsOnce = true
+                await loadSessions(showFullScreenLoading: true)
+            }
+            .onChange(of: searchText) { _, newValue in
+                Task { await runSearch(query: newValue) }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { _ in
+                Task { await loadSessions(showFullScreenLoading: false) }
+            }
+    }
+
+    private var mainListBase: some View {
+        mainStackContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Knowledge Base")
             .safeAreaInset(edge: .top, spacing: 0) {
-                if deepLinkVoiceRecording {
-                    Text("Tap the microphone below to start a voice request.")
-                        .font(.subheadline)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .frame(maxWidth: .infinity)
-                        .background(.yellow.opacity(0.38))
-                }
+                deepLinkVoiceBanner
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -101,167 +214,106 @@ struct MainView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showNewSession) {
-                NewSessionSheet(
-                    title: $newSessionTitle,
-                    useKnowledgeBase: $newSessionUseKnowledgeBase,
-                    onCancel: { showNewSession = false },
-                    onCreate: { Task { await createSessionAndDismiss() } }
-                )
-            }
-            .sheet(isPresented: $showRenameSheet) {
-                RenameSessionSheet(
-                    title: $renameTitle,
-                    sessionName: sessionPendingRename?.title ?? "",
-                    onCancel: {
-                        showRenameSheet = false
-                        sessionPendingRename = nil
-                    },
-                    onSave: { Task { await saveRenameAndDismiss() } }
-                )
-            }
-            .alert("Delete session?", isPresented: deleteConfirmPresented) {
-                Button("Delete", role: .destructive) {
-                    guard let session = sessionPendingDelete else { return }
-                    Task { await deleteSessionConfirmed(session) }
-                }
-                Button("Cancel", role: .cancel) {
-                    sessionPendingDelete = nil
-                }
-            } message: {
-                if let session = sessionPendingDelete {
-                    Text("“\(session.title)” will be removed from your list. This cannot be undone from the app.")
+    }
+
+    @ViewBuilder
+    private var deepLinkVoiceBanner: some View {
+        if deepLinkVoiceRecording {
+            Text("Tap the microphone below to start a voice request.")
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(.yellow.opacity(0.38))
+        }
+    }
+
+    private var sessionActionErrorPresented: Binding<Bool> {
+        Binding(
+            get: { sessionActionError != nil },
+            set: { if !$0 { sessionActionError = nil } }
+        )
+    }
+
+    private var postRecordReviewPresented: Binding<Bool> {
+        Binding(
+            get: { voiceViewModel.showPostRecordReview },
+            set: { newValue in
+                if !newValue {
+                    voiceViewModel.dismissPostRecordReview()
                 }
             }
-            .alert(
-                "Session",
-                isPresented: Binding(
-                    get: { sessionActionError != nil },
-                    set: { if !$0 { sessionActionError = nil } }
-                )
-            ) {
-                Button("OK", role: .cancel) {
-                    sessionActionError = nil
-                }
-            } message: {
-                Text(sessionActionError ?? "")
-            }
-            .searchable(text: $searchText, prompt: "ID or message text")
-            .task {
-                guard !didLoadSessionsOnce else { return }
-                didLoadSessionsOnce = true
-                await loadSessions(showFullScreenLoading: true)
-            }
-            .onChange(of: searchText) { _, newValue in
-                Task { await runSearch(query: newValue) }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { _ in
-                Task { await loadSessions(showFullScreenLoading: false) }
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                voiceViewModel.handleScenePhaseChange(newPhase)
-                if newPhase == .active {
-                    voiceRouting.refreshExpiryIfNeeded()
-                    Task { await loadSessions(showFullScreenLoading: false) }
-                }
-            }
-            .onAppear {
-                voiceViewModel.recordingFinishedOutsideChatHandler = { url in
-                    routeMainScreenVoiceToDefaultChat(audioURL: url)
-                }
-            }
-            .onChange(of: deepLinkVoiceRecording) { _, newValue in
-                guard newValue else { return }
-                Task {
-                    try? await Task.sleep(for: .seconds(12))
-                    await MainActor.run {
-                        deepLinkVoiceRecording = false
-                    }
-                }
-            }
-            .onChange(of: deepLinkSessionId, initial: true) { _, newValue in
-                guard let sessionId = newValue else { return }
-                Task {
-                    await openSessionFromDeepLink(sessionId: sessionId)
-                    await MainActor.run {
-                        deepLinkSessionId = nil
-                    }
-                }
-            }
-            .sheet(item: $sessionPendingVoiceDefault) { session in
-                DefaultVoiceSessionTTLSheet(
-                    session: session,
-                    selectedTTL: $selectedVoiceDefaultTTL,
-                    onCancel: {
-                        sessionPendingVoiceDefault = nil
-                    },
-                    onConfirm: {
-                        voiceRouting.setDefaultVoiceSession(session, ttl: selectedVoiceDefaultTTL)
-                        sessionPendingVoiceDefault = nil
-                    }
-                )
-            }
-            .sheet(isPresented: Binding(
-                get: { voiceViewModel.showPostRecordReview },
-                set: { newValue in
-                    if !newValue {
-                        voiceViewModel.dismissPostRecordReview()
-                    }
-                }
-            )) {
-                @Bindable var voice = voiceViewModel
-                @Bindable var routing = voiceRouting
-                PostRecordingReviewSheet(
-                    viewModel: voice,
-                    sessions: sessions,
-                    voiceRouting: routing
-                )
-            }
-            .alert("Recording", isPresented: Binding(
-                get: { voiceViewModel.errorMessage != nil },
-                set: { newValue in
-                    if !newValue {
-                        voiceViewModel.clearError()
-                    }
-                }
-            )) {
-                Button("OK", role: .cancel) {
+        )
+    }
+
+    private var recordingErrorPresented: Binding<Bool> {
+        Binding(
+            get: { voiceViewModel.errorMessage != nil },
+            set: { newValue in
+                if !newValue {
                     voiceViewModel.clearError()
                 }
-            } message: {
-                Text(voiceViewModel.errorMessage ?? "")
             }
-            .navigationDestination(for: KBSession.self) { session in
-                ChatView(
-                    session: session,
-                    chatClient: chatClient,
-                    attachmentLoader: attachmentLoader
-                )
-            }
-            .sheet(isPresented: $debugQuickActions.showDebugMenuSheet) {
-                NavigationStack {
-                    DebugMenuView()
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) {
-                                Button("Close") {
-                                    debugQuickActions.showDebugMenuSheet = false
-                                }
-                            }
+        )
+    }
+
+    private var debugMenuPresented: Binding<Bool> {
+        Binding(
+            get: { debugQuickActions.showDebugMenuSheet },
+            set: { debugQuickActions.showDebugMenuSheet = $0 }
+        )
+    }
+
+    private var postRecordReviewSheet: some View {
+        PostRecordingReviewSheet(
+            viewModel: voiceViewModel,
+            sessions: sessions,
+            voiceRouting: voiceRouting
+        )
+    }
+
+    private var debugMenuSheet: some View {
+        NavigationStack {
+            DebugMenuView()
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Close") {
+                            debugQuickActions.showDebugMenuSheet = false
                         }
+                    }
                 }
-            }
-            .onChange(of: navigationPath.count) { _, count in
-                updateMainScreenDebugGesture(isOnMainList: count == 0)
-            }
-            .onAppear {
-                updateMainScreenDebugGesture(isOnMainList: navigationPath.isEmpty)
-            }
-            .onDisappear {
-                ThreeFingerSwipeDownInstaller.shared.setEnabled(false) {}
-            }
         }
-        .environment(voiceRouting)
-        .environment(voiceViewModel)
+    }
+
+    private func handleScenePhaseChange(_ newPhase: ScenePhase) {
+        voiceViewModel.handleScenePhaseChange(newPhase)
+        guard newPhase == .active else { return }
+        voiceRouting.refreshExpiryIfNeeded()
+        Task { await loadSessions(showFullScreenLoading: false) }
+    }
+
+    private func configureMainListOnAppear() {
+        voiceViewModel.recordingFinishedOutsideChatHandler = { url in
+            routeMainScreenVoiceToDefaultChat(audioURL: url)
+        }
+        updateMainScreenDebugGesture(isOnMainList: navigationPath.isEmpty)
+    }
+
+    private func scheduleDeepLinkVoiceBannerClear(ifEnabled enabled: Bool) {
+        guard enabled else { return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(12))
+            deepLinkVoiceRecording = false
+        }
+    }
+
+    private func openDeepLinkedSessionIfNeeded(_ sessionId: String?) {
+        guard let sessionId else { return }
+        Task { @MainActor in
+            await openSessionFromDeepLink(sessionId: sessionId)
+            deepLinkSessionId = nil
+        }
     }
 
     private func updateMainScreenDebugGesture(isOnMainList: Bool) {

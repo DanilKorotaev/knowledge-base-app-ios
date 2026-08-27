@@ -3,17 +3,34 @@ import XCTest
 
 @MainActor
 final class ChatViewModelVoiceRetryTests: XCTestCase {
+    private var draftStoreRoot: URL!
+    private var draftStore: ComposerDraftStore!
+
+    override func setUpWithError() throws {
+        draftStoreRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("voice-retry-drafts-\(UUID().uuidString)", isDirectory: true)
+        draftStore = ComposerDraftStore(baseURL: draftStoreRoot)
+    }
+
+    override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(at: draftStoreRoot)
+    }
+
     func testTranscriptionFailureKeepsPendingCaptureAndAudioFile() async throws {
         let store = InMemoryKBStore(demoSession: false)
         _ = store.createSession(title: "Chat")
-        let session = KBSession(id: "1", title: "Chat", messageCount: 0, updatedAt: nil)
+        let session = KBSession(id: "voice-retry-1", title: "Chat", messageCount: 0, updatedAt: nil)
 
         let source = FileManager.default.temporaryDirectory
             .appendingPathComponent("voice-retry-\(UUID().uuidString).m4a")
         try Data("voice-bytes".utf8).write(to: source)
 
         let client = FailingTranscribeThenSuccessChatAPIClient(store: store)
-        let viewModel = ChatViewModel(session: session, client: client)
+        let viewModel = ChatViewModel(
+            session: session,
+            client: client,
+            composerDraftStore: draftStore
+        )
 
         await viewModel.enqueueVoiceRecording(audioURL: source)
 
@@ -35,7 +52,7 @@ final class ChatViewModelVoiceRetryTests: XCTestCase {
 
     func testEnqueueVoiceRecordingAcceptsAlreadyPersistedURL() async throws {
         let store = InMemoryKBStore(demoSession: false)
-        let session = KBSession(id: "1", title: "Chat", messageCount: 0, updatedAt: nil)
+        let session = KBSession(id: "voice-handoff-1", title: "Chat", messageCount: 0, updatedAt: nil)
 
         let source = FileManager.default.temporaryDirectory
             .appendingPathComponent("voice-handoff-\(UUID().uuidString).m4a")
@@ -44,7 +61,11 @@ final class ChatViewModelVoiceRetryTests: XCTestCase {
         try FileManager.default.removeItem(at: source)
 
         let client = SuccessTranscribeChatAPIClient(store: store)
-        let viewModel = ChatViewModel(session: session, client: client)
+        let viewModel = ChatViewModel(
+            session: session,
+            client: client,
+            composerDraftStore: draftStore
+        )
 
         await viewModel.enqueueVoiceRecording(audioURL: persisted)
 
@@ -56,14 +77,18 @@ final class ChatViewModelVoiceRetryTests: XCTestCase {
 
     func testDiscardPendingVoiceCaptureDeletesStoredAudio() async throws {
         let store = InMemoryKBStore(demoSession: false)
-        let session = KBSession(id: "1", title: "Chat", messageCount: 0, updatedAt: nil)
+        let session = KBSession(id: "voice-discard-1", title: "Chat", messageCount: 0, updatedAt: nil)
 
         let source = FileManager.default.temporaryDirectory
             .appendingPathComponent("voice-discard-\(UUID().uuidString).m4a")
         try Data("voice-bytes".utf8).write(to: source)
 
         let client = AlwaysFailingTranscribeChatAPIClient(store: store)
-        let viewModel = ChatViewModel(session: session, client: client)
+        let viewModel = ChatViewModel(
+            session: session,
+            client: client,
+            composerDraftStore: draftStore
+        )
 
         await viewModel.enqueueVoiceRecording(audioURL: source)
         let captureID = try XCTUnwrap(viewModel.pendingVoiceCaptures.first?.id)

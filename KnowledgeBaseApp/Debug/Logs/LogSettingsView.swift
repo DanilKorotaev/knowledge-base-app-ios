@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 final class LogSettingsViewModel: ObservableObject {
     private let settings = KBLoggerSettings.shared
     private let quickActions = DebugQuickActionsController.shared
