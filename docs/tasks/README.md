@@ -45,7 +45,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-backend-kb-app-api-sync.md` | Contract alignment + E2E automation | 🟡 ongoing |
 | `task-feature-push-notifications-chat.md` | APNs when reply ready | 🟡 MVP в коде, E2E на устройстве |
 | `task-feature-watch-app-voice.md` | watchOS companion, complication | 🟡 relay + deep link готовы; **нет WidgetKit complication** |
-| `task-ux-chat-clickable-changed-files.md` | Chat: clickable changed files (MVP → inline) | бэклог |
+| `task-ux-chat-clickable-changed-files.md` | Chat: clickable changed files (MVP) | completed |
 | `task-ux-chat-composer-polish.md` | Quick Look, лимиты, RU | бэклог |
 | `task-feature-voice-recording-pause-resume-locked.md` | Voice: pause/resume in LOCKED mode | бэклог |
 | `task-ux-voice-transcription-retry-without-loss.md` | Voice: inline retry on transcription/send errors | completed 2026-07-03 |
