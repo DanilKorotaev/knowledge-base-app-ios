@@ -4508,7 +4508,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Интерактивный UI"
+            "value": "Интерактивный экран"
           }
         }
       }
@@ -4541,6 +4541,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Интерактивный экран"
+          }
+        }
+      }
+    },
+    "structured_ui.updating": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating interactive UI…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновляю интерактивный экран…"
+          }
+        }
+      }
+    },
+    "structured_ui.updating_a11y": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating interactive screen"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление интерактивного экрана"
           }
         }
       }

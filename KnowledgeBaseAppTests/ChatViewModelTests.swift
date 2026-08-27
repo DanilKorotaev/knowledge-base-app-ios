@@ -77,6 +77,49 @@ final class ChatViewModelTests: XCTestCase {
         )
     }
 
+    func testActiveStructuredUIMessageId_isLatestAssistantPanel() {
+        let viewModel = ChatViewModel(
+            session: makeSession(),
+            client: StubChatAPIClient(store: InMemoryKBStore(demoSession: false))
+        )
+        let older = KBMessage(
+            id: "1",
+            role: .assistant,
+            content: "old",
+            createdAt: Date(),
+            structuredUI: KBStructuredUIDocument(
+                schemaVersion: 1,
+                screen: KBStructuredUINode(
+                    type: "vstack",
+                    id: "root",
+                    text: nil,
+                    label: nil,
+                    actionId: nil,
+                    children: []
+                )
+            )
+        )
+        let newer = KBMessage(
+            id: "2",
+            role: .assistant,
+            content: "new",
+            createdAt: Date(),
+            structuredUI: KBStructuredUIDocument(
+                schemaVersion: 1,
+                screen: KBStructuredUINode(
+                    type: "vstack",
+                    id: "root2",
+                    text: nil,
+                    label: nil,
+                    actionId: nil,
+                    children: []
+                )
+            )
+        )
+        viewModel.messages = [older, newer]
+        XCTAssertEqual(viewModel.activeStructuredUIMessageId, "2")
+    }
+
     func testSend_onError_keepsOptimisticOffersRetryWithoutRestoringComposer() async throws {
         let (store, sessionId) = emptyStoreWithSession()
         let client = FailingStreamChatAPIClient(store: store)

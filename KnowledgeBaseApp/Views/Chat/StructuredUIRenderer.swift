@@ -7,6 +7,18 @@ struct StructuredUIPanelView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            if isSending {
+                HStack(spacing: 10) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("structured_ui.updating")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(Text("structured_ui.updating_a11y"))
+            }
+
             if !document.isSupportedByClient {
                 Label(
                     L10n.string("structured_ui.unsupported_schema"),
@@ -16,6 +28,8 @@ struct StructuredUIPanelView: View {
                 .foregroundStyle(.secondary)
             } else {
                 StructuredUINodeView(node: document.screen, isSending: isSending, onAction: onAction)
+                    .opacity(isSending ? 0.72 : 1)
+                    .allowsHitTesting(!isSending)
             }
         }
         .padding(12)
@@ -24,6 +38,7 @@ struct StructuredUIPanelView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("structured_ui.panel_a11y"))
+        .accessibilityAddTraits(isSending ? .updatesFrequently : [])
     }
 }
 
@@ -57,7 +72,7 @@ private struct StructuredUINodeView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(isSending)
+                // Avoid `.disabled` — it greys buttons with no progress cue (agent wait can be long).
                 .accessibilityLabel(node.label ?? "Button")
             default:
                 EmptyView()

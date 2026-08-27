@@ -22,6 +22,11 @@ final class ChatViewModel {
     var isLoadingOlder = false
     var isSending = false
     var isSendingUIEvent = false
+
+    /// Latest assistant message that still has a structured UI panel (for in-flight UX).
+    var activeStructuredUIMessageId: String? {
+        messages.last(where: { $0.role == .assistant && $0.structuredUI != nil })?.id
+    }
     var isTranscribingVoice = false
     var pendingVoiceCaptures: [PendingVoiceCapture] = []
     var errorMessage: String?
