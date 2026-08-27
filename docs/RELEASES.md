@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.5 | 103 | `ios/v1.0.5` | 2026-08-27 | Tab shell with Chats and Settings, remove list mic bar |
 | 1.0.4 | 102 | `ios/v1.0.4` | 2026-08-27 | MainActor log toggle, MainView type-check, isolate voice tests |
 | 1.0.3 | 97 | `ios/v1.0.3` | 2026-08-27 | Restore idle timer immediately on voice Send |
 | 1.0.2 | 96 | `ios/v1.0.2` | 2026-08-27 | Keep screen awake during voice recording |
