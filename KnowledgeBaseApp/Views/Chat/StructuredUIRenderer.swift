@@ -9,18 +9,6 @@ struct StructuredUIPanelView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if isSending {
-                HStack(spacing: 10) {
-                    ProgressView()
-                        .controlSize(.small)
-                    Text("structured_ui.updating")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text("structured_ui.updating_a11y"))
-            }
-
             if !document.isSupportedByClient {
                 Label(
                     L10n.string("structured_ui.unsupported_schema"),
