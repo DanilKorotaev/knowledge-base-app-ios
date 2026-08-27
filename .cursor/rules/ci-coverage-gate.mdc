@@ -17,6 +17,8 @@ bundle exec fastlane test
 
 Confirm the lane ends with `Line coverage (KnowledgeBaseApp.app): …% (minimum 35%)` and all tests pass.
 
+See also `.cursor/rules/fastlane-ci-parity.mdc` — do not substitute `xcodebuild` or isolated `scripts/ci/*` for this check.
+
 ## When adding features
 
 - Add or extend unit tests in the same change as production code.

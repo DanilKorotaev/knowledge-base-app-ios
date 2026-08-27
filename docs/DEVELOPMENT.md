@@ -21,28 +21,34 @@ xcodegen generate
 
 Commit both `project.yml` and `KnowledgeBaseApp.xcodeproj` so clones build without XcodeGen.
 
-## Building from the command line
+After changing root **`VERSION`**, marketing version is synced in **`fastlane beta`** (and locally via the same script the lane calls). Do not treat a standalone script run as a substitute for the lane — see **Fastlane / CI parity** below.
 
-```bash
-xcodebuild -scheme KnowledgeBaseApp -destination 'generic/platform=iOS Simulator' build
-```
+## Building and testing (CI parity)
 
-## Testing
-
-Recommended (matches CI):
+**Agents and pre-push validation must use Fastlane** — same entry points as GitHub Actions. See `.cursor/rules/fastlane-ci-parity.mdc`.
 
 ```bash
 bundle install
-bundle exec fastlane test
+bundle exec fastlane test    # required before push to main
 ```
 
-Optional explicit simulator:
+Optional explicit simulator (CI sets `SCAN_DEVICE` automatically):
 
 ```bash
 SCAN_DEVICE="iPhone 15" bundle exec fastlane test
 ```
 
-Raw `xcodebuild test` still works if you prefer.
+TestFlight path (needs Match + ASC secrets locally, or CI):
+
+```bash
+bundle exec fastlane beta
+```
+
+`xcodebuild` alone is fine for a quick compile in Xcode, but **not** for deciding whether CI will pass (no coverage gate, different cwd/flags).
+
+## Testing
+
+Same as **Building and testing** above — `bundle exec fastlane test` is the only pre-push gate documented here.
 
 ## Apple Watch companion
 

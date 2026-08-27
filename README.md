@@ -17,7 +17,7 @@ Native SwiftUI client for the personal knowledge base stack: same PostgreSQL ses
 2. Run `xcodegen generate` (or open the committed `.xcodeproj` after it exists).
 3. Open `KnowledgeBaseApp.xcodeproj`.
 4. Set your **team** in Signing when you have an Apple Developer account; simulator builds work without it.
-5. **Before push to `main`:** `bundle install` then `bundle exec fastlane test` — same as CI (tests + **coverage ≥ 35%**). Required for auto TestFlight deploy.
+5. **Before push to `main`:** `bundle install` then **`bundle exec fastlane test`** — same as CI (tests + **coverage ≥ 35%**). Required for auto TestFlight deploy. Agents: see `.cursor/rules/fastlane-ci-parity.mdc` (no raw `xcodebuild` / standalone deploy scripts for validation).
 
 ## Fastlane & TestFlight
 

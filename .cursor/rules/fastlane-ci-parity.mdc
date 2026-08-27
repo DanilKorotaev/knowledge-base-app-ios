@@ -1,0 +1,50 @@
+---
+description: Use Fastlane lanes for tests and builds — same entry points as CI/CD
+alwaysApply: true
+---
+
+# Fastlane / CI parity (mandatory for agents)
+
+Validate iOS changes with the **same commands GitHub Actions runs**. Do not substitute raw `xcodebuild` or isolated `scripts/ci/*` calls for “did CI pass?” checks.
+
+## Required commands (repo root)
+
+```bash
+bundle install   # once per machine / after Gemfile change
+```
+
+| Goal | Command | CI workflow |
+|------|---------|---------------|
+| Tests + coverage gate | `bundle exec fastlane test` | `.github/workflows/ci.yml` |
+| TestFlight archive/upload | `bundle exec fastlane beta` | `.github/workflows/deploy-testflight.yml` |
+
+Run from the **repository root** (`knowledge-base-app-ios/`), not from `fastlane/`.
+
+## Before push to `main`
+
+1. **`bundle exec fastlane test`** — must pass; lane enforces **≥ 35%** line coverage on `KnowledgeBaseApp.app`.
+2. If you changed **`fastlane/Fastfile`**, deploy workflows, or release scripts: re-read the lane — internal steps use paths relative to the Fastfile (`__dir__`), not the shell cwd.
+
+Full **`beta`** needs Match + ASC secrets (CI / local env). Agents cannot skip `test` and assume `beta` will work.
+
+## Do NOT use for CI parity
+
+- `xcodebuild test` / `xcodebuild build` instead of `fastlane test` before push
+- `bash scripts/ci/sync_marketing_version.sh` (or other deploy scripts) **standalone** to “verify the build” — these run **inside** `fastlane beta` and Deploy workflow
+- Direct `scan` / `gym` / `xcodebuild` with custom flags that differ from the Fastfile
+
+## Allowed outside Fastlane
+
+- `xcodegen generate` after editing `project.yml` (then commit `.xcodeproj`)
+- `bash scripts/ci/check_no_hardcoded_cyrillic.sh` (also in CI; lightweight lint)
+- Editing `VERSION` / `CHANGELOG.md` without running deploy scripts locally
+
+## Why
+
+Fastlane sets up CI (`setup_ci`), picks simulator (`SCAN_DEVICE`), coverage gate, signing for Release, and resolves script paths. Calling scripts or `xcodebuild` directly caused drift (e.g. `sync_marketing_version.sh` not found when cwd was `fastlane/`).
+
+## References
+
+- `docs/FASTLANE.md`
+- `docs/DEVELOPMENT.md`
+- `.cursor/rules/ci-coverage-gate.mdc`

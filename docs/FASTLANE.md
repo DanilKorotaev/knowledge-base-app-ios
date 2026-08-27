@@ -2,6 +2,8 @@
 
 Test and TestFlight automation. Same playbook as the **Apple Health / HealthSync** plan: **Match** (private Git repo for certs) + **App Store Connect API key** (no interactive 2FA on CI).
 
+**Agents / pre-push:** use **`bundle exec fastlane test`** (and `beta` only with secrets) — not raw `xcodebuild` or standalone `scripts/ci/*`. See `.cursor/rules/fastlane-ci-parity.mdc`.
+
 ## Prerequisites
 
 - Ruby **3.3.x** (see `.ruby-version`). Install with [rbenv](https://github.com/rbenv/rbenv) / [mise](https://mise.jdx.dev/) / [Homebrew](https://brew.sh/) (`brew install ruby`). **Do not use macOS system Ruby** (`/usr/bin/ruby`, often 2.6): `bundle exec fastlane` would fall through to `/usr/local/bin/fastlane` and Match encryption breaks on modern OpenSSL.
