@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.8 | 107 | `ios/v1.0.8` | 2026-08-27 | Structured UI forms with deferred submit |
 | 1.0.7 | 105 | `ios/v1.0.7` | 2026-08-27 | Hide chat tab bar and expand RU/EN localization |
 | 1.0.6 | 104 | `ios/v1.0.6` | 2026-08-27 | Keep shake-to-send toggle only in log settings |
 | 1.0.5 | 103 | `ios/v1.0.5` | 2026-08-27 | Tab shell with Chats and Settings, remove list mic bar |
