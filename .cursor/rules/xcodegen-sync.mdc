@@ -1,0 +1,30 @@
+---
+description: After adding/removing Swift sources, regenerate XcodeGen project before push
+alwaysApply: true
+---
+
+# XcodeGen project sync (mandatory)
+
+CI builds the **committed** `KnowledgeBaseApp.xcodeproj`. New files under `KnowledgeBaseApp/` / `KnowledgeBaseAppTests/` are **not** picked up until XcodeGen runs.
+
+## After adding, moving, or deleting Swift sources
+
+```bash
+xcodegen generate
+```
+
+Then **commit** both the sources and `KnowledgeBaseApp.xcodeproj/` (and `project.yml` if it changed).
+
+## Before push to `main`
+
+Confirm new types appear in the pbxproj, e.g.:
+
+```bash
+rg 'MyNewType.swift' KnowledgeBaseApp.xcodeproj/project.pbxproj
+```
+
+Missing file → CI fails with `Cannot find '…' in scope`.
+
+## Prefer Fastlane for validation
+
+`bundle exec fastlane test` (see `fastlane-ci-parity.mdc`). Do not treat a lone `xcodebuild` without the regenerated project as green.

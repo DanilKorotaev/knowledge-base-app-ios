@@ -13,13 +13,13 @@
 
 ## Regenerating the Xcode project
 
-After editing `project.yml`:
+After editing `project.yml` **or adding/removing Swift sources**:
 
 ```bash
 xcodegen generate
 ```
 
-Commit both `project.yml` and `KnowledgeBaseApp.xcodeproj` so clones build without XcodeGen.
+Commit both `project.yml` (if changed) and `KnowledgeBaseApp.xcodeproj` so CI sees new files. See `.cursor/rules/xcodegen-sync.mdc`.
 
 After changing root **`VERSION`**, marketing version is synced in **`fastlane beta`** (and locally via the same script the lane calls). Do not treat a standalone script run as a substitute for the lane — see **Fastlane / CI parity** below.
 
