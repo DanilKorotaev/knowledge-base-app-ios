@@ -30,9 +30,6 @@ targets:
     platform: iOS
     sources:
       - path: KnowledgeBaseApp
-        excludes:
-          - Models/KBStructuredUI.swift
-          - Views/Chat/StructuredUIRenderer.swift
       - path: SharedIntents
       - path: SharedWatchConnectivity
       - path: SharedLocalization
@@ -82,8 +79,6 @@ targets:
       Release: Config/Release.xcconfig
     sources:
       - path: KnowledgeBaseAppTests
-        excludes:
-          - KBStructuredUITests.swift
     dependencies:
       - target: KnowledgeBaseApp
     settings:
