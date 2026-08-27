@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-08-27
+
+### Fixed
+
+- Hide chat tab bar and expand RU/EN localization
+
 ## [1.0.6] - 2026-08-27
 
 ### Fixed
@@ -75,7 +81,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.6...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.7...HEAD
+[1.0.7]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.7
 [1.0.6]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.6
 [1.0.5]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.5
 [1.0.4]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.4
