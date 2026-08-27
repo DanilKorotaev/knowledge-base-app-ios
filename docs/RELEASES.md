@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.13 | 112 | `ios/v1.0.13` | 2026-08-27 | Structured UI image, link, file, and divider nodes |
 | 1.0.12 | 111 | `ios/v1.0.12` | 2026-08-27 | Keep Interactive UI toolbar icon visible when Off |
 | 1.0.11 | 110 | `ios/v1.0.11` | 2026-08-27 | Interactive UI preference toggle and read-only history |
 | 1.0.10 | 109 | `ios/v1.0.10` | 2026-08-27 | TestFlight release |
