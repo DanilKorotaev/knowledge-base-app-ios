@@ -25,7 +25,7 @@ struct LogFilesView: View {
                     .font(.system(.body, design: .monospaced))
             }
         }
-        .navigationTitle("Files")
+        .navigationTitle("logs.files")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { viewModel.reload() }
         .refreshable { viewModel.reload() }

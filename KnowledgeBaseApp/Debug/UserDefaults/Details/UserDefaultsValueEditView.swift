@@ -16,7 +16,7 @@ struct UserDefaultsValueEditView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if viewModel.valueType == .date {
-                DatePicker("Value", selection: $viewModel.dateValue)
+                DatePicker("ud.value_section", selection: $viewModel.dateValue)
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
                 Spacer(minLength: 0)
@@ -35,11 +35,11 @@ struct UserDefaultsValueEditView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .navigationTitle("Edit value")
+        .navigationTitle("ud.edit_value")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Update") {
+                Button("ud.update") {
                     viewModel.didUpdateActionRequested()
                 }
             }

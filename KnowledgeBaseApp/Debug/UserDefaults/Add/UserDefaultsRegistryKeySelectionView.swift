@@ -43,7 +43,7 @@ struct UserDefaultsRegistryKeySelectionView: View {
                     dismiss()
                 } label: {
                     HStack {
-                        Text("Select a key...")
+                        Text("ud.select_a_key")
                             .foregroundColor(Color.primary)
                         Spacer()
                         if selectedKey == nil {
@@ -83,7 +83,7 @@ struct UserDefaultsRegistryKeySelectionView: View {
                 }
             }
         }
-        .navigationTitle("Select key")
+        .navigationTitle("ud.select_key_title")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
         .textInputAutocapitalization(.never)

@@ -12,11 +12,11 @@ enum DefaultVoiceSessionTTL: String, CaseIterable, Identifiable, Sendable {
 
     var label: String {
         switch self {
-        case .thirtyMinutes: return "30 minutes"
-        case .oneHour: return "1 hour"
-        case .twoHours: return "2 hours"
-        case .endOfDay: return "Until end of day"
-        case .indefinite: return "No limit"
+        case .thirtyMinutes: return L10n.string("voice.ttl.thirty_minutes")
+        case .oneHour: return L10n.string("voice.ttl.one_hour")
+        case .twoHours: return L10n.string("voice.ttl.two_hours")
+        case .endOfDay: return L10n.string("voice.ttl.end_of_day")
+        case .indefinite: return L10n.string("voice.ttl.indefinite")
         }
     }
 

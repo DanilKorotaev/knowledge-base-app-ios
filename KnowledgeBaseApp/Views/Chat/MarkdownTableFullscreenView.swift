@@ -18,11 +18,11 @@ struct MarkdownTableFullscreenView: View {
                 .padding()
             }
             .background(Color(uiColor: .systemBackground))
-            .navigationTitle("Table")
+            .navigationTitle("table.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") {
+                    Button("common.close") {
                         onDismiss()
                     }
                 }
@@ -30,7 +30,7 @@ struct MarkdownTableFullscreenView: View {
                     Button {
                         toggleOrientationHint()
                     } label: {
-                        Label("Rotate", systemImage: "rotate.right")
+                        Label("table.rotate", systemImage: "rotate.right")
                     }
                 }
             }

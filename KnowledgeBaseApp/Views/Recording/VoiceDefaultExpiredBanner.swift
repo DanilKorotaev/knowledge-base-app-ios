@@ -31,7 +31,7 @@ struct VoiceDefaultExpiredBanner: View {
                     .foregroundStyle(.tertiary)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Dismiss")
+            .accessibilityLabel(Text("common.dismiss"))
         }
         .padding(14)
         .background {

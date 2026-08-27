@@ -8,8 +8,8 @@ enum LogsMenuScreen: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .files: return "Files"
-        case .settings: return "Settings"
+        case .files: return L10n.string("logs.files")
+        case .settings: return L10n.string("logs.settings")
         }
     }
 }
@@ -26,7 +26,7 @@ struct LogsMenuView: View {
                 }
             }
         }
-        .navigationTitle("Logs")
+        .navigationTitle("logs.title")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

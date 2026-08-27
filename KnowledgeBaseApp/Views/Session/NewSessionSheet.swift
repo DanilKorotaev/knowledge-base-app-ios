@@ -10,28 +10,28 @@ struct NewSessionSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Session title", text: $title)
+                    TextField("session.title_field", text: $title)
                         .textInputAutocapitalization(.sentences)
                 } footer: {
-                    Text("Leave blank to use “New session”.")
+                    Text("session.new_blank_hint")
                 }
 
                 Section {
                     Toggle(isOn: $useKnowledgeBase) {
-                        Label("Use Knowledge Base", systemImage: "books.vertical")
+                        Label("session.use_kb", systemImage: "books.vertical")
                     }
                 } footer: {
-                    Text("When enabled, the assistant can search your knowledge base. This applies to the whole session.")
+                    Text("session.use_kb_footer")
                 }
             }
-            .navigationTitle("New session")
+            .navigationTitle("session.new_title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
+                    Button("common.cancel", action: onCancel)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Create", action: onCreate)
+                    Button("common.create", action: onCreate)
                 }
             }
         }

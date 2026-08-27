@@ -13,13 +13,13 @@ struct DefaultVoiceSessionTTLSheet: View {
                     Text(session.title)
                         .font(.headline)
                 } header: {
-                    Text("Default voice session")
+                    Text("voice.default_sheet_heading")
                 } footer: {
-                    Text("Voice from the home screen, widget, or Watch will go to this session when no chat is open.")
+                    Text("voice.default_sheet_body")
                 }
 
-                Section("Duration") {
-                    Picker("Duration", selection: $selectedTTL) {
+                Section("session.duration") {
+                    Picker("session.duration", selection: $selectedTTL) {
                         ForEach(DefaultVoiceSessionTTL.allCases) { ttl in
                             Text(ttl.label).tag(ttl)
                         }
@@ -28,14 +28,14 @@ struct DefaultVoiceSessionTTLSheet: View {
                     .labelsHidden()
                 }
             }
-            .navigationTitle("Voice default")
+            .navigationTitle("voice.default_sheet_title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
+                    Button("common.cancel", action: onCancel)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Set", action: onConfirm)
+                    Button("common.set", action: onConfirm)
                 }
             }
         }

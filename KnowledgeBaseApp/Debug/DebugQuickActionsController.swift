@@ -48,7 +48,7 @@ final class DebugQuickActionsController {
         guard let source = LogFilesProvider.shared.currentSessionLogFilePath,
               FileManager.default.fileExists(atPath: source.path)
         else {
-            statusMessage = "No log file yet. Enable file logging in Debug → Logs → Settings."
+            statusMessage = L10n.string("debug.no_log_file")
             return
         }
 
@@ -60,19 +60,19 @@ final class DebugQuickActionsController {
             }
             try FileManager.default.copyItem(at: source, to: dest)
         } catch {
-            statusMessage = "Could not copy log file."
+            statusMessage = L10n.string("debug.copy_log_failed")
             return
         }
 
         guard let handler = chatAttachHandler else {
-            statusMessage = "Open a chat to attach the log file."
+            statusMessage = L10n.string("debug.open_chat_to_attach")
             try? FileManager.default.removeItem(at: dest)
             return
         }
 
         let ok = await handler(dest)
         if ok {
-            statusMessage = "Log attached: \(dest.lastPathComponent)"
+            statusMessage = L10n.format("debug.log_attached_format", dest.lastPathComponent)
         } else {
             try? FileManager.default.removeItem(at: dest)
         }

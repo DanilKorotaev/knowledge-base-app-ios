@@ -18,12 +18,12 @@ struct LogPreviewView: View {
                     .multilineTextAlignment(.leading)
             }
             .contextMenu {
-                Button("Copy all") { viewModel.didCopyAllRequested(for: item) }
+                Button("logs.copy_all") { viewModel.didCopyAllRequested(for: item) }
                 if viewModel.canCopyCurl(for: item) {
-                    Button("Copy cURL") { viewModel.didCopyCurlRequested(for: item) }
+                    Button("logs.copy_curl") { viewModel.didCopyCurlRequested(for: item) }
                 }
                 if viewModel.canCopyBody(for: item) {
-                    Button("Copy body") { viewModel.didCopyBodyRequested(for: item) }
+                    Button("logs.copy_body") { viewModel.didCopyBodyRequested(for: item) }
                 }
             }
         }
@@ -32,7 +32,7 @@ struct LogPreviewView: View {
         .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .automatic))
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
-        .navigationTitle("Logs")
+        .navigationTitle("logs.title")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .bottomBar) {
@@ -47,9 +47,9 @@ struct LogPreviewView: View {
                         viewModel.selectedFilters = []
                     } label: {
                         if viewModel.selectedFilters.isEmpty {
-                            Label("All", systemImage: "checkmark")
+                            Label("logs.filter_all", systemImage: "checkmark")
                         } else {
-                            Text("All")
+                            Text("logs.filter_all")
                         }
                     }
                     ForEach(viewModel.filters, id: \.self) { filter in
@@ -75,7 +75,7 @@ struct LogPreviewView: View {
     }
 
     private var filterTitle: String {
-        if viewModel.selectedFilters.isEmpty { return "All" }
-        return "Tags: \(viewModel.selectedFilters.count)"
+        if viewModel.selectedFilters.isEmpty { return L10n.string("logs.filter_all") }
+        return L10n.format("logs.filter_tags_format", viewModel.selectedFilters.count)
     }
 }

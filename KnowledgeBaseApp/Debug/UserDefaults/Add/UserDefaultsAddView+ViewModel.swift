@@ -11,10 +11,17 @@ import SwiftUI
 
 extension UserDefaultsAddView {
     enum KeyInputMode: String, CaseIterable, Identifiable {
-        case registry = "From Registry"
-        case manual = "Manual"
+        case registry
+        case manual
 
         var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .registry: return L10n.string("ud.key_mode.registry")
+            case .manual: return L10n.string("ud.key_mode.manual")
+            }
+        }
     }
 
     final class ViewModel: ObservableObject {

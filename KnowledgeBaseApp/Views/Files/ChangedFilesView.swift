@@ -9,19 +9,19 @@ struct ChangedFilesView: View {
     var body: some View {
         Group {
             if isLoading && files.isEmpty {
-                ProgressView("Loading…")
+                ProgressView("common.loading")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let loadError {
                 ContentUnavailableView(
-                    "Could not load",
+                    "main.could_not_load",
                     systemImage: "exclamationmark.triangle",
                     description: Text(loadError)
                 )
             } else if files.isEmpty {
                 ContentUnavailableView(
-                    "No changes",
+                    "files.no_changes",
                     systemImage: "doc.text",
-                    description: Text("When the assistant updates files, they will appear here.")
+                    description: Text("files.changed_empty")
                 )
             } else {
                 List(files) { file in
@@ -42,7 +42,7 @@ struct ChangedFilesView: View {
                 }
             }
         }
-        .navigationTitle("Changed files")
+        .navigationTitle("files.changed_title")
         .task {
             await load()
         }

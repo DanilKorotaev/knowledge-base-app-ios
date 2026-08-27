@@ -51,12 +51,12 @@ struct LogSettingsView: View {
 
     var body: some View {
         Form {
-            Toggle("Logging into file", isOn: $viewModel.isFileLoggerEnabled)
-            Toggle("Logging into console", isOn: $viewModel.isDebugLogger)
-            Toggle("Verbose logs (network cURL + body)", isOn: $viewModel.isVerboseLog)
-            Toggle("Shake to send logs", isOn: $viewModel.isShakeToSendLogsEnabled)
+            Toggle("logs.logging_into_file", isOn: $viewModel.isFileLoggerEnabled)
+            Toggle("logs.logging_into_console", isOn: $viewModel.isDebugLogger)
+            Toggle("logs.verbose_network", isOn: $viewModel.isVerboseLog)
+            Toggle("logs.shake_to_send", isOn: $viewModel.isShakeToSendLogsEnabled)
 
-            Text("When enabled, shake the device to attach the current log file to the open chat.")
+            Text("logs.shake_hint")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -65,14 +65,14 @@ struct LogSettingsView: View {
                     Text("\(value)")
                 }
             } label: {
-                Text("File storage capability")
+                Text("logs.file_storage_capability")
             }
 
-            NavigationLink("Tags") {
+            NavigationLink("logs.tags") {
                 LogTagsView(viewModel: LogTagsViewModel(tagsProvider: KBLoggerTagsProvider.shared))
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle("logs.settings")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

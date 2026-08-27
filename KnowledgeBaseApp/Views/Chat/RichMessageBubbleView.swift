@@ -96,9 +96,9 @@ struct RichMessageBubbleView: View {
                 ChangedFilesListView(
                     files: changedFiles,
                     filesClient: filesClient,
-                    title: message.showsRecentChangedFilesFallback
-                        ? "Recent changed files"
-                        : "Changed files in this reply"
+                    titleKey: message.showsRecentChangedFilesFallback
+                        ? "chat.recent_changed_files"
+                        : "chat.changed_files_in_reply"
                 )
             } else if message.role == .assistant {
                 OpenChangedFilesFallbackButton(filesClient: filesClient)
@@ -149,7 +149,7 @@ private extension RichMessageBubbleView {
 private struct ChangedFilesListView: View {
     let files: [KBChangedFile]
     let filesClient: FilesAPIClientProtocol
-    let title: String
+    let titleKey: LocalizedStringKey
 
     /// Collapsed by default so long lists do not steal half the chat viewport.
     @State private var isExpanded = false
@@ -162,7 +162,7 @@ private struct ChangedFilesListView: View {
                 }
             } label: {
                 HStack(spacing: 8) {
-                    Text(title)
+                    Text(titleKey)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                     Text("\(files.count)")
@@ -181,9 +181,9 @@ private struct ChangedFilesListView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text(title))
-            .accessibilityValue(Text(isExpanded ? "Expanded" : "Collapsed"))
-            .accessibilityHint(Text("Shows or hides the changed files list"))
+            .accessibilityLabel(Text(titleKey))
+            .accessibilityValue(Text(isExpanded ? "common.expanded" : "common.collapsed"))
+            .accessibilityHint(Text("chat.changed_files_a11y_hint"))
 
             if isExpanded {
                 VStack(alignment: .leading, spacing: 6) {
@@ -226,7 +226,7 @@ private struct OpenChangedFilesFallbackButton: View {
         NavigationLink {
             ChangedFilesView(filesClient: filesClient)
         } label: {
-            Label("Open changed files", systemImage: "doc.text.magnifyingglass")
+            Label("chat.open_changed_files", systemImage: "doc.text.magnifyingglass")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.blue)
                 .padding(.top, 4)

@@ -23,11 +23,11 @@ struct MicRecordControl: View {
             Image(systemName: "lock.open.fill")
                 .font(.title3)
                 .foregroundStyle(.secondary)
-            Text("Swipe up to lock")
+            Text("voice.swipe_up_to_lock")
                 .font(.caption)
                 .foregroundStyle(.secondary)
             recordingTimeline
-            Text("Swipe left to cancel · Release to review")
+            Text("voice.swipe_left_hint")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
         }
@@ -37,7 +37,9 @@ struct MicRecordControl: View {
     private var lockedPanel: some View {
         VStack(spacing: 12) {
             Label(
-                viewModel.isLockedRecordingPaused ? "Recording paused" : "Locked recording",
+                viewModel.isLockedRecordingPaused
+                    ? LocalizedStringKey("voice.recording_paused")
+                    : LocalizedStringKey("voice.locked_recording"),
                 systemImage: viewModel.isLockedRecordingPaused ? "pause.circle.fill" : "lock.fill"
             )
             .font(.headline)
@@ -48,7 +50,7 @@ struct MicRecordControl: View {
                 Button(role: .cancel) {
                     viewModel.cancelLockedSession()
                 } label: {
-                    Label("Cancel", systemImage: "xmark.circle.fill")
+                    Label("common.cancel", systemImage: "xmark.circle.fill")
                 }
                 .buttonStyle(.bordered)
 
@@ -56,14 +58,14 @@ struct MicRecordControl: View {
                     Button {
                         viewModel.resumeLockedSession()
                     } label: {
-                        Label("Resume", systemImage: "play.circle.fill")
+                        Label("voice.resume", systemImage: "play.circle.fill")
                     }
                     .buttonStyle(.borderedProminent)
                 } else {
                     Button {
                         viewModel.pauseLockedSession()
                     } label: {
-                        Label("Pause", systemImage: "pause.circle.fill")
+                        Label("voice.pause", systemImage: "pause.circle.fill")
                     }
                     .buttonStyle(.bordered)
                 }
@@ -71,7 +73,7 @@ struct MicRecordControl: View {
                 Button {
                     viewModel.sendLockedSession()
                 } label: {
-                    Label("Send", systemImage: "paperplane.circle.fill")
+                    Label("voice.send", systemImage: "paperplane.circle.fill")
                 }
                 .buttonStyle(.borderedProminent)
             }
@@ -117,7 +119,7 @@ struct MicRecordControl: View {
                         viewModel.handleDragEnded(value.translation)
                     }
             )
-            .accessibilityLabel("Record voice")
+            .accessibilityLabel(Text("voice.record_a11y"))
             Spacer(minLength: 0)
         }
     }

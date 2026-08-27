@@ -62,7 +62,7 @@ struct UserDefaultsListView: View {
                 systemKeysToggle
             }
         }
-        .navigationTitle("UserDefaults")
+        .navigationTitle("ud.title")
         .searchable(
             text: $viewModel.searchText,
             placement: .navigationBarDrawer(displayMode: .always)

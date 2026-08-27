@@ -135,8 +135,8 @@ struct MainView: View {
             .sheet(isPresented: postRecordReviewPresented) {
                 postRecordReviewSheet
             }
-            .alert("Recording", isPresented: recordingErrorPresented) {
-                Button("OK", role: .cancel) {
+            .alert("main.recording_alert", isPresented: recordingErrorPresented) {
+                Button("common.ok", role: .cancel) {
                     voiceViewModel.clearError()
                 }
             } message: {
@@ -165,27 +165,27 @@ struct MainView: View {
                     onSave: { Task { await saveRenameAndDismiss() } }
                 )
             }
-            .alert("Delete session?", isPresented: deleteConfirmPresented) {
-                Button("Delete", role: .destructive) {
+            .alert("main.delete_session_title", isPresented: deleteConfirmPresented) {
+                Button("common.delete", role: .destructive) {
                     guard let session = sessionPendingDelete else { return }
                     Task { await deleteSessionConfirmed(session) }
                 }
-                Button("Cancel", role: .cancel) {
+                Button("common.cancel", role: .cancel) {
                     sessionPendingDelete = nil
                 }
             } message: {
                 if let session = sessionPendingDelete {
-                    Text("“\(session.title)” will be removed from your list. This cannot be undone from the app.")
+                    Text(L10n.format("main.delete_session_message_format", session.title))
                 }
             }
-            .alert("Session", isPresented: sessionActionErrorPresented) {
-                Button("OK", role: .cancel) {
+            .alert("main.session_alert", isPresented: sessionActionErrorPresented) {
+                Button("common.ok", role: .cancel) {
                     sessionActionError = nil
                 }
             } message: {
                 Text(sessionActionError ?? "")
             }
-            .searchable(text: $searchText, prompt: "ID or message text")
+            .searchable(text: $searchText, prompt: "main.search_prompt")
             .task {
                 guard !didLoadSessionsOnce else { return }
                 didLoadSessionsOnce = true
@@ -202,13 +202,13 @@ struct MainView: View {
     private var mainListBase: some View {
         mainStackContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle("Knowledge Base")
+            .navigationTitle("main.title")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
                         Task { await loadSessions(showFullScreenLoading: false) }
                     } label: {
-                        Label("Refresh", systemImage: "arrow.clockwise")
+                        Label("common.refresh", systemImage: "arrow.clockwise")
                     }
                     .disabled(isLoading)
                 }
@@ -217,14 +217,14 @@ struct MainView: View {
                         newSessionTitle = ""
                         showNewSession = true
                     } label: {
-                        Label("New session", systemImage: "plus.circle.fill")
+                        Label("main.new_session", systemImage: "plus.circle.fill")
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         ChangedFilesView(filesClient: filesClient)
                     } label: {
-                        Label("Changed files", systemImage: "doc.text.magnifyingglass")
+                        Label("main.changed_files", systemImage: "doc.text.magnifyingglass")
                     }
                 }
             }
@@ -279,7 +279,7 @@ struct MainView: View {
             DebugMenuView()
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Close") {
+                        Button("common.close") {
                             debugQuickActions.showDebugMenuSheet = false
                         }
                     }
@@ -329,21 +329,21 @@ struct MainView: View {
     @ViewBuilder
     private var mainStackContent: some View {
         if isLoading {
-            ProgressView("Loading sessions…")
+            ProgressView("main.loading_sessions")
         } else if let loadError {
             ContentUnavailableView(
-                "Could not load",
+                "main.could_not_load",
                 systemImage: "exclamationmark.triangle",
                 description: Text(loadError)
             )
         } else if displayedSessions.isEmpty {
             ContentUnavailableView(
-                isSearchActive ? "No matches" : "No sessions",
+                isSearchActive ? "main.no_matches" : "main.no_sessions",
                 systemImage: isSearchActive ? "magnifyingglass" : "bubble.left.and.bubble.right",
                 description: Text(
                     isSearchActive
-                        ? "Try another query (session ID or text from messages)."
-                        : "Configure the API in Settings, or use a stub build with a demo session when no server is set."
+                        ? "main.no_matches_hint"
+                        : "main.no_sessions_hint"
                 )
             )
         } else {
@@ -391,16 +391,16 @@ struct MainView: View {
                         Image(systemName: "pin.fill")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                            .accessibilityLabel("Pinned")
+                            .accessibilityLabel(Text("main.pinned_a11y"))
                     }
                     if voiceRouting.isDefaultVoiceSession(session.id) {
                         Image(systemName: "mic.fill")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                            .accessibilityLabel("Default for voice")
+                            .accessibilityLabel(Text("main.default_for_voice_a11y"))
                     }
                 }
-                Text("\(session.messageCount) messages · \(session.kbModeSubtitle())")
+                Text(L10n.format("main.messages_count_format", session.messageCount, session.kbModeSubtitle()))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -410,14 +410,14 @@ struct MainView: View {
                 Button {
                     voiceRouting.clearDefaultVoiceSession()
                 } label: {
-                    Label("Clear default", systemImage: "mic.slash")
+                    Label("main.clear_default", systemImage: "mic.slash")
                 }
                 .tint(.gray)
             } else {
                 Button {
                     beginSetVoiceDefault(session)
                 } label: {
-                    Label("Voice default", systemImage: "mic")
+                    Label("main.voice_default", systemImage: "mic")
                 }
                 .tint(.blue)
             }
@@ -427,21 +427,21 @@ struct MainView: View {
                 Button {
                     unpinSession(session)
                 } label: {
-                    Label("Unpin", systemImage: "pin.slash")
+                    Label("common.unpin", systemImage: "pin.slash")
                 }
                 .tint(.orange)
             } else {
                 Button {
                     pinSession(session)
                 } label: {
-                    Label("Pin", systemImage: "pin")
+                    Label("common.pin", systemImage: "pin")
                 }
                 .tint(.indigo)
             }
             Button(role: .destructive) {
                 sessionPendingDelete = session
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label("common.delete", systemImage: "trash")
             }
         }
         .contextMenu {
@@ -449,37 +449,37 @@ struct MainView: View {
                 Button {
                     unpinSession(session)
                 } label: {
-                    Label("Unpin", systemImage: "pin.slash")
+                    Label("common.unpin", systemImage: "pin.slash")
                 }
             } else {
                 Button {
                     pinSession(session)
                 } label: {
-                    Label("Pin", systemImage: "pin")
+                    Label("common.pin", systemImage: "pin")
                 }
             }
             if voiceRouting.isDefaultVoiceSession(session.id) {
                 Button {
                     voiceRouting.clearDefaultVoiceSession()
                 } label: {
-                    Label("Clear voice default", systemImage: "mic.slash")
+                    Label("main.clear_voice_default", systemImage: "mic.slash")
                 }
             } else {
                 Button {
                     beginSetVoiceDefault(session)
                 } label: {
-                    Label("Set as voice default", systemImage: "mic")
+                    Label("main.set_voice_default", systemImage: "mic")
                 }
             }
             Button {
                 beginRename(session)
             } label: {
-                Label("Rename", systemImage: "pencil")
+                Label("common.rename", systemImage: "pencil")
             }
             Button(role: .destructive) {
                 sessionPendingDelete = session
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label("common.delete", systemImage: "trash")
             }
         }
     }

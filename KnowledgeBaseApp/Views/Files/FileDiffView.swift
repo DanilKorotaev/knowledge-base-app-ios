@@ -24,7 +24,7 @@ struct FileDiffView: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                Picker("Diff mode", selection: $diffMode) {
+                Picker("diff.mode", selection: $diffMode) {
                     ForEach(DiffMode.allCases) { mode in
                         Text(mode.title).tag(mode)
                     }
@@ -41,14 +41,14 @@ struct FileDiffView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
         }
-        .navigationTitle("Diff")
+        .navigationTitle("diff.title")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Task { await openCurrentVersion() }
                 } label: {
-                    Label("Current", systemImage: "eye")
+                    Label("diff.current", systemImage: "eye")
                 }
                 .disabled(isOpeningCurrentVersion)
             }
@@ -60,32 +60,32 @@ struct FileDiffView: View {
                         Task { await openCurrentVersion(openExternal: true) }
                     }
                 } label: {
-                    Label("Open", systemImage: "safari")
+                    Label("diff.open", systemImage: "safari")
                 }
                 .disabled(isOpeningCurrentVersion)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Revert", role: .destructive) {
+                Button("diff.revert", role: .destructive) {
                     confirmRevert = true
                 }
                 .disabled(isReverting)
             }
         }
         .confirmationDialog(
-            "Revert this file to the previous version?",
+            "diff.revert_confirm",
             isPresented: $confirmRevert,
             titleVisibility: .visible
         ) {
-            Button("Revert", role: .destructive) {
+            Button("diff.revert", role: .destructive) {
                 Task { await revert() }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         }
-        .alert("Revert", isPresented: Binding(
+        .alert("diff.revert", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) { errorMessage = nil }
+            Button("common.ok", role: .cancel) { errorMessage = nil }
         } message: {
             Text(errorMessage ?? "")
         }
@@ -98,11 +98,11 @@ struct FileDiffView: View {
             NavigationStack {
                 FilePreviewWebView(url: item.url)
                     .ignoresSafeArea(edges: .bottom)
-                    .navigationTitle("Current version")
+                    .navigationTitle("diff.current_version")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button("Done") {
+                            Button("common.done") {
                                 previewURL = nil
                             }
                         }
@@ -154,9 +154,9 @@ private enum DiffMode: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .unified:
-            return "Unified"
+            return L10n.string("diff.mode.unified")
         case .split:
-            return "Split"
+            return L10n.string("diff.mode.split")
         }
     }
 }
@@ -177,13 +177,13 @@ private struct UnifiedFileDiffView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
-                Text("Old")
+                Text("diff.old")
                     .frame(width: 44, alignment: .trailing)
-                Text("New")
+                Text("diff.new")
                     .frame(width: 44, alignment: .trailing)
                 Text(" ")
                     .frame(width: 12)
-                Text("Content")
+                Text("diff.content")
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .font(.caption.weight(.semibold))
@@ -218,7 +218,7 @@ private struct UnifiedFileDiffView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "ellipsis")
                                 .font(.caption)
-                            Text("Show \(context.hiddenCount) more unchanged lines")
+                            Text(L10n.format("diff.show_more_unchanged_format", context.hiddenCount))
                                 .font(.caption)
                             Spacer()
                         }
@@ -245,8 +245,8 @@ private struct SplitFileDiffView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            diffColumn(title: "Before", text: beforeText)
-            diffColumn(title: "After", text: afterText)
+            diffColumn(title: L10n.string("diff.before"), text: beforeText)
+            diffColumn(title: L10n.string("diff.after"), text: afterText)
         }
     }
 
@@ -318,7 +318,7 @@ private struct UnifiedDiffLine: Identifiable {
                     oldLine: nil,
                     newLine: nil,
                     prefix: " ",
-                    content: "No textual changes",
+                    content: L10n.string("diff.no_textual_changes"),
                     kind: .context
                 ),
             ]

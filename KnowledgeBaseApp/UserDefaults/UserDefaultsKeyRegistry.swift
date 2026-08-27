@@ -26,7 +26,17 @@ enum UserDefaultsKeyCategory: String, CaseIterable, Identifiable {
     case inspector = "Inspector"
 
     var id: String { rawValue }
-    var title: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .config: return L10n.string("ud.category.config")
+        case .voice: return L10n.string("ud.category.voice")
+        case .sessions: return L10n.string("ud.category.sessions")
+        case .logs: return L10n.string("ud.category.logs")
+        case .loggerTags: return L10n.string("ud.category.logger_tags")
+        case .inspector: return L10n.string("ud.category.inspector")
+        }
+    }
 }
 
 struct KnownUserDefaultsKey: Identifiable, Hashable {

@@ -7,18 +7,18 @@ enum VoiceDefaultExpiredNotice: Equatable {
     var title: String {
         switch self {
         case .cleared:
-            "Voice default ended"
+            L10n.string("voice.default_ended_title")
         case .restored:
-            "Temporary default ended"
+            L10n.string("voice.temp_default_ended_title")
         }
     }
 
     var subtitle: String {
         switch self {
         case .cleared:
-            "Recordings open the review sheet until you pick a new default session."
+            L10n.string("voice.default_ended_subtitle")
         case .restored(let sessionTitle):
-            "Voice routing is back on “\(sessionTitle)”."
+            L10n.format("voice.default_restored_subtitle_format", sessionTitle)
         }
     }
 

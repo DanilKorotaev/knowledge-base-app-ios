@@ -14,13 +14,13 @@ struct OfflineCacheManagementView: View {
     var body: some View {
         List {
             Section {
-                LabeledContent("Attachments cached", value: "\(entries.count)")
-                LabeledContent("Total size", value: CacheByteFormatting.string(for: totalBytes))
+                LabeledContent("offline.attachments_cached", value: "\(entries.count)")
+                LabeledContent("offline.total_size", value: CacheByteFormatting.string(for: totalBytes))
             }
 
-            Section("Cached files") {
+            Section("offline.cached_files") {
                 if entries.isEmpty {
-                    Text("No attachments cached yet. Open images or voice messages while online.")
+                    Text("offline.cache_empty")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 } else {
@@ -32,7 +32,7 @@ struct OfflineCacheManagementView: View {
                             HStack(spacing: 8) {
                                 Text(CacheByteFormatting.string(for: Int64(entry.byteSize)))
                                 if let sessionId = entry.sessionId {
-                                    Text("session \(sessionId)")
+                                    Text(L10n.format("offline.session_format", sessionId))
                                 }
                                 Text(AttachmentCacheAgeFormatting.relative(since: entry.lastAccessAt))
                             }
@@ -44,25 +44,31 @@ struct OfflineCacheManagementView: View {
                 }
             }
         }
-        .navigationTitle("Offline cache")
+        .navigationTitle("offline.cache_title")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .bottomBar) {
-                Button("Clear all cache", role: .destructive) {
+                Button("offline.clear_all_cache", role: .destructive) {
                     showClearAllConfirm = true
                 }
                 .disabled(entries.isEmpty)
             }
         }
         .onAppear { reload() }
-        .alert("Clear all cached attachments?", isPresented: $showClearAllConfirm) {
-            Button("Clear all", role: .destructive) {
+        .alert("offline.clear_confirm_title", isPresented: $showClearAllConfirm) {
+            Button("offline.clear_all", role: .destructive) {
                 cache.removeAll()
                 reload()
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         } message: {
-            Text("This removes \(entries.count) files (\(CacheByteFormatting.string(for: totalBytes))). They will download again when opened online.")
+            Text(
+                L10n.format(
+                    "offline.clear_confirm_format",
+                    Int64(entries.count),
+                    CacheByteFormatting.string(for: totalBytes)
+                )
+            )
         }
     }
 
@@ -81,7 +87,7 @@ struct OfflineCacheManagementView: View {
 
 enum AttachmentCacheAgeFormatting {
     static func relative(since date: Date) -> String {
-        "opened \(SyncStatusFormatting.relativeAge(since: date))"
+        L10n.format("offline.opened_format", SyncStatusFormatting.relativeAge(since: date))
     }
 }
 

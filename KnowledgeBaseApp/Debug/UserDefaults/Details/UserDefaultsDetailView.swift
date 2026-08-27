@@ -25,7 +25,7 @@ struct UserDefaultsDetailView: View {
             infoSection
             valueSection
         }
-        .navigationTitle("Detail")
+        .navigationTitle("ud.detail_title")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -33,7 +33,7 @@ struct UserDefaultsDetailView: View {
             }
         }
         .kbErrorAlert(error: $viewModel.error)
-        .kbSuccessAlert(isPresented: $viewModel.success, title: "Value updated")
+        .kbSuccessAlert(isPresented: $viewModel.success, title: L10n.string("ud.value_updated"))
         .onReceive(NotificationCenter.default.publisher(for: .userDefaultsInspectorDidChange)) { notification in
             guard let changedKey = notification.userInfo?[UserDefaultsInspectorNotificationKeys.key] as? String else {
                 return
@@ -58,14 +58,14 @@ struct UserDefaultsDetailView: View {
     // MARK: - Info Section
 
     private var infoSection: some View {
-        Section(header: Text("Info")) {
-            fieldView(title: "Key", value: viewModel.key)
-            fieldView(title: "Type", value: viewModel.typeName)
+        Section(header: Text("ud.info")) {
+            fieldView(title: L10n.string("ud.field.key"), value: viewModel.key)
+            fieldView(title: L10n.string("ud.field.type"), value: viewModel.typeName)
             if let knownKey = viewModel.knownKey {
-                fieldView(title: "Category", value: knownKey.category.title)
-                fieldView(title: "Expected Type", value: knownKey.valueType.rawValue)
+                fieldView(title: L10n.string("ud.field.category"), value: knownKey.category.title)
+                fieldView(title: L10n.string("ud.field.expected_type"), value: knownKey.valueType.rawValue)
                 VStack(alignment: .leading) {
-                    Text("Description")
+                    Text("ud.field.description")
                         .foregroundColor(Color.secondary)
                     Text(knownKey.description)
                         .foregroundColor(Color.primary)
@@ -74,7 +74,7 @@ struct UserDefaultsDetailView: View {
             }
             if let archived = viewModel.archivedFieldsNote {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Archived fields")
+                    Text("ud.archived_fields")
                         .foregroundColor(Color.secondary)
                     Text(archived)
                         .foregroundColor(Color.primary)
@@ -88,7 +88,7 @@ struct UserDefaultsDetailView: View {
     // MARK: - Value Section
 
     private var valueSection: some View {
-        Section(header: Text("Value")) {
+        Section(header: Text("ud.value_section")) {
             if viewModel.valueType == .bool {
                 boolEditorView()
             } else {
@@ -98,7 +98,7 @@ struct UserDefaultsDetailView: View {
     }
 
     private func boolEditorView() -> some View {
-        Toggle("Value", isOn: Binding(
+        Toggle("ud.value_section", isOn: Binding(
             get: { viewModel.boolValue },
             set: {
                 viewModel.boolValue = $0
@@ -117,13 +117,13 @@ struct UserDefaultsDetailView: View {
             .frame(height: max(25, valueTextHeight))
 
             if viewModel.canEditValue {
-                Button("Edit value") {
+                Button("ud.edit_value") {
                     isPresentingEditValue = true
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(Color.accentColor)
             } else if viewModel.valueType == .data {
-                Text("Data values are read-only")
+                Text("ud.data_readonly")
                     .font(.caption2)
                     .foregroundColor(Color.secondary)
             }
@@ -132,12 +132,12 @@ struct UserDefaultsDetailView: View {
 
     private var optionsMenu: some View {
         Menu {
-            copyButton(value: viewModel.key, title: "Copy Key")
+            copyButton(value: viewModel.key, title: L10n.string("ud.copy_key"))
 
             Button(role: .destructive, action: {
                 viewModel.didDeleteActionRequested()
             }, label: {
-                Label("Delete Key", systemImage: "trash")
+                Label("ud.delete_key", systemImage: "trash")
             })
         } label: {
             Image(systemName: "ellipsis.circle")
@@ -156,7 +156,7 @@ struct UserDefaultsDetailView: View {
         .padding(.vertical, 5)
     }
 
-    private func copyButton(value: String, title: String = "Copy") -> some View {
+    private func copyButton(value: String, title: String = L10n.string("ud.copy")) -> some View {
         Button(action: {
             UIPasteboard.general.string = value
         }, label: {

@@ -31,7 +31,7 @@ final class LogTagsViewModel: ObservableObject {
             LoggerTagViewItem(tag: $0, title: $0.rawValue, isEnabled: tagsProvider.isEnabled(tag: $0))
         }
         tags = tagItems
-        allItem = LoggerTagViewItem(tag: nil, title: "All", isEnabled: tagItems.allSatisfy(\.isEnabled))
+        allItem = LoggerTagViewItem(tag: nil, title: L10n.string("logs.filter_all"), isEnabled: tagItems.allSatisfy(\.isEnabled))
     }
 
     func didLoadView() {
@@ -92,11 +92,11 @@ struct LogTagsView: View {
             ))
         }
         .searchable(text: $viewModel.searchText, placement: .navigationBarDrawer(displayMode: .always))
-        .navigationTitle("Tags")
+        .navigationTitle("logs.tags")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Reset") { viewModel.resetToDefaults() }
+                Button("logs.reset") { viewModel.resetToDefaults() }
             }
         }
         .onAppear { viewModel.didLoadView() }

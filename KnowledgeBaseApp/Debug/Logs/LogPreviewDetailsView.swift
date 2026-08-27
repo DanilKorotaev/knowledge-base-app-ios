@@ -23,7 +23,7 @@ struct LogPreviewDetailsView: View {
             matchCount: $matchCount
         )
         .background(SearchTextFieldConfigurator())
-        .navigationTitle("Log")
+        .navigationTitle("logs.log")
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .automatic))
         .textInputAutocapitalization(.never)
@@ -31,12 +31,12 @@ struct LogPreviewDetailsView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Menu {
-                    Button("Copy all") { delegate.didCopyAllRequested(for: item) }
+                    Button("logs.copy_all") { delegate.didCopyAllRequested(for: item) }
                     if delegate.canCopyCurl(for: item) {
-                        Button("Copy cURL") { delegate.didCopyCurlRequested(for: item) }
+                        Button("logs.copy_curl") { delegate.didCopyCurlRequested(for: item) }
                     }
                     if delegate.canCopyBody(for: item) {
-                        Button("Copy body") { delegate.didCopyBodyRequested(for: item) }
+                        Button("logs.copy_body") { delegate.didCopyBodyRequested(for: item) }
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")

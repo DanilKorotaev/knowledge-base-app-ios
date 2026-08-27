@@ -16,22 +16,22 @@ struct UserDefaultsInspectorSettingsView: View {
     var body: some View {
         List {
             Section(
-                header: Text("Logging"),
-                footer: Text("Changes in verbose logging mode apply after app restart.")
+                header: Text("ud.logging"),
+                footer: Text("ud.verbose_restart_footer")
             ) {
-                Toggle("Enabled", isOn: $viewModel.isLoggingEnabled)
+                Toggle("ud.enabled", isOn: $viewModel.isLoggingEnabled)
                     .toggleStyle(SwitchToggleStyle(tint: Color.accentColor))
 
-                Toggle("Verbose logs", isOn: $viewModel.isVerboseLoggingEnabled)
+                Toggle("ud.verbose_logs", isOn: $viewModel.isVerboseLoggingEnabled)
                     .toggleStyle(SwitchToggleStyle(tint: Color.accentColor))
             }
 
-            Section(header: Text("Ignore add/update keys")) {
+            Section(header: Text("ud.ignore_keys")) {
                 HStack(spacing: 8) {
-                    TextField("Enter full key", text: $viewModel.draftIgnoredKey)
+                    TextField("ud.enter_full_key", text: $viewModel.draftIgnoredKey)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    Button("Add") {
+                    Button("ud.add") {
                         viewModel.addDraftIgnoredKey()
                     }
                     .disabled(viewModel.canAddDraftIgnoredKey == false)
@@ -44,6 +44,6 @@ struct UserDefaultsInspectorSettingsView: View {
                 .onDelete(perform: viewModel.deleteIgnoredKeys)
             }
         }
-        .navigationTitle("UserDefaults Settings")
+        .navigationTitle("ud.settings_title")
     }
 }

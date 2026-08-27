@@ -38,26 +38,26 @@ struct KnowledgeBaseApp: App {
                 .frame(width: 0, height: 0)
             }
             .alert(
-                "Send debug logs?",
+                L10n.string("debug.send_logs_title"),
                 isPresented: $debugQuickActions.showSendLogsConfirm
             ) {
-                Button("Send") {
+                Button(L10n.string("debug.send")) {
                     Task { await debugQuickActions.confirmSendLogs() }
                 }
-                Button("Cancel", role: .cancel) {
+                Button(L10n.string("common.cancel"), role: .cancel) {
                     debugQuickActions.cancelSendLogs()
                 }
             } message: {
-                Text("Attach the current session log file to the open chat composer.")
+                Text(L10n.string("debug.send_logs_message"))
             }
             .alert(
-                "Debug",
+                L10n.string("debug.title"),
                 isPresented: Binding(
                     get: { debugQuickActions.statusMessage != nil },
                     set: { if !$0 { debugQuickActions.clearStatusMessage() } }
                 )
             ) {
-                Button("OK", role: .cancel) {
+                Button(L10n.string("common.ok"), role: .cancel) {
                     debugQuickActions.clearStatusMessage()
                 }
             } message: {

@@ -109,8 +109,8 @@ final class DefaultVoiceSessionPreferenceTests: XCTestCase {
         )
         XCTAssertNil(DefaultVoiceSessionTTL.indefinite.expirationDate(from: start))
         XCTAssertNotNil(DefaultVoiceSessionTTL.endOfDay.expirationDate(from: start, calendar: calendar))
-        XCTAssertEqual(DefaultVoiceSessionTTL.thirtyMinutes.label, "30 minutes")
-        XCTAssertEqual(DefaultVoiceSessionTTL.twoHours.label, "2 hours")
+        XCTAssertEqual(DefaultVoiceSessionTTL.thirtyMinutes.label, L10n.string("voice.ttl.thirty_minutes"))
+        XCTAssertEqual(DefaultVoiceSessionTTL.twoHours.label, L10n.string("voice.ttl.two_hours"))
     }
 
     func testPreferenceValidityAndRemainingInterval() {

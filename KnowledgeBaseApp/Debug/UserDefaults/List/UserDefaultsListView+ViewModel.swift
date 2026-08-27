@@ -35,9 +35,9 @@ extension UserDefaultsListView {
 
         var name: String {
             switch self {
-            case .all: "All"
-            case .known: "Known"
-            case .unknown: "Unknown"
+            case .all: L10n.string("ud.filter.all")
+            case .known: L10n.string("ud.filter.known")
+            case .unknown: L10n.string("ud.filter.unknown")
             }
         }
     }
@@ -48,8 +48,8 @@ extension UserDefaultsListView {
 
         var name: String {
             switch self {
-            case .key: "By Key"
-            case .category: "By Category"
+            case .key: L10n.string("ud.sort.by_key")
+            case .category: L10n.string("ud.sort.by_category")
             }
         }
     }
@@ -124,14 +124,15 @@ extension UserDefaultsListView {
                 items.sort { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }
                 sections = [SectionItem(title: nil, items: items)]
             case .category:
+                let otherTitle = L10n.string("ud.category.other")
                 let grouped = Dictionary(grouping: items) { item -> String in
-                    item.knownKey?.category.title ?? "Other"
+                    item.knownKey?.category.title ?? otherTitle
                 }
                 sections = grouped.keys.sorted { lhs, rhs in
-                    if lhs == "Other" {
+                    if lhs == otherTitle {
                         return false
                     }
-                    if rhs == "Other" {
+                    if rhs == otherTitle {
                         return true
                     }
                     return lhs < rhs

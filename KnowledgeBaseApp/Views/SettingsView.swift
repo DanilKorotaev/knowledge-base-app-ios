@@ -26,21 +26,19 @@ struct SettingsView: View {
             }
 
             Section {
-                TextField("API base URL (https://…)", text: $apiBaseURL)
+                TextField("settings.api_base_url", text: $apiBaseURL)
                     .textContentType(.URL)
                     .keyboardType(.URL)
                     .autocorrectionDisabled()
-                SecureField("Bearer token (dev only)", text: $authToken)
+                SecureField("settings.auth_token", text: $authToken)
             } header: {
-                Text("KB App API")
+                Text("settings.api_section")
             } footer: {
-                Text(
-                    "Matches env vars KBAPP_API_BASE_URL and KBAPP_AUTH_TOKEN. The bearer token is stored in the Keychain when you tap Save."
-                )
+                Text("settings.api_footer")
             }
 
             Section {
-                Button("Save") {
+                Button("common.save") {
                     let trimmedURL = apiBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
                     let trimmedToken = authToken.trimmingCharacters(in: .whitespacesAndNewlines)
                     AppConfiguration.setUserString(trimmedURL.nilIfEmpty, for: AppConfiguration.Keys.apiBaseURL)
@@ -50,36 +48,36 @@ struct SettingsView: View {
 
             Section {
                 if let voiceDefaultTitle {
-                    LabeledContent("Session", value: voiceDefaultTitle)
+                    LabeledContent("common.session", value: voiceDefaultTitle)
                     if let voiceDefaultExpiry {
-                        LabeledContent("Expires", value: voiceDefaultExpiry)
+                        LabeledContent("settings.voice_expires", value: voiceDefaultExpiry)
                     } else {
-                        LabeledContent("Expires", value: "No limit")
+                        LabeledContent("settings.voice_expires", value: L10n.string("settings.voice_no_limit"))
                     }
-                    Button("Clear voice default", role: .destructive) {
+                    Button("settings.clear_voice_default", role: .destructive) {
                         DefaultVoiceSessionStore.shared.clear()
                         WatchVoiceSessionContextSync.shared.publish(nil)
                         reloadVoiceDefaultSummary()
                     }
                 } else {
-                    Text("Not set — use “Default for voice” on a session in the list.")
+                    Text("settings.voice_not_set")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
             } header: {
-                Text("Voice routing")
+                Text("settings.voice_routing")
             } footer: {
-                Text("Used by Apple Watch and by “record” deep links that open a chat. Optional TTL resets automatically.")
+                Text("settings.voice_footer")
             }
 
             Section {
-                NavigationLink("Manage offline cache") {
+                NavigationLink("settings.manage_offline_cache") {
                     OfflineCacheManagementView()
                 }
             } header: {
-                Text("Offline")
+                Text("settings.offline")
             } footer: {
-                Text("Images and voice messages you open are saved locally for offline viewing.")
+                Text("settings.offline_footer")
             }
 
             Section {
@@ -102,16 +100,16 @@ struct SettingsView: View {
                 Text(didCopyVersion ? "settings.about.copied" : "settings.about.copy_hint")
             }
 
-            Section("Developer") {
-                NavigationLink("Debug menu") {
+            Section("settings.developer") {
+                NavigationLink("settings.debug_menu") {
                     DebugMenuView()
                 }
-                Text("On the session list, swipe down with three fingers for Debug. Shake-to-send logs lives under Debug → Logs → Settings.")
+                Text("settings.developer_hint")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("Settings")
+        .navigationTitle("settings.title")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             reloadVoiceDefaultSummary()

@@ -20,7 +20,7 @@ struct ChatMicButton: View {
             }
         }
         .gesture(recordGesture)
-        .accessibilityLabel("Record voice")
+        .accessibilityLabel(Text("voice.record_a11y"))
         .disabled(viewModel.isSendingVoice)
     }
 

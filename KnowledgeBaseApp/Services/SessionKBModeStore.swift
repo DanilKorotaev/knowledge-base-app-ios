@@ -59,6 +59,8 @@ final class SessionKBModeStore: SessionKBModeStoreProtocol {
 
 extension KBSession {
     func kbModeSubtitle(store: SessionKBModeStoreProtocol = SessionKBModeStore.shared) -> String {
-        store.useKnowledgeBase(for: self) ? "Knowledge base" : "Chat only"
+        store.useKnowledgeBase(for: self)
+            ? L10n.string("session.kb_mode_on")
+            : L10n.string("session.kb_mode_off")
     }
 }

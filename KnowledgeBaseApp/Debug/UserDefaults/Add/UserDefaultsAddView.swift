@@ -24,10 +24,10 @@ struct UserDefaultsAddView: View {
             valueInputSection
             saveSection
         }
-        .navigationTitle("Add Key")
+        .navigationTitle("ud.add_key_title")
         .navigationBarTitleDisplayMode(.inline)
         .kbErrorAlert(error: $viewModel.error)
-        .kbSuccessAlert(isPresented: $viewModel.success, title: "Value saved")
+        .kbSuccessAlert(isPresented: $viewModel.success, title: L10n.string("ud.value_saved"))
         .onChange(of: viewModel.success) { success in
             if success {
                 dismiss()
@@ -42,10 +42,10 @@ struct UserDefaultsAddView: View {
     // MARK: - Key Input
 
     private var keyInputSection: some View {
-        Section(header: Text("Key")) {
-            Picker("Input Mode", selection: $viewModel.keyInputMode) {
+        Section(header: Text("ud.key_section")) {
+            Picker("ud.input_mode", selection: $viewModel.keyInputMode) {
                 ForEach(KeyInputMode.allCases) {
-                    Text($0.rawValue).tag($0)
+                    Text($0.title).tag($0)
                 }
             }
             .pickerStyle(.segmented)
@@ -59,9 +59,9 @@ struct UserDefaultsAddView: View {
                     )
                 ) {
                     HStack {
-                        Text("Key")
+                        Text("ud.field.key")
                         Spacer()
-                        Text(viewModel.selectedRegistryKey?.key.rawValue ?? "Select a key...")
+                        Text(viewModel.selectedRegistryKey?.key.rawValue ?? L10n.string("ud.select_a_key"))
                             .foregroundColor(
                                 viewModel.selectedRegistryKey == nil
                                 ? Color.secondary
@@ -72,7 +72,7 @@ struct UserDefaultsAddView: View {
                     }
                 }
             case .manual:
-                TextField("Enter key", text: $viewModel.manualKey)
+                TextField("ud.enter_key", text: $viewModel.manualKey)
                     .autocapitalization(.none)
                     .keyboardType(.asciiCapable)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -94,8 +94,8 @@ struct UserDefaultsAddView: View {
     // MARK: - Value Type
 
     private var valueTypeSection: some View {
-        Section(header: Text("Type")) {
-            Picker("Value Type", selection: $viewModel.valueType) {
+        Section(header: Text("ud.type_section")) {
+            Picker("ud.value_type", selection: $viewModel.valueType) {
                 ForEach(UserDefaultsValueType.addableCases) {
                     Text($0.rawValue).tag($0)
                 }
@@ -108,20 +108,20 @@ struct UserDefaultsAddView: View {
 
     @ViewBuilder
     private var valueInputSection: some View {
-        Section(header: Text("Value")) {
+        Section(header: Text("ud.value_section")) {
             switch viewModel.valueType {
             case .bool:
-                Toggle("Value", isOn: $viewModel.boolValue)
+                Toggle("ud.value_section", isOn: $viewModel.boolValue)
             case .string:
-                TextField("Enter value", text: $viewModel.stringValue)
+                TextField("ud.enter_value", text: $viewModel.stringValue)
                     .autocapitalization(.none)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
             case .integer, .double:
-                TextField("Enter number", text: $viewModel.stringValue)
+                TextField("ud.enter_number", text: $viewModel.stringValue)
                     .keyboardType(.decimalPad)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
             case .date:
-                DatePicker("Value", selection: $viewModel.dateValue)
+                DatePicker("ud.value_section", selection: $viewModel.dateValue)
             case .json:
                 TextEditor(text: $viewModel.stringValue)
                     .frame(minHeight: 80)
@@ -129,7 +129,7 @@ struct UserDefaultsAddView: View {
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray, lineWidth: 1))
                     .autocapitalization(.none)
             case .data, .unknown:
-                Text("This type cannot be created manually")
+                Text("ud.type_not_creatable")
                     .foregroundColor(Color.secondary)
             }
         }
@@ -140,7 +140,7 @@ struct UserDefaultsAddView: View {
     private var saveSection: some View {
         Section {
             Button(action: viewModel.didSaveActionRequested) {
-                Text("Save")
+                Text("common.save")
                     .frame(maxWidth: .infinity)
             }
             .disabled(!viewModel.canSave)

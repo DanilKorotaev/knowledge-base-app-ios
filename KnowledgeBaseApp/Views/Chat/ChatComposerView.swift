@@ -126,7 +126,7 @@ struct ChatComposerView: View {
             }
 
             ZStack(alignment: .trailing) {
-                TextField("Message", text: $viewModel.composerDraft.text, axis: .vertical)
+                TextField("composer.message_placeholder", text: $viewModel.composerDraft.text, axis: .vertical)
                     .lineLimit(1 ... 8)
                     .textFieldStyle(.plain)
                     .disabled(isBusy)
@@ -156,20 +156,20 @@ struct ChatComposerView: View {
             Button {
                 showGalleryPicker = true
             } label: {
-                Label("Photos", systemImage: "photo.on.rectangle")
+                Label("composer.photos", systemImage: "photo.on.rectangle")
             }
             .disabled(remainingAttachmentSlots == 0)
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
                 Button {
                     showCamera = true
                 } label: {
-                    Label("Camera", systemImage: "camera")
+                    Label("composer.camera", systemImage: "camera")
                 }
             }
             Button {
                 showFileImporter = true
             } label: {
-                Label("Files", systemImage: "folder")
+                Label("composer.files", systemImage: "folder")
             }
             .disabled(remainingAttachmentSlots == 0)
         } label: {
@@ -182,7 +182,7 @@ struct ChatComposerView: View {
         }
         .disabled(isBusy)
         .tint(.primary)
-        .accessibilityLabel("Add attachment")
+        .accessibilityLabel(Text("composer.add_attachment_a11y"))
     }
 
     private var sendButton: some View {
@@ -199,6 +199,6 @@ struct ChatComposerView: View {
                 )
         }
         .disabled(!viewModel.canSendComposer || isBusy)
-        .accessibilityLabel("Send")
+        .accessibilityLabel(Text("composer.send_a11y"))
     }
 }

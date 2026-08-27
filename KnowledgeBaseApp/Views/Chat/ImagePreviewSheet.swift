@@ -14,14 +14,14 @@ struct ImagePreviewSheet: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.black)
                 } else {
-                    ContentUnavailableView("Preview unavailable", systemImage: "photo")
+                    ContentUnavailableView("preview.unavailable", systemImage: "photo")
                 }
             }
-            .navigationTitle("Preview")
+            .navigationTitle("preview.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
+                    Button("common.close") { dismiss() }
                 }
             }
         }

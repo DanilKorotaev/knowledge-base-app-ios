@@ -34,7 +34,7 @@ struct ChatView: View {
             }
 
             if viewModel.isLoading && viewModel.messages.isEmpty {
-                ProgressView("Loading messages…")
+                ProgressView("chat.loading_messages")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollViewReader { proxy in
@@ -137,6 +137,7 @@ struct ChatView: View {
         }
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .tabBar)
         .task(id: viewModel.session.id) {
             ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
             resetChatScrollState()
@@ -206,11 +207,11 @@ struct ChatView: View {
                 ChatSessionFocusTracker.shared.setFocusedSessionId(nil)
             }
         }
-        .alert("Chat", isPresented: Binding(
+        .alert("chat.alert_title", isPresented: Binding(
             get: { viewModel.errorMessage != nil && viewModel.pendingSendRetry == nil },
             set: { if !$0 { viewModel.clearError() } }
         )) {
-            Button("OK", role: .cancel) {
+            Button("common.ok", role: .cancel) {
                 viewModel.clearError()
             }
         } message: {

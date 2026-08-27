@@ -8,8 +8,8 @@ enum DebugMenuScreen: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .logs: return "Logs"
-        case .userDefaults: return "UserDefaults"
+        case .logs: return L10n.string("debug.menu.logs")
+        case .userDefaults: return L10n.string("debug.menu.userdefaults")
         }
     }
 }
@@ -21,7 +21,7 @@ struct DebugMenuView: View {
                 destination(for: screen)
             }
         }
-        .navigationTitle("Debug")
+        .navigationTitle("debug.title")
         .navigationBarTitleDisplayMode(.inline)
     }
 

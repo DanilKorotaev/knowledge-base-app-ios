@@ -18,7 +18,7 @@ struct MessageDocumentAttachmentsView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "doc.fill")
                             .foregroundStyle(.secondary)
-                        Text(attachment.fileName ?? "Attachment")
+                        Text(attachment.fileName ?? L10n.string("attachment.fallback_name"))
                             .font(.caption)
                             .lineLimit(1)
                             .truncationMode(.middle)
@@ -48,11 +48,11 @@ struct MessageDocumentAttachmentsView: View {
         }
         .padding(.top, 2)
         .quickLookPreview($previewURL)
-        .alert("Preview unavailable", isPresented: Binding(
+        .alert("preview.unavailable", isPresented: Binding(
             get: { previewError != nil },
             set: { if !$0 { previewError = nil } }
         )) {
-            Button("OK", role: .cancel) {}
+            Button("common.ok", role: .cancel) {}
         } message: {
             Text(previewError ?? "")
         }
@@ -83,9 +83,9 @@ enum AttachmentPreviewURLResolver {
         var errorDescription: String? {
             switch self {
             case .missingDownloadURL:
-                return "This attachment has no preview URL."
+                return L10n.string("attachment.no_preview_url")
             case .downloadFailed:
-                return "Could not download the attachment."
+                return L10n.string("attachment.download_failed")
             }
         }
     }

@@ -22,6 +22,6 @@ struct TypingIndicatorView: View {
         .padding(.horizontal, 4)
         .onAppear { animationPhase = true }
         .onDisappear { animationPhase = false }
-        .accessibilityLabel("Assistant is typing")
+        .accessibilityLabel(Text("chat.typing_a11y"))
     }
 }

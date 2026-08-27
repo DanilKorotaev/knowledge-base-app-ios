@@ -13,28 +13,28 @@ struct AttachmentPickerSheet: View {
                     dismiss()
                     onPickGallery()
                 } label: {
-                    Label("Gallery", systemImage: "photo.on.rectangle")
+                    Label("attach.gallery", systemImage: "photo.on.rectangle")
                 }
                 if UIImagePickerController.isSourceTypeAvailable(.camera) {
                     Button {
                         dismiss()
                         onPickCamera()
                     } label: {
-                        Label("Camera", systemImage: "camera.fill")
+                        Label("attach.camera", systemImage: "camera.fill")
                     }
                 }
                 Button {
                     dismiss()
                     onPickFile()
                 } label: {
-                    Label("File", systemImage: "doc.fill")
+                    Label("attach.file", systemImage: "doc.fill")
                 }
             }
-            .navigationTitle("Attach")
+            .navigationTitle("attach.title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("common.cancel") { dismiss() }
                 }
             }
         }

@@ -81,7 +81,7 @@ final class UserDefaultsListViewModelTests: XCTestCase {
     }
 
     func testFilterTypeNames() {
-        XCTAssertEqual(UserDefaultsListView.FilterType.all.name, "All")
-        XCTAssertEqual(UserDefaultsListView.SortType.category.name, "By Category")
+        XCTAssertEqual(UserDefaultsListView.FilterType.all.name, L10n.string("ud.filter.all"))
+        XCTAssertEqual(UserDefaultsListView.SortType.category.name, L10n.string("ud.sort.by_category"))
     }
 }

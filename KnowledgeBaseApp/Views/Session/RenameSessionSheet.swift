@@ -10,20 +10,20 @@ struct RenameSessionSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Session title", text: $title)
+                    TextField("session.title_field", text: $title)
                         .textInputAutocapitalization(.sentences)
                 } footer: {
-                    Text("Renaming “\(sessionName)”.")
+                    Text(L10n.format("session.rename_hint_format", sessionName))
                 }
             }
-            .navigationTitle("Rename session")
+            .navigationTitle("session.rename_title")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
+                    Button("common.cancel", action: onCancel)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: onSave)
+                    Button("common.save", action: onSave)
                         .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
