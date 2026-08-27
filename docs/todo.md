@@ -35,7 +35,8 @@
 - [x] [Offline foundation: persistent cache](tasks/completed/task-feature-offline-cache-foundation.md) — `FileOfflineCacheStore`, cache-first list/chat
 - [x] [SWR sync UX: статусы обновления](tasks/completed/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
 - [x] [Offline attachments: disk cache management](tasks/completed/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
-- [ ] [Чат: кликабельные changed files](tasks/pending/task-ux-chat-clickable-changed-files.md) — MVP список под ответом, затем inline-ссылки
+- [x] [Чат: кликабельные changed files](tasks/completed/task-ux-chat-clickable-changed-files.md) — MVP список под ответом
+- [x] [Чат: схлопываемый список changed files](tasks/completed/task-ux-chat-collapsible-changed-files.md) — completed 2026-08-27
 - [x] [Voice: экран не гаснет при записи](tasks/completed/task-ux-voice-recording-prevent-screen-sleep.md) — completed 2026-08-27
 - [x] [Voice: pause/resume в LOCKED](tasks/completed/task-feature-voice-recording-pause-resume-locked.md) — completed
 

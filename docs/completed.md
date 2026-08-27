@@ -19,6 +19,7 @@
 - [Rich message bubbles (attachments, voice, Markdown/HTML)](tasks/completed/task-ux-chat-rich-messages.md)
 - [Streaming UX (spinner, typing dots, typewriter)](tasks/completed/task-ux-chat-streaming-feedback.md)
 - [Voice: screen stays on while recording](tasks/completed/task-ux-voice-recording-prevent-screen-sleep.md)
+- [Collapsible changed-files list in chat](tasks/completed/task-ux-chat-collapsible-changed-files.md)
 - [Telegram-style composer + compose API](tasks/completed/task-ux-chat-composer-telegram.md)
 - [Default voice session + TTL](tasks/completed/task-feature-default-voice-session.md)
 - [Session delete/rename](tasks/completed/task-feature-session-delete-rename.md)
