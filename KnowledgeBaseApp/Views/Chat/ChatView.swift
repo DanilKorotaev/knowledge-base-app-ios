@@ -163,11 +163,17 @@ struct ChatView: View {
                 Button {
                     viewModel.toggleStructuredUIPreference()
                 } label: {
-                    Image(
-                        systemName: viewModel.structuredUIPreferenceEnabled
-                            ? "rectangle.3.group"
-                            : "rectangle.3.group.slash"
-                    )
+                    // Keep `rectangle.3.group` always — there is no
+                    // `rectangle.3.group.slash` SF Symbol (Off previously rendered blank).
+                    Image(systemName: "rectangle.3.group")
+                        .overlay {
+                            if !viewModel.structuredUIPreferenceEnabled {
+                                Capsule()
+                                    .frame(width: 1.6, height: 18)
+                                    .rotationEffect(.degrees(-45))
+                            }
+                        }
+                        .opacity(viewModel.structuredUIPreferenceEnabled ? 1 : 0.55)
                 }
                 .accessibilityLabel(
                     Text(
