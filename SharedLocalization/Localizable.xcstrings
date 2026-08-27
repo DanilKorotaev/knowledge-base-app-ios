@@ -4513,6 +4513,54 @@
         }
       }
     },
+    "structured_ui.toolbar_on": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interactive UI on"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Интерактивный UI включён"
+          }
+        }
+      }
+    },
+    "structured_ui.toolbar_off": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interactive UI off"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Интерактивный UI выключен"
+          }
+        }
+      }
+    },
+    "structured_ui.toolbar_start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start Interactive UI"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запустить Interactive UI"
+          }
+        }
+      }
+    },
     "structured_ui.dismiss": {
       "localizations": {
         "en": {

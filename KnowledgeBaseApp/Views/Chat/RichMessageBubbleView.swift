@@ -7,8 +7,10 @@ struct RichMessageBubbleView: View {
     var attachmentLoader: KBAttachmentLoaderProtocol?
     var assistantResponseTime: TimeInterval?
     var isStructuredUISending: Bool = false
-    /// When false, panels stay in history but are not rendered (mode off / dismissed).
+    /// When false, panels with structured UI are hidden (unused; prefer always true + read-only).
     var showsStructuredUI: Bool = true
+    /// When false, panel is visible but not tappable (history / preference off).
+    var isStructuredUIInteractive: Bool = true
     var onStructuredUIAction: ((String, String, [String: StructuredUIFormValue]?) -> Void)?
 
     @State private var fullscreenImage: IdentifiableImage?
@@ -98,6 +100,7 @@ struct RichMessageBubbleView: View {
                 StructuredUIPanelView(
                     document: structuredUI,
                     isSending: isStructuredUISending,
+                    isInteractive: isStructuredUIInteractive,
                     onAction: { actionId, componentId, values in
                         onStructuredUIAction?(actionId, componentId, values)
                     }

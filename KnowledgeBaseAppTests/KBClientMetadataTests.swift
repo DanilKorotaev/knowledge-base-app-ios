@@ -19,6 +19,7 @@ final class KBClientMetadataTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.platformHeader), "ios")
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.osHeader), "18.5")
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.logSessionHeader), "log-session-abc")
+        XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.structuredUIHeader), StructuredUIPreference.headerValue)
         XCTAssertEqual(
             request.value(forHTTPHeaderField: "User-Agent"),
             "KnowledgeBaseApp/1.2.3 (ios 18.5; build 99)"

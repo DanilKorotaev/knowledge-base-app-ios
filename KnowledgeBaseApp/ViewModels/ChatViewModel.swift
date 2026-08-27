@@ -22,13 +22,17 @@ final class ChatViewModel {
     var isLoadingOlder = false
     var isSending = false
     var isSendingUIEvent = false
-    /// Toolbar "mode": panels render only while active; dismiss turns this off without answering the form.
-    var structuredUIModeActive = false
+    /// Preference: agent may offer Interactive UI; latest panel is interactive when true.
+    var structuredUIPreferenceEnabled = StructuredUIPreference.isEnabled
 
-    /// Latest assistant message that still has a structured UI panel (for in-flight UX).
+    /// Latest assistant message with a structured UI document (for in-flight / interactivity).
     var activeStructuredUIMessageId: String? {
-        guard structuredUIModeActive else { return nil }
-        return messages.last(where: { $0.role == .assistant && $0.structuredUI != nil })?.id
+        messages.last(where: { $0.role == .assistant && $0.structuredUI != nil })?.id
+    }
+
+    func toggleStructuredUIPreference() {
+        structuredUIPreferenceEnabled.toggle()
+        StructuredUIPreference.isEnabled = structuredUIPreferenceEnabled
     }
     var isTranscribingVoice = false
     var pendingVoiceCaptures: [PendingVoiceCapture] = []
@@ -1179,13 +1183,6 @@ final class ChatViewModel {
             hasMoreOlder: response.messages.count > limit
         )
         apply(page: page, requestedLimit: limit, kind: "uiEvent")
-        if actionId == "dismiss" {
-            structuredUIModeActive = false
-        } else if let screen = response.screen {
-            structuredUIModeActive = screen.hasInteractiveControls
-        } else {
-            structuredUIModeActive = false
-        }
         scrollIntent = .scrollToBottom
         syncStatus = .upToDate(lastSyncedAt: Date())
     }
@@ -1307,9 +1304,6 @@ final class ChatViewModel {
             reconcileAssistantReplyPhaseAfterServerSync()
             persistMessageWindow()
         }
-        if kind != "uiEvent" {
-            syncStructuredUIModeFromMessages()
-        }
         ChatPaginationLogger.pageApplied(
             kind: kind,
             messageIds: messages.map(\.id),
@@ -1317,14 +1311,6 @@ final class ChatViewModel {
             hasMoreOlder: hasMoreOlder,
             windowCount: messages.count
         )
-    }
-
-    private func syncStructuredUIModeFromMessages() {
-        if let document = messages.last(where: { $0.structuredUI != nil })?.structuredUI {
-            structuredUIModeActive = document.hasInteractiveControls
-        } else {
-            structuredUIModeActive = false
-        }
     }
 
     /// Server pages replace optimistic bubbles; once assistant is persisted, hide the SSE placeholder.

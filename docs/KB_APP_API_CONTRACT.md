@@ -118,6 +118,8 @@ JSON Schema: `knowledge-base-bot/kb_app_api/structured_ui/schema_v1.json`.
 
 **Режимы:** обычная `button` — сразу `ui-events`; поля формы правят локальный draft; `button` с `"submit": true` отправляет `values`.
 
+**Preference:** заголовок `X-KB-Structured-UI: 1|0`. При `1` и `STRUCTURED_UI_IN_REPLIES_ENABLED` сервер может после обычного ответа чата прикрепить `structured_ui` к assistant message (второй короткий prompt). iOS: тоггл в тулбаре чата; панели в истории всегда видны, интерактивен только последний при preference On.
+
 ### Structured UI events
 
 | Метод | Путь | Запрос | Успех |

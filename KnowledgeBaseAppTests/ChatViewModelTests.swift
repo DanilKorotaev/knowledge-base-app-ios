@@ -117,7 +117,7 @@ final class ChatViewModelTests: XCTestCase {
             )
         )
         viewModel.messages = [older, newer]
-        viewModel.structuredUIModeActive = true
+        viewModel.structuredUIPreferenceEnabled = true
         XCTAssertEqual(viewModel.activeStructuredUIMessageId, "2")
     }
 
@@ -125,15 +125,30 @@ final class ChatViewModelTests: XCTestCase {
         let (store, sessionId) = emptyStoreWithSession()
         let client = StubChatAPIClient(store: store)
         let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        viewModel.structuredUIPreferenceEnabled = true
 
         await viewModel.startStructuredUIFlow()
-        XCTAssertTrue(viewModel.structuredUIModeActive)
+        XCTAssertNotNil(viewModel.activeStructuredUIMessageId)
 
         await viewModel.dismissStructuredUIFlow()
-        XCTAssertFalse(viewModel.structuredUIModeActive)
         XCTAssertFalse(viewModel.messages.contains { $0.role == .user && $0.content.hasPrefix("[UI]") })
         XCTAssertEqual(viewModel.messages.last?.content, "Interactive UI closed.")
-        XCTAssertNil(viewModel.activeStructuredUIMessageId)
+    }
+
+    func testToggleStructuredUIPreference_persists() {
+        let previous = StructuredUIPreference.isEnabled
+        defer { StructuredUIPreference.isEnabled = previous }
+
+        let viewModel = ChatViewModel(
+            session: makeSession(),
+            client: StubChatAPIClient(store: InMemoryKBStore(demoSession: false))
+        )
+        viewModel.structuredUIPreferenceEnabled = true
+        viewModel.toggleStructuredUIPreference()
+        XCTAssertFalse(viewModel.structuredUIPreferenceEnabled)
+        XCTAssertFalse(StructuredUIPreference.isEnabled)
+        viewModel.toggleStructuredUIPreference()
+        XCTAssertTrue(viewModel.structuredUIPreferenceEnabled)
     }
 
     func testSend_onError_keepsOptimisticOffersRetryWithoutRestoringComposer() async throws {

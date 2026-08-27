@@ -45,6 +45,9 @@ extension UserDefaultsKey {
     // Inspector settings
     static let inspectorVerboseLogging = UserDefaultsKey("kb.userdefaults.inspector.verboseLogging")
     static let inspectorIgnoredUpdateKeys = UserDefaultsKey("kb.userdefaults.inspector.ignoredUpdateKeys")
+
+    /// When true, agent may attach Interactive UI; panels are interactive. Default on if unset.
+    static let structuredUIEnabled = UserDefaultsKey("kb.structured_ui.enabled")
 }
 
 extension UserDefaultsKeyPrefix {

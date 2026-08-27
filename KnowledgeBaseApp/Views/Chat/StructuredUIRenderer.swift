@@ -3,6 +3,7 @@ import SwiftUI
 struct StructuredUIPanelView: View {
     let document: KBStructuredUIDocument
     var isSending: Bool = false
+    var isInteractive: Bool = true
     var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
 
     @State private var draftValues: [String: StructuredUIFormValue] = [:]
@@ -20,11 +21,12 @@ struct StructuredUIPanelView: View {
                 StructuredUINodeView(
                     node: document.screen,
                     isSending: isSending,
+                    isInteractive: isInteractive,
                     draftValues: $draftValues,
                     onAction: onAction
                 )
-                .opacity(isSending ? 0.72 : 1)
-                .allowsHitTesting(!isSending)
+                .opacity(isSending ? 0.72 : (isInteractive ? 1 : 0.85))
+                .allowsHitTesting(isInteractive && !isSending)
             }
         }
         .padding(12)
@@ -46,6 +48,7 @@ struct StructuredUIPanelView: View {
 private struct StructuredUINodeView: View {
     let node: KBStructuredUINode
     var isSending: Bool
+    var isInteractive: Bool
     @Binding var draftValues: [String: StructuredUIFormValue]
     var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
 
@@ -61,6 +64,7 @@ private struct StructuredUINodeView: View {
                         StructuredUINodeView(
                             node: child,
                             isSending: isSending,
+                            isInteractive: isInteractive,
                             draftValues: $draftValues,
                             onAction: onAction
                         )

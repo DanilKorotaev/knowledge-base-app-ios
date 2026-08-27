@@ -62,7 +62,9 @@ struct ChatView: View {
                                         attachmentLoader: attachmentLoader,
                                         isStructuredUISending: viewModel.isSendingUIEvent
                                             && message.id == viewModel.activeStructuredUIMessageId,
-                                        showsStructuredUI: viewModel.structuredUIModeActive,
+                                        showsStructuredUI: true,
+                                        isStructuredUIInteractive: viewModel.structuredUIPreferenceEnabled
+                                            && message.id == viewModel.activeStructuredUIMessageId,
                                         onStructuredUIAction: { actionId, componentId, values in
                                             Task {
                                                 await viewModel.sendStructuredUIEvent(
@@ -157,23 +159,31 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                if viewModel.structuredUIModeActive {
-                    Button {
-                        Task { await viewModel.dismissStructuredUIFlow() }
-                    } label: {
-                        Image(systemName: "xmark.circle")
-                    }
-                    .accessibilityLabel(Text("structured_ui.dismiss"))
-                    .disabled(viewModel.isSendingUIEvent)
-                    .opacity(viewModel.isSendingUIEvent ? 0.55 : 1)
-                }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    Task { await viewModel.startStructuredUIFlow() }
+                    viewModel.toggleStructuredUIPreference()
                 } label: {
-                    Image(systemName: "rectangle.3.group")
+                    Image(
+                        systemName: viewModel.structuredUIPreferenceEnabled
+                            ? "rectangle.3.group"
+                            : "rectangle.3.group.slash"
+                    )
                 }
-                .accessibilityLabel(Text("structured_ui.toolbar"))
+                .accessibilityLabel(
+                    Text(
+                        viewModel.structuredUIPreferenceEnabled
+                            ? "structured_ui.toolbar_on"
+                            : "structured_ui.toolbar_off"
+                    )
+                )
+                .contextMenu {
+                    if viewModel.structuredUIPreferenceEnabled {
+                        Button("structured_ui.toolbar_start") {
+                            Task { await viewModel.startStructuredUIFlow() }
+                        }
+                        .disabled(viewModel.isSendingUIEvent)
+                    }
+                }
                 .disabled(viewModel.isSendingUIEvent)
                 .opacity(viewModel.isSendingUIEvent ? 0.55 : 1)
             }

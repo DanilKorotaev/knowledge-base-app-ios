@@ -10,6 +10,7 @@ struct KBClientMetadata: Equatable, Sendable {
     static let platformHeader = "X-KB-App-Platform"
     static let osHeader = "X-KB-App-OS"
     static let logSessionHeader = "X-KB-App-Log-Session"
+    static let structuredUIHeader = StructuredUIPreference.headerName
 
     let appVersion: String
     let buildNumber: String
@@ -55,6 +56,7 @@ struct KBClientMetadata: Equatable, Sendable {
         if !logSessionId.isEmpty {
             request.setValue(logSessionId, forHTTPHeaderField: Self.logSessionHeader)
         }
+        request.setValue(StructuredUIPreference.headerValue, forHTTPHeaderField: Self.structuredUIHeader)
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
     }
 }
