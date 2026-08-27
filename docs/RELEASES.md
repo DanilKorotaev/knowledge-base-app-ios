@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.11 | 110 | `ios/v1.0.11` | 2026-08-27 | Interactive UI preference toggle and read-only history |
 | 1.0.10 | 109 | `ios/v1.0.10` | 2026-08-27 | TestFlight release |
 | 1.0.9 | 108 | `ios/v1.0.9` | 2026-08-27 | Keep Structured UI waiting cue only in chat pending bubble |
 | 1.0.8 | 107 | `ios/v1.0.8` | 2026-08-27 | Structured UI forms with deferred submit |
