@@ -26,5 +26,6 @@ Separate feature branch from `main`. Backend mock must be deployed first for rea
 
 ## Acceptance
 
-- [ ] XCTest green for structured UI models / ViewModel
-- [ ] Manual E2E against bot branch: start → Yes/No → Done
+- [x] XCTest green for structured UI models / ViewModel (после rebase на main)
+- [ ] Manual E2E against deployed API: start → Yes/No → Done  
+  Чеклист: Obsidian «Structured UI — план ручного теста»
