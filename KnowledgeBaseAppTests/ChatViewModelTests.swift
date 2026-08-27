@@ -117,7 +117,23 @@ final class ChatViewModelTests: XCTestCase {
             )
         )
         viewModel.messages = [older, newer]
+        viewModel.structuredUIModeActive = true
         XCTAssertEqual(viewModel.activeStructuredUIMessageId, "2")
+    }
+
+    func testDismissStructuredUIFlow_turnsModeOffWithoutUserStub() async {
+        let (store, sessionId) = emptyStoreWithSession()
+        let client = StubChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+
+        await viewModel.startStructuredUIFlow()
+        XCTAssertTrue(viewModel.structuredUIModeActive)
+
+        await viewModel.dismissStructuredUIFlow()
+        XCTAssertFalse(viewModel.structuredUIModeActive)
+        XCTAssertFalse(viewModel.messages.contains { $0.role == .user && $0.content.hasPrefix("[UI]") })
+        XCTAssertEqual(viewModel.messages.last?.content, "Interactive UI closed.")
+        XCTAssertNil(viewModel.activeStructuredUIMessageId)
     }
 
     func testSend_onError_keepsOptimisticOffersRetryWithoutRestoringComposer() async throws {

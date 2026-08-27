@@ -15,6 +15,20 @@ struct KBStructuredUIDocument: Codable, Equatable, Sendable {
     var isSupportedByClient: Bool {
         schemaVersion <= Self.supportedSchemaVersion
     }
+
+    /// Buttons or form fields — used to decide if Interactive UI "mode" is still on.
+    var hasInteractiveControls: Bool {
+        Self.nodeHasInteractiveControls(screen)
+    }
+
+    private static func nodeHasInteractiveControls(_ node: KBStructuredUINode) -> Bool {
+        switch node.type {
+        case "button", "checkbox", "radio_group", "select", "text_field":
+            return true
+        default:
+            return node.supportedChildren.contains(where: nodeHasInteractiveControls)
+        }
+    }
 }
 
 struct KBStructuredUIOption: Codable, Equatable, Sendable {
@@ -157,7 +171,7 @@ extension StructuredUIFormValue: Codable {
 }
 
 struct KBUIEventResponse: Codable, Equatable, Sendable {
-    let screen: KBStructuredUIDocument
+    let screen: KBStructuredUIDocument?
     let messages: [KBMessage]
 }
 

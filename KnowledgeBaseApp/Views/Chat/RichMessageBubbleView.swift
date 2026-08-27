@@ -7,6 +7,8 @@ struct RichMessageBubbleView: View {
     var attachmentLoader: KBAttachmentLoaderProtocol?
     var assistantResponseTime: TimeInterval?
     var isStructuredUISending: Bool = false
+    /// When false, panels stay in history but are not rendered (mode off / dismissed).
+    var showsStructuredUI: Bool = true
     var onStructuredUIAction: ((String, String, [String: StructuredUIFormValue]?) -> Void)?
 
     @State private var fullscreenImage: IdentifiableImage?
@@ -92,7 +94,7 @@ struct RichMessageBubbleView: View {
             if let text = message.bubbleTextContent {
                 MessageContentView(message: message, contentOverride: text)
             }
-            if message.role == .assistant, let structuredUI = message.structuredUI {
+            if message.role == .assistant, showsStructuredUI, let structuredUI = message.structuredUI {
                 StructuredUIPanelView(
                     document: structuredUI,
                     isSending: isStructuredUISending,

@@ -22,10 +22,13 @@ final class ChatViewModel {
     var isLoadingOlder = false
     var isSending = false
     var isSendingUIEvent = false
+    /// Toolbar "mode": panels render only while active; dismiss turns this off without answering the form.
+    var structuredUIModeActive = false
 
     /// Latest assistant message that still has a structured UI panel (for in-flight UX).
     var activeStructuredUIMessageId: String? {
-        messages.last(where: { $0.role == .assistant && $0.structuredUI != nil })?.id
+        guard structuredUIModeActive else { return nil }
+        return messages.last(where: { $0.role == .assistant && $0.structuredUI != nil })?.id
     }
     var isTranscribingVoice = false
     var pendingVoiceCaptures: [PendingVoiceCapture] = []
@@ -1105,6 +1108,10 @@ final class ChatViewModel {
         await sendStructuredUIEvent(actionId: "start", componentId: "bootstrap", values: nil)
     }
 
+    func dismissStructuredUIFlow() async {
+        await sendStructuredUIEvent(actionId: "dismiss", componentId: "toolbar_dismiss", values: nil)
+    }
+
     func sendStructuredUIEvent(
         actionId: String,
         componentId: String,
@@ -1123,7 +1130,7 @@ final class ChatViewModel {
                 componentId: componentId,
                 values: values
             )
-            applyUIEventResponse(response)
+            applyUIEventResponse(response, actionId: actionId)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -1164,7 +1171,7 @@ final class ChatViewModel {
         )
     }
 
-    private func applyUIEventResponse(_ response: KBUIEventResponse) {
+    private func applyUIEventResponse(_ response: KBUIEventResponse, actionId: String) {
         let limit = normalizedFetchLimit(response.messages.count)
         let page = KBMessagesPage(
             messages: clamp(response.messages, to: limit),
@@ -1172,6 +1179,13 @@ final class ChatViewModel {
             hasMoreOlder: response.messages.count > limit
         )
         apply(page: page, requestedLimit: limit, kind: "uiEvent")
+        if actionId == "dismiss" {
+            structuredUIModeActive = false
+        } else if let screen = response.screen {
+            structuredUIModeActive = screen.hasInteractiveControls
+        } else {
+            structuredUIModeActive = false
+        }
         scrollIntent = .scrollToBottom
         syncStatus = .upToDate(lastSyncedAt: Date())
     }
@@ -1293,6 +1307,9 @@ final class ChatViewModel {
             reconcileAssistantReplyPhaseAfterServerSync()
             persistMessageWindow()
         }
+        if kind != "uiEvent" {
+            syncStructuredUIModeFromMessages()
+        }
         ChatPaginationLogger.pageApplied(
             kind: kind,
             messageIds: messages.map(\.id),
@@ -1300,6 +1317,14 @@ final class ChatViewModel {
             hasMoreOlder: hasMoreOlder,
             windowCount: messages.count
         )
+    }
+
+    private func syncStructuredUIModeFromMessages() {
+        if let document = messages.last(where: { $0.structuredUI != nil })?.structuredUI {
+            structuredUIModeActive = document.hasInteractiveControls
+        } else {
+            structuredUIModeActive = false
+        }
     }
 
     /// Server pages replace optimistic bubbles; once assistant is persisted, hide the SSE placeholder.

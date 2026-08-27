@@ -4513,6 +4513,22 @@
         }
       }
     },
+    "structured_ui.dismiss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off Interactive UI"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключить интерактивный экран"
+          }
+        }
+      }
+    },
     "structured_ui.unsupported_schema": {
       "localizations": {
         "en": {

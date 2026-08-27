@@ -389,6 +389,12 @@ enum StubStructuredUIMockFlow {
                 userContent: "[UI] Done",
                 assistantContent: "Flow finished."
             )
+        case "dismiss":
+            return Result(
+                screen: dismissedScreen(),
+                userContent: nil,
+                assistantContent: "Interactive UI closed."
+            )
         default:
             fatalError("Unknown structured UI action: \(actionId)")
         }
@@ -516,6 +522,19 @@ enum StubStructuredUIMockFlow {
                 children: [
                     node(type: "text", id: "title", text: "Finished"),
                     node(type: "text", id: "body", text: "Mock flow complete."),
+                ]
+            )
+        )
+    }
+
+    private static func dismissedScreen() -> KBStructuredUIDocument {
+        screenDocument(
+            root: node(
+                type: "vstack",
+                id: "root",
+                children: [
+                    node(type: "text", id: "title", text: "Interactive UI off"),
+                    node(type: "text", id: "body", text: "Mode turned off. You can continue in the chat."),
                 ]
             )
         )

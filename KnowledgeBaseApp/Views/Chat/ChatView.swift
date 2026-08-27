@@ -62,6 +62,7 @@ struct ChatView: View {
                                         attachmentLoader: attachmentLoader,
                                         isStructuredUISending: viewModel.isSendingUIEvent
                                             && message.id == viewModel.activeStructuredUIMessageId,
+                                        showsStructuredUI: viewModel.structuredUIModeActive,
                                         onStructuredUIAction: { actionId, componentId, values in
                                             Task {
                                                 await viewModel.sendStructuredUIEvent(
@@ -156,7 +157,17 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                if viewModel.structuredUIModeActive {
+                    Button {
+                        Task { await viewModel.dismissStructuredUIFlow() }
+                    } label: {
+                        Image(systemName: "xmark.circle")
+                    }
+                    .accessibilityLabel(Text("structured_ui.dismiss"))
+                    .disabled(viewModel.isSendingUIEvent)
+                    .opacity(viewModel.isSendingUIEvent ? 0.55 : 1)
+                }
                 Button {
                     Task { await viewModel.startStructuredUIFlow() }
                 } label: {
