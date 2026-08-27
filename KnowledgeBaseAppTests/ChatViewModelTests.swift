@@ -57,6 +57,69 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.messages.contains { $0.role == .assistant })
     }
 
+    func testStructuredUIFlow_startAndConfirmYes() async {
+        let (store, sessionId) = emptyStoreWithSession()
+        let client = StubChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+
+        await viewModel.startStructuredUIFlow()
+        XCTAssertFalse(viewModel.isSendingUIEvent)
+        XCTAssertNil(viewModel.errorMessage)
+        let welcome = viewModel.messages.last(where: { $0.role == .assistant })
+        XCTAssertEqual(welcome?.structuredUI?.screen.supportedChildren.first(where: { $0.type == "button" })?.label, "Yes")
+
+        await viewModel.sendStructuredUIEvent(actionId: "confirm_yes", componentId: "btn_yes")
+        XCTAssertTrue(viewModel.messages.contains { $0.role == .user && $0.content == "[UI] Yes" })
+        let confirmed = viewModel.messages.last(where: { $0.role == .assistant })
+        XCTAssertEqual(
+            confirmed?.structuredUI?.screen.supportedChildren.first(where: { $0.type == "text" })?.text,
+            "Confirmed"
+        )
+    }
+
+    func testActiveStructuredUIMessageId_isLatestAssistantPanel() {
+        let viewModel = ChatViewModel(
+            session: makeSession(),
+            client: StubChatAPIClient(store: InMemoryKBStore(demoSession: false))
+        )
+        let older = KBMessage(
+            id: "1",
+            role: .assistant,
+            content: "old",
+            createdAt: Date(),
+            structuredUI: KBStructuredUIDocument(
+                schemaVersion: 1,
+                screen: KBStructuredUINode(
+                    type: "vstack",
+                    id: "root",
+                    text: nil,
+                    label: nil,
+                    actionId: nil,
+                    children: []
+                )
+            )
+        )
+        let newer = KBMessage(
+            id: "2",
+            role: .assistant,
+            content: "new",
+            createdAt: Date(),
+            structuredUI: KBStructuredUIDocument(
+                schemaVersion: 1,
+                screen: KBStructuredUINode(
+                    type: "vstack",
+                    id: "root2",
+                    text: nil,
+                    label: nil,
+                    actionId: nil,
+                    children: []
+                )
+            )
+        )
+        viewModel.messages = [older, newer]
+        XCTAssertEqual(viewModel.activeStructuredUIMessageId, "2")
+    }
+
     func testSend_onError_keepsOptimisticOffersRetryWithoutRestoringComposer() async throws {
         let (store, sessionId) = emptyStoreWithSession()
         let client = FailingStreamChatAPIClient(store: store)

@@ -4496,6 +4496,86 @@
           }
         }
       }
+    },
+    "structured_ui.toolbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interactive UI"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Интерактивный экран"
+          }
+        }
+      }
+    },
+    "structured_ui.unsupported_schema": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update the app to use this interactive screen."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновите приложение, чтобы использовать этот интерактивный экран."
+          }
+        }
+      }
+    },
+    "structured_ui.panel_a11y": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interactive screen"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Интерактивный экран"
+          }
+        }
+      }
+    },
+    "structured_ui.updating": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating interactive UI…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновляю интерактивный экран…"
+          }
+        }
+      }
+    },
+    "structured_ui.updating_a11y": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating interactive screen"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление интерактивного экрана"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

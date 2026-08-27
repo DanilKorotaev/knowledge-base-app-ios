@@ -21,6 +21,12 @@ final class ChatViewModel {
     var isLoading = false
     var isLoadingOlder = false
     var isSending = false
+    var isSendingUIEvent = false
+
+    /// Latest assistant message that still has a structured UI panel (for in-flight UX).
+    var activeStructuredUIMessageId: String? {
+        messages.last(where: { $0.role == .assistant && $0.structuredUI != nil })?.id
+    }
     var isTranscribingVoice = false
     var pendingVoiceCaptures: [PendingVoiceCapture] = []
     var errorMessage: String?
@@ -1093,6 +1099,72 @@ final class ChatViewModel {
 
     func clearError() {
         errorMessage = nil
+    }
+
+    func startStructuredUIFlow() async {
+        await sendStructuredUIEvent(actionId: "start", componentId: "bootstrap")
+    }
+
+    func sendStructuredUIEvent(actionId: String, componentId: String) async {
+        guard !isSendingUIEvent else { return }
+        isSendingUIEvent = true
+        errorMessage = nil
+        scrollIntent = .scrollToBottom
+        defer { isSendingUIEvent = false }
+        do {
+            let response = try await Self.performUIEvent(
+                client: client,
+                sessionId: session.id,
+                actionId: actionId,
+                componentId: componentId
+            )
+            applyUIEventResponse(response)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private static func performUIEvent(
+        client: ChatAPIClientProtocol,
+        sessionId: String,
+        actionId: String,
+        componentId: String
+    ) async throws -> KBUIEventResponse {
+        let schemaVersion = KBStructuredUIDocument.supportedSchemaVersion
+        if let stub = client as? StubChatAPIClient {
+            return try await stub.sendUIEvent(
+                sessionId: sessionId,
+                actionId: actionId,
+                componentId: componentId,
+                clientSchemaVersion: schemaVersion
+            )
+        }
+        if let remote = client as? URLSessionKnowledgeBaseAPIClient {
+            return try await remote.sendUIEvent(
+                sessionId: sessionId,
+                actionId: actionId,
+                componentId: componentId,
+                clientSchemaVersion: schemaVersion
+            )
+        }
+        return try await client.sendUIEvent(
+            sessionId: sessionId,
+            actionId: actionId,
+            componentId: componentId,
+            clientSchemaVersion: schemaVersion
+        )
+    }
+
+    private func applyUIEventResponse(_ response: KBUIEventResponse) {
+        let limit = normalizedFetchLimit(response.messages.count)
+        let page = KBMessagesPage(
+            messages: clamp(response.messages, to: limit),
+            total: response.messages.count,
+            hasMoreOlder: response.messages.count > limit
+        )
+        apply(page: page, requestedLimit: limit, kind: "uiEvent")
+        scrollIntent = .scrollToBottom
+        syncStatus = .upToDate(lastSyncedAt: Date())
     }
 
     func scheduleComposerDraftSave() {

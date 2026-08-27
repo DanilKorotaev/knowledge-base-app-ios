@@ -1007,6 +1007,44 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
         return data
     }
+
+    func sendUIEvent(
+        sessionId: String,
+        actionId: String,
+        componentId: String,
+        clientSchemaVersion: Int
+    ) async throws -> KBUIEventResponse {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(sessionId)
+            .appendingPathComponent("ui-events")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        struct Body: Encodable {
+            let action_id: String
+            let component_id: String
+            let client_schema_version: Int
+        }
+
+        request.httpBody = try JSONEncoder().encode(
+            Body(
+                action_id: actionId,
+                component_id: componentId,
+                client_schema_version: clientSchemaVersion
+            )
+        )
+
+        let data = try await performData(request)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        guard let response = try? decoder.decode(KBUIEventResponse.self, from: data) else {
+            throw KnowledgeBaseAPIError.decodingFailed
+        }
+        return response
+    }
 }
 
 // MARK: - Changed files (KB App API)

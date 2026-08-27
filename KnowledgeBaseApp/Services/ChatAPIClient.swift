@@ -46,6 +46,25 @@ protocol ChatAPIClientProtocol: Sendable {
         draft: ChatComposerDraft,
         useKnowledgeBase: Bool
     ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error>
+
+    /// Structured UI button tap: `POST …/ui-events`.
+    func sendUIEvent(
+        sessionId: String,
+        actionId: String,
+        componentId: String,
+        clientSchemaVersion: Int
+    ) async throws -> KBUIEventResponse
+}
+
+extension ChatAPIClientProtocol {
+    func sendUIEvent(
+        sessionId: String,
+        actionId: String,
+        componentId: String,
+        clientSchemaVersion: Int
+    ) async throws -> KBUIEventResponse {
+        throw KnowledgeBaseAPIError.decodingFailed
+    }
 }
 
 struct StubChatAPIClient: ChatAPIClientProtocol {
@@ -279,5 +298,153 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
             ? "Compose: \(draft.attachments.count) files, \(draft.voiceClips.count) voice"
             : draft.trimmedText
         return try await streamTextMessage(sessionId: sessionId, text: summary, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func sendUIEvent(
+        sessionId: String,
+        actionId: String,
+        componentId: String,
+        clientSchemaVersion: Int
+    ) async throws -> KBUIEventResponse {
+        let result = StubStructuredUIMockFlow.apply(actionId: actionId, componentId: componentId)
+        var list = store.messages(for: sessionId)
+        if let userContent = result.userContent {
+            list.append(
+                KBMessage(
+                    id: UUID().uuidString,
+                    role: .user,
+                    content: userContent,
+                    createdAt: Date()
+                )
+            )
+        }
+        let assistant = KBMessage(
+            id: UUID().uuidString,
+            role: .assistant,
+            content: result.assistantContent,
+            createdAt: Date(),
+            structuredUI: result.screen
+        )
+        list.append(assistant)
+        store.replaceMessages(list, sessionId: sessionId)
+        return KBUIEventResponse(screen: result.screen, messages: list)
+    }
+}
+
+enum StubStructuredUIMockFlow {
+    struct Result {
+        let screen: KBStructuredUIDocument
+        let userContent: String?
+        let assistantContent: String
+    }
+
+    static func apply(actionId: String, componentId: String) -> Result {
+        _ = componentId
+        switch actionId {
+        case "start":
+            return Result(
+                screen: welcomeScreen(),
+                userContent: nil,
+                assistantContent: "Interactive UI ready."
+            )
+        case "confirm_yes":
+            return Result(
+                screen: confirmedScreen(),
+                userContent: "[UI] Yes",
+                assistantContent: "You selected Yes."
+            )
+        case "confirm_no":
+            return Result(
+                screen: declinedScreen(),
+                userContent: "[UI] No",
+                assistantContent: "You selected No."
+            )
+        case "done":
+            return Result(
+                screen: finishedScreen(),
+                userContent: "[UI] Done",
+                assistantContent: "Flow finished."
+            )
+        default:
+            fatalError("Unknown structured UI action: \(actionId)")
+        }
+    }
+
+    private static func welcomeScreen() -> KBStructuredUIDocument {
+        screenDocument(
+            root: node(
+                type: "vstack",
+                id: "root",
+                children: [
+                    node(type: "text", id: "title", text: "Choose an action"),
+                    node(type: "text", id: "subtitle", text: "Mock structured UI flow (MVP)."),
+                    node(type: "button", id: "btn_yes", label: "Yes", actionId: "confirm_yes"),
+                    node(type: "button", id: "btn_no", label: "No", actionId: "confirm_no"),
+                ]
+            )
+        )
+    }
+
+    private static func confirmedScreen() -> KBStructuredUIDocument {
+        screenDocument(
+            root: node(
+                type: "vstack",
+                id: "root",
+                children: [
+                    node(type: "text", id: "title", text: "Confirmed"),
+                    node(type: "text", id: "body", text: "You chose Yes. Tap Done to finish."),
+                    node(type: "button", id: "btn_done", label: "Done", actionId: "done"),
+                ]
+            )
+        )
+    }
+
+    private static func declinedScreen() -> KBStructuredUIDocument {
+        screenDocument(
+            root: node(
+                type: "vstack",
+                id: "root",
+                children: [
+                    node(type: "text", id: "title", text: "Declined"),
+                    node(type: "text", id: "body", text: "You chose No. Tap Done to finish."),
+                    node(type: "button", id: "btn_done", label: "Done", actionId: "done"),
+                ]
+            )
+        )
+    }
+
+    private static func finishedScreen() -> KBStructuredUIDocument {
+        screenDocument(
+            root: node(
+                type: "vstack",
+                id: "root",
+                children: [
+                    node(type: "text", id: "title", text: "Finished"),
+                    node(type: "text", id: "body", text: "Mock flow complete."),
+                ]
+            )
+        )
+    }
+
+    private static func screenDocument(root: KBStructuredUINode) -> KBStructuredUIDocument {
+        KBStructuredUIDocument(schemaVersion: 1, screen: root)
+    }
+
+    private static func node(
+        type: String,
+        id: String,
+        text: String? = nil,
+        label: String? = nil,
+        actionId: String? = nil,
+        children: [KBStructuredUINode]? = nil
+    ) -> KBStructuredUINode {
+        KBStructuredUINode(
+            type: type,
+            id: id,
+            text: text,
+            label: label,
+            actionId: actionId,
+            children: children
+        )
     }
 }

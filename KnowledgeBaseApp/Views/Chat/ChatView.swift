@@ -59,7 +59,17 @@ struct ChatView: View {
                                 VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 6) {
                                     RichMessageBubbleView(
                                         message: message,
-                                        attachmentLoader: attachmentLoader
+                                        attachmentLoader: attachmentLoader,
+                                        isStructuredUISending: viewModel.isSendingUIEvent
+                                            && message.id == viewModel.activeStructuredUIMessageId,
+                                        onStructuredUIAction: { actionId, componentId in
+                                            Task {
+                                                await viewModel.sendStructuredUIEvent(
+                                                    actionId: actionId,
+                                                    componentId: componentId
+                                                )
+                                            }
+                                        }
                                     )
                                     if viewModel.shouldShowSendRetry(for: message) {
                                         MessageSendRetryBar(
@@ -74,6 +84,12 @@ struct ChatView: View {
                                 .onAppear {
                                     oldestMessageDidAppear(message.id)
                                 }
+                            }
+                            if viewModel.isSendingUIEvent {
+                                AssistantPendingBubbleView(
+                                    activityLabel: L10n.string("structured_ui.updating")
+                                )
+                                .id("__kb_structured_ui_pending__")
                             }
                             if viewModel.assistantReplyPhase.showsPlaceholder {
                                 assistantReplyPhaseView
@@ -138,6 +154,18 @@ struct ChatView: View {
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar(.hidden, for: .tabBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Task { await viewModel.startStructuredUIFlow() }
+                } label: {
+                    Image(systemName: "rectangle.3.group")
+                }
+                .accessibilityLabel(Text("structured_ui.toolbar"))
+                .disabled(viewModel.isSendingUIEvent)
+                .opacity(viewModel.isSendingUIEvent ? 0.55 : 1)
+            }
+        }
         .task(id: viewModel.session.id) {
             ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
             resetChatScrollState()
