@@ -97,4 +97,70 @@ final class KBStructuredUITests: XCTestCase {
         XCTAssertEqual(seeded["topics"], .strings(["ios"]))
         XCTAssertEqual(seeded["note"], .string(""))
     }
+
+    func testDecodeMediaAndDividerNodes() throws {
+        let json = """
+        {
+          "schema_version": 1,
+          "screen": {
+            "type": "vstack",
+            "id": "root",
+            "children": [
+              {"type": "text", "id": "t", "text": "Media"},
+              {"type": "divider", "id": "d1"},
+              {
+                "type": "image",
+                "id": "img1",
+                "url": "https://example.com/a.png",
+                "alt": "Sample",
+                "content_mode": "fit"
+              },
+              {
+                "type": "image",
+                "id": "img2",
+                "download_url": "/api/attachments/1/download",
+                "alt": "Auth image"
+              },
+              {
+                "type": "link",
+                "id": "lnk1",
+                "url": "https://example.com/docs",
+                "label": "Docs"
+              },
+              {
+                "type": "file",
+                "id": "file1",
+                "download_url": "/api/attachments/2/download",
+                "file_name": "notes.pdf",
+                "file_size": 2048,
+                "label": "Notes"
+              }
+            ]
+          }
+        }
+        """.data(using: .utf8)!
+
+        let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
+        let types = document.screen.supportedChildren.map(\.type)
+        XCTAssertEqual(types, ["text", "divider", "image", "image", "link", "file"])
+        XCTAssertEqual(document.screen.supportedChildren[2].url, "https://example.com/a.png")
+        XCTAssertEqual(document.screen.supportedChildren[2].alt, "Sample")
+        XCTAssertEqual(document.screen.supportedChildren[3].downloadURL, "/api/attachments/1/download")
+        XCTAssertEqual(document.screen.supportedChildren[4].label, "Docs")
+        XCTAssertEqual(document.screen.supportedChildren[5].fileName, "notes.pdf")
+        XCTAssertEqual(document.screen.supportedChildren[5].fileSize, 2048)
+        XCTAssertTrue(document.screen.supportedChildren.allSatisfy(\.isSupported))
+    }
+
+    func testURLPolicyAllowsHTTPSAndRejectsJavascript() {
+        XCTAssertNotNil(StructuredUIURLPolicy.allowedHTTPURL(from: "https://example.com/a"))
+        XCTAssertNotNil(StructuredUIURLPolicy.allowedHTTPURL(from: "http://127.0.0.1:8091/x"))
+        XCTAssertNil(StructuredUIURLPolicy.allowedHTTPURL(from: "javascript:alert(1)"))
+        XCTAssertNil(StructuredUIURLPolicy.allowedHTTPURL(from: "file:///etc/passwd"))
+        XCTAssertNil(StructuredUIURLPolicy.allowedHTTPURL(from: "kbapp://open"))
+        XCTAssertTrue(StructuredUIURLPolicy.isAllowedDownloadPath("/api/attachments/1/download"))
+        XCTAssertTrue(StructuredUIURLPolicy.isAllowedDownloadPath("api/sessions/1/attachments/2"))
+        XCTAssertFalse(StructuredUIURLPolicy.isAllowedDownloadPath("../secret"))
+        XCTAssertFalse(StructuredUIURLPolicy.isAllowedDownloadPath("javascript:alert(1)"))
+    }
 }

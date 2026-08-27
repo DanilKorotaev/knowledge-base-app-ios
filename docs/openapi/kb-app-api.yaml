@@ -543,7 +543,7 @@ components:
       properties:
         type:
           type: string
-          enum: [vstack, text, button, checkbox, radio_group, select, text_field]
+          enum: [vstack, text, button, checkbox, radio_group, select, text_field, image, link, file, divider]
         id: { type: string }
         text: { type: string }
         label: { type: string }
@@ -561,6 +561,12 @@ components:
               label: { type: string }
         multi: { type: boolean }
         submit: { type: boolean }
+        url: { type: string, description: "http(s) URL for link or remote image" }
+        download_url: { type: string, description: "Authenticated attachment download path for image/file" }
+        file_name: { type: string }
+        file_size: { type: integer }
+        alt: { type: string, description: "Accessibility label for image" }
+        content_mode: { type: string, enum: [fit, fill] }
         children:
           type: array
           items: { $ref: "#/components/schemas/StructuredUINode" }

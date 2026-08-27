@@ -51,6 +51,16 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let multi: Bool?
     /// When true, tapping this button sends local draft `values` with the event.
     let submit: Bool?
+    /// Public http(s) URL for `link` / remote `image`.
+    let url: String?
+    /// Authenticated API download path for `image` / `file` (same as message attachments).
+    let downloadURL: String?
+    let fileName: String?
+    let fileSize: Int?
+    /// Accessibility / alt text for `image`.
+    let alt: String?
+    /// `fit` (default) or `fill` for `image`.
+    let contentMode: String?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -65,6 +75,12 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case options
         case multi
         case submit
+        case url
+        case downloadURL = "download_url"
+        case fileName = "file_name"
+        case fileSize = "file_size"
+        case alt
+        case contentMode = "content_mode"
     }
 
     init(
@@ -79,7 +95,13 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         maxLength: Int? = nil,
         options: [KBStructuredUIOption]? = nil,
         multi: Bool? = nil,
-        submit: Bool? = nil
+        submit: Bool? = nil,
+        url: String? = nil,
+        downloadURL: String? = nil,
+        fileName: String? = nil,
+        fileSize: Int? = nil,
+        alt: String? = nil,
+        contentMode: String? = nil
     ) {
         self.type = type
         self.id = id
@@ -93,11 +115,18 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.options = options
         self.multi = multi
         self.submit = submit
+        self.url = url
+        self.downloadURL = downloadURL
+        self.fileName = fileName
+        self.fileSize = fileSize
+        self.alt = alt
+        self.contentMode = contentMode
     }
 
     var isSupported: Bool {
         switch type {
-        case "vstack", "text", "button", "checkbox", "radio_group", "select", "text_field":
+        case "vstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
+             "image", "link", "file", "divider":
             return true
         default:
             return false

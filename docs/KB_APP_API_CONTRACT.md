@@ -113,10 +113,12 @@
 }
 ```
 
-Типы нод v1: `vstack`, `text`, `button`, `checkbox`, `radio_group`, `select`, `text_field`.  
+Типы нод v1: `vstack`, `text`, `button`, `checkbox`, `radio_group`, `select`, `text_field`, `image`, `link`, `file`, `divider`.  
 JSON Schema: `knowledge-base-bot/kb_app_api/structured_ui/schema_v1.json`.
 
 **Режимы:** обычная `button` — сразу `ui-events`; поля формы правят локальный draft; `button` с `"submit": true` отправляет `values`.
+
+**Медиа:** `image` — `url` (только http/https) и/или `download_url` (как у attachments, с auth); `link` — `url` + `label`; `file` — `download_url` + `file_name` / `file_size` (Quick Look). `divider` — визуальный разделитель.
 
 **Preference:** заголовок `X-KB-Structured-UI: 1|0`. При `1` и `STRUCTURED_UI_IN_REPLIES_ENABLED` сервер может после обычного ответа чата прикрепить `structured_ui` к assistant message (второй короткий prompt). iOS: тоггл в тулбаре чата; панели в истории всегда видны, интерактивен только последний при preference On.
 

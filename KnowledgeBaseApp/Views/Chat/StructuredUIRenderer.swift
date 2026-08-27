@@ -4,6 +4,8 @@ struct StructuredUIPanelView: View {
     let document: KBStructuredUIDocument
     var isSending: Bool = false
     var isInteractive: Bool = true
+    var attachmentLoader: KBAttachmentLoaderProtocol?
+    var onFullscreenImage: ((UIImage) -> Void)?
     var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
 
     @State private var draftValues: [String: StructuredUIFormValue] = [:]
@@ -22,6 +24,8 @@ struct StructuredUIPanelView: View {
                     node: document.screen,
                     isSending: isSending,
                     isInteractive: isInteractive,
+                    attachmentLoader: attachmentLoader,
+                    onFullscreenImage: onFullscreenImage,
                     draftValues: $draftValues,
                     onAction: onAction
                 )
@@ -49,6 +53,8 @@ private struct StructuredUINodeView: View {
     let node: KBStructuredUINode
     var isSending: Bool
     var isInteractive: Bool
+    var attachmentLoader: KBAttachmentLoaderProtocol?
+    var onFullscreenImage: ((UIImage) -> Void)?
     @Binding var draftValues: [String: StructuredUIFormValue]
     var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
 
@@ -65,6 +71,8 @@ private struct StructuredUINodeView: View {
                             node: child,
                             isSending: isSending,
                             isInteractive: isInteractive,
+                            attachmentLoader: attachmentLoader,
+                            onFullscreenImage: onFullscreenImage,
                             draftValues: $draftValues,
                             onAction: onAction
                         )
@@ -74,6 +82,9 @@ private struct StructuredUINodeView: View {
                 Text(node.text ?? "")
                     .font(.body)
                     .frame(maxWidth: .infinity, alignment: .leading)
+            case "divider":
+                Divider()
+                    .padding(.vertical, 2)
             case "button":
                 Button {
                     guard let actionId = node.actionId, !isSending else { return }
@@ -171,6 +182,16 @@ private struct StructuredUINodeView: View {
                     TextField(node.placeholder ?? "", text: textFieldBinding(for: node))
                         .textFieldStyle(.roundedBorder)
                 }
+            case "image":
+                StructuredUIImageNodeView(
+                    node: node,
+                    loader: attachmentLoader,
+                    onFullscreen: onFullscreenImage
+                )
+            case "link":
+                StructuredUILinkNodeView(node: node)
+            case "file":
+                StructuredUIFileNodeView(node: node, loader: attachmentLoader)
             default:
                 EmptyView()
             }

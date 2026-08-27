@@ -101,6 +101,10 @@ struct RichMessageBubbleView: View {
                     document: structuredUI,
                     isSending: isStructuredUISending,
                     isInteractive: isStructuredUIInteractive,
+                    attachmentLoader: attachmentLoader,
+                    onFullscreenImage: { image in
+                        fullscreenImage = IdentifiableImage(image: image)
+                    },
                     onAction: { actionId, componentId, values in
                         onStructuredUIAction?(actionId, componentId, values)
                     }
