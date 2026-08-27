@@ -29,6 +29,7 @@ struct MainView: View {
     @State private var sessionActionError: String?
     @State private var navigationPath = NavigationPath()
     @State private var pinnedStore = PinnedSessionsStore.shared
+    @State private var debugQuickActions = DebugQuickActionsController.shared
     private let sessionCache: SessionCacheStoreProtocol
     @Environment(\.scenePhase) private var scenePhase
 
@@ -52,6 +53,7 @@ struct MainView: View {
     }
 
     var body: some View {
+        @Bindable var debugQuickActions = debugQuickActions
         NavigationStack(path: $navigationPath) {
             mainStackContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -236,9 +238,36 @@ struct MainView: View {
                     attachmentLoader: attachmentLoader
                 )
             }
+            .sheet(isPresented: $debugQuickActions.showDebugMenuSheet) {
+                NavigationStack {
+                    DebugMenuView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Close") {
+                                    debugQuickActions.showDebugMenuSheet = false
+                                }
+                            }
+                        }
+                }
+            }
+            .onChange(of: navigationPath.count) { _, count in
+                updateMainScreenDebugGesture(isOnMainList: count == 0)
+            }
+            .onAppear {
+                updateMainScreenDebugGesture(isOnMainList: navigationPath.isEmpty)
+            }
+            .onDisappear {
+                ThreeFingerSwipeDownInstaller.shared.setEnabled(false) {}
+            }
         }
         .environment(voiceRouting)
         .environment(voiceViewModel)
+    }
+
+    private func updateMainScreenDebugGesture(isOnMainList: Bool) {
+        ThreeFingerSwipeDownInstaller.shared.setEnabled(isOnMainList) {
+            debugQuickActions.presentDebugMenuFromMainGesture()
+        }
     }
 
     private var isSearchActive: Bool {

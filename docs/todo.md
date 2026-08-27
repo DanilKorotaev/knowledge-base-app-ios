@@ -36,6 +36,7 @@
 - [x] [SWR sync UX: статусы обновления](tasks/completed/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
 - [x] [Offline attachments: disk cache management](tasks/completed/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
 - [x] [Чат: кликабельные changed files](tasks/completed/task-ux-chat-clickable-changed-files.md) — MVP список под ответом
+- [x] [Debug: shake to send logs + 3-finger Debug sheet](tasks/completed/task-ux-debug-quick-send-logs.md) — completed 2026-08-27
 - [x] [Чат: схлопываемый список changed files](tasks/completed/task-ux-chat-collapsible-changed-files.md) — completed 2026-08-27
 - [x] [Voice: экран не гаснет при записи](tasks/completed/task-ux-voice-recording-prevent-screen-sleep.md) — completed 2026-08-27
 - [x] [Voice: pause/resume в LOCKED](tasks/completed/task-feature-voice-recording-pause-resume-locked.md) — completed

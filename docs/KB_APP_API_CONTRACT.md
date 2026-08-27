@@ -16,7 +16,7 @@
 | JSON ключи | `snake_case` |
 | Аутентификация | `Authorization: Bearer <token>` на всех маршрутах, кроме явно публичных (`GET /health`, опционально `POST /api/auth/token`) |
 | E2E-тесты | Заголовок `X-KB-App-E2E: 1` — отдельный telegram user на сервере (см. `docs/testing/E2E.md`) |
-| Клиент (iOS, optional) | `X-KB-App-Version`, `X-KB-App-Build`, `X-KB-App-Platform` (`ios`), `X-KB-App-OS`; также `User-Agent: KnowledgeBaseApp/<ver> (ios <os>; build <n>)`. Сервер логирует в `request.state.client_meta`, не требует для авторизации. |
+| Клиент (iOS, optional) | `X-KB-App-Version`, `X-KB-App-Build`, `X-KB-App-Platform` (`ios`), `X-KB-App-OS`, `X-KB-App-Log-Session` (on-device log file session UUID); также `User-Agent: KnowledgeBaseApp/<ver> (ios <os>; build <n>)`. Сервер логирует в `request.state.client_meta`, не требует для авторизации. |
 
 ## Ошибки
 

@@ -165,6 +165,9 @@ struct ChatView: View {
             voiceViewModel.onComposerRecordingFinished = { url in
                 Task { await viewModel.enqueueVoiceRecording(audioURL: url) }
             }
+            DebugQuickActionsController.shared.registerChatLogAttachHandler { url in
+                viewModel.attachDebugLogFile(from: url)
+            }
             if let pending = voiceRouting.pendingComposerVoice,
                pending.sessionId == viewModel.session.id {
                 voiceRouting.pendingComposerVoice = nil
@@ -176,6 +179,7 @@ struct ChatView: View {
             voiceRouting.usesComposerDraft = false
             voiceViewModel.deferToComposer = false
             voiceViewModel.onComposerRecordingFinished = nil
+            DebugQuickActionsController.shared.registerChatLogAttachHandler(nil)
         }
         .onChange(of: viewModel.composerDraft.text) { _, _ in
             viewModel.scheduleComposerDraftSave()

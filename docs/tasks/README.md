@@ -36,6 +36,8 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-feature-offline-mode-cache-sync.md` | Offline mode epic (v1) |
 | `task-ux-voice-recording-prevent-screen-sleep.md` | Keep screen awake during voice recording |
 | `task-ux-chat-collapsible-changed-files.md` | Collapsible changed-files list under reply |
+| `task-ux-debug-quick-send-logs.md` | Shake-to-send logs + Debug sheet gesture |
+
 | `task-ops-semver-versioning-changelog-gitflow.md` | SemVer + changelog + git-flow (вариант A) |
 
 ## Pending (`pending/`)

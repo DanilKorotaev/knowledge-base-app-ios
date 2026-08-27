@@ -9,7 +9,8 @@ final class KBClientMetadataTests: XCTestCase {
             appVersion: "1.2.3",
             buildNumber: "99",
             platform: "ios",
-            osVersion: "18.5"
+            osVersion: "18.5",
+            logSessionId: "log-session-abc"
         )
         meta.apply(to: &request)
 
@@ -17,6 +18,7 @@ final class KBClientMetadataTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.buildHeader), "99")
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.platformHeader), "ios")
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.osHeader), "18.5")
+        XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.logSessionHeader), "log-session-abc")
         XCTAssertEqual(
             request.value(forHTTPHeaderField: "User-Agent"),
             "KnowledgeBaseApp/1.2.3 (ios 18.5; build 99)"
@@ -28,7 +30,8 @@ final class KBClientMetadataTests: XCTestCase {
             appVersion: "1.0.0",
             buildNumber: "90",
             platform: "ios",
-            osVersion: "18.7"
+            osVersion: "18.7",
+            logSessionId: "s"
         )
         XCTAssertEqual(meta.versionBuildLabel, "1.0.0 (90)")
     }
@@ -39,7 +42,8 @@ final class KBClientMetadataTests: XCTestCase {
             appVersion: "2.0.0",
             buildNumber: "7",
             platform: "ios",
-            osVersion: "26.0"
+            osVersion: "26.0",
+            logSessionId: "sess-7"
         )
         let interceptor = KBRequestInterceptor(
             requestId: "test",

@@ -9,11 +9,14 @@ struct KBClientMetadata: Equatable, Sendable {
     static let buildHeader = "X-KB-App-Build"
     static let platformHeader = "X-KB-App-Platform"
     static let osHeader = "X-KB-App-OS"
+    static let logSessionHeader = "X-KB-App-Log-Session"
 
     let appVersion: String
     let buildNumber: String
     let platform: String
     let osVersion: String
+    /// Matches `LogSession.shared.id` / on-disk log file naming.
+    let logSessionId: String
 
     var userAgent: String {
         "KnowledgeBaseApp/\(appVersion) (\(platform) \(osVersion); build \(buildNumber))"
@@ -39,7 +42,8 @@ struct KBClientMetadata: Equatable, Sendable {
             appVersion: (version?.isEmpty == false) ? version! : "0",
             buildNumber: (build?.isEmpty == false) ? build! : "0",
             platform: "ios",
-            osVersion: os
+            osVersion: os,
+            logSessionId: LogSession.shared.id
         )
     }
 
@@ -48,6 +52,9 @@ struct KBClientMetadata: Equatable, Sendable {
         request.setValue(buildNumber, forHTTPHeaderField: Self.buildHeader)
         request.setValue(platform, forHTTPHeaderField: Self.platformHeader)
         request.setValue(osVersion, forHTTPHeaderField: Self.osHeader)
+        if !logSessionId.isEmpty {
+            request.setValue(logSessionId, forHTTPHeaderField: Self.logSessionHeader)
+        }
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")
     }
 }

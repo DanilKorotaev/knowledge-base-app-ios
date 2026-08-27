@@ -96,6 +96,12 @@ enum UserDefaultsKeyRegistry {
             valueType: .string
         ),
         .init(
+            key: .debugShakeToSendLogs,
+            description: "Shake device to attach current log file to open chat",
+            category: .logs,
+            valueType: .bool
+        ),
+        .init(
             key: .inspectorVerboseLogging,
             description: "Verbose UserDefaults service logging",
             category: .inspector,

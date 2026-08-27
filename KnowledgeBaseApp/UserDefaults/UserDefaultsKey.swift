@@ -40,6 +40,7 @@ extension UserDefaultsKey {
     static let loggerVerboseNetwork = UserDefaultsKey("kb.logger.isVerboseLog")
     static let loggerMaxLogFiles = UserDefaultsKey("kb.logger.maxFilesToStorage")
     static let loggerSessionId = UserDefaultsKey("kb.logger.session.currentId")
+    static let debugShakeToSendLogs = UserDefaultsKey("kb.debug.shakeToSendLogs")
 
     // Inspector settings
     static let inspectorVerboseLogging = UserDefaultsKey("kb.userdefaults.inspector.verboseLogging")

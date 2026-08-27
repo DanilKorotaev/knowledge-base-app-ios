@@ -450,6 +450,35 @@ final class ChatViewModel {
         }
     }
 
+    @discardableResult
+    func attachDebugLogFile(from sourceURL: URL) -> Bool {
+        let dest = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(UUID().uuidString)-\(sourceURL.lastPathComponent)")
+        do {
+            if FileManager.default.fileExists(atPath: dest.path) {
+                try FileManager.default.removeItem(at: dest)
+            }
+            try FileManager.default.copyItem(at: sourceURL, to: dest)
+            let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? NSNumber)?
+                .int64Value
+            let attachment = PendingAttachment(
+                localURL: dest,
+                kind: .file,
+                filename: sourceURL.lastPathComponent,
+                mimeType: "text/plain",
+                fileSize: size
+            )
+            let note = "Debug log attached: \(sourceURL.lastPathComponent) (log session \(LogSession.shared.id))"
+            if composerDraft.trimmedText.isEmpty {
+                composerDraft.text = note
+            }
+            return tryAddPendingAttachment(attachment)
+        } catch {
+            reportError(error.localizedDescription)
+            return false
+        }
+    }
+
     func addCameraImage(_ image: UIImage) async {
         guard let data = image.jpegData(compressionQuality: 0.85) else {
             reportError("Could not encode photo.")

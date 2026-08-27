@@ -5,6 +5,7 @@ struct KnowledgeBaseApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var deepLinkVoiceRecording = false
     @State private var deepLinkSessionId: String?
+    @State private var debugQuickActions = DebugQuickActionsController.shared
     @Bindable private var languageStore = AppLanguageStore.shared
 
     init() {
@@ -23,12 +24,45 @@ struct KnowledgeBaseApp: App {
 
     var body: some Scene {
         WindowGroup {
+            @Bindable var debugQuickActions = debugQuickActions
             MainView(
                 deepLinkVoiceRecording: $deepLinkVoiceRecording,
                 deepLinkSessionId: $deepLinkSessionId
             )
             .environment(\.locale, languageStore.resolvedLocale)
             .environment(languageStore)
+            .background {
+                ShakeDetectorView {
+                    debugQuickActions.handleDeviceShake()
+                }
+                .frame(width: 0, height: 0)
+            }
+            .alert(
+                "Send debug logs?",
+                isPresented: $debugQuickActions.showSendLogsConfirm
+            ) {
+                Button("Send") {
+                    Task { await debugQuickActions.confirmSendLogs() }
+                }
+                Button("Cancel", role: .cancel) {
+                    debugQuickActions.cancelSendLogs()
+                }
+            } message: {
+                Text("Attach the current session log file to the open chat composer.")
+            }
+            .alert(
+                "Debug",
+                isPresented: Binding(
+                    get: { debugQuickActions.statusMessage != nil },
+                    set: { if !$0 { debugQuickActions.clearStatusMessage() } }
+                )
+            ) {
+                Button("OK", role: .cancel) {
+                    debugQuickActions.clearStatusMessage()
+                }
+            } message: {
+                Text(debugQuickActions.statusMessage ?? "")
+            }
             .onOpenURL { url in
                 guard url.scheme == "knowledgebase" else { return }
                 if url.host == "record" {

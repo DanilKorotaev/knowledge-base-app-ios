@@ -2,6 +2,7 @@ import SwiftUI
 
 final class LogSettingsViewModel: ObservableObject {
     private let settings = KBLoggerSettings.shared
+    private let quickActions = DebugQuickActionsController.shared
     let filesCapabilityRange = 1 ... 100
 
     @Published var isFileLoggerEnabled: Bool {
@@ -21,6 +22,10 @@ final class LogSettingsViewModel: ObservableObject {
         didSet { settings.isVerboseLog = isVerboseLog }
     }
 
+    @Published var isShakeToSendLogsEnabled: Bool {
+        didSet { quickActions.isShakeToSendLogsEnabled = isShakeToSendLogsEnabled }
+    }
+
     @Published var fileStorageCapability: Int {
         didSet {
             do {
@@ -35,6 +40,7 @@ final class LogSettingsViewModel: ObservableObject {
         isFileLoggerEnabled = settings.isFileLoggerEnabled
         isDebugLogger = settings.isDebugLogger
         isVerboseLog = settings.isVerboseLog
+        isShakeToSendLogsEnabled = quickActions.isShakeToSendLogsEnabled
         fileStorageCapability = LogFilesProvider.shared.maxFileToStorage
     }
 }
@@ -47,6 +53,11 @@ struct LogSettingsView: View {
             Toggle("Logging into file", isOn: $viewModel.isFileLoggerEnabled)
             Toggle("Logging into console", isOn: $viewModel.isDebugLogger)
             Toggle("Verbose logs (network cURL + body)", isOn: $viewModel.isVerboseLog)
+            Toggle("Shake to send logs", isOn: $viewModel.isShakeToSendLogsEnabled)
+
+            Text("When enabled, shake the device to attach the current log file to the open chat.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
             Picker(selection: $viewModel.fileStorageCapability) {
                 ForEach(viewModel.filesCapabilityRange, id: \.self) { value in
