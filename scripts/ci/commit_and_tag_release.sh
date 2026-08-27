@@ -49,11 +49,18 @@ PY
 sync_to_origin_branch() {
   git fetch origin "${BRANCH}"
   if git show-ref --verify --quiet "refs/remotes/origin/${BRANCH}"; then
-    if git symbolic-ref -q HEAD >/dev/null 2>&1; then
-      git pull --rebase origin "${BRANCH}"
-    else
-      git rebase "origin/${BRANCH}"
-    fi
+    # Always rebase onto tip — deploy checkouts are usually detached at head_sha.
+    git rebase "origin/${BRANCH}"
+  fi
+}
+
+discard_deploy_working_tree() {
+  # prepare_release / fastlane beta touch tracked files we must not push (xcodeproj, project.yml).
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Discarding local deploy-only changes before rebase:"
+    git status --porcelain
+    git reset --hard HEAD
+    git clean -fd --exclude=.git --exclude=vendor --exclude=fastlane/test_output --exclude=fastlane/build_logs 2>/dev/null || git clean -fd
   fi
 }
 
@@ -69,6 +76,7 @@ if [[ -n "$(git status --porcelain -- VERSION CHANGELOG.md docs/RELEASES.md)" ]]
   git commit -m "$MSG"
   echo "Created release commit on $(git rev-parse --short HEAD)"
 
+  discard_deploy_working_tree
   # Deploy often runs on detached HEAD while main moved (fix commits, docs). Rebase first.
   sync_to_origin_branch
   git push origin "HEAD:${BRANCH}"
