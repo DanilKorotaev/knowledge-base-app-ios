@@ -188,6 +188,7 @@
 		AFA69D4860476DE87E0A2923 /* UserDefaultsDebugValueCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0698FBE56BD54E6CF3EDB49 /* UserDefaultsDebugValueCodec.swift */; };
 		B3213BC0E1E231144EC43CE6 /* InMemoryKBStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDFAB7FEB5479E83C2732B8E /* InMemoryKBStoreTests.swift */; };
 		B361F522BB60D5E14DF3A00F /* FileBatchWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA466A7869F7E268F52C361 /* FileBatchWriterTests.swift */; };
+		B3CD72BEAF187FF18135822E /* ScreenIdleTimerLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6732341CE7BDC432B9E22A1F /* ScreenIdleTimerLock.swift */; };
 		B60CA670C71E14523265F167 /* UserDefaultsRegistryKeySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5B55451F6D381584AFFA659 /* UserDefaultsRegistryKeySelectionView.swift */; };
 		B7B633D02B35E83ACDB59B6A /* AttachmentPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE790FD9975318782E752411 /* AttachmentPickerSheet.swift */; };
 		B898112C8C35C80F2743527D /* VoiceRoutingContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3D74ABBD9649D407F7500B7 /* VoiceRoutingContext.swift */; };
@@ -431,6 +432,7 @@
 		65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartVoiceRecordingIntent.swift; sourceTree = "<group>"; };
 		6662058D3176B3AB154C7DE2 /* MarkdownTableGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTableGrid.swift; sourceTree = "<group>"; };
 		667E0B685130674D97FD74F5 /* MarkdownTableFullscreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTableFullscreenView.swift; sourceTree = "<group>"; };
+		6732341CE7BDC432B9E22A1F /* ScreenIdleTimerLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenIdleTimerLock.swift; sourceTree = "<group>"; };
 		68C876AD1653C71DDD05F309 /* LogPreviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPreviewViewModel.swift; sourceTree = "<group>"; };
 		68D7D7540BDE11E24D80AA21 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		6A25FF66F4AC2937BC805B91 /* SyncStatusBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusBannerView.swift; sourceTree = "<group>"; };
@@ -1100,6 +1102,7 @@
 				2881D4994BFE39C88210FA46 /* PushNotificationService.swift */,
 				1A3F2C332A3FEEDA0F7AD970 /* PushPayloadFormatter.swift */,
 				525C51AE342E067C1846E135 /* RecordingGestureLogic.swift */,
+				6732341CE7BDC432B9E22A1F /* ScreenIdleTimerLock.swift */,
 				BCDBA7B4361311C858F26C8C /* SessionKBModeStore.swift */,
 				48E5E3295CD00874C8FDE24A /* SessionListSorter.swift */,
 				0FB6B5CAE96EEAB57B2C07F2 /* VoiceAudioMerger.swift */,
@@ -1480,6 +1483,7 @@
 				CD986D067953F5EBF0B52B87 /* RenameSessionSheet.swift in Sources */,
 				A867FD23A4453EF75FE60CD4 /* RichMessageBubbleView.swift in Sources */,
 				5B9168AE69C0902FCBE170A1 /* SSEventParser.swift in Sources */,
+				B3CD72BEAF187FF18135822E /* ScreenIdleTimerLock.swift in Sources */,
 				366AB847DA19D3225603589C /* SearchTextFieldConfigurator.swift in Sources */,
 				64D1BF1197D36C4B58B3F4FA /* SelectableLogTextView.swift in Sources */,
 				7CA0B544E68A18AAD2949780 /* Session.swift in Sources */,

@@ -80,6 +80,45 @@ final class VoiceRecordingViewModelPauseTests: XCTestCase {
 
         XCTAssertEqual(service.pauseCallCount, 1)
     }
+
+    func testScreenStaysAwakeWhileRecordingAndRestoresOnPauseAndFinish() async {
+        let service = MockVoiceRecordingService()
+        let idleLock = MockScreenIdleTimerLock()
+        let viewModel = VoiceRecordingViewModel(
+            recordingService: service,
+            chatClient: StubChatAPIClient(store: InMemoryKBStore()),
+            idleTimerLock: idleLock
+        )
+
+        viewModel.handleDragChanged(.zero)
+        try? await Task.sleep(for: .milliseconds(50))
+        XCTAssertTrue(idleLock.isDisabled)
+
+        viewModel.handleDragChanged(CGSize(width: 0, height: -60))
+        viewModel.handleDragEnded(CGSize(width: 0, height: -60))
+        XCTAssertTrue(idleLock.isDisabled)
+
+        viewModel.pauseLockedSession()
+        try? await Task.sleep(for: .milliseconds(50))
+        XCTAssertFalse(idleLock.isDisabled)
+
+        viewModel.resumeLockedSession()
+        try? await Task.sleep(for: .milliseconds(50))
+        XCTAssertTrue(idleLock.isDisabled)
+
+        viewModel.sendLockedSession()
+        try? await Task.sleep(for: .milliseconds(100))
+        XCTAssertFalse(idleLock.isDisabled)
+    }
+}
+
+@MainActor
+private final class MockScreenIdleTimerLock: ScreenIdleTimerLocking {
+    private(set) var isDisabled = false
+
+    func setIdleTimerDisabled(_ disabled: Bool) {
+        isDisabled = disabled
+    }
 }
 
 @MainActor

@@ -58,6 +58,8 @@ targets:
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleIconName: AppIcon
         ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
@@ -105,6 +107,8 @@ targets:
     info:
       path: KnowledgeBaseWidget/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDisplayName: Knowledge Base
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
@@ -123,6 +127,8 @@ targets:
     info:
       path: KnowledgeBaseWatchWidget/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDisplayName: Knowledge Base
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
@@ -147,6 +153,8 @@ targets:
     info:
       path: KnowledgeBaseWatchApp/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleIconName: AppIcon
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.coredan.KnowledgeBaseApp

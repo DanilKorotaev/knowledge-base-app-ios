@@ -36,7 +36,9 @@
 - [x] [SWR sync UX: статусы обновления](tasks/completed/task-ux-swr-sync-status-sessions-chat.md) — refreshing/offline/error для списка и чата
 - [x] [Offline attachments: disk cache management](tasks/completed/task-feature-offline-attachment-disk-cache-management.md) — размер, список, выборочное удаление
 - [ ] [Чат: кликабельные changed files](tasks/pending/task-ux-chat-clickable-changed-files.md) — MVP список под ответом, затем inline-ссылки
-- [ ] [Voice: pause/resume в LOCKED](tasks/pending/task-feature-voice-recording-pause-resume-locked.md) — одна запись из нескольких сегментов
+- [x] [Voice: экран не гаснет при записи](tasks/completed/task-ux-voice-recording-prevent-screen-sleep.md) — completed 2026-08-27
+- [x] [Voice: pause/resume в LOCKED](tasks/completed/task-feature-voice-recording-pause-resume-locked.md) — completed
+
 - [x] [Voice: retry без потери записи](tasks/completed/task-ux-voice-transcription-retry-without-loss.md) — completed 2026-07-03
 - [ ] [Session KB mode: перманентный выбор при создании](tasks/pending/task-ux-session-kb-mode-persistent.md) — убрать toggle из navbar чата
 - [ ] [Композер: polish](tasks/pending/task-ux-chat-composer-polish.md) — Quick Look, лимиты, RU

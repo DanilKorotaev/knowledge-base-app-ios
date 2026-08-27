@@ -34,6 +34,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-ux-swr-sync-status-sessions-chat.md` | SWR sync status banners on list and chat |
 | `task-feature-offline-attachment-disk-cache-management.md` | Attachment disk cache + Settings management |
 | `task-feature-offline-mode-cache-sync.md` | Offline mode epic (v1) |
+| `task-ux-voice-recording-prevent-screen-sleep.md` | Keep screen awake during voice recording |
 | `task-ops-semver-versioning-changelog-gitflow.md` | SemVer + changelog + git-flow (вариант A) |
 
 ## Pending (`pending/`)

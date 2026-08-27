@@ -34,6 +34,8 @@ final class VoiceRecordingViewModel {
     var transcriptionDraft: String = ""
     private let recordingService: VoiceRecordingServiceProtocol
     private let chatClient: ChatAPIClientProtocol
+    private let idleTimerLock: ScreenIdleTimerLocking
+    private var keepsScreenAwake = false
 
     /// When set, recording finishes into the chat composer draft instead of `PostRecordingReviewSheet`.
     var deferToComposer: Bool = false
@@ -53,10 +55,12 @@ final class VoiceRecordingViewModel {
 
     init(
         recordingService: VoiceRecordingServiceProtocol = VoiceRecordingService(),
-        chatClient: ChatAPIClientProtocol
+        chatClient: ChatAPIClientProtocol,
+        idleTimerLock: ScreenIdleTimerLocking = UIApplicationScreenIdleTimerLock.shared
     ) {
         self.recordingService = recordingService
         self.chatClient = chatClient
+        self.idleTimerLock = idleTimerLock
         impactLight.prepare()
         impactMedium.prepare()
     }
@@ -276,7 +280,9 @@ final class VoiceRecordingViewModel {
     private func startRecordingAsync() async {
         do {
             try await recordingService.startRecording()
+            setScreenAwake(true)
         } catch {
+            setScreenAwake(false)
             if !cancelledByGesture {
                 errorMessage = error.localizedDescription
             }
@@ -293,6 +299,7 @@ final class VoiceRecordingViewModel {
 
     private func cancelRecordingCleanup() async {
         try? await recordingService.cancelRecording()
+        setScreenAwake(false)
         phase = .idle
         lockedRecordingState = nil
         recordingStartDate = nil
@@ -308,6 +315,7 @@ final class VoiceRecordingViewModel {
         do {
             try await recordingService.pauseRecording()
             lockedRecordingState = .paused
+            setScreenAwake(false)
             impactLight.impactOccurred()
         } catch {
             errorMessage = error.localizedDescription
@@ -322,6 +330,7 @@ final class VoiceRecordingViewModel {
         do {
             try await recordingService.resumeRecording()
             lockedRecordingState = .recording
+            setScreenAwake(true)
             impactLight.impactOccurred()
         } catch {
             errorMessage = error.localizedDescription
@@ -346,6 +355,7 @@ final class VoiceRecordingViewModel {
             phase = .idle
             lockedRecordingState = nil
             recordingStartDate = nil
+            setScreenAwake(false)
             notification.notificationOccurred(.success)
 
             let handoffURL = lastRecordedFileURL ?? url
@@ -363,10 +373,17 @@ final class VoiceRecordingViewModel {
         } catch {
             errorMessage = error.localizedDescription
             try? await recordingService.cancelRecording()
+            setScreenAwake(false)
             phase = .idle
             lockedRecordingState = nil
             recordingStartDate = nil
         }
+    }
+
+    private func setScreenAwake(_ awake: Bool) {
+        guard keepsScreenAwake != awake else { return }
+        keepsScreenAwake = awake
+        idleTimerLock.setIdleTimerDisabled(awake)
     }
 
     private func resetGestureFlags() {
