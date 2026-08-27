@@ -71,7 +71,7 @@ struct SettingsView: View {
             } header: {
                 Text("Voice routing")
             } footer: {
-                Text("When no chat is open, the mic bar sends to this session. Optional TTL resets automatically.")
+                Text("Used by Apple Watch and by “record” deep links that open a chat. Optional TTL resets automatically.")
             }
 
             Section {

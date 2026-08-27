@@ -59,5 +59,6 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-bug-composer-send-voice-attachments-failure.md` | Voice/photo send fail (draft files cleared too early) | partially fixed |
 | `task-feature-api-client-version-metadata.md` | API client version headers for debugging | бэклог |
 | `task-feature-structured-ui-mvp.md` | Structured UI MVP | бэклог |
+| `task-ux-main-tab-shell-sessions-settings.md` | Tab shell: Chats + Settings, remove mic bar | code+tests done |
 
 **Deploy / E2E checklist (Nextcloud):** `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`

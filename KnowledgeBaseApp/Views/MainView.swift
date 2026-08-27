@@ -1,12 +1,18 @@
 import SwiftUI
 
 struct MainView: View {
+    private enum RootTab: Hashable {
+        case sessions
+        case settings
+    }
+
     private let apiClient: KnowledgeBaseAPIClientProtocol
     private let chatClient: ChatAPIClientProtocol
     private let filesClient: FilesAPIClientProtocol
     private let attachmentLoader: KBAttachmentLoaderProtocol?
     @Binding var deepLinkVoiceRecording: Bool
     @Binding var deepLinkSessionId: String?
+    @State private var selectedTab: RootTab = .sessions
     @State private var sessions: [KBSession] = []
     @State private var searchResults: [KBSession]?
     @State private var searchText = ""
@@ -53,15 +59,29 @@ struct MainView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            mainListWithDebugChrome
-                .navigationDestination(for: KBSession.self) { session in
-                    ChatView(
-                        session: session,
-                        chatClient: chatClient,
-                        attachmentLoader: attachmentLoader
-                    )
-                }
+        TabView(selection: $selectedTab) {
+            NavigationStack(path: $navigationPath) {
+                mainListWithDebugChrome
+                    .navigationDestination(for: KBSession.self) { session in
+                        ChatView(
+                            session: session,
+                            chatClient: chatClient,
+                            attachmentLoader: attachmentLoader
+                        )
+                    }
+            }
+            .tabItem {
+                Label("tab.chats", systemImage: "bubble.left.and.bubble.right")
+            }
+            .tag(RootTab.sessions)
+
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem {
+                Label("tab.settings", systemImage: "gearshape")
+            }
+            .tag(RootTab.settings)
         }
         .environment(voiceRouting)
         .environment(voiceViewModel)
@@ -90,7 +110,11 @@ struct MainView: View {
                 configureMainListOnAppear()
             }
             .onChange(of: deepLinkVoiceRecording) { _, newValue in
-                scheduleDeepLinkVoiceBannerClear(ifEnabled: newValue)
+                guard newValue else { return }
+                Task { @MainActor in
+                    await openVoiceTargetSessionFromDeepLink()
+                    deepLinkVoiceRecording = false
+                }
             }
             .onChange(of: deepLinkSessionId, initial: true) { _, newValue in
                 openDeepLinkedSessionIfNeeded(newValue)
@@ -179,9 +203,6 @@ struct MainView: View {
         mainStackContent
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Knowledge Base")
-            .safeAreaInset(edge: .top, spacing: 0) {
-                deepLinkVoiceBanner
-            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -206,27 +227,7 @@ struct MainView: View {
                         Label("Changed files", systemImage: "doc.text.magnifyingglass")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        SettingsView()
-                    } label: {
-                        Label("Settings", systemImage: "gearshape")
-                    }
-                }
             }
-    }
-
-    @ViewBuilder
-    private var deepLinkVoiceBanner: some View {
-        if deepLinkVoiceRecording {
-            Text("Tap the microphone below to start a voice request.")
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .frame(maxWidth: .infinity)
-                .background(.yellow.opacity(0.38))
-        }
     }
 
     private var sessionActionErrorPresented: Binding<Bool> {
@@ -294,22 +295,14 @@ struct MainView: View {
     }
 
     private func configureMainListOnAppear() {
-        voiceViewModel.recordingFinishedOutsideChatHandler = { url in
-            routeMainScreenVoiceToDefaultChat(audioURL: url)
-        }
+        // Voice recording lives in Chat composer and Apple Watch — not on the session list.
+        voiceViewModel.recordingFinishedOutsideChatHandler = nil
         updateMainScreenDebugGesture(isOnMainList: navigationPath.isEmpty)
-    }
-
-    private func scheduleDeepLinkVoiceBannerClear(ifEnabled enabled: Bool) {
-        guard enabled else { return }
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(12))
-            deepLinkVoiceRecording = false
-        }
     }
 
     private func openDeepLinkedSessionIfNeeded(_ sessionId: String?) {
         guard let sessionId else { return }
+        selectedTab = .sessions
         Task { @MainActor in
             await openSessionFromDeepLink(sessionId: sessionId)
             deepLinkSessionId = nil
@@ -353,9 +346,6 @@ struct MainView: View {
                         : "Configure the API in Settings, or use a stub build with a demo session when no server is set."
                 )
             )
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                MicBar(viewModel: voiceViewModel, voiceRouting: voiceRouting)
-            }
         } else {
             sessionsList
         }
@@ -387,9 +377,6 @@ struct MainView: View {
         }
         .refreshable {
             await loadSessions(showFullScreenLoading: false)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            MicBar(viewModel: voiceViewModel, voiceRouting: voiceRouting)
         }
     }
 
@@ -619,28 +606,36 @@ struct MainView: View {
 
     @MainActor
     private func openSessionFromDeepLink(sessionId: String) async {
+        selectedTab = .sessions
         if let existing = sessions.first(where: { $0.id == sessionId }) {
+            navigationPath = NavigationPath()
             navigationPath.append(existing)
             return
         }
         await loadSessions(showFullScreenLoading: false)
         if let found = sessions.first(where: { $0.id == sessionId }) {
+            navigationPath = NavigationPath()
             navigationPath.append(found)
             return
         }
         if let found = searchResults?.first(where: { $0.id == sessionId }) {
+            navigationPath = NavigationPath()
             navigationPath.append(found)
         }
     }
 
+    /// Widget / Watch `knowledgebase://record`: open the voice-default (or newest) chat so recording happens in composer.
     @MainActor
-    private func routeMainScreenVoiceToDefaultChat(audioURL: URL) -> Bool {
-        guard let session = voiceRouting.mainScreenVoiceChatSession(in: sessions) else {
-            return false
+    private func openVoiceTargetSessionFromDeepLink() async {
+        selectedTab = .sessions
+        if sessions.isEmpty {
+            await loadSessions(showFullScreenLoading: false)
         }
-        voiceRouting.pendingComposerVoice = (sessionId: session.id, audioURL: audioURL)
+        guard let session = voiceRouting.resolveVoiceTargetSession(in: sessions) ?? sessions.first else {
+            return
+        }
+        navigationPath = NavigationPath()
         navigationPath.append(session)
-        return true
     }
 
     @MainActor
@@ -741,26 +736,6 @@ struct MainView: View {
     private static func makeAttachmentLoader() -> KBAttachmentLoaderProtocol? {
         let inner: KBAttachmentLoaderProtocol = remoteBundle() ?? StubAttachmentLoader()
         return CachingAttachmentLoader(inner: inner, cache: FileAttachmentDiskCache.shared)
-    }
-}
-
-private struct MicBar: View {
-    @Bindable var viewModel: VoiceRecordingViewModel
-    @Bindable var voiceRouting: VoiceRoutingContext
-
-    /// В режиме записи панель тянется на всю ширину; в idle — небольшие боковые отступы у микрофона.
-    private var horizontalPadding: CGFloat {
-        viewModel.phase == .idle ? 16 : 0
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            VoiceDefaultSessionIndicator(label: voiceRouting.indicatorLabel())
-            MicRecordControl(viewModel: viewModel)
-                .padding(.horizontal, horizontalPadding)
-        }
-        .frame(maxWidth: .infinity)
-        .background(.bar)
     }
 }
 

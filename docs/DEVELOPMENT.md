@@ -50,13 +50,19 @@ bundle exec fastlane beta
 
 Same as **Building and testing** above — `bundle exec fastlane test` is the only pre-push gate documented here.
 
+## Main shell (tabs)
+
+- **Tabs:** Chats (session list + chat stack) · Settings (moved from the session-list toolbar).
+- **Overview / Boards** tab is intentionally not shipped yet (after Structured UI).
+- **No mic bar** on the session list — voice only from the chat composer or Apple Watch.
+
 ## Apple Watch companion
 
 - **Target:** `KnowledgeBaseWatchApp` (`com.coredan.KnowledgeBaseApp.watch`), embedded in the iOS app.
 - **Sync:** `WatchVoiceSessionContextSync` on iPhone pushes default voice session via `WCSession.updateApplicationContext`.
 - **Relay:** Watch records → `transferFile` (+ `sendMessage` wake when reachable) → iPhone `WatchVoiceRelayProcessor` in background → preview back on Watch.
 - **Offline:** `WatchPendingRecordingStore` on Watch queues clips when iPhone is unreachable.
-- **Deep link:** `knowledgebase://record` opens recording (same scheme as iPhone widget).
+- **Deep link:** `knowledgebase://record` opens the voice-default (or newest) chat on iPhone so recording continues in the composer (same scheme as iPhone widget).
 - **Complication:** `KnowledgeBaseWatchWidgetExtension` (`com.coredan.KnowledgeBaseApp.watch.widget`) — `accessoryCircular` mic + `widgetURL("knowledgebase://record")`; embedded in Watch app.
 
 Match / TestFlight: include `com.coredan.KnowledgeBaseApp.watch` in `fastlane match appstore --app_identifier …`.
@@ -65,8 +71,8 @@ Match / TestFlight: include `com.coredan.KnowledgeBaseApp.watch` in `fastlane ma
 
 - **Preference:** `DefaultVoiceSessionPreference` in UserDefaults key `kb.voice.default_session` (JSON).
 - **Routing:** `VoiceRoutingContext.resolveVoiceTargetSessionId` — open chat → valid default → first session.
-- **UI:** session list swipe/context menu **Voice default** + TTL sheet; mic bar shows `🎙 Session · N min`; Settings → Voice routing → clear.
-- **Main-screen recording:** when a valid voice default is set, finishing a recording opens that session’s chat and enqueues the clip into the composer (transcription in the message field). Without a default, the post-record review sheet is used (widget / Watch keep the sheet path later).
+- **UI:** session list swipe/context menu **Voice default** + TTL sheet; Settings → Voice routing → clear. Banner on the list when TTL expires.
+- **Deep link / widget:** `knowledgebase://record` switches to Chats and pushes the resolved target session (record in composer).
 - **TTL expiry:** checked on foreground (`scenePhase`) and after session list refresh; restores `previousSessionId` when set.
 - **Watch:** `WatchVoiceSessionContextSync` pushes `default_session_id` / `expires_at` via `WCSession.updateApplicationContext` when Watch app is paired.
 

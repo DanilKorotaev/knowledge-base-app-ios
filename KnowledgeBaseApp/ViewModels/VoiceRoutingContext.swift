@@ -1,6 +1,6 @@
 import Foundation
 
-/// Session + KB toggle used when sending voice from the mic bar (aligned with the open chat when navigated).
+/// Session + KB toggle for voice routing (open chat, Watch, and record deep links).
 @Observable
 @MainActor
 final class VoiceRoutingContext {
@@ -8,9 +8,9 @@ final class VoiceRoutingContext {
     var useKnowledgeBase: Bool = true
     /// When true, finished recordings append to the open chat composer instead of the review sheet.
     var usesComposerDraft: Bool = false
-    /// One-shot notice after TTL expiry (shown on MainView; dismiss with `dismissDefaultExpiredNotice()`).
+    /// One-shot notice after TTL expiry (shown on the sessions list; dismiss with `dismissDefaultExpiredNotice()`).
     var defaultExpiredNotice: VoiceDefaultExpiredNotice?
-    /// Voice captured on MainView; target chat consumes on appear and enqueues into the composer.
+    /// Voice file handed off into a chat composer (e.g. after Watch relay).
     var pendingComposerVoice: (sessionId: String, audioURL: URL)?
 
     private let store: DefaultVoiceSessionStoreProtocol
@@ -133,7 +133,7 @@ final class VoiceRoutingContext {
         }
     }
 
-    /// When the user records from the session list and a valid voice default is set, open that chat instead of the review sheet.
+    /// Target chat for Watch / deep-link “record” when no chat is already open.
     func mainScreenVoiceChatSession(in sessions: [KBSession], now: Date = Date()) -> KBSession? {
         guard activeSessionId == nil else { return nil }
         guard let preference = validDefaultPreference else { return nil }
