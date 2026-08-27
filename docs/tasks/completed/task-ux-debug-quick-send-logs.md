@@ -7,12 +7,13 @@
 ## Done
 
 - [x] `X-KB-App-Log-Session` on every API request (`LogSession.shared.id`) + backend `client_meta` logging
-- [x] Toggle **Shake to send logs** (Settings Developer + Debug → Logs → Settings)
+- [x] Toggle **Shake to send logs** only in **Debug → Logs → Settings** (not in app Settings → Developer)
 - [x] Shake → confirm → attach current `.log` to open chat composer (+ note with filename / session id)
 - [x] Main session list: 3-finger swipe down → Debug menu as modal sheet
+- [x] Verified on device (build 102): attach works; filename / session id match (`E9853395-…`)
 
 ## How to use
 
-1. Enable **Shake to send logs**.
+1. Debug → Logs → Settings → enable **Shake to send logs**.
 2. Open a chat, shake phone → **Send** → log file appears in composer; send the message as usual.
 3. On the session list, swipe down with three fingers → Debug sheet.

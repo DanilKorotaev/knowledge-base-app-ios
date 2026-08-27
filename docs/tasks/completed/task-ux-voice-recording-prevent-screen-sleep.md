@@ -20,3 +20,4 @@ In Low Power Mode (short auto-lock), the display dims while the user records a l
 - [x] Screen may dim again while recording is paused
 - [x] Idle timer restored after send, cancel, or failed start (release on Send tap, not after merge)
 - [x] Unit test with mock idle timer lock
+- [x] Verified on device (Low Power Mode / auto-lock): stays awake while recording; OK after Send

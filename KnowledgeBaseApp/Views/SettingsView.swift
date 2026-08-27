@@ -9,13 +9,11 @@ struct SettingsView: View {
     @State private var voiceDefaultTitle: String?
     @State private var voiceDefaultExpiry: String?
     @State private var didCopyVersion = false
-    @State private var debugQuickActions = DebugQuickActionsController.shared
     @Bindable private var languageStore = AppLanguageStore.shared
 
     private var clientMeta: KBClientMetadata { KBClientMetadata.current }
 
     var body: some View {
-        @Bindable var debugQuickActions = debugQuickActions
         Form {
             Section {
                 Picker("settings.language", selection: languagePreferenceBinding) {
@@ -105,13 +103,12 @@ struct SettingsView: View {
             }
 
             Section("Developer") {
-                Toggle("Shake to send logs", isOn: $debugQuickActions.isShakeToSendLogsEnabled)
-                Text("Shake while a chat is open to attach the current log file. On the session list, swipe down with three fingers for Debug.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
                 NavigationLink("Debug menu") {
                     DebugMenuView()
                 }
+                Text("On the session list, swipe down with three fingers for Debug. Shake-to-send logs lives under Debug → Logs → Settings.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .navigationTitle("Settings")
