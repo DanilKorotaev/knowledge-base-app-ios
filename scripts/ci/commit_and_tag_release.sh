@@ -11,7 +11,7 @@ BRANCH="${GITHUB_REF_NAME:-main}"
 if [[ "$BRANCH" == "refs/heads/"* ]]; then
   BRANCH="${BRANCH#refs/heads/}"
 fi
-# workflow_run checkouts are often detached; always publish release metadata to main
+# workflow_run checkouts are detached at head_sha; publish release metadata to main tip
 if [[ "${GITHUB_EVENT_NAME:-}" == "workflow_run" ]]; then
   BRANCH="main"
 fi
@@ -25,7 +25,10 @@ if [[ -f "$META" ]]; then
   BUILD="$(python3 -c "import json,pathlib; print(json.loads(pathlib.Path('fastlane/test_output/ci_testflight.json').read_text()).get('build_number',''))" 2>/dev/null || true)"
 fi
 
-if [[ -n "$BUILD" && -f docs/RELEASES.md ]]; then
+update_releases_build_column() {
+  if [[ -z "$BUILD" || ! -f docs/RELEASES.md ]]; then
+    return 0
+  fi
   VERSION="$VERSION" BUILD="$BUILD" python3 - <<'PY'
 import os
 import re
@@ -41,7 +44,20 @@ if n:
     path.write_text(text2, encoding="utf-8")
     print(f"RELEASES.md build -> {build}")
 PY
-fi
+}
+
+sync_to_origin_branch() {
+  git fetch origin "${BRANCH}"
+  if git show-ref --verify --quiet "refs/remotes/origin/${BRANCH}"; then
+    if git symbolic-ref -q HEAD >/dev/null 2>&1; then
+      git pull --rebase origin "${BRANCH}"
+    else
+      git rebase "origin/${BRANCH}"
+    fi
+  fi
+}
+
+update_releases_build_column
 
 git add VERSION CHANGELOG.md docs/RELEASES.md
 if [[ -n "$(git status --porcelain -- VERSION CHANGELOG.md docs/RELEASES.md)" ]]; then
@@ -51,10 +67,15 @@ if [[ -n "$(git status --porcelain -- VERSION CHANGELOG.md docs/RELEASES.md)" ]]
   fi
   MSG="${MSG} [skip ci]"
   git commit -m "$MSG"
+  echo "Created release commit on $(git rev-parse --short HEAD)"
+
+  # Deploy often runs on detached HEAD while main moved (fix commits, docs). Rebase first.
+  sync_to_origin_branch
   git push origin "HEAD:${BRANCH}"
   echo "Pushed release commit for ${VERSION} -> ${BRANCH}"
 else
   echo "No release metadata changes to commit."
+  git fetch origin "${BRANCH}" 2>/dev/null || true
 fi
 
 git fetch --tags --force origin 2>/dev/null || true
