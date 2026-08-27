@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # After a successful TestFlight upload: commit VERSION/CHANGELOG/RELEASES and push tag ios/v*.
+#
+# Does NOT rebase a release commit onto main (that conflicts when another deploy already
+# pushed the same files). Instead: snapshot prepared metadata → reset to origin/main tip →
+# merge metadata onto tip → commit → tag.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
-VERSION="$(tr -d '[:space:]' < VERSION)"
-TAG="ios/v${VERSION}"
 BRANCH="${GITHUB_REF_NAME:-main}"
 if [[ "$BRANCH" == "refs/heads/"* ]]; then
   BRANCH="${BRANCH#refs/heads/}"
@@ -25,76 +27,74 @@ if [[ -f "$META" ]]; then
   BUILD="$(python3 -c "import json,pathlib; print(json.loads(pathlib.Path('fastlane/test_output/ci_testflight.json').read_text()).get('build_number',''))" 2>/dev/null || true)"
 fi
 
-update_releases_build_column() {
-  if [[ -z "$BUILD" || ! -f docs/RELEASES.md ]]; then
-    return 0
-  fi
-  VERSION="$VERSION" BUILD="$BUILD" python3 - <<'PY'
-import os
-import re
-from pathlib import Path
+INTENDED_VERSION="$(tr -d '[:space:]' < VERSION)"
+TAG="ios/v${INTENDED_VERSION}"
 
-path = Path("docs/RELEASES.md")
-version = os.environ["VERSION"]
-build = os.environ["BUILD"]
-text = path.read_text(encoding="utf-8")
-pattern = rf"^(\|\s*{re.escape(version)}\s*\|\s*)[^|]*(\|)"
-text2, n = re.subn(pattern, rf"\g<1>{build} \2", text, count=1, flags=re.M)
-if n:
-    path.write_text(text2, encoding="utf-8")
-    print(f"RELEASES.md build -> {build}")
-PY
-}
+if [[ ! -f VERSION || ! -f CHANGELOG.md || ! -f docs/RELEASES.md ]]; then
+  echo "error: expected VERSION, CHANGELOG.md, docs/RELEASES.md from prepare_release" >&2
+  exit 1
+fi
 
-sync_to_origin_branch() {
-  git fetch origin "${BRANCH}"
-  if git show-ref --verify --quiet "refs/remotes/origin/${BRANCH}"; then
-    # Always rebase onto tip — deploy checkouts are usually detached at head_sha.
-    git rebase "origin/${BRANCH}"
-  fi
-}
+SNAPSHOT="$(mktemp -d "${TMPDIR:-/tmp}/kb-release-meta.XXXXXX")"
+cleanup() { rm -rf "$SNAPSHOT"; }
+trap cleanup EXIT
+
+mkdir -p "$SNAPSHOT/docs"
+cp VERSION CHANGELOG.md "$SNAPSHOT/"
+cp docs/RELEASES.md "$SNAPSHOT/docs/RELEASES.md"
+echo "Snapshotted release metadata for ${INTENDED_VERSION} (build ${BUILD:-—})"
 
 discard_deploy_working_tree() {
   # prepare_release / fastlane beta touch tracked files we must not push (xcodeproj, project.yml).
   if [[ -n "$(git status --porcelain)" ]]; then
-    echo "Discarding local deploy-only changes before rebase:"
+    echo "Discarding local deploy-only changes before syncing to ${BRANCH}:"
     git status --porcelain
     git reset --hard HEAD
     git clean -fd --exclude=.git --exclude=vendor --exclude=fastlane/test_output --exclude=fastlane/build_logs 2>/dev/null || git clean -fd
   fi
 }
 
-update_releases_build_column
+discard_deploy_working_tree
+
+git fetch origin "${BRANCH}"
+git fetch --tags --force origin 2>/dev/null || true
+
+if git show-ref --verify --quiet "refs/remotes/origin/${BRANCH}"; then
+  git checkout -B "${BRANCH}" "origin/${BRANCH}"
+  echo "Checked out origin/${BRANCH} at $(git rev-parse --short HEAD)"
+else
+  echo "error: origin/${BRANCH} not found" >&2
+  exit 1
+fi
+
+python3 scripts/ci/apply_release_metadata.py \
+  --snapshot-dir "$SNAPSHOT" \
+  --build "${BUILD}" \
+  --date "$(date -u +%F)"
 
 git add VERSION CHANGELOG.md docs/RELEASES.md
 if [[ -n "$(git status --porcelain -- VERSION CHANGELOG.md docs/RELEASES.md)" ]]; then
-  MSG="chore(release): ios/v${VERSION}"
+  MSG="chore(release): ios/v${INTENDED_VERSION}"
   if [[ -n "$BUILD" ]]; then
     MSG="${MSG} (build ${BUILD})"
   fi
   MSG="${MSG} [skip ci]"
   git commit -m "$MSG"
   echo "Created release commit on $(git rev-parse --short HEAD)"
-
-  discard_deploy_working_tree
-  # Deploy often runs on detached HEAD while main moved (fix commits, docs). Rebase first.
-  sync_to_origin_branch
   git push origin "HEAD:${BRANCH}"
-  echo "Pushed release commit for ${VERSION} -> ${BRANCH}"
+  echo "Pushed release commit for ${INTENDED_VERSION} -> ${BRANCH}"
 else
-  echo "No release metadata changes to commit."
-  git fetch origin "${BRANCH}" 2>/dev/null || true
+  echo "No release metadata changes to commit (already on ${BRANCH})."
 fi
 
-git fetch --tags --force origin 2>/dev/null || true
 if git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
   echo "Tag ${TAG} already exists on origin; skip create."
   exit 0
 fi
 
-MSG="iOS ${VERSION}"
+MSG="iOS ${INTENDED_VERSION}"
 if [[ -n "$BUILD" ]]; then
-  MSG="iOS ${VERSION} (build ${BUILD})"
+  MSG="iOS ${INTENDED_VERSION} (build ${BUILD})"
 fi
 git tag -a "$TAG" -m "$MSG"
 git push origin "refs/tags/${TAG}"

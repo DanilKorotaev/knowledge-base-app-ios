@@ -226,7 +226,12 @@ def build_tests_message(outcome: str, output_dir: Path) -> str:
     return "\n".join(lines)
 
 
-def build_testflight_message(outcome: str, output_dir: Path) -> str:
+def build_testflight_message(
+    outcome: str,
+    output_dir: Path,
+    *,
+    release_git_outcome: str = "skipped",
+) -> str:
     meta = load_json(output_dir / "ci_testflight.json") or {}
     version = str(meta.get("marketing_version", "?"))
     build = str(meta.get("build_number", "?"))
@@ -238,12 +243,18 @@ def build_testflight_message(outcome: str, output_dir: Path) -> str:
     if version in ("", "?"):
         version = file_version or "?"
 
-    success = outcome == "success"
-    title = (
-        "✅ <b>Knowledge Base iOS — TestFlight</b>"
-        if success
-        else "❌ <b>Knowledge Base iOS — сборка TestFlight не удалась</b>"
-    )
+    upload_ok = outcome == "success"
+    release_git = (release_git_outcome or "skipped").strip().lower()
+    # Upload OK but tag/commit failed → do not claim full success
+    full_ok = upload_ok and release_git in {"success", "skipped"}
+    partial = upload_ok and release_git not in {"success", "skipped"}
+
+    if full_ok:
+        title = "✅ <b>Knowledge Base iOS — TestFlight</b>"
+    elif partial:
+        title = "⚠️ <b>Knowledge Base iOS — TestFlight загружен, релизный тег не создан</b>"
+    else:
+        title = "❌ <b>Knowledge Base iOS — сборка TestFlight не удалась</b>"
 
     lines = [
         title,
@@ -265,11 +276,18 @@ def build_testflight_message(outcome: str, output_dir: Path) -> str:
             tag_url = f"{server}/{repo}/releases/tag/{tag}"
             lines.append(f'Tag: <a href="{html_escape(tag_url)}"><code>{html_escape(tag)}</code></a>')
 
-    if success:
-        lines.append("")
+    lines.append("")
+    if full_ok:
         lines.append("Сборка собрана и отправлена в App Store Connect (TestFlight).")
+        if release_git == "success":
+            lines.append("Релизный коммит и тег <code>ios/v*</code> запушены.")
+    elif partial:
+        lines.append(
+            "IPA в App Store Connect есть, но шаг <code>commit_and_tag_release</code> упал "
+            f"(outcome=<code>{html_escape(release_git)}</code>). "
+            "Тег/CHANGELOG на main могут отсутствовать — смотри логи workflow."
+        )
     else:
-        lines.append("")
         lines.append("См. логи workflow для деталей (match, archive, upload).")
 
     return "\n".join(lines)
@@ -289,6 +307,12 @@ def main() -> None:
         help="GitHub Actions step outcome",
     )
     parser.add_argument(
+        "--release-git-outcome",
+        default="skipped",
+        choices=["success", "failure", "cancelled", "skipped"],
+        help="Outcome of commit_and_tag_release step (testflight only)",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=DEFAULT_TEST_OUTPUT,
@@ -299,7 +323,11 @@ def main() -> None:
     if args.event == "tests":
         message = build_tests_message(args.outcome, args.output_dir)
     else:
-        message = build_testflight_message(args.outcome, args.output_dir)
+        message = build_testflight_message(
+            args.outcome,
+            args.output_dir,
+            release_git_outcome=args.release_git_outcome,
+        )
 
     send_telegram(message)
     print("Telegram notification sent.")

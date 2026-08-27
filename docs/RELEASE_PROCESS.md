@@ -56,8 +56,11 @@ Optional: put draft notes under `## [Unreleased]` in [`CHANGELOG.md`](../CHANGEL
 
 1. [`scripts/ci/prepare_release.py`](../scripts/ci/prepare_release.py) runs **before** Fastlane (local working tree only — not pushed yet).
 2. Fastlane syncs marketing version from `VERSION`, build from `GITHUB_RUN_NUMBER`.
-3. On **success only**: [`scripts/ci/commit_and_tag_release.sh`](../scripts/ci/commit_and_tag_release.sh) commits metadata with `[skip ci]` and pushes tag `ios/v{VERSION}`.
-4. Failed upload does **not** advance the git tag / release commit (safe to retry).
+3. On **upload success**: [`scripts/ci/commit_and_tag_release.sh`](../scripts/ci/commit_and_tag_release.sh) snapshots prepared metadata, resets to **current** `origin/main`, merges VERSION/CHANGELOG/RELEASES onto the tip (no rebase), commits with `[skip ci]`, and pushes tag `ios/v{VERSION}`.
+4. Telegram notify runs **after** the tag step and reports a warning if the IPA uploaded but the git tag/commit failed.
+5. Failed upload does **not** advance the git tag / release commit (safe to retry).
+
+Concurrent deploys: GHA concurrency queues Deploy jobs on `main`. Metadata is always applied on the latest tip so overlapping VERSION/CHANGELOG edits do not fail the job.
 
 ## Traceability
 

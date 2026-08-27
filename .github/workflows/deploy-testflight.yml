@@ -110,18 +110,31 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: bundle exec fastlane beta
 
-      - name: Notify Telegram (TestFlight)
-        if: always()
-        run: python3 scripts/ci/telegram_notify.py testflight --outcome ${{ steps.beta.outcome }}
-
       - name: Commit VERSION/CHANGELOG and tag release
+        id: release_git
         if: steps.beta.outcome == 'success'
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           bash scripts/ci/commit_and_tag_release.sh
 
+      - name: Notify Telegram (TestFlight)
+        if: always()
+        env:
+          RELEASE_GIT_OUTCOME: ${{ steps.release_git.outcome || 'skipped' }}
+        run: |
+          python3 scripts/ci/telegram_notify.py testflight \
+            --outcome "${{ steps.beta.outcome }}" \
+            --release-git-outcome "${RELEASE_GIT_OUTCOME}"
+
       - name: Fail if TestFlight deploy failed
         if: steps.beta.outcome != 'success'
         run: exit 1
+
+      - name: Fail if release commit/tag failed
+        if: steps.beta.outcome == 'success' && steps.release_git.outcome != 'success'
+        run: |
+          echo "::error::TestFlight upload succeeded but VERSION/CHANGELOG/tag step failed — check commit_and_tag_release.sh"
+          exit 1
