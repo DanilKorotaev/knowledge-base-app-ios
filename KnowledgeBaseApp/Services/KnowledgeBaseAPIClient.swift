@@ -1012,7 +1012,8 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         actionId: String,
         componentId: String,
-        clientSchemaVersion: Int
+        clientSchemaVersion: Int,
+        values: [String: StructuredUIFormValue]? = nil
     ) async throws -> KBUIEventResponse {
         let url = baseURL
             .appendingPathComponent("api")
@@ -1027,13 +1028,15 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             let action_id: String
             let component_id: String
             let client_schema_version: Int
+            let values: [String: StructuredUIFormValue]?
         }
 
         request.httpBody = try JSONEncoder().encode(
             Body(
                 action_id: actionId,
                 component_id: componentId,
-                client_schema_version: clientSchemaVersion
+                client_schema_version: clientSchemaVersion,
+                values: values
             )
         )
 

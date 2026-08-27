@@ -113,7 +113,10 @@
 }
 ```
 
-Типы нод v1: `vstack`, `text`, `button`. JSON Schema: `knowledge-base-bot/kb_app_api/structured_ui/schema_v1.json`.
+Типы нод v1: `vstack`, `text`, `button`, `checkbox`, `radio_group`, `select`, `text_field`.  
+JSON Schema: `knowledge-base-bot/kb_app_api/structured_ui/schema_v1.json`.
+
+**Режимы:** обычная `button` — сразу `ui-events`; поля формы правят локальный draft; `button` с `"submit": true` отправляет `values`.
 
 ### Structured UI events
 
@@ -125,11 +128,19 @@
 
 ```json
 {
-  "action_id": "confirm_yes",
-  "component_id": "btn_yes",
-  "client_schema_version": 1
+  "action_id": "submit_form",
+  "component_id": "btn_submit",
+  "client_schema_version": 1,
+  "values": {
+    "notify": true,
+    "theme": "dark",
+    "topics": ["ios", "bot"],
+    "note": "hello"
+  }
 }
 ```
+
+Поле `values` опционально (только для submit / form commit).
 
 Для `file_type=voice` в `attachments[]` допускается `transcription`; на уровне сообщения — `transcription` (voice-only).
 

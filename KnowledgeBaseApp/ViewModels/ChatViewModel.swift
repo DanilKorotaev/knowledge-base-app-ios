@@ -1102,10 +1102,14 @@ final class ChatViewModel {
     }
 
     func startStructuredUIFlow() async {
-        await sendStructuredUIEvent(actionId: "start", componentId: "bootstrap")
+        await sendStructuredUIEvent(actionId: "start", componentId: "bootstrap", values: nil)
     }
 
-    func sendStructuredUIEvent(actionId: String, componentId: String) async {
+    func sendStructuredUIEvent(
+        actionId: String,
+        componentId: String,
+        values: [String: StructuredUIFormValue]? = nil
+    ) async {
         guard !isSendingUIEvent else { return }
         isSendingUIEvent = true
         errorMessage = nil
@@ -1116,7 +1120,8 @@ final class ChatViewModel {
                 client: client,
                 sessionId: session.id,
                 actionId: actionId,
-                componentId: componentId
+                componentId: componentId,
+                values: values
             )
             applyUIEventResponse(response)
         } catch {
@@ -1128,7 +1133,8 @@ final class ChatViewModel {
         client: ChatAPIClientProtocol,
         sessionId: String,
         actionId: String,
-        componentId: String
+        componentId: String,
+        values: [String: StructuredUIFormValue]?
     ) async throws -> KBUIEventResponse {
         let schemaVersion = KBStructuredUIDocument.supportedSchemaVersion
         if let stub = client as? StubChatAPIClient {
@@ -1136,7 +1142,8 @@ final class ChatViewModel {
                 sessionId: sessionId,
                 actionId: actionId,
                 componentId: componentId,
-                clientSchemaVersion: schemaVersion
+                clientSchemaVersion: schemaVersion,
+                values: values
             )
         }
         if let remote = client as? URLSessionKnowledgeBaseAPIClient {
@@ -1144,14 +1151,16 @@ final class ChatViewModel {
                 sessionId: sessionId,
                 actionId: actionId,
                 componentId: componentId,
-                clientSchemaVersion: schemaVersion
+                clientSchemaVersion: schemaVersion,
+                values: values
             )
         }
         return try await client.sendUIEvent(
             sessionId: sessionId,
             actionId: actionId,
             componentId: componentId,
-            clientSchemaVersion: schemaVersion
+            clientSchemaVersion: schemaVersion,
+            values: values
         )
     }
 

@@ -62,11 +62,12 @@ struct ChatView: View {
                                         attachmentLoader: attachmentLoader,
                                         isStructuredUISending: viewModel.isSendingUIEvent
                                             && message.id == viewModel.activeStructuredUIMessageId,
-                                        onStructuredUIAction: { actionId, componentId in
+                                        onStructuredUIAction: { actionId, componentId, values in
                                             Task {
                                                 await viewModel.sendStructuredUIEvent(
                                                     actionId: actionId,
-                                                    componentId: componentId
+                                                    componentId: componentId,
+                                                    values: values
                                                 )
                                             }
                                         }

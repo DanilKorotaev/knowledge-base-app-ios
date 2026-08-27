@@ -67,6 +67,34 @@ final class KBStructuredUITests: XCTestCase {
         let result = StubStructuredUIMockFlow.apply(actionId: "start", componentId: "bootstrap")
         XCTAssertNil(result.userContent)
         XCTAssertEqual(result.screen.screen.type, "vstack")
-        XCTAssertEqual(result.screen.screen.supportedChildren.filter { $0.type == "button" }.count, 2)
+        XCTAssertEqual(result.screen.screen.supportedChildren.filter { $0.type == "button" }.count, 3)
+    }
+
+    func testFormSubmitSendsValuesSummary() {
+        let values: [String: StructuredUIFormValue] = [
+            "notify": .bool(true),
+            "theme": .string("dark"),
+            "topics": .strings(["ios", "bot"]),
+            "note": .string("hi"),
+        ]
+        let result = StubStructuredUIMockFlow.apply(
+            actionId: "submit_form",
+            componentId: "btn_submit",
+            values: values
+        )
+        XCTAssertEqual(result.userContent, "[UI] note=hi; notify=true; theme=dark; topics=[ios,bot]")
+        XCTAssertEqual(
+            result.screen.screen.supportedChildren.first(where: { $0.type == "text" })?.text,
+            "Submitted"
+        )
+    }
+
+    func testFormDraftSeedFromDocument() {
+        let open = StubStructuredUIMockFlow.apply(actionId: "open_form", componentId: "btn_form")
+        let seeded = StructuredUIFormDraft.seed(from: open.screen)
+        XCTAssertEqual(seeded["notify"], .bool(true))
+        XCTAssertEqual(seeded["theme"], .string("system"))
+        XCTAssertEqual(seeded["topics"], .strings(["ios"]))
+        XCTAssertEqual(seeded["note"], .string(""))
     }
 }

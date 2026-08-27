@@ -7,7 +7,7 @@ struct RichMessageBubbleView: View {
     var attachmentLoader: KBAttachmentLoaderProtocol?
     var assistantResponseTime: TimeInterval?
     var isStructuredUISending: Bool = false
-    var onStructuredUIAction: ((String, String) -> Void)?
+    var onStructuredUIAction: ((String, String, [String: StructuredUIFormValue]?) -> Void)?
 
     @State private var fullscreenImage: IdentifiableImage?
     @State private var copySheetText: IdentifiableCopyText?
@@ -96,8 +96,8 @@ struct RichMessageBubbleView: View {
                 StructuredUIPanelView(
                     document: structuredUI,
                     isSending: isStructuredUISending,
-                    onAction: { actionId, componentId in
-                        onStructuredUIAction?(actionId, componentId)
+                    onAction: { actionId, componentId, values in
+                        onStructuredUIAction?(actionId, componentId, values)
                     }
                 )
             }

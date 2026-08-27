@@ -543,11 +543,24 @@ components:
       properties:
         type:
           type: string
-          enum: [vstack, text, button]
+          enum: [vstack, text, button, checkbox, radio_group, select, text_field]
         id: { type: string }
         text: { type: string }
         label: { type: string }
         action_id: { type: string }
+        value: {}
+        placeholder: { type: string }
+        max_length: { type: integer }
+        options:
+          type: array
+          items:
+            type: object
+            required: [id, label]
+            properties:
+              id: { type: string }
+              label: { type: string }
+        multi: { type: boolean }
+        submit: { type: boolean }
         children:
           type: array
           items: { $ref: "#/components/schemas/StructuredUINode" }
@@ -565,6 +578,10 @@ components:
         metadata:
           type: object
           additionalProperties: true
+        values:
+          type: object
+          additionalProperties: true
+          description: Form draft map (bool / string / string[]) sent with submit buttons
     UIEventResponse:
       type: object
       required: [screen, messages]

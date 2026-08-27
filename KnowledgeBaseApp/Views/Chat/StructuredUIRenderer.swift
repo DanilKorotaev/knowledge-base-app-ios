@@ -3,7 +3,9 @@ import SwiftUI
 struct StructuredUIPanelView: View {
     let document: KBStructuredUIDocument
     var isSending: Bool = false
-    var onAction: (String, String) -> Void
+    var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
+
+    @State private var draftValues: [String: StructuredUIFormValue] = [:]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -27,9 +29,14 @@ struct StructuredUIPanelView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             } else {
-                StructuredUINodeView(node: document.screen, isSending: isSending, onAction: onAction)
-                    .opacity(isSending ? 0.72 : 1)
-                    .allowsHitTesting(!isSending)
+                StructuredUINodeView(
+                    node: document.screen,
+                    isSending: isSending,
+                    draftValues: $draftValues,
+                    onAction: onAction
+                )
+                .opacity(isSending ? 0.72 : 1)
+                .allowsHitTesting(!isSending)
             }
         }
         .padding(12)
@@ -39,13 +46,20 @@ struct StructuredUIPanelView: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text("structured_ui.panel_a11y"))
         .accessibilityAddTraits(isSending ? .updatesFrequently : [])
+        .onAppear {
+            draftValues = StructuredUIFormDraft.seed(from: document)
+        }
+        .onChange(of: document) { _, newDocument in
+            draftValues = StructuredUIFormDraft.seed(from: newDocument)
+        }
     }
 }
 
 private struct StructuredUINodeView: View {
     let node: KBStructuredUINode
     var isSending: Bool
-    var onAction: (String, String) -> Void
+    @Binding var draftValues: [String: StructuredUIFormValue]
+    var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
 
     @ViewBuilder
     var body: some View {
@@ -56,7 +70,12 @@ private struct StructuredUINodeView: View {
             case "vstack":
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(Array(node.supportedChildren.enumerated()), id: \.offset) { _, child in
-                        StructuredUINodeView(node: child, isSending: isSending, onAction: onAction)
+                        StructuredUINodeView(
+                            node: child,
+                            isSending: isSending,
+                            draftValues: $draftValues,
+                            onAction: onAction
+                        )
                     }
                 }
             case "text":
@@ -66,17 +85,134 @@ private struct StructuredUINodeView: View {
             case "button":
                 Button {
                     guard let actionId = node.actionId, !isSending else { return }
-                    onAction(actionId, node.id)
+                    if node.isSubmitButton {
+                        onAction(actionId, node.id, draftValues)
+                    } else {
+                        onAction(actionId, node.id, nil)
+                    }
                 } label: {
                     Text(node.label ?? "")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
-                // Avoid `.disabled` — it greys buttons with no progress cue (agent wait can be long).
                 .accessibilityLabel(node.label ?? "Button")
+            case "checkbox":
+                Button {
+                    let next = !(draftValues[node.id]?.boolValue ?? false)
+                    draftValues[node.id] = .bool(next)
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: (draftValues[node.id]?.boolValue ?? false) ? "checkmark.square.fill" : "square")
+                        Text(node.label ?? node.id)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(node.label ?? node.id)
+                .accessibilityAddTraits((draftValues[node.id]?.boolValue ?? false) ? .isSelected : [])
+            case "radio_group":
+                VStack(alignment: .leading, spacing: 6) {
+                    if let label = node.label, !label.isEmpty {
+                        Text(label)
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    ForEach(node.options ?? [], id: \.id) { option in
+                        Button {
+                            draftValues[node.id] = .string(option.id)
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: radioSelected(node.id, option.id) ? "largecircle.fill.circle" : "circle")
+                                Text(option.label)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(option.label)
+                        .accessibilityAddTraits(radioSelected(node.id, option.id) ? .isSelected : [])
+                    }
+                }
+            case "select":
+                VStack(alignment: .leading, spacing: 6) {
+                    if let label = node.label, !label.isEmpty {
+                        Text(label)
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    if node.multi == true {
+                        ForEach(node.options ?? [], id: \.id) { option in
+                            Button {
+                                let isOn = !(draftValues[node.id]?.stringListValue.contains(option.id) ?? false)
+                                var list = draftValues[node.id]?.stringListValue ?? []
+                                if isOn {
+                                    if !list.contains(option.id) { list.append(option.id) }
+                                } else {
+                                    list.removeAll { $0 == option.id }
+                                }
+                                draftValues[node.id] = .strings(list)
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(
+                                        systemName: (draftValues[node.id]?.stringListValue.contains(option.id) ?? false)
+                                            ? "checkmark.square.fill"
+                                            : "square"
+                                    )
+                                    Text(option.label)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } else {
+                        Picker(node.label ?? node.id, selection: singleSelectBinding(for: node)) {
+                            ForEach(node.options ?? [], id: \.id) { option in
+                                Text(option.label).tag(option.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+                }
+            case "text_field":
+                VStack(alignment: .leading, spacing: 4) {
+                    if let label = node.label, !label.isEmpty {
+                        Text(label)
+                            .font(.subheadline.weight(.semibold))
+                    }
+                    TextField(node.placeholder ?? "", text: textFieldBinding(for: node))
+                        .textFieldStyle(.roundedBorder)
+                }
             default:
                 EmptyView()
             }
         }
+    }
+
+    private func radioSelected(_ groupId: String, _ optionId: String) -> Bool {
+        draftValues[groupId]?.stringValue == optionId
+    }
+
+    private func singleSelectBinding(for node: KBStructuredUINode) -> Binding<String> {
+        Binding(
+            get: {
+                if let current = draftValues[node.id]?.stringValue, !current.isEmpty {
+                    return current
+                }
+                return node.options?.first?.id ?? ""
+            },
+            set: { draftValues[node.id] = .string($0) }
+        )
+    }
+
+    private func textFieldBinding(for node: KBStructuredUINode) -> Binding<String> {
+        Binding(
+            get: { draftValues[node.id]?.stringValue ?? "" },
+            set: { newValue in
+                let limited: String
+                if let maxLength = node.maxLength, maxLength > 0 {
+                    limited = String(newValue.prefix(maxLength))
+                } else {
+                    limited = newValue
+                }
+                draftValues[node.id] = .string(limited)
+            }
+        )
     }
 }

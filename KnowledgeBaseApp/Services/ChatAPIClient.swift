@@ -52,7 +52,8 @@ protocol ChatAPIClientProtocol: Sendable {
         sessionId: String,
         actionId: String,
         componentId: String,
-        clientSchemaVersion: Int
+        clientSchemaVersion: Int,
+        values: [String: StructuredUIFormValue]?
     ) async throws -> KBUIEventResponse
 }
 
@@ -61,7 +62,8 @@ extension ChatAPIClientProtocol {
         sessionId: String,
         actionId: String,
         componentId: String,
-        clientSchemaVersion: Int
+        clientSchemaVersion: Int,
+        values: [String: StructuredUIFormValue]? = nil
     ) async throws -> KBUIEventResponse {
         throw KnowledgeBaseAPIError.decodingFailed
     }
@@ -304,9 +306,14 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         sessionId: String,
         actionId: String,
         componentId: String,
-        clientSchemaVersion: Int
+        clientSchemaVersion: Int,
+        values: [String: StructuredUIFormValue]? = nil
     ) async throws -> KBUIEventResponse {
-        let result = StubStructuredUIMockFlow.apply(actionId: actionId, componentId: componentId)
+        let result = StubStructuredUIMockFlow.apply(
+            actionId: actionId,
+            componentId: componentId,
+            values: values
+        )
         var list = store.messages(for: sessionId)
         if let userContent = result.userContent {
             list.append(
@@ -338,7 +345,11 @@ enum StubStructuredUIMockFlow {
         let assistantContent: String
     }
 
-    static func apply(actionId: String, componentId: String) -> Result {
+    static func apply(
+        actionId: String,
+        componentId: String,
+        values: [String: StructuredUIFormValue]? = nil
+    ) -> Result {
         _ = componentId
         switch actionId {
         case "start":
@@ -358,6 +369,19 @@ enum StubStructuredUIMockFlow {
                 screen: declinedScreen(),
                 userContent: "[UI] No",
                 assistantContent: "You selected No."
+            )
+        case "open_form":
+            return Result(
+                screen: formScreen(),
+                userContent: "[UI] Open form",
+                assistantContent: "Fill the form, then submit."
+            )
+        case "submit_form":
+            let summary = StructuredUIFormDraft.summaryLine(from: values ?? [:])
+            return Result(
+                screen: formSubmittedScreen(summary: summary),
+                userContent: summary,
+                assistantContent: "Form received."
             )
         case "done":
             return Result(
@@ -380,6 +404,77 @@ enum StubStructuredUIMockFlow {
                     node(type: "text", id: "subtitle", text: "Mock structured UI flow (MVP)."),
                     node(type: "button", id: "btn_yes", label: "Yes", actionId: "confirm_yes"),
                     node(type: "button", id: "btn_no", label: "No", actionId: "confirm_no"),
+                    node(type: "button", id: "btn_form", label: "Open form", actionId: "open_form"),
+                ]
+            )
+        )
+    }
+
+    private static func formScreen() -> KBStructuredUIDocument {
+        screenDocument(
+            root: node(
+                type: "vstack",
+                id: "root",
+                children: [
+                    node(type: "text", id: "title", text: "Preferences"),
+                    node(
+                        type: "checkbox",
+                        id: "notify",
+                        label: "Notify me",
+                        value: .bool(true)
+                    ),
+                    node(
+                        type: "radio_group",
+                        id: "theme",
+                        label: "Theme",
+                        value: .string("system"),
+                        options: [
+                            KBStructuredUIOption(id: "system", label: "System"),
+                            KBStructuredUIOption(id: "light", label: "Light"),
+                            KBStructuredUIOption(id: "dark", label: "Dark"),
+                        ]
+                    ),
+                    node(
+                        type: "select",
+                        id: "topics",
+                        label: "Topics",
+                        value: .strings(["ios"]),
+                        options: [
+                            KBStructuredUIOption(id: "ios", label: "iOS"),
+                            KBStructuredUIOption(id: "bot", label: "Bot"),
+                            KBStructuredUIOption(id: "infra", label: "Infra"),
+                        ],
+                        multi: true
+                    ),
+                    node(
+                        type: "text_field",
+                        id: "note",
+                        label: "Note",
+                        value: .string(""),
+                        placeholder: "Optional note",
+                        maxLength: 120
+                    ),
+                    node(
+                        type: "button",
+                        id: "btn_submit",
+                        label: "Submit",
+                        actionId: "submit_form",
+                        submit: true
+                    ),
+                ]
+            )
+        )
+    }
+
+    private static func formSubmittedScreen(summary: String) -> KBStructuredUIDocument {
+        screenDocument(
+            root: node(
+                type: "vstack",
+                id: "root",
+                children: [
+                    node(type: "text", id: "title", text: "Submitted"),
+                    node(type: "text", id: "body", text: summary),
+                    node(type: "button", id: "btn_done", label: "Done", actionId: "done"),
                 ]
             )
         )
@@ -436,7 +531,13 @@ enum StubStructuredUIMockFlow {
         text: String? = nil,
         label: String? = nil,
         actionId: String? = nil,
-        children: [KBStructuredUINode]? = nil
+        children: [KBStructuredUINode]? = nil,
+        value: StructuredUIFormValue? = nil,
+        placeholder: String? = nil,
+        maxLength: Int? = nil,
+        options: [KBStructuredUIOption]? = nil,
+        multi: Bool? = nil,
+        submit: Bool? = nil
     ) -> KBStructuredUINode {
         KBStructuredUINode(
             type: type,
@@ -444,7 +545,13 @@ enum StubStructuredUIMockFlow {
             text: text,
             label: label,
             actionId: actionId,
-            children: children
+            children: children,
+            value: value,
+            placeholder: placeholder,
+            maxLength: maxLength,
+            options: options,
+            multi: multi,
+            submit: submit
         )
     }
 }
