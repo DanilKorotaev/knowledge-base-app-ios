@@ -111,6 +111,7 @@ final class VoiceRecordingService: VoiceRecordingServiceProtocol {
         }
 
         try resetSessionArtifacts()
+        deactivateAudioSessionIfNeeded()
         sessionPhase = .idle
         return merged
     }
@@ -121,6 +122,7 @@ final class VoiceRecordingService: VoiceRecordingServiceProtocol {
         }
         deleteSegmentFiles(completedSegmentURLs + [currentSegmentURL].compactMap { $0 })
         try resetSessionArtifacts()
+        deactivateAudioSessionIfNeeded()
         sessionPhase = .idle
     }
 
@@ -194,6 +196,11 @@ final class VoiceRecordingService: VoiceRecordingServiceProtocol {
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothHFP])
         try session.setActive(true, options: [])
+    }
+
+    private func deactivateAudioSessionIfNeeded() {
+        let session = AVAudioSession.sharedInstance()
+        try? session.setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     private nonisolated static func requestMicPermission() async -> Bool {

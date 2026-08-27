@@ -5,27 +5,19 @@ protocol ScreenIdleTimerLocking: AnyObject {
     func setIdleTimerDisabled(_ disabled: Bool)
 }
 
-/// Reference-counted wrapper so nested acquire/release stays balanced.
+/// Single-owner lock — ViewModel is the only caller; always sets UIKit state directly.
 final class UIApplicationScreenIdleTimerLock: ScreenIdleTimerLocking {
     static let shared = UIApplicationScreenIdleTimerLock()
 
-    private var depth = 0
-
     func setIdleTimerDisabled(_ disabled: Bool) {
-        if disabled {
-            depth += 1
-            if depth == 1 {
-                UIApplication.shared.isIdleTimerDisabled = true
-            }
-            return
-        }
-        depth = max(0, depth - 1)
-        if depth == 0 {
-            UIApplication.shared.isIdleTimerDisabled = false
-        }
+        UIApplication.shared.isIdleTimerDisabled = disabled
     }
 }
 
 final class NoOpScreenIdleTimerLock: ScreenIdleTimerLocking {
-    func setIdleTimerDisabled(_ disabled: Bool) {}
+    private(set) var isDisabled = false
+
+    func setIdleTimerDisabled(_ disabled: Bool) {
+        isDisabled = disabled
+    }
 }

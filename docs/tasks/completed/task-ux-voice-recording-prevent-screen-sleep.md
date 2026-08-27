@@ -18,5 +18,5 @@ In Low Power Mode (short auto-lock), the display dims while the user records a l
 
 - [x] Screen stays on during hold-to-talk and locked recording
 - [x] Screen may dim again while recording is paused
-- [x] Idle timer restored after send, cancel, or failed start
+- [x] Idle timer restored after send, cancel, or failed start (release on Send tap, not after merge)
 - [x] Unit test with mock idle timer lock
