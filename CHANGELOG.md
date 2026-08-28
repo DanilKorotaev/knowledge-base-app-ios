@@ -12,6 +12,21 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.16] - 2026-08-28
+
+### Added
+
+- Zoomable fullscreen images and SUI media polish
+- Add Structured UI P2 blocks
+
+### Changed
+
+- Add Structured UI media coverage tests
+
+### Fixed
+
+- Stabilize Structured UI media coverage tests
+
 ## [1.0.15] - 2026-08-28
 
 ### Changed
@@ -141,7 +156,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.15...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.16...HEAD
+[1.0.16]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.16
 [1.0.15]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.15
 [1.0.14]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.14
 [1.0.13]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.13

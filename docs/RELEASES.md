@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.16 | 118 | `ios/v1.0.16` | 2026-08-28 | Stabilize Structured UI media coverage tests |
 | 1.0.15 | 114 | `ios/v1.0.15` | 2026-08-28 | Add Structured UI fullscreen and media polish tasks |
 | 1.0.14 | 113 | `ios/v1.0.14` | 2026-08-28 | Load public Structured UI media without KB API auth |
 | 1.0.13 | 112 | `ios/v1.0.13` | 2026-08-27 | Structured UI image, link, file, and divider nodes |
