@@ -78,6 +78,21 @@ private struct StructuredUINodeView: View {
                         )
                     }
                 }
+            case "hstack":
+                HStack(alignment: .center, spacing: CGFloat(node.spacing ?? 8)) {
+                    ForEach(Array(node.supportedChildren.enumerated()), id: \.offset) { _, child in
+                        StructuredUINodeView(
+                            node: child,
+                            isSending: isSending,
+                            isInteractive: isInteractive,
+                            attachmentLoader: attachmentLoader,
+                            onFullscreenImage: onFullscreenImage,
+                            draftValues: $draftValues,
+                            onAction: onAction
+                        )
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             case "text":
                 Text(node.text ?? "")
                     .font(.body)
@@ -192,6 +207,16 @@ private struct StructuredUINodeView: View {
                 StructuredUILinkNodeView(node: node)
             case "file":
                 StructuredUIFileNodeView(node: node, loader: attachmentLoader)
+            case "callout":
+                StructuredUICalloutNodeView(node: node)
+            case "spacer":
+                StructuredUISpacerNodeView(node: node)
+            case "progress":
+                StructuredUIProgressNodeView(node: node)
+            case "date":
+                StructuredUIDateNodeView(node: node, draftValues: $draftValues)
+            case "time":
+                StructuredUITimeNodeView(node: node, draftValues: $draftValues)
             default:
                 EmptyView()
             }

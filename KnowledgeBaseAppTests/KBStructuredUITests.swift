@@ -186,6 +186,69 @@ final class KBStructuredUITests: XCTestCase {
         )
     }
 
+    func testDecodeP2LayoutAndFormNodes() throws {
+        let json = """
+        {
+          "schema_version": 1,
+          "screen": {
+            "type": "vstack",
+            "id": "root",
+            "children": [
+              {
+                "type": "callout",
+                "id": "c1",
+                "variant": "warning",
+                "label": "Heads up",
+                "text": "Check the deadline."
+              },
+              {"type": "spacer", "id": "s1", "height": 12},
+              {"type": "progress", "id": "p1", "label": "Setup", "current": 2, "total": 5},
+              {"type": "progress", "id": "p2", "value": 0.75},
+              {"type": "date", "id": "due", "label": "Due", "value": "2026-08-28"},
+              {"type": "time", "id": "at", "label": "At", "value": "14:30"},
+              {
+                "type": "hstack",
+                "id": "actions",
+                "spacing": 8,
+                "children": [
+                  {"type": "button", "id": "no", "label": "No", "action_id": "decline"},
+                  {"type": "button", "id": "yes", "label": "Yes", "action_id": "accept", "submit": true}
+                ]
+              }
+            ]
+          }
+        }
+        """.data(using: .utf8)!
+
+        let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
+        let types = document.screen.supportedChildren.map(\.type)
+        XCTAssertEqual(types, ["callout", "spacer", "progress", "progress", "date", "time", "hstack"])
+        XCTAssertEqual(document.screen.supportedChildren[0].variant, "warning")
+        XCTAssertEqual(document.screen.supportedChildren[2].current, 2)
+        XCTAssertEqual(document.screen.supportedChildren[2].total, 5)
+        XCTAssertEqual(document.screen.supportedChildren[3].progressFraction, 0.75)
+        XCTAssertEqual(document.screen.supportedChildren[4].value, .string("2026-08-28"))
+        XCTAssertEqual(document.screen.supportedChildren[6].supportedChildren.count, 2)
+        XCTAssertTrue(document.hasInteractiveControls)
+    }
+
+    func testFormDraftSeedsDateAndTime() {
+        let document = KBStructuredUIDocument(
+            schemaVersion: 1,
+            screen: KBStructuredUINode(
+                type: "vstack",
+                id: "root",
+                children: [
+                    KBStructuredUINode(type: "date", id: "due", value: .string("2026-01-01")),
+                    KBStructuredUINode(type: "time", id: "at"),
+                ]
+            )
+        )
+        let seeded = StructuredUIFormDraft.seed(from: document)
+        XCTAssertEqual(seeded["due"], .string("2026-01-01"))
+        XCTAssertEqual(seeded["at"], .string(""))
+    }
+
     func testStructuredUIErrorMessageSanitizesJSON() {
         let error = NSError(domain: "test", code: 404, userInfo: [
             NSLocalizedDescriptionKey: #"{"detail":"Not Found"}"#,

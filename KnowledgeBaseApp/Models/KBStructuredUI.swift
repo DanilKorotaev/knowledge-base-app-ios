@@ -23,7 +23,7 @@ struct KBStructuredUIDocument: Codable, Equatable, Sendable {
 
     private static func nodeHasInteractiveControls(_ node: KBStructuredUINode) -> Bool {
         switch node.type {
-        case "button", "checkbox", "radio_group", "select", "text_field":
+        case "button", "checkbox", "radio_group", "select", "text_field", "date", "time":
             return true
         default:
             return node.supportedChildren.contains(where: nodeHasInteractiveControls)
@@ -61,6 +61,18 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let alt: String?
     /// `fit` (default) or `fill` for `image`.
     let contentMode: String?
+    /// `info` / `warning` / `tip` / `success` for `callout`.
+    let variant: String?
+    /// Vertical gap in points for `spacer` (default 8).
+    let height: Int?
+    /// Step index for `progress` when paired with `total`.
+    let current: Int?
+    /// Step count for `progress`.
+    let total: Int?
+    /// Horizontal gap in points for `hstack` (default 8).
+    let spacing: Int?
+    /// 0…1 fill for `progress` when `current`/`total` are omitted.
+    let progressFraction: Double?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -81,6 +93,11 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case fileSize = "file_size"
         case alt
         case contentMode = "content_mode"
+        case variant
+        case height
+        case current
+        case total
+        case spacing
     }
 
     init(
@@ -101,7 +118,13 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         fileName: String? = nil,
         fileSize: Int? = nil,
         alt: String? = nil,
-        contentMode: String? = nil
+        contentMode: String? = nil,
+        variant: String? = nil,
+        height: Int? = nil,
+        current: Int? = nil,
+        total: Int? = nil,
+        spacing: Int? = nil,
+        progressFraction: Double? = nil
     ) {
         self.type = type
         self.id = id
@@ -121,12 +144,86 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.fileSize = fileSize
         self.alt = alt
         self.contentMode = contentMode
+        self.variant = variant
+        self.height = height
+        self.current = current
+        self.total = total
+        self.spacing = spacing
+        self.progressFraction = progressFraction
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        type = try container.decode(String.self, forKey: .type)
+        id = try container.decode(String.self, forKey: .id)
+        text = try container.decodeIfPresent(String.self, forKey: .text)
+        label = try container.decodeIfPresent(String.self, forKey: .label)
+        actionId = try container.decodeIfPresent(String.self, forKey: .actionId)
+        children = try container.decodeIfPresent([KBStructuredUINode].self, forKey: .children)
+        placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
+        maxLength = try container.decodeIfPresent(Int.self, forKey: .maxLength)
+        options = try container.decodeIfPresent([KBStructuredUIOption].self, forKey: .options)
+        multi = try container.decodeIfPresent(Bool.self, forKey: .multi)
+        submit = try container.decodeIfPresent(Bool.self, forKey: .submit)
+        url = try container.decodeIfPresent(String.self, forKey: .url)
+        downloadURL = try container.decodeIfPresent(String.self, forKey: .downloadURL)
+        fileName = try container.decodeIfPresent(String.self, forKey: .fileName)
+        fileSize = try container.decodeIfPresent(Int.self, forKey: .fileSize)
+        alt = try container.decodeIfPresent(String.self, forKey: .alt)
+        contentMode = try container.decodeIfPresent(String.self, forKey: .contentMode)
+        variant = try container.decodeIfPresent(String.self, forKey: .variant)
+        height = try container.decodeIfPresent(Int.self, forKey: .height)
+        current = try container.decodeIfPresent(Int.self, forKey: .current)
+        total = try container.decodeIfPresent(Int.self, forKey: .total)
+        spacing = try container.decodeIfPresent(Int.self, forKey: .spacing)
+
+        if let formValue = try? container.decode(StructuredUIFormValue.self, forKey: .value) {
+            value = formValue
+            progressFraction = nil
+        } else if let fraction = try? container.decode(Double.self, forKey: .value) {
+            value = nil
+            progressFraction = fraction
+        } else {
+            value = nil
+            progressFraction = nil
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(type, forKey: .type)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(text, forKey: .text)
+        try container.encodeIfPresent(label, forKey: .label)
+        try container.encodeIfPresent(actionId, forKey: .actionId)
+        try container.encodeIfPresent(children, forKey: .children)
+        if let value {
+            try container.encode(value, forKey: .value)
+        } else if let progressFraction {
+            try container.encode(progressFraction, forKey: .value)
+        }
+        try container.encodeIfPresent(placeholder, forKey: .placeholder)
+        try container.encodeIfPresent(maxLength, forKey: .maxLength)
+        try container.encodeIfPresent(options, forKey: .options)
+        try container.encodeIfPresent(multi, forKey: .multi)
+        try container.encodeIfPresent(submit, forKey: .submit)
+        try container.encodeIfPresent(url, forKey: .url)
+        try container.encodeIfPresent(downloadURL, forKey: .downloadURL)
+        try container.encodeIfPresent(fileName, forKey: .fileName)
+        try container.encodeIfPresent(fileSize, forKey: .fileSize)
+        try container.encodeIfPresent(alt, forKey: .alt)
+        try container.encodeIfPresent(contentMode, forKey: .contentMode)
+        try container.encodeIfPresent(variant, forKey: .variant)
+        try container.encodeIfPresent(height, forKey: .height)
+        try container.encodeIfPresent(current, forKey: .current)
+        try container.encodeIfPresent(total, forKey: .total)
+        try container.encodeIfPresent(spacing, forKey: .spacing)
     }
 
     var isSupported: Bool {
         switch type {
-        case "vstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
-             "image", "link", "file", "divider":
+        case "vstack", "hstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
+             "image", "link", "file", "divider", "callout", "spacer", "progress", "date", "time":
             return true
         default:
             return false
@@ -229,6 +326,8 @@ enum StructuredUIFormDraft {
                 } else if let first = node.options?.first {
                     values[node.id] = .string(first.id)
                 }
+            case "date", "time":
+                values[node.id] = node.value ?? .string("")
             default:
                 break
             }
