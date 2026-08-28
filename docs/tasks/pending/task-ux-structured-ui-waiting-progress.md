@@ -1,23 +1,15 @@
 # Feature: Structured UI waiting / progress UX
 
-**Status:** in progress  
-**Branch:** `feature/structured-ui-mvp`  
+**Status:** done (code); manual QA pending  
 **Vault:** `Документация/Задачи/task-structured-ui-next.md`
 
-## Problem
+## Done
 
-While `POST …/ui-events` runs (agent can take tens of seconds), buttons use `.disabled` → dark grey with no spinner — unlike normal chat pending bubble.
-
-## Done when
-
-- [x] Active panel shows ProgressView + localized “updating…”
 - [x] Chat list shows `AssistantPendingBubbleView` while `isSendingUIEvent`
-- [x] Only the latest structured UI message gets the in-flight visual (history panels stay normal)
+- [x] Only latest panel in-flight; history read-only
 - [x] Buttons block taps without system disabled greying
-- [x] Drop in-panel spinner — keep only bottom pending bubble (less dual-loader noise)
+- [x] Single waiting cue: bottom pending bubble (no in-panel spinner)
+
+## Open
+
 - [ ] Manual check on device / TestFlight
-
-## Notes
-
-No backend change required for this UX fix.
-In-panel spinner removed 2026-08-27; waiting cue is only the chat pending bubble.
