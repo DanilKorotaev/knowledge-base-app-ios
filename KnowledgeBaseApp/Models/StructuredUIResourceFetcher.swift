@@ -9,17 +9,17 @@ enum StructuredUIResourceFetcher {
         let trimmed = downloadPath.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return false }
         if trimmed.hasPrefix("file://") { return false }
-        if !trimmed.hasPrefix("http://") && !trimmed.hasPrefix("https://") {
-            return loader != nil
+        if trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://") {
+            guard let loader,
+                  let resourceURL = loader.absoluteURL(for: trimmed),
+                  let apiProbe = loader.absoluteURL(for: "api/sessions"),
+                  let resourceHost = resourceURL.host?.lowercased(),
+                  let apiHost = apiProbe.host?.lowercased() else {
+                return false
+            }
+            return resourceHost == apiHost
         }
-        guard let loader,
-              let resourceURL = loader.absoluteURL(for: trimmed),
-              let apiProbe = loader.absoluteURL(for: "api/sessions"),
-              let resourceHost = resourceURL.host?.lowercased(),
-              let apiHost = apiProbe.host?.lowercased() else {
-            return false
-        }
-        return resourceHost == apiHost
+        return StructuredUIURLPolicy.isAllowedDownloadPath(trimmed)
     }
 
     static func fetchData(

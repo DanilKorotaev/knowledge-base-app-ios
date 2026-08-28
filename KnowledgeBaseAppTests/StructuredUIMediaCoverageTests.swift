@@ -20,6 +20,13 @@ private struct HostAwareMockLoader: KBAttachmentLoaderProtocol {
 
 @MainActor
 final class StructuredUIMediaCoverageTests: XCTestCase {
+    private var hostingWindows: [UIWindow] = []
+
+    override func tearDown() {
+        hostingWindows.removeAll()
+        super.tearDown()
+    }
+
     func testResourceFetcherEmptyPathThrows() async {
         do {
             _ = try await StructuredUIResourceFetcher.fetchData(from: "  ", loader: nil)
@@ -93,8 +100,7 @@ final class StructuredUIMediaCoverageTests: XCTestCase {
         let host = UIHostingController(rootView: ZoomableImageView(image: image))
         host.view.frame = CGRect(x: 0, y: 0, width: 320, height: 480)
         attachToWindow(host)
-        host.view.layoutIfNeeded()
-        XCTAssertFalse(host.view.subviews.isEmpty)
+        XCTAssertViewIsHosted(host.view)
     }
 
     func testFullscreenImageViewerHosts() {
@@ -103,8 +109,7 @@ final class StructuredUIMediaCoverageTests: XCTestCase {
         )
         host.view.frame = CGRect(x: 0, y: 0, width: 320, height: 480)
         attachToWindow(host)
-        host.view.layoutIfNeeded()
-        XCTAssertFalse(host.view.subviews.isEmpty)
+        XCTAssertViewIsHosted(host.view)
     }
 
     func testStructuredUILinkNodeViewHosts() {
@@ -114,11 +119,11 @@ final class StructuredUIMediaCoverageTests: XCTestCase {
             label: "Example",
             url: "https://example.com"
         )
+        XCTAssertNotNil(StructuredUIURLPolicy.allowedHTTPURL(from: node.url))
         let host = UIHostingController(rootView: StructuredUILinkNodeView(node: node))
         host.view.frame = CGRect(x: 0, y: 0, width: 300, height: 80)
         attachToWindow(host)
-        host.view.layoutIfNeeded()
-        XCTAssertFalse(host.view.subviews.isEmpty)
+        XCTAssertViewIsHosted(host.view)
     }
 
     func testStructuredUIImageNodeViewHostsPlaceholder() async {
@@ -134,7 +139,7 @@ final class StructuredUIMediaCoverageTests: XCTestCase {
         attachToWindow(host)
         host.view.layoutIfNeeded()
         try? await Task.sleep(nanoseconds: 200_000_000)
-        XCTAssertFalse(host.view.subviews.isEmpty)
+        XCTAssertViewIsHosted(host.view)
     }
 
     func testStructuredUIFileNodeViewHosts() {
@@ -146,19 +151,29 @@ final class StructuredUIMediaCoverageTests: XCTestCase {
             fileName: "notes.pdf",
             fileSize: 1024
         )
+        XCTAssertTrue(StructuredUIURLPolicy.isAllowedDownloadPath(node.downloadURL))
         let host = UIHostingController(
             rootView: StructuredUIFileNodeView(node: node, loader: HostAwareMockLoader(apiHost: "kb.example.com"))
         )
         host.view.frame = CGRect(x: 0, y: 0, width: 300, height: 80)
         attachToWindow(host)
-        host.view.layoutIfNeeded()
-        XCTAssertFalse(host.view.subviews.isEmpty)
+        XCTAssertViewIsHosted(host.view)
     }
 
     private func attachToWindow(_ host: UIHostingController<some View>) {
-        let window = UIWindow(frame: host.view.frame)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
         window.rootViewController = host
         window.makeKeyAndVisible()
+        hostingWindows.append(window)
+        host.view.setNeedsLayout()
+        host.view.layoutIfNeeded()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+    }
+
+    private func XCTAssertViewIsHosted(_ view: UIView, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertNotNil(view.window, "Expected hosted view to be in a window", file: file, line: line)
+        XCTAssertFalse(view.isHidden, file: file, line: line)
+        XCTAssertGreaterThan(view.bounds.width, 0, file: file, line: line)
     }
 
     private static func testImage() -> UIImage {
