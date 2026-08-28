@@ -52,48 +52,40 @@ struct StructuredUIImageNodeView: View {
         failed = false
         image = nil
 
+        if let publicURL = StructuredUIURLPolicy.allowedHTTPURL(from: node.url) {
+            if await loadFromPublicURL(publicURL) { return }
+        }
+
         if let download = node.downloadURL, StructuredUIURLPolicy.isAllowedDownloadPath(download) {
-            if download.hasPrefix("file://"), let fileURL = URL(string: download), fileURL.isFileURL,
-               let ui = UIImage(contentsOfFile: fileURL.path) {
-                image = ui
-                return
-            }
-            guard let loader else {
-                failed = true
-                return
-            }
             do {
-                let data = try await loader.fetchData(from: download)
+                let data = try await StructuredUIResourceFetcher.fetchData(from: download, loader: loader)
                 if let ui = UIImage(data: data) {
                     image = ui
-                } else {
-                    failed = true
+                    return
                 }
             } catch {
                 failed = true
+                return
             }
-            return
         }
 
-        guard let url = StructuredUIURLPolicy.allowedHTTPURL(from: node.url) else {
-            failed = true
-            return
-        }
+        failed = true
+    }
 
+    private func loadFromPublicURL(_ url: URL) async -> Bool {
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
-            if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                failed = true
-                return
+            if let http = response as? HTTPURLResponse, !(200 ..< 300).contains(http.statusCode) {
+                return false
             }
             if let ui = UIImage(data: data) {
                 image = ui
-            } else {
-                failed = true
+                return true
             }
         } catch {
-            failed = true
+            return false
         }
+        return false
     }
 }
 

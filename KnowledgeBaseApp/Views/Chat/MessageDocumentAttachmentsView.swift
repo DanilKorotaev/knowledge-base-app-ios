@@ -106,6 +106,16 @@ enum AttachmentPreviewURLResolver {
             return URL(fileURLWithPath: downloadPath)
         }
 
+        if downloadPath.hasPrefix("http://") || downloadPath.hasPrefix("https://"),
+           !StructuredUIResourceFetcher.shouldUseAuthenticatedLoader(for: downloadPath, loader: loader) {
+            let data = try await StructuredUIResourceFetcher.fetchData(from: downloadPath, loader: loader)
+            let filename = attachment.fileName ?? "attachment"
+            let dest = FileManager.default.temporaryDirectory
+                .appendingPathComponent("\(UUID().uuidString)-\(filename)")
+            try data.write(to: dest)
+            return dest
+        }
+
         guard let loader else {
             throw Error.downloadFailed
         }

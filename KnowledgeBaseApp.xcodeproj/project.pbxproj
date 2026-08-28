@@ -23,6 +23,7 @@
 		14E4AB259ADD394DD6728F3B /* SessionListSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E5E3295CD00874C8FDE24A /* SessionListSorter.swift */; };
 		1604232C93A3882110241CB4 /* ChatSessionFocusTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B42CDDF1247F48EBA8635D /* ChatSessionFocusTracker.swift */; };
 		1836ABD21BBA952C83B30390 /* ChatComposerDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = C51E561F9F891984481E9FC8 /* ChatComposerDraft.swift */; };
+		18E4DD323C9B738AF9924F3D /* StructuredUIResourceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24458BFB04D9DEEB1FAFA7F3 /* StructuredUIResourceFetcher.swift */; };
 		1CE8FD7CF4A43DFF1B44EE78 /* StructuredUIPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = B137D7203455916F69D44768 /* StructuredUIPreference.swift */; };
 		1D86D73B02441732FC4F0E22 /* NSRegularExpression+Matches.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A03BA7674F950C6849BB6E4 /* NSRegularExpression+Matches.swift */; };
 		1F5C701BEB27E0F18C3303D7 /* LoggerTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C54A4C38492534F34CD1E7A2 /* LoggerTestSupport.swift */; };
@@ -379,6 +380,7 @@
 		1F55829B019AC60454AD98C6 /* LogSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogSettingsView.swift; sourceTree = "<group>"; };
 		1FE4F79FC5092B8C640F3DA6 /* MarkdownTableData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTableData.swift; sourceTree = "<group>"; };
 		2286C15E3D7C0401E90849FC /* VoiceDefaultExpiredBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDefaultExpiredBanner.swift; sourceTree = "<group>"; };
+		24458BFB04D9DEEB1FAFA7F3 /* StructuredUIResourceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredUIResourceFetcher.swift; sourceTree = "<group>"; };
 		24FF70CC6A65986EE353A257 /* SelectableLogTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableLogTextView.swift; sourceTree = "<group>"; };
 		263C5B1B56AA607AEFAFA6ED /* MessageCopyContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCopyContent.swift; sourceTree = "<group>"; };
 		279A74BF21DC5A9308080E11 /* AssistantReplyPhaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantReplyPhaseTests.swift; sourceTree = "<group>"; };
@@ -997,6 +999,7 @@
 				A7AFC49F1CCD62415071D87F /* KBStructuredUI.swift */,
 				8CE439ABCFABF62A1AFF2C11 /* PendingVoiceCapture.swift */,
 				B137D7203455916F69D44768 /* StructuredUIPreference.swift */,
+				24458BFB04D9DEEB1FAFA7F3 /* StructuredUIResourceFetcher.swift */,
 				315DC33B7497A57AA69F42AB /* StructuredUIURLPolicy.swift */,
 				D07B1F84FB87AA76300ED2B8 /* SyncStatus.swift */,
 				1151242F292C6B2EEF8F53BF /* VoiceDefaultExpiredNotice.swift */,
@@ -1527,6 +1530,7 @@
 				CB1A7ED7836BE0F4A22D7E4D /* StructuredUIMediaNodes.swift in Sources */,
 				1CE8FD7CF4A43DFF1B44EE78 /* StructuredUIPreference.swift in Sources */,
 				ADC84A9BA647EDF3B191EC7C /* StructuredUIRenderer.swift in Sources */,
+				18E4DD323C9B738AF9924F3D /* StructuredUIResourceFetcher.swift in Sources */,
 				2CD5642F67AB29B14F635680 /* StructuredUIURLPolicy.swift in Sources */,
 				81B2424599438A88BDF7F9F6 /* SyncStatus.swift in Sources */,
 				E56257976DE61A0CD17FF9A4 /* SyncStatusBannerView.swift in Sources */,

@@ -163,4 +163,26 @@ final class KBStructuredUITests: XCTestCase {
         XCTAssertFalse(StructuredUIURLPolicy.isAllowedDownloadPath("../secret"))
         XCTAssertFalse(StructuredUIURLPolicy.isAllowedDownloadPath("javascript:alert(1)"))
     }
+
+    func testResourceFetcherUsesAuthOnlyForAPIHost() {
+        let loader = StubAttachmentLoader()
+        XCTAssertFalse(
+            StructuredUIResourceFetcher.shouldUseAuthenticatedLoader(
+                for: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                loader: loader
+            )
+        )
+        XCTAssertTrue(
+            StructuredUIResourceFetcher.shouldUseAuthenticatedLoader(
+                for: "/api/attachments/1/download",
+                loader: loader
+            )
+        )
+        XCTAssertTrue(
+            StructuredUIResourceFetcher.shouldUseAuthenticatedLoader(
+                for: "api/sessions/1/attachments/2",
+                loader: loader
+            )
+        )
+    }
 }
