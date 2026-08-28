@@ -98,14 +98,17 @@ struct StructuredUIProgressNodeView: View {
             if let current = node.current, let total = node.total, total > 0 {
                 ProgressView(value: Double(min(current, total)), total: Double(total))
                 Text("\(min(current, total)) / \(total)")
-                    .font(.caption)
+                    .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             } else {
                 let fraction = min(max(node.progressFraction ?? 0, 0), 1)
                 ProgressView(value: fraction)
                 Text("\(Int((fraction * 100).rounded()))%")
-                    .font(.caption)
+                    .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
+                Text(L10n.string("structured_ui.progress_readonly"))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
         }
         .accessibilityElement(children: .combine)

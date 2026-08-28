@@ -1,26 +1,10 @@
 import SwiftUI
 
-enum StructuredUIMarkdownText {
-    static func attributedString(from markdown: String) -> AttributedString {
-        if let parsed = try? AttributedString(
-            markdown: markdown,
-            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .full)
-        ) {
-            return parsed
-        }
-        return AttributedString(markdown)
-    }
-}
-
 struct StructuredUIMarkdownNodeView: View {
     let node: KBStructuredUINode
 
     var body: some View {
-        Text(StructuredUIMarkdownText.attributedString(from: node.text ?? ""))
-            .font(.body)
-            .multilineTextAlignment(.leading)
-            .lineLimit(nil)
-            .fixedSize(horizontal: false, vertical: true)
+        MarkdownTextBlockView(text: node.text ?? "")
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
@@ -41,9 +25,10 @@ struct StructuredUISliderNodeView: View {
             }
             Slider(value: sliderBinding, in: minValue...maxValue, step: stepValue)
             Text(formattedValue(sliderBinding.wrappedValue))
-                .font(.caption)
+                .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var sliderBinding: Binding<Double> {
@@ -75,13 +60,31 @@ struct StructuredUIStepperNodeView: View {
     private var stepValue: Int { max(Int((node.step ?? 1).rounded()), 1) }
 
     var body: some View {
-        Stepper(value: stepperBinding, in: minValue...maxValue, step: stepValue) {
-            if let label = node.label, !label.isEmpty {
-                Text(label)
-            } else {
-                Text("\(stepperBinding.wrappedValue)")
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                if let label = node.label, !label.isEmpty {
+                    Text(label)
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                Text(formattedValue(stepperBinding.wrappedValue))
+                    .font(.subheadline.monospacedDigit().weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.secondary.opacity(0.14))
+                    .clipShape(Capsule())
+                    .accessibilityLabel(L10n.string("structured_ui.stepper_value_a11y"))
             }
+            Stepper(
+                L10n.string("structured_ui.stepper_adjust_a11y"),
+                value: stepperBinding,
+                in: minValue...maxValue,
+                step: stepValue
+            )
+            .labelsHidden()
         }
+        .accessibilityElement(children: .contain)
     }
 
     private var stepperBinding: Binding<Int> {
@@ -92,6 +95,10 @@ struct StructuredUIStepperNodeView: View {
             },
             set: { draftValues[node.id] = .number(Double($0)) }
         )
+    }
+
+    private func formattedValue(_ value: Int) -> String {
+        String(value)
     }
 }
 

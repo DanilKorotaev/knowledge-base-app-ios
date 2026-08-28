@@ -4752,6 +4752,54 @@
           }
         }
       }
+    },
+    "structured_ui.progress_readonly": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step status (not interactive)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статус шага (не интерактивный)"
+          }
+        }
+      }
+    },
+    "structured_ui.stepper_value_a11y": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current value"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Текущее значение"
+          }
+        }
+      }
+    },
+    "structured_ui.stepper_adjust_a11y": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adjust value"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изменить значение"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
