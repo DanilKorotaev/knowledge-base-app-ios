@@ -9,6 +9,7 @@ struct StructuredUIImageNodeView: View {
 
     @State private var image: UIImage?
     @State private var failed = false
+    @State private var loadAttempt = 0
 
     private var contentMode: ContentMode {
         (node.contentMode?.lowercased() == "fill") ? .fill : .fit
@@ -25,13 +26,24 @@ struct StructuredUIImageNodeView: View {
                     .onTapGesture { onFullscreen?(image) }
                     .accessibilityLabel(Text(node.alt ?? node.label ?? "Image"))
             } else if failed {
-                placeholder(systemName: "photo.badge.exclamationmark")
+                Button {
+                    loadAttempt += 1
+                } label: {
+                    placeholder(systemName: "photo.badge.exclamationmark")
+                        .overlay(alignment: .bottom) {
+                            Text("structured_ui.image_retry")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .padding(.bottom, 8)
+                        }
+                }
+                .buttonStyle(.plain)
             } else {
                 placeholder(systemName: "photo")
                     .overlay { ProgressView().scaleEffect(0.8) }
             }
         }
-        .task(id: node.id) {
+        .task(id: "\(node.id)-\(loadAttempt)") {
             await load()
         }
     }
@@ -199,7 +211,7 @@ struct StructuredUIFileNodeView: View {
                 loader: loader
             )
         } catch {
-            previewError = error.localizedDescription
+            previewError = StructuredUIErrorMessage.userFacing(error)
         }
     }
 }

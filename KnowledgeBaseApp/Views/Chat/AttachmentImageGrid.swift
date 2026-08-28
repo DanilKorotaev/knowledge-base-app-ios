@@ -122,22 +122,46 @@ struct FullscreenImageViewer: View {
     let image: UIImage
     let onDismiss: () -> Void
 
+    @State private var showShareSheet = false
+
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             Color.black.ignoresSafeArea()
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-                .padding()
-            Button {
-                onDismiss()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title)
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.white, .black.opacity(0.35))
-                    .padding()
+            ZoomableImageView(image: image)
+                .ignoresSafeArea()
+
+            VStack {
+                HStack {
+                    Spacer()
+                    Button {
+                        showShareSheet = true
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .padding(12)
+                            .background(.black.opacity(0.35), in: Circle())
+                    }
+                    .accessibilityLabel(Text("structured_ui.share_image"))
+
+                    Button {
+                        onDismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title)
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.white, .black.opacity(0.35))
+                            .padding(8)
+                    }
+                    .accessibilityLabel(Text("common.close"))
+                }
+                .padding(.horizontal, 8)
+                .padding(.top, 8)
+                Spacer()
             }
+        }
+        .sheet(isPresented: $showShareSheet) {
+            ShareSheet(items: [image])
         }
     }
 }

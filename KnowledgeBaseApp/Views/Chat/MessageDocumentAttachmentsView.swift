@@ -70,7 +70,7 @@ struct MessageDocumentAttachmentsView: View {
                 loader: loader
             )
         } catch {
-            previewError = error.localizedDescription
+            previewError = StructuredUIErrorMessage.userFacing(error)
         }
     }
 }

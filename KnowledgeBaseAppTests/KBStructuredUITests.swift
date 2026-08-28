@@ -185,4 +185,14 @@ final class KBStructuredUITests: XCTestCase {
             )
         )
     }
+
+    func testStructuredUIErrorMessageSanitizesJSON() {
+        let error = NSError(domain: "test", code: 404, userInfo: [
+            NSLocalizedDescriptionKey: #"{"detail":"Not Found"}"#,
+        ])
+        XCTAssertEqual(
+            StructuredUIErrorMessage.userFacing(error),
+            L10n.string("structured_ui.media_load_failed")
+        )
+    }
 }
