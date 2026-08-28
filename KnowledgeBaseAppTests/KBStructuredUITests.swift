@@ -253,8 +253,8 @@ final class KBStructuredUITests: XCTestCase {
         XCTAssertEqual(document.screen.supportedChildren.map(\.type), ["markdown", "slider", "stepper", "confirm"])
         XCTAssertEqual(document.screen.supportedChildren[1].minimum, 0)
         XCTAssertEqual(document.screen.supportedChildren[1].maximum, 10)
-        XCTAssertEqual(document.screen.supportedChildren[1].value, .number(5))
-        XCTAssertEqual(document.screen.supportedChildren[2].value, .number(2))
+        XCTAssertEqual(document.screen.supportedChildren[1].value, StructuredUIFormValue.number(5))
+        XCTAssertEqual(document.screen.supportedChildren[2].value, StructuredUIFormValue.number(2))
         XCTAssertEqual(document.screen.supportedChildren[3].actionId, "delete")
     }
 
@@ -265,14 +265,20 @@ final class KBStructuredUITests: XCTestCase {
                 type: "vstack",
                 id: "root",
                 children: [
-                    KBStructuredUINode(type: "slider", id: "s", minimum: 0, maximum: 100, value: .number(42)),
+                    KBStructuredUINode(
+                        type: "slider",
+                        id: "s",
+                        value: .number(42),
+                        minimum: 0,
+                        maximum: 100
+                    ),
                     KBStructuredUINode(type: "stepper", id: "n", minimum: 1, maximum: 9),
                 ]
             )
         )
         let seeded = StructuredUIFormDraft.seed(from: document)
-        XCTAssertEqual(seeded["s"], .number(42))
-        XCTAssertEqual(seeded["n"], .number(1))
+        XCTAssertEqual(seeded["s"], StructuredUIFormValue.number(42))
+        XCTAssertEqual(seeded["n"], StructuredUIFormValue.number(1))
     }
 
     func testFormDraftSeedsDateAndTime() {
