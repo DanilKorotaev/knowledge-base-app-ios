@@ -232,6 +232,49 @@ final class KBStructuredUITests: XCTestCase {
         XCTAssertTrue(document.hasInteractiveControls)
     }
 
+    func testDecodeP3Nodes() throws {
+        let json = """
+        {
+          "schema_version": 1,
+          "screen": {
+            "type": "vstack",
+            "id": "root",
+            "children": [
+              {"type": "markdown", "id": "md", "text": "**Done**\\n- one\\n- two"},
+              {"type": "slider", "id": "volume", "label": "Volume", "min": 0, "max": 10, "value": 5},
+              {"type": "stepper", "id": "qty", "label": "Qty", "min": 1, "max": 5, "value": 2},
+              {"type": "confirm", "id": "del", "label": "Delete", "action_id": "delete", "text": "Cannot undo."}
+            ]
+          }
+        }
+        """.data(using: .utf8)!
+
+        let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
+        XCTAssertEqual(document.screen.supportedChildren.map(\.type), ["markdown", "slider", "stepper", "confirm"])
+        XCTAssertEqual(document.screen.supportedChildren[1].minimum, 0)
+        XCTAssertEqual(document.screen.supportedChildren[1].maximum, 10)
+        XCTAssertEqual(document.screen.supportedChildren[1].value, .number(5))
+        XCTAssertEqual(document.screen.supportedChildren[2].value, .number(2))
+        XCTAssertEqual(document.screen.supportedChildren[3].actionId, "delete")
+    }
+
+    func testFormDraftSeedsSliderAndStepper() {
+        let document = KBStructuredUIDocument(
+            schemaVersion: 1,
+            screen: KBStructuredUINode(
+                type: "vstack",
+                id: "root",
+                children: [
+                    KBStructuredUINode(type: "slider", id: "s", minimum: 0, maximum: 100, value: .number(42)),
+                    KBStructuredUINode(type: "stepper", id: "n", minimum: 1, maximum: 9),
+                ]
+            )
+        )
+        let seeded = StructuredUIFormDraft.seed(from: document)
+        XCTAssertEqual(seeded["s"], .number(42))
+        XCTAssertEqual(seeded["n"], .number(1))
+    }
+
     func testFormDraftSeedsDateAndTime() {
         let document = KBStructuredUIDocument(
             schemaVersion: 1,

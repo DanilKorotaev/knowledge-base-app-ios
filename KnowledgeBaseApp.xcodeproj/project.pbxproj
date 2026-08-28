@@ -109,6 +109,7 @@
 		5E843C04CE680FBB8AF69A2E /* UserDefaultsInspectorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C95F0FBED6DDE14FCA8A02 /* UserDefaultsInspectorService.swift */; };
 		604753B483CA60050D55F984 /* KBSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1F215090174ACE1EABAB6E /* KBSession.swift */; };
 		615B550C8EDC8E53A5196051 /* LogsMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C100ED17A9613A9AF7351824 /* LogsMenuView.swift */; };
+		6214E5952881586678C7C5E7 /* StructuredUIP3Nodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF22F4E6B8B1DF8D63CC202C /* StructuredUIP3Nodes.swift */; };
 		64546C07B577696A3EC038CC /* DefaultVoiceSessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87CA76AAF4745735CA37385C /* DefaultVoiceSessionStoreTests.swift */; };
 		64D1BF1197D36C4B58B3F4FA /* SelectableLogTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24FF70CC6A65986EE353A257 /* SelectableLogTextView.swift */; };
 		651DAAB8E396335F30EEF0E5 /* NotificationName+KB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0446D0911187C57A67AF311A /* NotificationName+KB.swift */; };
@@ -267,6 +268,7 @@
 		F4FFDE2CFF5F81F3D0A43192 /* InFlightReplyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6790618C9E17AA1D85BD7F /* InFlightReplyStore.swift */; };
 		F73098AA7696EBA484EEECDC /* WatchRelayLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07A6C3330E7CE83B17F3613F /* WatchRelayLog.swift */; };
 		F7D816A685D9FE4E2A2BC10F /* WatchRelayAudioInboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAFE4D8690A0AB71ABE23F21 /* WatchRelayAudioInboxTests.swift */; };
+		F86D88ECD34C6EE6CCE5B014 /* StructuredUIButtonLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01A6A2966350C1C4F60D72E5 /* StructuredUIButtonLabel.swift */; };
 		F9A3E288383C124EF1CA2A31 /* VoiceDefaultExpiredBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2286C15E3D7C0401E90849FC /* VoiceDefaultExpiredBanner.swift */; };
 		FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */; };
 		FB5A444FCE744EEE9F10610B /* SessionKBModeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E56BCA024656EBDBEF39529E /* SessionKBModeStoreTests.swift */; };
@@ -347,6 +349,7 @@
 /* Begin PBXFileReference section */
 		00B6DE7CE3DEB1F152DD7DAD /* DefaultVoiceSessionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVoiceSessionPreference.swift; sourceTree = "<group>"; };
 		010424FAF1561A8D3CA6DEDA /* UserDefaultPropertyWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultPropertyWrapperTests.swift; sourceTree = "<group>"; };
+		01A6A2966350C1C4F60D72E5 /* StructuredUIButtonLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredUIButtonLabel.swift; sourceTree = "<group>"; };
 		03D0B958772CC630E7496D70 /* LoggerTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTag.swift; sourceTree = "<group>"; };
 		0446D0911187C57A67AF311A /* NotificationName+KB.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationName+KB.swift"; sourceTree = "<group>"; };
 		07204B81323625429910E752 /* OfflineCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineCacheStore.swift; sourceTree = "<group>"; };
@@ -533,6 +536,7 @@
 		AD4D09B0BBB3164307024430 /* AttachmentImageGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentImageGrid.swift; sourceTree = "<group>"; };
 		ADE077D761E1B564E2775385 /* UserDefaultsInspectorSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsInspectorSettingsView.swift; sourceTree = "<group>"; };
 		AE9B32610D0DE89F55F5AA78 /* UserDefaultsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsService.swift; sourceTree = "<group>"; };
+		AF22F4E6B8B1DF8D63CC202C /* StructuredUIP3Nodes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredUIP3Nodes.swift; sourceTree = "<group>"; };
 		B11CFFE6F030EC6A9FBE63AE /* KBMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBMessage.swift; sourceTree = "<group>"; };
 		B137D7203455916F69D44768 /* StructuredUIPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredUIPreference.swift; sourceTree = "<group>"; };
 		B29047F670AB8802A9E303ED /* ChatComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerView.swift; sourceTree = "<group>"; };
@@ -1101,8 +1105,10 @@
 				0F42910FE39F9C612ED1D468 /* MessageSendRetryBar.swift */,
 				75DCAA284E519E800019228F /* RichMessageBubbleView.swift */,
 				760FA0C4797DF8C5BFB38201 /* StreamingAssistantBubbleView.swift */,
+				01A6A2966350C1C4F60D72E5 /* StructuredUIButtonLabel.swift */,
 				A8FE7717769367DBE100B72A /* StructuredUIMediaNodes.swift */,
 				D005FDFD2E6EC49626820206 /* StructuredUIP2Nodes.swift */,
+				AF22F4E6B8B1DF8D63CC202C /* StructuredUIP3Nodes.swift */,
 				3437BBC1C2F275D7B26E2984 /* StructuredUIRenderer.swift */,
 				39B284BD1CB3BA0C33CB8EF0 /* TypingIndicatorView.swift */,
 				43A76B8A20C44A7BB80F7509 /* VoiceMessageBubble.swift */,
@@ -1539,9 +1545,11 @@
 				3D78A962F6C87700AFBB58FA /* StreamTextRevealEngine.swift in Sources */,
 				7C9EFC0606433244D53E97FB /* StreamTextRevealState.swift in Sources */,
 				29BC16F701CD73B70B032DDE /* StreamingAssistantBubbleView.swift in Sources */,
+				F86D88ECD34C6EE6CCE5B014 /* StructuredUIButtonLabel.swift in Sources */,
 				B0D2E14FA8CE922D75A97816 /* StructuredUIErrorMessage.swift in Sources */,
 				CB1A7ED7836BE0F4A22D7E4D /* StructuredUIMediaNodes.swift in Sources */,
 				6EDFD2F3AEA6B16B5DCA9DEB /* StructuredUIP2Nodes.swift in Sources */,
+				6214E5952881586678C7C5E7 /* StructuredUIP3Nodes.swift in Sources */,
 				1CE8FD7CF4A43DFF1B44EE78 /* StructuredUIPreference.swift in Sources */,
 				ADC84A9BA647EDF3B191EC7C /* StructuredUIRenderer.swift in Sources */,
 				18E4DD323C9B738AF9924F3D /* StructuredUIResourceFetcher.swift in Sources */,

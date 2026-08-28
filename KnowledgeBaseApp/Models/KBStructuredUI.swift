@@ -23,7 +23,7 @@ struct KBStructuredUIDocument: Codable, Equatable, Sendable {
 
     private static func nodeHasInteractiveControls(_ node: KBStructuredUINode) -> Bool {
         switch node.type {
-        case "button", "checkbox", "radio_group", "select", "text_field", "date", "time":
+        case "button", "checkbox", "radio_group", "select", "text_field", "date", "time", "slider", "stepper", "confirm":
             return true
         default:
             return node.supportedChildren.contains(where: nodeHasInteractiveControls)
@@ -73,6 +73,12 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let spacing: Int?
     /// 0…1 fill for `progress` when `current`/`total` are omitted.
     let progressFraction: Double?
+    /// Lower bound for `slider` / `stepper`.
+    let minimum: Double?
+    /// Upper bound for `slider` / `stepper`.
+    let maximum: Double?
+    /// Step for `slider` / `stepper`.
+    let step: Double?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -98,6 +104,9 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case current
         case total
         case spacing
+        case minimum = "min"
+        case maximum = "max"
+        case step
     }
 
     init(
@@ -124,7 +133,10 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         current: Int? = nil,
         total: Int? = nil,
         spacing: Int? = nil,
-        progressFraction: Double? = nil
+        progressFraction: Double? = nil,
+        minimum: Double? = nil,
+        maximum: Double? = nil,
+        step: Double? = nil
     ) {
         self.type = type
         self.id = id
@@ -150,6 +162,9 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.total = total
         self.spacing = spacing
         self.progressFraction = progressFraction
+        self.minimum = minimum
+        self.maximum = maximum
+        self.step = step
     }
 
     init(from decoder: Decoder) throws {
@@ -176,13 +191,16 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         current = try container.decodeIfPresent(Int.self, forKey: .current)
         total = try container.decodeIfPresent(Int.self, forKey: .total)
         spacing = try container.decodeIfPresent(Int.self, forKey: .spacing)
+        minimum = try container.decodeIfPresent(Double.self, forKey: .minimum)
+        maximum = try container.decodeIfPresent(Double.self, forKey: .maximum)
+        step = try container.decodeIfPresent(Double.self, forKey: .step)
 
-        if let formValue = try? container.decode(StructuredUIFormValue.self, forKey: .value) {
-            value = formValue
-            progressFraction = nil
-        } else if let fraction = try? container.decode(Double.self, forKey: .value) {
+        if type == "progress", let fraction = try? container.decode(Double.self, forKey: .value) {
             value = nil
             progressFraction = fraction
+        } else if let formValue = try? container.decode(StructuredUIFormValue.self, forKey: .value) {
+            value = formValue
+            progressFraction = nil
         } else {
             value = nil
             progressFraction = nil
@@ -218,12 +236,16 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         try container.encodeIfPresent(current, forKey: .current)
         try container.encodeIfPresent(total, forKey: .total)
         try container.encodeIfPresent(spacing, forKey: .spacing)
+        try container.encodeIfPresent(minimum, forKey: .minimum)
+        try container.encodeIfPresent(maximum, forKey: .maximum)
+        try container.encodeIfPresent(step, forKey: .step)
     }
 
     var isSupported: Bool {
         switch type {
         case "vstack", "hstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
-             "image", "link", "file", "divider", "callout", "spacer", "progress", "date", "time":
+             "image", "link", "file", "divider", "callout", "spacer", "progress", "date", "time",
+             "slider", "stepper", "confirm", "markdown":
             return true
         default:
             return false
@@ -244,6 +266,7 @@ enum StructuredUIFormValue: Equatable, Sendable, Hashable {
     case bool(Bool)
     case string(String)
     case strings([String])
+    case number(Double)
 
     var boolValue: Bool {
         if case .bool(let value) = self { return value }
@@ -260,6 +283,11 @@ enum StructuredUIFormValue: Equatable, Sendable, Hashable {
         if case .string(let value) = self { return [value] }
         return []
     }
+
+    var numberValue: Double {
+        if case .number(let value) = self { return value }
+        return 0
+    }
 }
 
 extension StructuredUIFormValue: Codable {
@@ -267,6 +295,14 @@ extension StructuredUIFormValue: Codable {
         let container = try decoder.singleValueContainer()
         if let value = try? container.decode(Bool.self) {
             self = .bool(value)
+            return
+        }
+        if let value = try? container.decode(Int.self) {
+            self = .number(Double(value))
+            return
+        }
+        if let value = try? container.decode(Double.self) {
+            self = .number(value)
             return
         }
         if let value = try? container.decode([String].self) {
@@ -279,7 +315,7 @@ extension StructuredUIFormValue: Codable {
         }
         throw DecodingError.typeMismatch(
             StructuredUIFormValue.self,
-            DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected bool, string, or [string]")
+            DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Expected bool, number, string, or [string]")
         )
     }
 
@@ -291,6 +327,8 @@ extension StructuredUIFormValue: Codable {
         case .string(let value):
             try container.encode(value)
         case .strings(let value):
+            try container.encode(value)
+        case .number(let value):
             try container.encode(value)
         }
     }
@@ -328,6 +366,10 @@ enum StructuredUIFormDraft {
                 }
             case "date", "time":
                 values[node.id] = node.value ?? .string("")
+            case "slider":
+                values[node.id] = node.value ?? .number(node.minimum ?? 0)
+            case "stepper":
+                values[node.id] = node.value ?? .number(node.minimum ?? 0)
             default:
                 break
             }
@@ -353,6 +395,11 @@ enum StructuredUIFormDraft {
             case .strings(let list):
                 guard !list.isEmpty else { return nil }
                 return "\(key)=[\(list.joined(separator: ","))]"
+            case .number(let number):
+                if number.rounded() == number {
+                    return "\(key)=\(Int(number.rounded()))"
+                }
+                return "\(key)=\(number)"
             }
         }
         guard !parts.isEmpty else { return "[UI] submit" }

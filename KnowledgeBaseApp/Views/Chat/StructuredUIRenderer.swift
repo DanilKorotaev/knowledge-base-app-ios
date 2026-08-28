@@ -96,7 +96,12 @@ private struct StructuredUINodeView: View {
             case "text":
                 Text(node.text ?? "")
                     .font(.body)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
+            case "markdown":
+                StructuredUIMarkdownNodeView(node: node)
             case "divider":
                 Divider()
                     .padding(.vertical, 2)
@@ -109,11 +114,16 @@ private struct StructuredUINodeView: View {
                         onAction(actionId, node.id, nil)
                     }
                 } label: {
-                    Text(node.label ?? "")
-                        .frame(maxWidth: .infinity)
+                    StructuredUIButtonLabel(title: node.label ?? "")
                 }
                 .buttonStyle(.borderedProminent)
                 .accessibilityLabel(node.label ?? "Button")
+            case "confirm":
+                StructuredUIConfirmNodeView(
+                    node: node,
+                    isSending: isSending,
+                    onAction: onAction
+                )
             case "checkbox":
                 Button {
                     let next = !(draftValues[node.id]?.boolValue ?? false)
@@ -217,6 +227,10 @@ private struct StructuredUINodeView: View {
                 StructuredUIDateNodeView(node: node, draftValues: $draftValues)
             case "time":
                 StructuredUITimeNodeView(node: node, draftValues: $draftValues)
+            case "slider":
+                StructuredUISliderNodeView(node: node, draftValues: $draftValues)
+            case "stepper":
+                StructuredUIStepperNodeView(node: node, draftValues: $draftValues)
             default:
                 EmptyView()
             }

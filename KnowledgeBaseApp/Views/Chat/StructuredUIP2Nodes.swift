@@ -54,9 +54,13 @@ struct StructuredUICalloutNodeView: View {
                 if let label = node.label, !label.isEmpty {
                     Text(label)
                         .font(.subheadline.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Text(node.text ?? "")
                     .font(.subheadline)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
