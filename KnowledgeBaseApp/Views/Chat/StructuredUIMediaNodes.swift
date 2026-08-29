@@ -64,27 +64,28 @@ struct StructuredUIImageNodeView: View {
         failed = false
         image = nil
 
-        if let publicURL = StructuredUIURLPolicy.allowedHTTPURL(from: node.url) {
-            if await loadFromPublicURL(publicURL) { return }
-        }
-
-        if let download = node.downloadURL, StructuredUIURLPolicy.isAllowedDownloadPath(download) {
+        for candidate in StructuredUIMediaPath.candidates(from: node) {
+            if StructuredUIURLPolicy.allowedHTTPURL(from: candidate) != nil {
+                if await loadFromPublicURL(candidate) { return }
+                continue
+            }
+            guard StructuredUIURLPolicy.isAllowedDownloadPath(candidate) else { continue }
             do {
-                let data = try await StructuredUIResourceFetcher.fetchData(from: download, loader: loader)
+                let data = try await StructuredUIResourceFetcher.fetchData(from: candidate, loader: loader)
                 if let ui = UIImage(data: data) {
                     image = ui
                     return
                 }
             } catch {
-                failed = true
-                return
+                continue
             }
         }
 
         failed = true
     }
 
-    private func loadFromPublicURL(_ url: URL) async -> Bool {
+    private func loadFromPublicURL(_ raw: String) async -> Bool {
+        guard let url = StructuredUIURLPolicy.allowedHTTPURL(from: raw) else { return false }
         do {
             let (data, response) = try await URLSession.shared.data(from: url)
             if let http = response as? HTTPURLResponse, !(200 ..< 300).contains(http.statusCode) {
@@ -173,7 +174,7 @@ struct StructuredUIFileNodeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
         .buttonStyle(.plain)
-        .disabled(isLoading || !StructuredUIURLPolicy.isAllowedDownloadPath(node.downloadURL))
+        .disabled(isLoading || !hasPreviewSource)
         .quickLookPreview($previewURL)
         .alert("preview.unavailable", isPresented: Binding(
             get: { previewError != nil },
@@ -188,7 +189,7 @@ struct StructuredUIFileNodeView: View {
     @MainActor
     private func openPreview() async {
         guard !isLoading else { return }
-        guard let download = node.downloadURL,
+        guard let download = StructuredUIMediaPath.primary(from: node),
               StructuredUIURLPolicy.isAllowedDownloadPath(download) else {
             previewError = L10n.string("attachment.no_preview_url")
             return
@@ -213,5 +214,10 @@ struct StructuredUIFileNodeView: View {
         } catch {
             previewError = StructuredUIErrorMessage.userFacing(error)
         }
+    }
+
+    private var hasPreviewSource: Bool {
+        guard let primary = StructuredUIMediaPath.primary(from: node) else { return false }
+        return StructuredUIURLPolicy.isAllowedDownloadPath(primary)
     }
 }

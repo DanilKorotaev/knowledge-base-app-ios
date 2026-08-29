@@ -19,6 +19,7 @@ enum StructuredUIResourceFetcher {
             }
             return resourceHost == apiHost
         }
+        guard loader != nil else { return false }
         return StructuredUIURLPolicy.isAllowedDownloadPath(trimmed)
     }
 
@@ -55,10 +56,48 @@ enum StructuredUIResourceFetcher {
         return data
     }
 
-    enum FetchError: Error {
+    enum FetchError: Error, LocalizedError {
         case emptyPath
         case missingLoader
         case invalidURL
         case httpStatus(Int)
+
+        var errorDescription: String? {
+            switch self {
+            case .emptyPath:
+                return L10n.string("structured_ui.media_empty_path")
+            case .missingLoader:
+                return L10n.string("structured_ui.media_load_failed")
+            case .invalidURL:
+                return L10n.string("structured_ui.media_invalid_url")
+            case .httpStatus(let code):
+                return String(format: L10n.string("structured_ui.media_http_status_format"), code)
+            }
+        }
+    }
+}
+
+enum StructuredUIMediaPath {
+    /// Prefer explicit `download_url`, then `url` (agents sometimes swap fields on `file` nodes).
+    static func candidates(from node: KBStructuredUINode) -> [String] {
+        var paths: [String] = []
+        if let download = normalized(node.downloadURL) {
+            paths.append(download)
+        }
+        if let url = normalized(node.url), !paths.contains(url) {
+            paths.append(url)
+        }
+        return paths
+    }
+
+    static func primary(from node: KBStructuredUINode) -> String? {
+        candidates(from: node).first
+    }
+
+    private static func normalized(_ raw: String?) -> String? {
+        guard let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
+            return nil
+        }
+        return trimmed
     }
 }

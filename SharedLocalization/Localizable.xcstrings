@@ -4737,6 +4737,54 @@
         }
       }
     },
+    "structured_ui.media_empty_path": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media URL is missing"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL медиа не указан"
+          }
+        }
+      }
+    },
+    "structured_ui.media_invalid_url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media URL is not allowed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "URL медиа не разрешён"
+          }
+        }
+      }
+    },
+    "structured_ui.media_http_status_format": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Media unavailable (HTTP %d)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Медиа недоступно (HTTP %d)"
+          }
+        }
+      }
+    },
     "structured_ui.share_image": {
       "localizations": {
         "en": {

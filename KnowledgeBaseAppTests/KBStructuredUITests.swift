@@ -184,6 +184,31 @@ final class KBStructuredUITests: XCTestCase {
                 loader: loader
             )
         )
+        XCTAssertFalse(
+            StructuredUIResourceFetcher.shouldUseAuthenticatedLoader(
+                for: "/api/attachments/1/download",
+                loader: nil
+            )
+        )
+    }
+
+    func testMediaPathCandidatesPreferDownloadURL() {
+        let node = KBStructuredUINode(
+            type: "file",
+            id: "f1",
+            url: "https://example.com/a.pdf",
+            downloadURL: "/api/sessions/1/attachments/2/file",
+            fileName: "a.pdf"
+        )
+        XCTAssertEqual(
+            StructuredUIMediaPath.candidates(from: node),
+            ["/api/sessions/1/attachments/2/file", "https://example.com/a.pdf"]
+        )
+    }
+
+    func testFetchErrorHTTPStatusDescription() {
+        let error = StructuredUIResourceFetcher.FetchError.httpStatus(404)
+        XCTAssertTrue(error.errorDescription?.contains("404") == true)
     }
 
     func testDecodeP2LayoutAndFormNodes() throws {
