@@ -315,6 +315,23 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
             values: values
         )
         var list = store.messages(for: sessionId)
+        if let values, !values.isEmpty,
+           let index = list.lastIndex(where: { $0.role == .assistant && $0.structuredUI != nil }),
+           let document = list[index].structuredUI {
+            let previous = list[index]
+            list[index] = KBMessage(
+                id: previous.id,
+                role: previous.role,
+                content: previous.content,
+                createdAt: previous.createdAt,
+                attachments: previous.attachments,
+                contentFormat: previous.contentFormat,
+                transcription: previous.transcription,
+                relatedChangedFiles: previous.relatedChangedFiles,
+                relatedChangedFilesSource: previous.relatedChangedFilesSource,
+                structuredUI: StructuredUIFormDraft.applying(values, to: document)
+            )
+        }
         if let userContent = result.userContent {
             list.append(
                 KBMessage(

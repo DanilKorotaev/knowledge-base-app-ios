@@ -324,6 +324,22 @@ final class KBStructuredUITests: XCTestCase {
         XCTAssertEqual(seeded["at"], .string(""))
     }
 
+    func testApplyingSubmittedValuesBakesIntoDocument() {
+        let open = StubStructuredUIMockFlow.apply(actionId: "open_form", componentId: "btn_form")
+        let submitted: [String: StructuredUIFormValue] = [
+            "notify": .bool(false),
+            "theme": .string("dark"),
+            "topics": .strings(["ios", "bot"]),
+            "note": .string("shipped"),
+        ]
+        let baked = StructuredUIFormDraft.applying(submitted, to: open.screen)
+        let seeded = StructuredUIFormDraft.seed(from: baked)
+        XCTAssertEqual(seeded["notify"], .bool(false))
+        XCTAssertEqual(seeded["theme"], .string("dark"))
+        XCTAssertEqual(seeded["topics"], .strings(["ios", "bot"]))
+        XCTAssertEqual(seeded["note"], .string("shipped"))
+    }
+
     func testStructuredUIErrorMessageSanitizesJSON() {
         let error = NSError(domain: "test", code: 404, userInfo: [
             NSLocalizedDescriptionKey: #"{"detail":"Not Found"}"#,

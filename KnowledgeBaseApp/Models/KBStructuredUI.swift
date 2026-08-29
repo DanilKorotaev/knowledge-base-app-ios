@@ -340,6 +340,10 @@ struct KBUIEventResponse: Codable, Equatable, Sendable {
 }
 
 enum StructuredUIFormDraft {
+    private static let formFieldTypes: Set<String> = [
+        "checkbox", "radio_group", "select", "text_field", "date", "time", "slider", "stepper",
+    ]
+
     /// Seed local draft from server node tree (checkbox / radio / select / text_field).
     static func seed(from document: KBStructuredUIDocument) -> [String: StructuredUIFormValue] {
         var values: [String: StructuredUIFormValue] = [:]
@@ -380,6 +384,60 @@ enum StructuredUIFormDraft {
 
         walk(document.screen)
         return values
+    }
+
+    /// Bake submitted values into field nodes so history panels show the user's choices.
+    static func applying(
+        _ values: [String: StructuredUIFormValue],
+        to document: KBStructuredUIDocument
+    ) -> KBStructuredUIDocument {
+        guard !values.isEmpty else { return document }
+        return KBStructuredUIDocument(
+            schemaVersion: document.schemaVersion,
+            screen: mapNode(document.screen, values: values)
+        )
+    }
+
+    private static func mapNode(
+        _ node: KBStructuredUINode,
+        values: [String: StructuredUIFormValue]
+    ) -> KBStructuredUINode {
+        let children = node.children?.map { mapNode($0, values: values) }
+        let value: StructuredUIFormValue?
+        if formFieldTypes.contains(node.type), let submitted = values[node.id] {
+            value = submitted
+        } else {
+            value = node.value
+        }
+        return KBStructuredUINode(
+            type: node.type,
+            id: node.id,
+            text: node.text,
+            label: node.label,
+            actionId: node.actionId,
+            children: children,
+            value: value,
+            placeholder: node.placeholder,
+            maxLength: node.maxLength,
+            options: node.options,
+            multi: node.multi,
+            submit: node.submit,
+            url: node.url,
+            downloadURL: node.downloadURL,
+            fileName: node.fileName,
+            fileSize: node.fileSize,
+            alt: node.alt,
+            contentMode: node.contentMode,
+            variant: node.variant,
+            height: node.height,
+            current: node.current,
+            total: node.total,
+            spacing: node.spacing,
+            progressFraction: node.progressFraction,
+            minimum: node.minimum,
+            maximum: node.maximum,
+            step: node.step
+        )
     }
 
     static func summaryLine(from values: [String: StructuredUIFormValue]) -> String {

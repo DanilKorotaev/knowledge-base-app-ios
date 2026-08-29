@@ -136,6 +136,7 @@ enum StructuredUIDateTimeFormat {
 struct StructuredUIDateNodeView: View {
     let node: KBStructuredUINode
     @Binding var draftValues: [String: StructuredUIFormValue]
+    var isInteractive: Bool = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -143,14 +144,28 @@ struct StructuredUIDateNodeView: View {
                 Text(label)
                     .font(.subheadline.weight(.semibold))
             }
-            DatePicker(
-                node.label ?? node.id,
-                selection: dateBinding,
-                displayedComponents: .date
-            )
-            .labelsHidden()
-            .datePickerStyle(.compact)
+            if isInteractive {
+                DatePicker(
+                    node.label ?? node.id,
+                    selection: dateBinding,
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+                .datePickerStyle(.compact)
+            } else {
+                Text(displayValue)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
         }
+    }
+
+    private var displayValue: String {
+        let raw = draftValues[node.id]?.stringValue ?? node.value?.stringValue ?? ""
+        return raw.isEmpty ? "—" : raw
     }
 
     private var dateBinding: Binding<Date> {
@@ -172,6 +187,7 @@ struct StructuredUIDateNodeView: View {
 struct StructuredUITimeNodeView: View {
     let node: KBStructuredUINode
     @Binding var draftValues: [String: StructuredUIFormValue]
+    var isInteractive: Bool = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -179,14 +195,28 @@ struct StructuredUITimeNodeView: View {
                 Text(label)
                     .font(.subheadline.weight(.semibold))
             }
-            DatePicker(
-                node.label ?? node.id,
-                selection: timeBinding,
-                displayedComponents: .hourAndMinute
-            )
-            .labelsHidden()
-            .datePickerStyle(.compact)
+            if isInteractive {
+                DatePicker(
+                    node.label ?? node.id,
+                    selection: timeBinding,
+                    displayedComponents: .hourAndMinute
+                )
+                .labelsHidden()
+                .datePickerStyle(.compact)
+            } else {
+                Text(displayValue)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
         }
+    }
+
+    private var displayValue: String {
+        let raw = draftValues[node.id]?.stringValue ?? node.value?.stringValue ?? ""
+        return raw.isEmpty ? "—" : raw
     }
 
     private var timeBinding: Binding<Date> {

@@ -131,9 +131,25 @@ private struct StructuredUINodeView: View {
                 } label: {
                     HStack(spacing: 10) {
                         Image(systemName: (draftValues[node.id]?.boolValue ?? false) ? "checkmark.square.fill" : "square")
+                            .foregroundStyle(
+                                (draftValues[node.id]?.boolValue ?? false) ? Color.accentColor : Color.secondary
+                            )
                         Text(node.label ?? node.id)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .foregroundStyle(
+                                (draftValues[node.id]?.boolValue ?? false) && !isInteractive
+                                    ? Color.accentColor
+                                    : Color.primary
+                            )
                     }
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .background(
+                        (draftValues[node.id]?.boolValue ?? false) && !isInteractive
+                            ? Color.accentColor.opacity(0.12)
+                            : Color.clear
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(node.label ?? node.id)
@@ -145,18 +161,25 @@ private struct StructuredUINodeView: View {
                             .font(.subheadline.weight(.semibold))
                     }
                     ForEach(node.options ?? [], id: \.id) { option in
+                        let selected = radioSelected(node.id, option.id)
                         Button {
                             draftValues[node.id] = .string(option.id)
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: radioSelected(node.id, option.id) ? "largecircle.fill.circle" : "circle")
+                                Image(systemName: selected ? "largecircle.fill.circle" : "circle")
+                                    .foregroundStyle(selected ? Color.accentColor : Color.secondary)
                                 Text(option.label)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                                    .foregroundStyle(selected && !isInteractive ? Color.accentColor : Color.primary)
                             }
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 6)
+                            .background(selected && !isInteractive ? Color.accentColor.opacity(0.12) : Color.clear)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(option.label)
-                        .accessibilityAddTraits(radioSelected(node.id, option.id) ? .isSelected : [])
+                        .accessibilityAddTraits(selected ? .isSelected : [])
                     }
                 }
             case "select":
@@ -167,8 +190,9 @@ private struct StructuredUINodeView: View {
                     }
                     if node.multi == true {
                         ForEach(node.options ?? [], id: \.id) { option in
+                            let selected = draftValues[node.id]?.stringListValue.contains(option.id) ?? false
                             Button {
-                                let isOn = !(draftValues[node.id]?.stringListValue.contains(option.id) ?? false)
+                                let isOn = !selected
                                 var list = draftValues[node.id]?.stringListValue ?? []
                                 if isOn {
                                     if !list.contains(option.id) { list.append(option.id) }
@@ -178,24 +202,38 @@ private struct StructuredUINodeView: View {
                                 draftValues[node.id] = .strings(list)
                             } label: {
                                 HStack(spacing: 10) {
-                                    Image(
-                                        systemName: (draftValues[node.id]?.stringListValue.contains(option.id) ?? false)
-                                            ? "checkmark.square.fill"
-                                            : "square"
-                                    )
+                                    Image(systemName: selected ? "checkmark.square.fill" : "square")
+                                        .foregroundStyle(selected ? Color.accentColor : Color.secondary)
                                     Text(option.label)
                                         .frame(maxWidth: .infinity, alignment: .leading)
+                                        .foregroundStyle(selected && !isInteractive ? Color.accentColor : Color.primary)
                                 }
+                                .padding(.vertical, 4)
+                                .padding(.horizontal, 6)
+                                .background(selected && !isInteractive ? Color.accentColor.opacity(0.12) : Color.clear)
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                             }
                             .buttonStyle(.plain)
                         }
-                    } else {
+                    } else if isInteractive {
                         Picker(node.label ?? node.id, selection: singleSelectBinding(for: node)) {
                             ForEach(node.options ?? [], id: \.id) { option in
                                 Text(option.label).tag(option.id)
                             }
                         }
                         .pickerStyle(.menu)
+                    } else {
+                        let selectedId = draftValues[node.id]?.stringValue
+                            ?? node.options?.first?.id
+                        let selectedLabel = node.options?.first(where: { $0.id == selectedId })?.label
+                            ?? selectedId
+                            ?? ""
+                        Text(selectedLabel)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 8)
+                            .background(Color.accentColor.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                 }
             case "text_field":
@@ -204,8 +242,24 @@ private struct StructuredUINodeView: View {
                         Text(label)
                             .font(.subheadline.weight(.semibold))
                     }
-                    TextField(node.placeholder ?? "", text: textFieldBinding(for: node))
-                        .textFieldStyle(.roundedBorder)
+                    if isInteractive {
+                        TextField(node.placeholder ?? "", text: textFieldBinding(for: node))
+                            .textFieldStyle(.roundedBorder)
+                    } else {
+                        Text(draftValues[node.id]?.stringValue.isEmpty == false
+                             ? (draftValues[node.id]?.stringValue ?? "")
+                             : (node.placeholder ?? "—"))
+                            .foregroundStyle(
+                                draftValues[node.id]?.stringValue.isEmpty == false
+                                    ? Color.primary
+                                    : Color.secondary
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 10)
+                            .background(Color.accentColor.opacity(0.12))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
                 }
             case "image":
                 StructuredUIImageNodeView(
@@ -224,13 +278,13 @@ private struct StructuredUINodeView: View {
             case "progress":
                 StructuredUIProgressNodeView(node: node)
             case "date":
-                StructuredUIDateNodeView(node: node, draftValues: $draftValues)
+                StructuredUIDateNodeView(node: node, draftValues: $draftValues, isInteractive: isInteractive)
             case "time":
-                StructuredUITimeNodeView(node: node, draftValues: $draftValues)
+                StructuredUITimeNodeView(node: node, draftValues: $draftValues, isInteractive: isInteractive)
             case "slider":
-                StructuredUISliderNodeView(node: node, draftValues: $draftValues)
+                StructuredUISliderNodeView(node: node, draftValues: $draftValues, isInteractive: isInteractive)
             case "stepper":
-                StructuredUIStepperNodeView(node: node, draftValues: $draftValues)
+                StructuredUIStepperNodeView(node: node, draftValues: $draftValues, isInteractive: isInteractive)
             default:
                 EmptyView()
             }

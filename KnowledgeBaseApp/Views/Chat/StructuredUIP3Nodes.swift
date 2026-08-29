@@ -12,6 +12,7 @@ struct StructuredUIMarkdownNodeView: View {
 struct StructuredUISliderNodeView: View {
     let node: KBStructuredUINode
     @Binding var draftValues: [String: StructuredUIFormValue]
+    var isInteractive: Bool = true
 
     private var minValue: Double { node.minimum ?? 0 }
     private var maxValue: Double { max(node.maximum ?? 100, minValue + 1) }
@@ -23,10 +24,17 @@ struct StructuredUISliderNodeView: View {
                 Text(label)
                     .font(.subheadline.weight(.semibold))
             }
-            Slider(value: sliderBinding, in: minValue...maxValue, step: stepValue)
+            if isInteractive {
+                Slider(value: sliderBinding, in: minValue...maxValue, step: stepValue)
+            }
             Text(formattedValue(sliderBinding.wrappedValue))
                 .font(.caption.monospacedDigit())
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isInteractive ? .secondary : .primary)
+                .padding(.vertical, isInteractive ? 0 : 8)
+                .padding(.horizontal, isInteractive ? 0 : 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(isInteractive ? Color.clear : Color.accentColor.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .accessibilityElement(children: .combine)
     }
@@ -54,6 +62,7 @@ struct StructuredUISliderNodeView: View {
 struct StructuredUIStepperNodeView: View {
     let node: KBStructuredUINode
     @Binding var draftValues: [String: StructuredUIFormValue]
+    var isInteractive: Bool = true
 
     private var minValue: Int { Int((node.minimum ?? 0).rounded()) }
     private var maxValue: Int { max(Int((node.maximum ?? 100).rounded()), minValue) }
@@ -72,17 +81,19 @@ struct StructuredUIStepperNodeView: View {
                     .foregroundStyle(.primary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(Color.secondary.opacity(0.14))
+                    .background(isInteractive ? Color.secondary.opacity(0.14) : Color.accentColor.opacity(0.18))
                     .clipShape(Capsule())
                     .accessibilityLabel(L10n.string("structured_ui.stepper_value_a11y"))
             }
-            Stepper(
-                L10n.string("structured_ui.stepper_adjust_a11y"),
-                value: stepperBinding,
-                in: minValue...maxValue,
-                step: stepValue
-            )
-            .labelsHidden()
+            if isInteractive {
+                Stepper(
+                    L10n.string("structured_ui.stepper_adjust_a11y"),
+                    value: stepperBinding,
+                    in: minValue...maxValue,
+                    step: stepValue
+                )
+                .labelsHidden()
+            }
         }
         .accessibilityElement(children: .contain)
     }
