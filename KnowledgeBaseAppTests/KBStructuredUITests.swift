@@ -184,11 +184,12 @@ final class KBStructuredUITests: XCTestCase {
                 loader: loader
             )
         )
-        XCTAssertFalse(
+        XCTAssertTrue(
             StructuredUIResourceFetcher.shouldUseAuthenticatedLoader(
                 for: "/api/attachments/1/download",
                 loader: nil
-            )
+            ),
+            "API paths still require the auth path so fetch throws missingLoader without a loader"
         )
     }
 

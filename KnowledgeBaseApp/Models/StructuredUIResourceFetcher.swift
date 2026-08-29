@@ -19,7 +19,8 @@ enum StructuredUIResourceFetcher {
             }
             return resourceHost == apiHost
         }
-        guard loader != nil else { return false }
+        // Relative API paths always go through the auth loader path so a missing
+        // loader surfaces as `FetchError.missingLoader` (not invalidURL).
         return StructuredUIURLPolicy.isAllowedDownloadPath(trimmed)
     }
 
