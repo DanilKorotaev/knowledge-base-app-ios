@@ -12,6 +12,13 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.19] - 2026-08-29
+
+### Fixed
+
+- Clearer Structured UI media errors and path fallback
+- Restore missingLoader for API paths without attachment loader
+
 ## [1.0.18] - 2026-08-28
 
 ### Changed
@@ -176,7 +183,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.18...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.19...HEAD
+[1.0.19]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.19
 [1.0.18]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.18
 [1.0.17]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.17
 [1.0.16]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.16

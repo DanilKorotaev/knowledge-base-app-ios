@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.19 | 124 | `ios/v1.0.19` | 2026-08-29 | Restore missingLoader for API paths without attachment loader |
 | 1.0.18 | 122 | `ios/v1.0.18` | 2026-08-28 | Improve Structured UI markdown, stepper, and progress UX |
 | 1.0.17 | 120 | `ios/v1.0.17` | 2026-08-28 | Resolve P3 test compile errors |
 | 1.0.16 | 118 | `ios/v1.0.16` | 2026-08-28 | Stabilize Structured UI media coverage tests |
