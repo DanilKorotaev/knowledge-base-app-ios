@@ -26,4 +26,8 @@ struct KBAttachment: Codable, Identifiable, Equatable, Sendable {
     var isVoice: Bool {
         fileType == "voice" || mimeType?.hasPrefix("audio/") == true
     }
+
+    var isVideo: Bool {
+        fileType == "video" || mimeType?.hasPrefix("video/") == true
+    }
 }

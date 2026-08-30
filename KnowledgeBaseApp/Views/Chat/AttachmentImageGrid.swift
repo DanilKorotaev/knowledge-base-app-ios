@@ -123,12 +123,26 @@ struct FullscreenImageViewer: View {
     let onDismiss: () -> Void
 
     @State private var showShareSheet = false
+    @State private var dragOffset: CGFloat = 0
+    @State private var backgroundOpacity: Double = 1
+    @State private var zoomScale: CGFloat = 1
+    @State private var minimumZoomScale: CGFloat = 1
+
+    private var canDismissByDrag: Bool {
+        zoomScale <= minimumZoomScale + 0.02
+    }
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
-            ZoomableImageView(image: image)
-                .ignoresSafeArea()
+            Color.black.opacity(backgroundOpacity).ignoresSafeArea()
+            ZoomableImageView(image: image) { current, minimum in
+                zoomScale = current
+                minimumZoomScale = minimum
+            }
+            .offset(y: dragOffset)
+            .scaleEffect(dismissScale)
+            .ignoresSafeArea()
+            .gesture(dismissDragGesture)
 
             VStack {
                 HStack {
@@ -145,7 +159,7 @@ struct FullscreenImageViewer: View {
                     .accessibilityLabel(Text("structured_ui.share_image"))
 
                     Button {
-                        onDismiss()
+                        dismissAnimated()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title)
@@ -157,11 +171,53 @@ struct FullscreenImageViewer: View {
                 }
                 .padding(.horizontal, 8)
                 .padding(.top, 8)
+                .opacity(backgroundOpacity)
                 Spacer()
             }
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [image])
+        }
+        .onAppear {
+            minimumZoomScale = 1
+            zoomScale = 1
+        }
+    }
+
+    private var dismissScale: CGFloat {
+        guard dragOffset > 0 else { return 1 }
+        return max(0.82, 1 - dragOffset / 900)
+    }
+
+    private var dismissDragGesture: some Gesture {
+        DragGesture(minimumDistance: 12, coordinateSpace: .global)
+            .onChanged { value in
+                guard canDismissByDrag, value.translation.height > 0 else { return }
+                dragOffset = value.translation.height
+                backgroundOpacity = Double(max(0.35, 1 - value.translation.height / 320))
+            }
+            .onEnded { value in
+                guard canDismissByDrag else { return }
+                let shouldDismiss = value.translation.height > 120
+                    || value.predictedEndTranslation.height > 220
+                if shouldDismiss {
+                    dismissAnimated()
+                } else {
+                    withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                        dragOffset = 0
+                        backgroundOpacity = 1
+                    }
+                }
+            }
+    }
+
+    private func dismissAnimated() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            dragOffset = 500
+            backgroundOpacity = 0
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            onDismiss()
         }
     }
 }

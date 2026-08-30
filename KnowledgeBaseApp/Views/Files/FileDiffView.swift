@@ -43,6 +43,7 @@ struct FileDiffView: View {
         }
         .navigationTitle("diff.title")
         .navigationBarTitleDisplayMode(.inline)
+        .hidesTabBarWhenPushed()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

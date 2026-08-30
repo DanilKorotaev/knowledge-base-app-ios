@@ -28,5 +28,6 @@ struct LogsMenuView: View {
         }
         .navigationTitle("logs.title")
         .navigationBarTitleDisplayMode(.inline)
+        .hidesTabBarWhenPushed()
     }
 }

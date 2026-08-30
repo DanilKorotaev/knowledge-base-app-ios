@@ -90,6 +90,7 @@ struct MainView: View {
     /// Split modifiers across helpers so the Swift type checker stays fast.
     private var mainListWithDebugChrome: some View {
         mainListWithVoiceChrome
+            .toolbar(navigationPath.isEmpty ? .automatic : .hidden, for: .tabBar)
             .sheet(isPresented: debugMenuPresented) {
                 debugMenuSheet
             }

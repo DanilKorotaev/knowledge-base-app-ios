@@ -27,6 +27,7 @@ struct LogFilesView: View {
         }
         .navigationTitle("logs.files")
         .navigationBarTitleDisplayMode(.inline)
+        .hidesTabBarWhenPushed()
         .onAppear { viewModel.reload() }
         .refreshable { viewModel.reload() }
     }

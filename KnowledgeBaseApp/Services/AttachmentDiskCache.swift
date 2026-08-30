@@ -22,6 +22,7 @@ struct CachedAttachmentMetadata: Sendable {
 
 protocol AttachmentDiskCacheProtocol: Sendable {
     func data(forKey key: String) -> Data?
+    func fileURL(forKey key: String) -> URL?
     func store(data: Data, key: String, metadata: CachedAttachmentMetadata)
     func touch(key: String)
     func remove(key: String)
@@ -81,7 +82,7 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
         guard let entryIndex = index.entries.firstIndex(where: { $0.cacheKey == key }) else {
             return nil
         }
-        let fileURL = fileURL(forKey: key)
+        let fileURL = diskFileURL(forKey: key)
         guard let data = try? Data(contentsOf: fileURL) else {
             index.entries.remove(at: entryIndex)
             saveIndexLocked(index)
@@ -93,11 +94,22 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
         return data
     }
 
+    func fileURL(forKey key: String) -> URL? {
+        lock.lock()
+        defer { lock.unlock() }
+        let index = loadIndexLocked()
+        guard index.entries.contains(where: { $0.cacheKey == key }) else {
+            return nil
+        }
+        let url = diskFileURL(forKey: key)
+        return fileManager.fileExists(atPath: url.path) ? url : nil
+    }
+
     func store(data: Data, key: String, metadata: CachedAttachmentMetadata) {
         lock.lock()
         defer { lock.unlock() }
         var index = loadIndexLocked()
-        let fileURL = fileURL(forKey: key)
+        let fileURL = diskFileURL(forKey: key)
         try? data.write(to: fileURL, options: .atomic)
 
         let now = Date()
@@ -135,7 +147,7 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
         var index = loadIndexLocked()
         index.entries.removeAll { $0.cacheKey == key }
         saveIndexLocked(index)
-        try? fileManager.removeItem(at: fileURL(forKey: key))
+        try? fileManager.removeItem(at: diskFileURL(forKey: key))
     }
 
     func removeAll() {
@@ -163,7 +175,7 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
 
     // MARK: - Private
 
-    private func fileURL(forKey key: String) -> URL {
+    private func diskFileURL(forKey key: String) -> URL {
         let digest = key.data(using: .utf8).map { data in
             data.base64EncodedString()
                 .replacingOccurrences(of: "/", with: "_")
@@ -191,7 +203,7 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
                 index.entries[$0].lastAccessAt < index.entries[$1].lastAccessAt
             }) else { break }
             let key = index.entries[oldestIndex].cacheKey
-            try? fileManager.removeItem(at: fileURL(forKey: key))
+            try? fileManager.removeItem(at: diskFileURL(forKey: key))
             index.entries.remove(at: oldestIndex)
         }
         saveIndexLocked(index)

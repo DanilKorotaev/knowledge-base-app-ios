@@ -23,6 +23,7 @@ struct DebugMenuView: View {
         }
         .navigationTitle("debug.title")
         .navigationBarTitleDisplayMode(.inline)
+        .hidesTabBarWhenPushed()
     }
 
     @ViewBuilder

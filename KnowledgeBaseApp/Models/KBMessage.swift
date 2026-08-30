@@ -69,8 +69,12 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         attachments?.filter(\.isVoice) ?? []
     }
 
+    var videoAttachments: [KBAttachment] {
+        attachments?.filter(\.isVideo) ?? []
+    }
+
     var documentAttachments: [KBAttachment] {
-        attachments?.filter { !$0.isImage && !$0.isVoice } ?? []
+        attachments?.filter { !$0.isImage && !$0.isVoice && !$0.isVideo } ?? []
     }
 
     var effectiveTranscription: String? {

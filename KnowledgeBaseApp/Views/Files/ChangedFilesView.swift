@@ -43,6 +43,7 @@ struct ChangedFilesView: View {
             }
         }
         .navigationTitle("files.changed_title")
+        .hidesTabBarWhenPushed()
         .task {
             await load()
         }

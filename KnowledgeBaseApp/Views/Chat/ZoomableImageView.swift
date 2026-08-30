@@ -4,15 +4,16 @@ import UIKit
 /// Pinch/double-tap zoom for fullscreen image preview (chat + Structured UI).
 struct ZoomableImageView: UIViewRepresentable {
     let image: UIImage
+    var onZoomScaleChange: ((_ current: CGFloat, _ minimum: CGFloat) -> Void)?
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(image: image)
+        Coordinator(image: image, onZoomScaleChange: onZoomScaleChange)
     }
 
     func makeUIView(context: Context) -> UIScrollView {
         let scrollView = UIScrollView()
         scrollView.delegate = context.coordinator
-        scrollView.backgroundColor = .black
+        scrollView.backgroundColor = .clear
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.minimumZoomScale = 1
@@ -39,6 +40,7 @@ struct ZoomableImageView: UIViewRepresentable {
     }
 
     func updateUIView(_ scrollView: UIScrollView, context: Context) {
+        context.coordinator.onZoomScaleChange = onZoomScaleChange
         context.coordinator.imageView?.image = image
         if scrollView.bounds.width > 0, scrollView.bounds.height > 0 {
             context.coordinator.layoutImage(in: scrollView)
@@ -54,9 +56,11 @@ struct ZoomableImageView: UIViewRepresentable {
         weak var scrollView: UIScrollView?
         weak var imageView: UIImageView?
         private let image: UIImage
+        var onZoomScaleChange: ((_ current: CGFloat, _ minimum: CGFloat) -> Void)?
 
-        init(image: UIImage) {
+        init(image: UIImage, onZoomScaleChange: ((_ current: CGFloat, _ minimum: CGFloat) -> Void)?) {
             self.image = image
+            self.onZoomScaleChange = onZoomScaleChange
         }
 
         func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -65,6 +69,7 @@ struct ZoomableImageView: UIViewRepresentable {
 
         func scrollViewDidZoom(_ scrollView: UIScrollView) {
             centerImage(in: scrollView)
+            onZoomScaleChange?(scrollView.zoomScale, scrollView.minimumZoomScale)
         }
 
         @objc func handleDoubleTap(_ recognizer: UITapGestureRecognizer) {
@@ -103,6 +108,7 @@ struct ZoomableImageView: UIViewRepresentable {
             )
             scrollView.contentSize = imageView.frame.size
             centerImage(in: scrollView)
+            onZoomScaleChange?(scrollView.zoomScale, scrollView.minimumZoomScale)
         }
 
         private func centerImage(in scrollView: UIScrollView) {

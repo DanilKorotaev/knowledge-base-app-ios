@@ -86,6 +86,13 @@ struct RichMessageBubbleView: View {
                 )
             }
 
+            ForEach(message.videoAttachments) { video in
+                VideoMessageBubble(
+                    attachment: video,
+                    loader: attachmentLoader
+                )
+            }
+
             if !message.documentAttachments.isEmpty {
                 MessageDocumentAttachmentsView(
                     attachments: message.documentAttachments,

@@ -63,6 +63,18 @@ final class AttachmentDiskCacheTests: XCTestCase {
         XCTAssertEqual(meta.messageId, "7")
         XCTAssertEqual(meta.fileName, "voice.m4a")
     }
+
+    func testFileURLReturnsStoredPath() {
+        let key = "api/sessions/1/attachments/2/file"
+        cache.store(
+            data: Data([0x01, 0x02]),
+            key: key,
+            metadata: CachedAttachmentMetadata(fileName: "clip.mp4", mimeType: "video/mp4", sessionId: "1", messageId: "2")
+        )
+        let url = cache.fileURL(forKey: key)
+        XCTAssertNotNil(url)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url?.path ?? ""))
+    }
 }
 
 final class CachingAttachmentLoaderTests: XCTestCase {
