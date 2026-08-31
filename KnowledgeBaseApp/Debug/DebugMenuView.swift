@@ -21,7 +21,7 @@ struct DebugMenuView: View {
                 destination(for: screen)
             }
         }
-        .navigationTitle("debug.title")
+        .navigationTitle(L10n.string("debug.title"))
         .navigationBarTitleDisplayMode(.inline)
     }
 

@@ -1,52 +1,10 @@
 import SwiftUI
-import UIKit
 
 extension View {
-    /// Hides the root tab bar during the push transition (UIKit `hidesBottomBarWhenPushed`).
-    /// Prefer this over toggling `.toolbar` on the source stack — that causes hitching.
+    /// Hides the root tab bar while this screen is visible in a pushed navigation stack.
+    /// Prefer driving hide from the stack root via `navigationPath` when possible — that
+    /// animates with the push. Use this on destinations as a safety net (SwiftUI only).
     func hidesTabBarWhenPushed() -> some View {
-        background(HidesBottomBarWhenPushedInstaller())
-            .toolbar(.hidden, for: .tabBar)
-    }
-}
-
-/// Sets `hidesBottomBarWhenPushed` on the nearest navigation-stack view controller as early as possible.
-private struct HidesBottomBarWhenPushedInstaller: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> Controller {
-        Controller()
-    }
-
-    func updateUIViewController(_ uiViewController: Controller, context: Context) {
-        uiViewController.applyHiding()
-    }
-
-    final class Controller: UIViewController {
-        override func didMove(toParent parent: UIViewController?) {
-            super.didMove(toParent: parent)
-            applyHiding()
-        }
-
-        override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            applyHiding()
-        }
-
-        func applyHiding() {
-            guard let stackController = navigationStackMember() else { return }
-            if !stackController.hidesBottomBarWhenPushed {
-                stackController.hidesBottomBarWhenPushed = true
-            }
-        }
-
-        private func navigationStackMember() -> UIViewController? {
-            var current: UIViewController? = self
-            while let controller = current {
-                if controller.navigationController?.viewControllers.contains(controller) == true {
-                    return controller
-                }
-                current = controller.parent
-            }
-            return parent
-        }
+        toolbar(.hidden, for: .tabBar)
     }
 }

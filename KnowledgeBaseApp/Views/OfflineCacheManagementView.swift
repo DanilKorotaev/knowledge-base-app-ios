@@ -49,10 +49,29 @@ struct OfflineCacheManagementView: View {
                     }
                 }
             }
+
+            if !entries.isEmpty {
+                Section {
+                    Button(role: .destructive) {
+                        if isSelecting {
+                            delete(keys: selectedKeys)
+                            withAnimation(.snappy(duration: 0.25)) {
+                                isSelecting = false
+                            }
+                        } else {
+                            showClearAllConfirm = true
+                        }
+                    } label: {
+                        Text(isSelecting ? "offline.delete_selected" : "offline.clear_all_cache")
+                            .font(.body.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .disabled(isSelecting && selectedKeys.isEmpty)
+                }
+            }
         }
         .navigationTitle("offline.cache_title")
         .navigationBarTitleDisplayMode(.inline)
-        .hidesTabBarWhenPushed()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if !entries.isEmpty {
@@ -67,15 +86,7 @@ struct OfflineCacheManagementView: View {
                 }
             }
         }
-        // Keep actions in a stable inset — `.bottomBar` jumps when the tab bar hides on push.
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !entries.isEmpty {
-                bottomActionBar
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-        .animation(.snappy(duration: 0.28), value: isSelecting)
-        .animation(.snappy(duration: 0.28), value: entries.isEmpty)
+        .animation(.snappy(duration: 0.25), value: isSelecting)
         .onAppear { reload() }
         .fullScreenCover(item: $previewImageItem) { item in
             FullscreenImageViewer(image: item.image) {
@@ -105,30 +116,6 @@ struct OfflineCacheManagementView: View {
                     CacheByteFormatting.string(for: totalBytes)
                 )
             )
-        }
-    }
-
-    private var bottomActionBar: some View {
-        VStack(spacing: 0) {
-            Divider()
-            Button(role: .destructive) {
-                if isSelecting {
-                    delete(keys: selectedKeys)
-                    withAnimation(.snappy(duration: 0.25)) {
-                        isSelecting = false
-                    }
-                } else {
-                    showClearAllConfirm = true
-                }
-            } label: {
-                Text(isSelecting ? "offline.delete_selected" : "offline.clear_all_cache")
-                    .font(.body.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            }
-            .disabled(isSelecting && selectedKeys.isEmpty)
-            .padding(.horizontal, 16)
-            .background(.bar)
         }
     }
 

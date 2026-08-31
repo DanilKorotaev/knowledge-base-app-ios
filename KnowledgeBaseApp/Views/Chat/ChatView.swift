@@ -158,7 +158,6 @@ struct ChatView: View {
         .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemBackground))
-        .hidesTabBarWhenPushed()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

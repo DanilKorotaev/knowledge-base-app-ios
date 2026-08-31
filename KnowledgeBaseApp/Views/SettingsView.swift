@@ -3,6 +3,10 @@ import SwiftUI
 import UIKit
 #endif
 
+enum SettingsRoute: Hashable {
+    case offlineCache
+}
+
 struct SettingsView: View {
     @State private var apiBaseURL: String = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL) ?? ""
     @State private var authToken: String = AppConfiguration.string(for: AppConfiguration.Keys.authToken) ?? ""
@@ -72,8 +76,8 @@ struct SettingsView: View {
             }
 
             Section {
-                NavigationLink("settings.manage_offline_cache") {
-                    OfflineCacheManagementView()
+                NavigationLink(value: SettingsRoute.offlineCache) {
+                    Text("settings.manage_offline_cache")
                 }
             } header: {
                 Text("settings.offline")

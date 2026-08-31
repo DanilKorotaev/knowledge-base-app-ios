@@ -34,6 +34,7 @@ struct MainView: View {
     @State private var selectedVoiceDefaultTTL: DefaultVoiceSessionTTL = .oneHour
     @State private var sessionActionError: String?
     @State private var navigationPath = NavigationPath()
+    @State private var settingsPath = NavigationPath()
     @State private var pinnedStore = PinnedSessionsStore.shared
     @State private var debugQuickActions = DebugQuickActionsController.shared
     private let sessionCache: SessionCacheStoreProtocol
@@ -62,12 +63,17 @@ struct MainView: View {
         TabView(selection: $selectedTab) {
             NavigationStack(path: $navigationPath) {
                 mainListWithDebugChrome
+                    // Hide tab bar from the stack root as soon as path is non-empty so the
+                    // bar animates away with the push (destination-only hide is too late).
+                    .toolbar(navigationPath.isEmpty ? .automatic : .hidden, for: .tabBar)
                     .navigationDestination(for: KBSession.self) { session in
                         ChatView(
                             session: session,
                             chatClient: chatClient,
                             attachmentLoader: attachmentLoader
                         )
+                        // Safety net if root toolbar hasn't applied yet.
+                        .toolbar(.hidden, for: .tabBar)
                     }
             }
             .tabItem {
@@ -75,8 +81,16 @@ struct MainView: View {
             }
             .tag(RootTab.sessions)
 
-            NavigationStack {
+            NavigationStack(path: $settingsPath) {
                 SettingsView()
+                    .toolbar(settingsPath.isEmpty ? .automatic : .hidden, for: .tabBar)
+                    .navigationDestination(for: SettingsRoute.self) { route in
+                        switch route {
+                        case .offlineCache:
+                            OfflineCacheManagementView()
+                                .toolbar(.hidden, for: .tabBar)
+                        }
+                    }
             }
             .tabItem {
                 Label("tab.settings", systemImage: "gearshape")

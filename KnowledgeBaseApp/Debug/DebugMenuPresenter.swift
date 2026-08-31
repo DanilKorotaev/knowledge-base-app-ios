@@ -50,7 +50,6 @@ final class DebugMenuPresenter {
     private static func presentationAnchor() -> UIViewController? {
         guard var top = KBTopViewController.current else { return nil }
         while let presented = top.presentedViewController {
-            // Don't present from the debug sheet itself.
             if presented === DebugMenuPresenter.shared.hostingController {
                 break
             }
@@ -64,16 +63,21 @@ final class DebugMenuPresenter {
 }
 
 struct DebugMenuSheetRoot: View {
+    @Bindable private var languageStore = AppLanguageStore.shared
+
     var body: some View {
         NavigationStack {
             DebugMenuView()
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("common.close") {
+                        Button(L10n.string("common.close")) {
                             DebugMenuPresenter.shared.dismiss()
                         }
                     }
                 }
         }
+        // UIKit-hosted sheet is outside MainView's environment — bind locale explicitly.
+        .environment(\.locale, languageStore.resolvedLocale)
+        .environment(languageStore)
     }
 }
