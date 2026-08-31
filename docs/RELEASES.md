@@ -6,7 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
-| 1.0.23 | 131 | `ios/v1.0.23` | 2026-08-31 | Fix Debug locale and smooth tab-bar hide on push. |
+| 1.0.23 | 132 | `ios/v1.0.23` | 2026-08-31 | TestFlight release |
 | 1.0.22 | 130 | `ios/v1.0.22` | 2026-08-31 | Fix cache preview test for UTType jpeg extension. |
 | 1.0.21 | 128 | `ios/v1.0.21` | 2026-08-31 | Fix cache age helper and run XcodeGen automatically in CI. |
 | 1.0.20 | 126 | `ios/v1.0.20` | 2026-08-29 | Highlight submitted Structured UI values in history |
