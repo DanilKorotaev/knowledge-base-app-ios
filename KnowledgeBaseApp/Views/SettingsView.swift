@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var voiceDefaultExpiry: String?
     @State private var didCopyVersion = false
     @Bindable private var languageStore = AppLanguageStore.shared
+    @State private var debugQuickActions = DebugQuickActionsController.shared
 
     private var clientMeta: KBClientMetadata { KBClientMetadata.current }
 
@@ -101,9 +102,19 @@ struct SettingsView: View {
             }
 
             Section("settings.developer") {
-                NavigationLink("settings.debug_menu") {
-                    DebugMenuView()
+                Button {
+                    debugQuickActions.presentDebugMenuFromSettings()
+                } label: {
+                    HStack {
+                        Text("settings.debug_menu")
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 Text("settings.developer_hint")
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -85,20 +85,22 @@ struct MainView: View {
         }
         .environment(voiceRouting)
         .environment(voiceViewModel)
+        .onAppear {
+            updateMainScreenDebugGesture(isOnMainList: selectedTab == .sessions && navigationPath.isEmpty)
+        }
     }
 
     /// Split modifiers across helpers so the Swift type checker stays fast.
     private var mainListWithDebugChrome: some View {
         mainListWithVoiceChrome
-            .toolbar(navigationPath.isEmpty ? .automatic : .hidden, for: .tabBar)
-            .sheet(isPresented: debugMenuPresented) {
-                debugMenuSheet
-            }
             .onChange(of: navigationPath.count) { _, count in
                 updateMainScreenDebugGesture(isOnMainList: count == 0)
             }
+            .onChange(of: selectedTab) { _, tab in
+                updateMainScreenDebugGesture(isOnMainList: tab == .sessions && navigationPath.isEmpty)
+            }
             .onDisappear {
-                ThreeFingerSwipeDownInstaller.shared.setEnabled(false) {}
+                // Keep gesture available from Settings; only disable when this whole tab stack is gone.
             }
     }
 
@@ -260,32 +262,12 @@ struct MainView: View {
         )
     }
 
-    private var debugMenuPresented: Binding<Bool> {
-        Binding(
-            get: { debugQuickActions.showDebugMenuSheet },
-            set: { debugQuickActions.showDebugMenuSheet = $0 }
-        )
-    }
-
     private var postRecordReviewSheet: some View {
         PostRecordingReviewSheet(
             viewModel: voiceViewModel,
             sessions: sessions,
             voiceRouting: voiceRouting
         )
-    }
-
-    private var debugMenuSheet: some View {
-        NavigationStack {
-            DebugMenuView()
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("common.close") {
-                            debugQuickActions.showDebugMenuSheet = false
-                        }
-                    }
-                }
-        }
     }
 
     private func handleScenePhaseChange(_ newPhase: ScenePhase) {
@@ -311,7 +293,9 @@ struct MainView: View {
     }
 
     private func updateMainScreenDebugGesture(isOnMainList: Bool) {
-        ThreeFingerSwipeDownInstaller.shared.setEnabled(isOnMainList) {
+        // Available on the session list and on Settings (not inside an open chat).
+        let enabled = selectedTab == .settings || isOnMainList
+        ThreeFingerSwipeDownInstaller.shared.setEnabled(enabled) {
             debugQuickActions.presentDebugMenuFromMainGesture()
         }
     }

@@ -53,6 +53,7 @@
 		343498C2DB528E4809E9DCCE /* URLMIMETypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EABACE67AA14AB98FB6859D /* URLMIMETypeTests.swift */; };
 		350D137C255FD0485DFE4F47 /* MessageCopySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7906A1DBDAB3EFD9574CB68E /* MessageCopySheet.swift */; };
 		352C87886184DC6713E68603 /* WatchVoiceRelayProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D56D0D3AECF80FD8F0A233 /* WatchVoiceRelayProcessor.swift */; };
+		35E5F330865948CD05A6E51C /* DebugMenuPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB27C5C5EC529A4C77076AC8 /* DebugMenuPresenter.swift */; };
 		364D0DDB9A1A311FDF17B88C /* AppLanguageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D184EFF645B89B6C09863A2 /* AppLanguageStore.swift */; };
 		366AB847DA19D3225603589C /* SearchTextFieldConfigurator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 916CB4865EF5D7C9534296F3 /* SearchTextFieldConfigurator.swift */; };
 		369161ED876B4F81DECBE80B /* MarkdownCodeBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F1434E608570E5AE19C695 /* MarkdownCodeBlockView.swift */; };
@@ -567,6 +568,7 @@
 		C54A4C38492534F34CD1E7A2 /* LoggerTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTestSupport.swift; sourceTree = "<group>"; };
 		C8F0F7B4C16684A701355980 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		CA18FCA48ECCD8FB03EF2108 /* KBLoggerTagsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBLoggerTagsProviderTests.swift; sourceTree = "<group>"; };
+		CB27C5C5EC529A4C77076AC8 /* DebugMenuPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugMenuPresenter.swift; sourceTree = "<group>"; };
 		CD741F0013503264A426AC27 /* FileDiffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDiffView.swift; sourceTree = "<group>"; };
 		CE4E4D9362430D07F2BA5687 /* KeychainTokenStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStore.swift; sourceTree = "<group>"; };
 		CE790FD9975318782E752411 /* AttachmentPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentPickerSheet.swift; sourceTree = "<group>"; };
@@ -664,6 +666,7 @@
 				434C413516425099A9D9A55E /* Logs */,
 				43B6ADCB3FA429C28A151775 /* UserDefaults */,
 				4DDDCF113D57DD6C3680CC7E /* DebugGestureOverlays.swift */,
+				CB27C5C5EC529A4C77076AC8 /* DebugMenuPresenter.swift */,
 				3E71D5E823D686966D5E3F29 /* DebugMenuView.swift */,
 				07F67F95182855FD84BBEC6C /* DebugQuickActionsController.swift */,
 				DDACACB495BC92A2B1C93302 /* ThreeFingerSwipeDownInstaller.swift */,
@@ -1465,6 +1468,7 @@
 				FFB6B584B6FEB1EC5D80D696 /* ComposerPendingVoiceCaptureView.swift in Sources */,
 				54C2BD34B388702A10349971 /* ConsoleLogger.swift in Sources */,
 				D8E57D2BFD1F7A51F88B0DA7 /* DebugGestureOverlays.swift in Sources */,
+				35E5F330865948CD05A6E51C /* DebugMenuPresenter.swift in Sources */,
 				C589ACC0804A532300DA726E /* DebugMenuView.swift in Sources */,
 				2FE2CE1B89928A6F15CD86D0 /* DebugQuickActionsController.swift in Sources */,
 				4DCAA1C65C7ECC89EA077972 /* DefaultVoiceSessionPreference.swift in Sources */,

@@ -10,6 +10,7 @@ struct OfflineCacheManagementView: View {
     @State private var previewImageItem: IdentifiableCacheImage?
     @State private var previewURL: URL?
     @State private var previewError: String?
+    @State private var kindByKey: [String: CachedAttachmentKind] = [:]
 
     private let cache: AttachmentDiskCacheProtocol
 
@@ -56,7 +57,7 @@ struct OfflineCacheManagementView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 if !entries.isEmpty {
                     Button(isSelecting ? "common.done" : "common.select") {
-                        withAnimation {
+                        withAnimation(.snappy(duration: 0.25)) {
                             isSelecting.toggle()
                             if !isSelecting {
                                 selectedKeys.removeAll()
@@ -65,21 +66,16 @@ struct OfflineCacheManagementView: View {
                     }
                 }
             }
-            ToolbarItem(placement: .bottomBar) {
-                if isSelecting {
-                    Button("offline.delete_selected", role: .destructive) {
-                        delete(keys: selectedKeys)
-                        isSelecting = false
-                    }
-                    .disabled(selectedKeys.isEmpty)
-                } else {
-                    Button("offline.clear_all_cache", role: .destructive) {
-                        showClearAllConfirm = true
-                    }
-                    .disabled(entries.isEmpty)
-                }
+        }
+        // Keep actions in a stable inset — `.bottomBar` jumps when the tab bar hides on push.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !entries.isEmpty {
+                bottomActionBar
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .animation(.snappy(duration: 0.28), value: isSelecting)
+        .animation(.snappy(duration: 0.28), value: entries.isEmpty)
         .onAppear { reload() }
         .fullScreenCover(item: $previewImageItem) { item in
             FullscreenImageViewer(image: item.image) {
@@ -112,9 +108,33 @@ struct OfflineCacheManagementView: View {
         }
     }
 
+    private var bottomActionBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+            Button(role: .destructive) {
+                if isSelecting {
+                    delete(keys: selectedKeys)
+                    withAnimation(.snappy(duration: 0.25)) {
+                        isSelecting = false
+                    }
+                } else {
+                    showClearAllConfirm = true
+                }
+            } label: {
+                Text(isSelecting ? "offline.delete_selected" : "offline.clear_all_cache")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .disabled(isSelecting && selectedKeys.isEmpty)
+            .padding(.horizontal, 16)
+            .background(.bar)
+        }
+    }
+
     @ViewBuilder
     private func cacheRow(for entry: CachedAttachmentEntry) -> some View {
-        let kind = CachedAttachmentKind.from(entry: entry)
+        let kind = kindByKey[entry.cacheKey] ?? CachedAttachmentKind.from(entry: entry)
         Button {
             if isSelecting {
                 toggleSelection(for: entry.cacheKey)
@@ -129,7 +149,7 @@ struct OfflineCacheManagementView: View {
                     .frame(width: 28)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(entry.fileName ?? entry.cacheKey)
+                    Text(CachedAttachmentPreviewURL.displayTitle(for: entry, kind: kind))
                         .font(.body)
                         .lineLimit(2)
                         .foregroundStyle(.primary)
@@ -180,20 +200,33 @@ struct OfflineCacheManagementView: View {
 
     @MainActor
     private func openPreview(for entry: CachedAttachmentEntry) async {
-        guard let url = cache.fileURL(forKey: entry.cacheKey) else {
+        guard let source = cache.fileURL(forKey: entry.cacheKey) else {
             previewError = L10n.string("preview.unavailable")
             return
         }
 
-        switch CachedAttachmentKind.from(entry: entry) {
-        case .image:
-            if let image = UIImage(contentsOfFile: url.path) {
-                previewImageItem = IdentifiableCacheImage(image: image)
-            } else {
-                previewError = L10n.string("preview.unavailable")
+        let hint = peekHeader(at: source)
+        let kind = CachedAttachmentKind.from(entry: entry, dataHint: hint)
+        kindByKey[entry.cacheKey] = kind
+
+        do {
+            let preview = try CachedAttachmentPreviewURL.make(
+                for: entry,
+                sourceURL: source,
+                kind: kind
+            )
+            switch kind {
+            case .image:
+                if let image = UIImage(contentsOfFile: preview.path) {
+                    previewImageItem = IdentifiableCacheImage(image: image)
+                } else {
+                    previewURL = preview
+                }
+            case .audio, .video, .other:
+                previewURL = preview
             }
-        case .audio, .video, .other:
-            previewURL = url
+        } catch {
+            previewError = L10n.string("preview.unavailable")
         }
     }
 
@@ -204,6 +237,16 @@ struct OfflineCacheManagementView: View {
         if entries.isEmpty {
             isSelecting = false
         }
+        for entry in entries where kindByKey[entry.cacheKey] == nil {
+            let hint = cache.fileURL(forKey: entry.cacheKey).flatMap(peekHeader(at:))
+            kindByKey[entry.cacheKey] = CachedAttachmentKind.from(entry: entry, dataHint: hint)
+        }
+    }
+
+    private func peekHeader(at url: URL) -> Data? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        return try? handle.read(upToCount: 16)
     }
 }
 

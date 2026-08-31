@@ -16,7 +16,6 @@ final class DebugQuickActionsController {
     }
 
     var showSendLogsConfirm = false
-    var showDebugMenuSheet = false
     var statusMessage: String?
 
     /// Returns `true` when the active chat accepted the log attachment.
@@ -38,7 +37,11 @@ final class DebugQuickActionsController {
     }
 
     func presentDebugMenuFromMainGesture() {
-        showDebugMenuSheet = true
+        DebugMenuPresenter.shared.present()
+    }
+
+    func presentDebugMenuFromSettings() {
+        DebugMenuPresenter.shared.present()
     }
 
     func confirmSendLogs() async {
