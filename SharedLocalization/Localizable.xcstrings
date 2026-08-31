@@ -1862,13 +1862,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "On the session list, swipe down with three fingers for Debug. Shake-to-send logs lives under Debug → Logs → Settings."
+            "value": "Opens as a sheet (same window from Settings or a three-finger swipe down). Navigation inside Debug is kept until the app is killed. Shake-to-send logs lives under Debug → Logs → Settings."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В списке сессий смахните вниз тремя пальцами для Debug. Отправка логов жестом — в Debug → Logs → Settings."
+            "value": "Открывается листом (из Настроек или свайпом вниз тремя пальцами). Навигация внутри Debug сохраняется до закрытия приложения. Отправка логов жестом — в Debug → Logs → Settings."
           }
         }
       }
