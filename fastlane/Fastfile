@@ -12,6 +12,8 @@ platform :ios do
   lane :test do
     setup_ci if ENV["CI"]
 
+    run_xcodegen!
+
     device = ENV.fetch("SCAN_DEVICE", "iPhone 15")
     output_dir = File.expand_path("test_output", __dir__)
 
@@ -31,6 +33,8 @@ platform :ios do
   desc "Build App Store IPA and upload to TestFlight. Requires Match repo, ASC API key, and real bundle ID + team."
   lane :beta do
     setup_ci if ENV["CI"]
+
+    run_xcodegen!
 
     app_id = ENV["APP_IDENTIFIER"].to_s.strip
     app_id = "com.coredan.KnowledgeBaseApp" if app_id.empty?
@@ -183,6 +187,12 @@ def write_ci_testflight_metadata(app_identifier:, xcodeproj:, target:)
   }
   File.write(File.join(output_dir, "ci_testflight.json"), JSON.pretty_generate(payload))
   UI.success("Wrote #{output_dir}/ci_testflight.json")
+end
+
+def run_xcodegen!
+  script = File.expand_path("../scripts/ci/xcodegen_generate.sh", __dir__)
+  UI.user_error!("Missing #{script}") unless File.file?(script)
+  sh("bash", script)
 end
 
 def read_marketing_version!

@@ -45,9 +45,4 @@ path.write_text(updated, encoding="utf-8")
 print(f"project.yml MARKETING_VERSION -> {version}")
 PY
 
-if command -v xcodegen >/dev/null 2>&1; then
-  xcodegen generate
-  echo "xcodegen generate: ok"
-else
-  echo "warning: xcodegen not found; skipped project regeneration" >&2
-fi
+bash "$(dirname "$0")/xcodegen_generate.sh"

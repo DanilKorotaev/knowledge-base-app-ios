@@ -248,3 +248,9 @@ enum CacheByteFormatting {
         ByteCountFormatter.string(fromByteCount: byteCount, countStyle: .file)
     }
 }
+
+enum AttachmentCacheAgeFormatting {
+    static func relative(since date: Date) -> String {
+        L10n.format("offline.opened_format", SyncStatusFormatting.relativeAge(since: date))
+    }
+}

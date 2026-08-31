@@ -63,6 +63,9 @@ jobs:
       - name: Install gems
         run: bundle install --jobs 4 --retry 3
 
+      - name: Generate Xcode project (XcodeGen)
+        run: bash scripts/ci/xcodegen_generate.sh
+
       - name: Run tests (Fastlane scan + coverage gate)
         id: tests
         continue-on-error: true
