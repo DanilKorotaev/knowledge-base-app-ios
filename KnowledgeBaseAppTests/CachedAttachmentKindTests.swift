@@ -83,7 +83,10 @@ final class CachedAttachmentKindTests: XCTestCase {
         )
         defer { try? FileManager.default.removeItem(at: preview) }
 
-        XCTAssertEqual(preview.pathExtension, "jpg")
+        // UTType prefers "jpeg" for image/jpeg; either is fine for Quick Look.
+        XCTAssertTrue(["jpg", "jpeg"].contains(preview.pathExtension.lowercased()), preview.pathExtension)
+        XCTAssertTrue(preview.lastPathComponent.hasPrefix("kb-cache-"))
+        XCTAssertTrue(preview.lastPathComponent.contains("attachment."))
         XCTAssertFalse(preview.lastPathComponent.contains("YXBp"))
         XCTAssertEqual(try Data(contentsOf: preview), payload)
     }
