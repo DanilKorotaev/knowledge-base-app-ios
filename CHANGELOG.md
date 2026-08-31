@@ -12,6 +12,16 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.21] - 2026-08-31
+
+### Changed
+
+- Improve navigation chrome, cache browser, and media UX.
+
+### Fixed
+
+- Fix cache age helper and run XcodeGen automatically in CI.
+
 ## [1.0.20] - 2026-08-29
 
 ### Added
@@ -189,7 +199,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.20...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.21...HEAD
+[1.0.21]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.21
 [1.0.20]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.20
 [1.0.19]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.19
 [1.0.18]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.18
