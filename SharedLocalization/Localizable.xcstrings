@@ -433,6 +433,22 @@
         }
       }
     },
+    "tab.health": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здоровье"
+          }
+        }
+      }
+    },
     "tab.chats": {
       "localizations": {
         "en": {
@@ -1039,6 +1055,132 @@
             "value": "OK"
           }
         }
+      }
+    },
+    "health.error.unavailable": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Health data is not available on this device." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Данные Health недоступны на этом устройстве." } }
+      }
+    },
+    "health.loading_preview": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Loading today…" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Загрузка данных за сегодня…" } }
+      }
+    },
+    "health.request_access": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Allow Health access" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Разрешить доступ к Health" } }
+      }
+    },
+    "health.section.today": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Today" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Сегодня" } }
+      }
+    },
+    "health.section.sync": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sync" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация" } }
+      }
+    },
+    "health.section.error": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Error" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Ошибка" } }
+      }
+    },
+    "health.sync.now": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sync now" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизировать" } }
+      }
+    },
+    "health.sync.running": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Syncing…" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация…" } }
+      }
+    },
+    "health.sync.no_state": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No sync state yet — run your first sync." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Состояние синхронизации пока пустое — запустите первую синхронизацию." } }
+      }
+    },
+    "health.sync.backfill_cursor": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Backfill cursor" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Курсор backfill" } }
+      }
+    },
+    "health.sync.last_daily": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Last daily export" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Последний daily export" } }
+      }
+    },
+    "health.settings.section": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Health" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Здоровье" } }
+      }
+    },
+    "health.settings.title": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Health sync" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация Health" } }
+      }
+    },
+    "health.settings.enable": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Enable Health tab" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Включить вкладку Health" } }
+      }
+    },
+    "health.settings.enable_footer": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "When enabled, a Health tab appears with today’s summary and sync controls." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Появится вкладка Health с краткой сводкой за сегодня и управлением синхронизацией." } }
+      }
+    },
+    "health.settings.folder_section": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Vault folder" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Папка в vault" } }
+      }
+    },
+    "health.settings.folder": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Relative path" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Относительный путь" } }
+      }
+    },
+    "health.settings.folder_footer": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Stored on the server under your knowledge base (default HealthData/)." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Хранится на сервере в базе знаний (по умолчанию HealthData/)." } }
+      }
+    },
+    "health.settings.availability": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "HealthKit" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "HealthKit" } }
+      }
+    },
+    "health.settings.available": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Available" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Доступен" } }
+      }
+    },
+    "health.settings.unavailable": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Unavailable" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Недоступен" } }
       }
     },
     "common.save": {

@@ -50,8 +50,6 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
     entitlements:
       path: KnowledgeBaseApp/KnowledgeBaseApp.entitlements
-      properties:
-        aps-environment: $(APS_ENVIRONMENT)
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
@@ -67,6 +65,11 @@ targets:
               - knowledgebase
         KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
         KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
+        NSHealthShareUsageDescription: Приложение читает данные Apple Health (шаги, сон, тренировки), чтобы сохранить их в вашей базе знаний через сервер.
+        NSHealthUpdateUsageDescription: Приложение не записывает данные в Apple Health.
+        UIBackgroundModes:
+          - fetch
+          - processing
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
@@ -99,6 +102,8 @@ targets:
         DEVELOPMENT_TEAM: "66C9VGAZR5"
         PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp.Widget
         GENERATE_INFOPLIST_FILE: NO
+    entitlements:
+      path: KnowledgeBaseWidget/KnowledgeBaseWidget.entitlements
     info:
       path: KnowledgeBaseWidget/Info.plist
       properties:

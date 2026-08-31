@@ -3,6 +3,7 @@ import SwiftUI
 struct MainView: View {
     private enum RootTab: Hashable {
         case sessions
+        case health
         case settings
     }
 
@@ -37,6 +38,7 @@ struct MainView: View {
     @State private var settingsPath = NavigationPath()
     @State private var pinnedStore = PinnedSessionsStore.shared
     @State private var debugQuickActions = DebugQuickActionsController.shared
+    @AppStorage("kb.health.sync_enabled") private var healthSyncEnabled = false
     private let sessionCache: SessionCacheStoreProtocol
     @Environment(\.scenePhase) private var scenePhase
 
@@ -81,6 +83,16 @@ struct MainView: View {
             }
             .tag(RootTab.sessions)
 
+            if healthSyncEnabled {
+                NavigationStack {
+                    HealthTabView()
+                }
+                .tabItem {
+                    Label("tab.health", systemImage: "heart.text.square")
+                }
+                .tag(RootTab.health)
+            }
+
             NavigationStack(path: $settingsPath) {
                 SettingsView()
                     .toolbar(settingsPath.isEmpty ? .automatic : .hidden, for: .tabBar)
@@ -88,6 +100,9 @@ struct MainView: View {
                         switch route {
                         case .offlineCache:
                             OfflineCacheManagementView()
+                                .toolbar(.hidden, for: .tabBar)
+                        case .health:
+                            HealthSettingsView()
                                 .toolbar(.hidden, for: .tabBar)
                         }
                     }
@@ -98,6 +113,11 @@ struct MainView: View {
             .tag(RootTab.settings)
         }
         .environment(voiceRouting)
+        .onChange(of: healthSyncEnabled) { _, enabled in
+            if !enabled, selectedTab == .health {
+                selectedTab = .sessions
+            }
+        }
         .environment(voiceViewModel)
         .onAppear {
             updateMainScreenDebugGesture(isOnMainList: selectedTab == .sessions && navigationPath.isEmpty)

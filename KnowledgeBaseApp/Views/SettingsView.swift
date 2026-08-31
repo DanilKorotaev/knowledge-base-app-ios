@@ -5,6 +5,7 @@ import UIKit
 
 enum SettingsRoute: Hashable {
     case offlineCache
+    case health
 }
 
 struct SettingsView: View {
@@ -73,6 +74,14 @@ struct SettingsView: View {
                 Text("settings.voice_routing")
             } footer: {
                 Text("settings.voice_footer")
+            }
+
+            Section {
+                NavigationLink(value: SettingsRoute.health) {
+                    Text("health.settings.title")
+                }
+            } header: {
+                Text("health.settings.section")
             }
 
             Section {

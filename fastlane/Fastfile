@@ -48,6 +48,9 @@ platform :ios do
     watch_widget_id = ENV["WATCH_WIDGET_APP_IDENTIFIER"].to_s.strip
     watch_widget_id = "com.coredan.KnowledgeBaseApp.watch.widget" if watch_widget_id.empty?
 
+    share_id = ENV["SHARE_APP_IDENTIFIER"].to_s.strip
+    share_id = "com.coredan.KnowledgeBaseApp.Share" if share_id.empty?
+
     app_store_connect_api_key(
       key_id: ENV.fetch("ASC_KEY_ID"),
       issuer_id: ENV.fetch("ASC_ISSUER_ID"),
@@ -58,7 +61,7 @@ platform :ios do
     match_params = {
       type: "appstore",
       readonly: is_ci,
-      app_identifier: [app_id, widget_id, watch_id, watch_widget_id]
+      app_identifier: [app_id, widget_id, watch_id, watch_widget_id, share_id]
     }
     if ENV["MATCH_GIT_URL"] && !ENV["MATCH_GIT_URL"].empty?
       match_params[:git_url] = ENV["MATCH_GIT_URL"]
