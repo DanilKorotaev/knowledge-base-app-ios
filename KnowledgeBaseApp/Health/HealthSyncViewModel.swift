@@ -152,9 +152,9 @@ final class HealthSyncViewModel {
                 dailyFrom: archiveRangeStart,
                 dailyTo: archiveRangeEnd,
                 includeWorkouts: archiveIncludesWorkouts
-            ) { [weak self] stage, count, total in
+            ) { [weak self] stage, count in
                 Task { @MainActor in
-                    self?.phase = .syncing(stage: stage, uploadedCount: count, totalCount: total)
+                    self?.phase = .syncing(stage: stage, uploadedCount: count, totalCount: nil)
                 }
             }
             exportArchiveURL = url
