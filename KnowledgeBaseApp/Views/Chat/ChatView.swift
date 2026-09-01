@@ -33,112 +33,16 @@ struct ChatView: View {
                 SyncStatusBannerView(status: viewModel.syncStatus)
             }
 
-            if viewModel.isLoading && viewModel.messages.isEmpty {
-                ProgressView("chat.loading_messages")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 10) {
-                            if viewModel.hasMoreOlder {
-                                Color.clear
-                                    .frame(height: 1)
-                                    .onAppear { topLoadSentinelDidAppear() }
-                            }
+            ZStack {
+                messagesScrollView
+                    .opacity(showsCenteredLoader ? 0 : 1)
+                    .allowsHitTesting(!showsCenteredLoader)
 
-                            if viewModel.isLoadingOlder {
-                                HStack {
-                                    Spacer()
-                                    ProgressView()
-                                        .padding(.vertical, 8)
-                                    Spacer()
-                                }
-                            }
-
-                            ForEach(viewModel.messages) { message in
-                                VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 6) {
-                                    RichMessageBubbleView(
-                                        message: message,
-                                        attachmentLoader: attachmentLoader,
-                                        isStructuredUISending: viewModel.isSendingUIEvent
-                                            && message.id == viewModel.activeStructuredUIMessageId,
-                                        showsStructuredUI: true,
-                                        isStructuredUIInteractive: viewModel.structuredUIPreferenceEnabled
-                                            && message.id == viewModel.activeStructuredUIMessageId,
-                                        onStructuredUIAction: { actionId, componentId, values in
-                                            Task {
-                                                await viewModel.sendStructuredUIEvent(
-                                                    actionId: actionId,
-                                                    componentId: componentId,
-                                                    values: values
-                                                )
-                                            }
-                                        }
-                                    )
-                                    if viewModel.shouldShowSendRetry(for: message) {
-                                        MessageSendRetryBar(
-                                            errorText: viewModel.pendingSendRetry?.errorDescription,
-                                            isBusy: viewModel.isSending
-                                        ) {
-                                            Task { await viewModel.retryFailedSend() }
-                                        }
-                                    }
-                                }
-                                .id(message.id)
-                                .onAppear {
-                                    oldestMessageDidAppear(message.id)
-                                }
-                            }
-                            if viewModel.isSendingUIEvent {
-                                AssistantPendingBubbleView(
-                                    activityLabel: L10n.string("structured_ui.updating")
-                                )
-                                .id("__kb_structured_ui_pending__")
-                            }
-                            if viewModel.assistantReplyPhase.showsPlaceholder {
-                                assistantReplyPhaseView
-                            }
-                            Color.clear
-                                .frame(height: 1)
-                                .id(bottomScrollID)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                        .padding(.bottom, 16)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            dismissKeyboard()
-                        }
-                    }
-                    .scrollBounceBehavior(.basedOnSize, axes: .vertical)
-                    .defaultScrollAnchor(.bottom)
-                    .scrollDismissesKeyboard(.interactively)
-                    .onScrollGeometryChange(for: ScrollPaginationSample.self) { geometry in
-                        ScrollPaginationSample(geometry: geometry)
-                    } action: { _, current in
-                        latestScrollSample = current
-                        ChatPaginationLogger.scrollSample(current)
-                        considerPaginationFromScrollGeometry(current)
-                    }
-                    .onScrollPhaseChange { _, newPhase, _ in
-                        if newPhase == .interacting || newPhase == .decelerating || newPhase == .tracking {
-                            userHasScrolled = true
-                        }
-                    }
-                    .onChange(of: viewModel.isLoadingOlder) { wasLoadingOlder, isLoadingOlder in
-                        guard wasLoadingOlder, !isLoadingOlder else { return }
-                        suppressPaginationUntil = Date().addingTimeInterval(Self.paginationSettleDelay)
-                        ChatPaginationLogger.paginationSuppressed(untilSeconds: Self.paginationSettleDelay)
-                        schedulePostSettlePaginationCheck()
-                    }
-                    .onChange(of: viewModel.scrollIntent) { _, intent in
-                        applyScrollIntent(intent, proxy: proxy)
-                    }
-                    .refreshable {
-                        await viewModel.refresh()
-                    }
+                if showsCenteredLoader {
+                    ProgressView("chat.loading_messages")
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             ChatComposerView(viewModel: viewModel, voiceViewModel: voiceViewModel)
                 .background(Color(.systemBackground))
@@ -276,6 +180,121 @@ struct ChatView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+    }
+
+    @ViewBuilder
+    private var messagesScrollView: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    if viewModel.hasMoreOlder {
+                        Color.clear
+                            .frame(height: 1)
+                            .onAppear { topLoadSentinelDidAppear() }
+                    }
+
+                    if viewModel.isLoadingOlder {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                                .padding(.vertical, 8)
+                            Spacer()
+                        }
+                    }
+
+                    ForEach(viewModel.messages) { message in
+                        VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 6) {
+                            RichMessageBubbleView(
+                                message: message,
+                                attachmentLoader: attachmentLoader,
+                                isStructuredUISending: viewModel.isSendingUIEvent
+                                    && message.id == viewModel.activeStructuredUIMessageId,
+                                showsStructuredUI: true,
+                                isStructuredUIInteractive: viewModel.structuredUIPreferenceEnabled
+                                    && message.id == viewModel.activeStructuredUIMessageId,
+                                onStructuredUIAction: { actionId, componentId, values in
+                                    Task {
+                                        await viewModel.sendStructuredUIEvent(
+                                            actionId: actionId,
+                                            componentId: componentId,
+                                            values: values
+                                        )
+                                    }
+                                }
+                            )
+                            if viewModel.shouldShowSendRetry(for: message) {
+                                MessageSendRetryBar(
+                                    errorText: viewModel.pendingSendRetry?.errorDescription,
+                                    isBusy: viewModel.isSending
+                                ) {
+                                    Task { await viewModel.retryFailedSend() }
+                                }
+                            }
+                        }
+                        .id(message.id)
+                        .onAppear {
+                            oldestMessageDidAppear(message.id)
+                        }
+                    }
+                    if viewModel.isSendingUIEvent {
+                        AssistantPendingBubbleView(
+                            activityLabel: L10n.string("structured_ui.updating")
+                        )
+                        .id("__kb_structured_ui_pending__")
+                    }
+                    if viewModel.assistantReplyPhase.showsPlaceholder {
+                        assistantReplyPhaseView
+                    }
+                    Color.clear
+                        .frame(height: 1)
+                        .id(bottomScrollID)
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    dismissKeyboard()
+                }
+            }
+            .scrollBounceBehavior(.basedOnSize, axes: .vertical)
+            .defaultScrollAnchor(.bottom)
+            .scrollDismissesKeyboard(.interactively)
+            .onScrollGeometryChange(for: ScrollPaginationSample.self) { geometry in
+                ScrollPaginationSample(geometry: geometry)
+            } action: { _, current in
+                latestScrollSample = current
+                ChatPaginationLogger.scrollSample(current)
+                considerPaginationFromScrollGeometry(current)
+            }
+            .onScrollPhaseChange { _, newPhase, _ in
+                if newPhase == .interacting || newPhase == .decelerating || newPhase == .tracking {
+                    userHasScrolled = true
+                }
+            }
+            .onChange(of: viewModel.isLoadingOlder) { wasLoadingOlder, isLoadingOlder in
+                guard wasLoadingOlder, !isLoadingOlder else { return }
+                suppressPaginationUntil = Date().addingTimeInterval(Self.paginationSettleDelay)
+                ChatPaginationLogger.paginationSuppressed(untilSeconds: Self.paginationSettleDelay)
+                schedulePostSettlePaginationCheck()
+            }
+            .onChange(of: viewModel.scrollIntent) { _, intent in
+                applyScrollIntent(intent, proxy: proxy)
+            }
+            .refreshable {
+                await viewModel.refresh()
+            }
+        }
+    }
+
+    private var showsCenteredLoader: Bool {
+        if viewModel.isLoading, viewModel.messages.isEmpty {
+            return true
+        }
+        if !viewModel.messages.isEmpty, !isChatScrollReady {
+            return true
+        }
+        return false
     }
 
     @ViewBuilder

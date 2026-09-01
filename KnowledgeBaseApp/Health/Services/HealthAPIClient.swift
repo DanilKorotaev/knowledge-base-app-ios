@@ -143,7 +143,7 @@ final class StubHealthAPIClient: HealthAPIClientProtocol, @unchecked Sendable {
     func fetchSyncState() async throws -> SyncState? { syncState }
 
     func uploadSyncFiles(_ files: [HealthSyncFileUpload]) async throws -> HealthSyncUploadResult {
-        uploadedFiles = files
+        uploadedFiles.append(contentsOf: files)
         return HealthSyncUploadResult(written: files.map(\.path), syncedToNextcloud: false)
     }
 }

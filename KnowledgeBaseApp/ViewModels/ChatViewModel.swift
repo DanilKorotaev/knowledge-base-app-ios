@@ -103,13 +103,15 @@ final class ChatViewModel {
     }
 
     func load() async {
+        if messages.isEmpty {
+            isLoading = true
+        }
         await bootstrapFromCacheIfNeeded()
         restoreInFlightReplyUIIfNeeded()
         let hadCachedMessages = !messages.isEmpty
         if hadCachedMessages {
+            isLoading = false
             syncStatus = .refreshing
-        } else {
-            isLoading = true
         }
         errorMessage = nil
         scrollIntent = .none
@@ -486,10 +488,6 @@ final class ChatViewModel {
                 mimeType: "text/plain",
                 fileSize: size
             )
-            let note = "Debug log attached: \(sourceURL.lastPathComponent) (log session \(LogSession.shared.id))"
-            if composerDraft.trimmedText.isEmpty {
-                composerDraft.text = note
-            }
             return tryAddPendingAttachment(attachment)
         } catch {
             reportError(error.localizedDescription)

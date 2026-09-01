@@ -99,6 +99,7 @@ final class KBHealthSyncService {
     }
 
     /// Upload daily JSON files for each calendar day in the inclusive range.
+    /// Exports and uploads in batches so multi-year backfills do not retain every day in memory.
     func syncDailyHistory(from startDate: Date, to endDate: Date) async throws {
         guard healthKit.isHealthDataAvailable else {
             throw KBHealthSyncServiceError.healthDataUnavailable
@@ -109,28 +110,41 @@ final class KBHealthSyncService {
             throw KBHealthSyncServiceError.invalidDateRange
         }
 
+        let totalDays = inclusiveDayCount(from: range.start, to: range.end)
         let now = clock()
         let encoder = jsonEncoder()
         let remoteState = try await apiClient.fetchSyncState()
 
-        var pendingUploads: [(Data, String)] = []
+        var pendingBatch: [(Data, String)] = []
         var mergedOldest = remoteState?.dailyBackfillOldestCompleted
         var latestDaily = remoteState?.lastDailyExportDate
+        var processedDays = 0
+        var uploadedDailyFiles = 0
+        let uploadTotal = totalDays + 1 // +1 for sync_state.json
 
-        onProgress?("history", 0, nil)
+        onProgress?("history", 0, totalDays)
         var cursor = range.end
         while cursor >= range.start {
             let input = try await healthKit.dailyAggregationInput(for: cursor)
             let daily = healthKit.makeDailyHealthData(from: input)
-            pendingUploads.append((try encoder.encode(daily), "daily/\(input.date).json"))
+            pendingBatch.append((try encoder.encode(daily), "daily/\(input.date).json"))
             mergedOldest = [mergedOldest, input.date].compactMap { $0 }.min()
             if latestDaily == nil || input.date > (latestDaily ?? "") {
                 latestDaily = input.date
             }
-            onProgress?("history", pendingUploads.count, nil)
+            processedDays += 1
+            onProgress?("history", processedDays, totalDays)
+            try await flushDailyBatchIfNeeded(&pendingBatch, uploadedDailyFiles: &uploadedDailyFiles, uploadTotal: uploadTotal)
             guard let previous = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
             cursor = previous
         }
+
+        try await flushDailyBatchIfNeeded(
+            &pendingBatch,
+            uploadedDailyFiles: &uploadedDailyFiles,
+            uploadTotal: uploadTotal,
+            force: true
+        )
 
         let state = SyncState(
             lastSyncedAt: CalendarDayFormatter.iso8601UTCSeconds(from: now),
@@ -139,11 +153,14 @@ final class KBHealthSyncService {
             dailyBackfillOldestCompleted: mergedOldest,
             notes: remoteState?.notes
         )
-        pendingUploads.append((try encoder.encode(state), Self.syncStatePath))
+        let stateData = try encoder.encode(state)
+        onProgress?("uploading", uploadedDailyFiles + 1, uploadTotal)
+        _ = try await apiClient.uploadSyncFiles([
+            HealthSyncFileUpload(path: Self.syncStatePath, data: stateData),
+        ])
 
-        try await uploadAll(pendingUploads)
         SyncRunStore.recordSuccess(at: clock())
-        onProgress?("done", pendingUploads.count, pendingUploads.count)
+        onProgress?("done", uploadTotal, uploadTotal)
     }
 
     func loadTodayPreview() async throws -> DailyHealthData {
@@ -176,5 +193,27 @@ final class KBHealthSyncService {
         let rawEnd = calendar.startOfDay(for: max(start, end))
         let cappedEnd = min(rawEnd, todayStart)
         return (rawStart, cappedEnd)
+    }
+
+    private func inclusiveDayCount(from start: Date, to end: Date) -> Int {
+        let startDay = calendar.startOfDay(for: start)
+        let endDay = calendar.startOfDay(for: end)
+        let dayDelta = calendar.dateComponents([.day], from: startDay, to: endDay).day ?? 0
+        return max(0, dayDelta) + 1
+    }
+
+    private func flushDailyBatchIfNeeded(
+        _ pendingBatch: inout [(Data, String)],
+        uploadedDailyFiles: inout Int,
+        uploadTotal: Int,
+        force: Bool = false
+    ) async throws {
+        guard force || pendingBatch.count >= uploadBatchSize else { return }
+        guard !pendingBatch.isEmpty else { return }
+        uploadedDailyFiles += pendingBatch.count
+        onProgress?("uploading", uploadedDailyFiles, uploadTotal)
+        let files = pendingBatch.map { HealthSyncFileUpload(path: $0.1, data: $0.0) }
+        _ = try await apiClient.uploadSyncFiles(files)
+        pendingBatch.removeAll(keepingCapacity: true)
     }
 }

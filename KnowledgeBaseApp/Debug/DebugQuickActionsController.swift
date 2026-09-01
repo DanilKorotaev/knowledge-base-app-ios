@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import UIKit
 
 /// Debug shortcuts: shake-to-send logs, modal Debug menu.
 @MainActor
@@ -33,6 +34,7 @@ final class DebugQuickActionsController {
     func handleDeviceShake() {
         guard isShakeToSendLogsEnabled else { return }
         guard !showSendLogsConfirm else { return }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         showSendLogsConfirm = true
     }
 

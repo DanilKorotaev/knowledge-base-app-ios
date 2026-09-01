@@ -1327,6 +1327,18 @@
         "ru": { "stringUnit": { "state": "translated", "value": "Экспорт дневных сводок (%lld дн.)…" } }
       }
     },
+    "health.sync.stage.history_progress %lld %lld": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Exporting daily summaries (%1$lld of %2$lld)…" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Экспорт дневных сводок (%1$lld из %2$lld)…" } }
+      }
+    },
+    "health.sync.cancelled": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Sync was cancelled." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация отменена." } }
+      }
+    },
     "health.sync.stage.archive %lld": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Building archive (%lld files)…" } },

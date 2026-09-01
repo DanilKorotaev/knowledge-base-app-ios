@@ -401,29 +401,12 @@ struct MainView: View {
 
     @ViewBuilder
     private func sessionRow(_ session: KBSession) -> some View {
-        NavigationLink(value: session) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text(session.title)
-                        .font(.headline)
-                    if pinnedStore.isPinned(session.id) {
-                        Image(systemName: "pin.fill")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel(Text("main.pinned_a11y"))
-                    }
-                    if voiceRouting.isDefaultVoiceSession(session.id) {
-                        Image(systemName: "mic.fill")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel(Text("main.default_for_voice_a11y"))
-                    }
-                }
-                Text(L10n.format("main.messages_count_format", session.messageCount, session.kbModeSubtitle()))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+        Button {
+            navigationPath.append(session)
+        } label: {
+            sessionRowLabel(session)
         }
+        .buttonStyle(.plain)
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             if voiceRouting.isDefaultVoiceSession(session.id) {
                 Button {
@@ -500,6 +483,30 @@ struct MainView: View {
             } label: {
                 Label("common.delete", systemImage: "trash")
             }
+        }
+    }
+
+    private func sessionRowLabel(_ session: KBSession) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Text(session.title)
+                    .font(.headline)
+                if pinnedStore.isPinned(session.id) {
+                    Image(systemName: "pin.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(Text("main.pinned_a11y"))
+                }
+                if voiceRouting.isDefaultVoiceSession(session.id) {
+                    Image(systemName: "mic.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(Text("main.default_for_voice_a11y"))
+                }
+            }
+            Text(L10n.format("main.messages_count_format", session.messageCount, session.kbModeSubtitle()))
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 

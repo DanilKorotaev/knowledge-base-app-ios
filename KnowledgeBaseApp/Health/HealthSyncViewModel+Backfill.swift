@@ -52,6 +52,13 @@ extension HealthSyncViewModel {
         case "daily":
             return L10n.string("health.sync.stage.daily")
         case "history":
+            if let totalCount, totalCount > 0 {
+                return L10n.format(
+                    "health.sync.stage.history_progress %lld %lld",
+                    Int64(uploadedCount),
+                    Int64(totalCount)
+                )
+            }
             return L10n.format("health.sync.stage.history %lld", Int64(uploadedCount))
         case "archive":
             return L10n.format("health.sync.stage.archive %lld", Int64(uploadedCount))

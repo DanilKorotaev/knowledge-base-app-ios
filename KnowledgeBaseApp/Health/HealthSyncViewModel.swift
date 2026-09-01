@@ -207,6 +207,8 @@ final class HealthSyncViewModel {
             alignHistoryPickersWithRemoteState()
             await refresh()
             phase = .idle
+        } catch is CancellationError {
+            phase = .failed(String(localized: "health.sync.cancelled"))
         } catch {
             phase = .failed(Self.userFacingMessage(for: error))
         }
