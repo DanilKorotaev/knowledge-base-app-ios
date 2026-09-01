@@ -1057,6 +1057,24 @@
         }
       }
     },
+    "health.error.authorization_required": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Allow Health access in Settings → Health, then try again." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Разрешите доступ к Health в настройках вкладки, затем повторите." } }
+      }
+    },
+    "health.authorization.prompt": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Grant read access to show today’s summary and sync data." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Разрешите чтение данных Health, чтобы показать сводку за сегодня и синхронизировать." } }
+      }
+    },
+    "health.sync.no_preview": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "No data for today yet." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Данных за сегодня пока нет." } }
+      }
+    },
     "health.error.unavailable": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Health data is not available on this device." } },

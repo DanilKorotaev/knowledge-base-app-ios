@@ -18,10 +18,18 @@ struct HealthTabView: View {
                             .listRowBackground(Color.clear)
                     } else if case .loadingPreview = viewModel.phase {
                         ProgressView("health.loading_preview")
-                    } else {
-                        Button("health.request_access") {
-                            Task { await viewModel.requestAuthorization() }
+                    } else if viewModel.needsHealthAuthorization {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("health.authorization.prompt")
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                            Button("health.request_access") {
+                                Task { await viewModel.requestAuthorization() }
+                            }
                         }
+                    } else {
+                        Text("health.sync.no_preview")
+                            .foregroundStyle(.secondary)
                     }
                 } header: {
                     Text("health.section.today")

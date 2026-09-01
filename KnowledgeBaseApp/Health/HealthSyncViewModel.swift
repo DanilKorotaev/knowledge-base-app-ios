@@ -17,6 +17,7 @@ final class HealthSyncViewModel {
     private(set) var remoteSyncState: SyncState?
     private(set) var isHealthDataAvailable = false
     private(set) var authorizationGranted = false
+    private(set) var needsHealthAuthorization = false
 
     private let healthKit: HealthKitServiceProtocol
     private let syncService: KBHealthSyncService
@@ -50,12 +51,23 @@ final class HealthSyncViewModel {
             // Settings/API optional until configured; keep local defaults.
         }
 
+        needsHealthAuthorization = await healthKit.needsReadAuthorization()
+        guard !needsHealthAuthorization else {
+            todayPreview = nil
+            phase = .idle
+            return
+        }
+
         phase = .loadingPreview
         do {
             todayPreview = try await syncService.loadTodayPreview()
             phase = .idle
+        } catch let error as HealthKitServiceError where error == .authorizationRequired {
+            needsHealthAuthorization = true
+            todayPreview = nil
+            phase = .idle
         } catch {
-            phase = .failed(error.localizedDescription)
+            phase = .failed(Self.userFacingMessage(for: error))
         }
     }
 
@@ -64,15 +76,21 @@ final class HealthSyncViewModel {
         do {
             try await healthKit.requestReadAuthorization()
             authorizationGranted = true
+            needsHealthAuthorization = false
             await refresh()
         } catch {
-            phase = .failed(error.localizedDescription)
+            phase = .failed(Self.userFacingMessage(for: error))
         }
     }
 
     func syncNow() async {
         guard isHealthDataAvailable else {
             phase = .failed(String(localized: "health.error.unavailable"))
+            return
+        }
+        if await healthKit.needsReadAuthorization() {
+            needsHealthAuthorization = true
+            phase = .failed(String(localized: "health.error.authorization_required"))
             return
         }
         syncService.onProgress = { [weak self] stage, count in
@@ -88,7 +106,7 @@ final class HealthSyncViewModel {
             await refresh()
             phase = .idle
         } catch {
-            phase = .failed(error.localizedDescription)
+            phase = .failed(Self.userFacingMessage(for: error))
         }
     }
 
@@ -99,7 +117,17 @@ final class HealthSyncViewModel {
             let settings = try await apiClient.updateSettings(healthDataRelative: trimmed)
             healthDataRelative = settings.healthDataRelative
         } catch {
-            phase = .failed(error.localizedDescription)
+            phase = .failed(Self.userFacingMessage(for: error))
         }
+    }
+
+    private static func userFacingMessage(for error: Error) -> String {
+        if let error = error as? HealthKitServiceError, error == .authorizationRequired {
+            return String(localized: "health.error.authorization_required")
+        }
+        if let error = error as? KBHealthSyncServiceError, error == .healthDataUnavailable {
+            return String(localized: "health.error.unavailable")
+        }
+        return error.localizedDescription
     }
 }

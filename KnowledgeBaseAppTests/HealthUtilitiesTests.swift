@@ -89,6 +89,8 @@ private final class ViewModelHealthKitMock: HealthKitServiceProtocol {
 
     func requestReadAuthorization() async throws {}
 
+    func needsReadAuthorization() async -> Bool { false }
+
     func dailyAggregationInput(for date: Date) async throws -> DailyAggregationInput {
         DailyAggregationInput(
             date: "2026-03-01",
@@ -125,6 +127,10 @@ private final class HealthStoreMock: HealthStoreProtocol, DailyHealthKitDataProv
     var isHealthDataAvailable = true
 
     func requestAuthorization(toShare typesToShare: Set<HKSampleType>?, read typesToRead: Set<HKObjectType>?) async throws {}
+
+    func readAuthorizationRequestStatus(read typesToRead: Set<HKObjectType>) async throws -> HKAuthorizationRequestStatus {
+        .unnecessary
+    }
 
     func statistics(
         for quantityType: HKQuantityType,

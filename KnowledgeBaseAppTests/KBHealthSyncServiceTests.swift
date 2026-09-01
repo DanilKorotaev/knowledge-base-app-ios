@@ -126,6 +126,8 @@ private final class MockHealthKitService: HealthKitServiceProtocol {
 
     func requestReadAuthorization() async throws {}
 
+    func needsReadAuthorization() async -> Bool { false }
+
     func dailyAggregationInput(for date: Date) async throws -> DailyAggregationInput {
         dailyInput
     }

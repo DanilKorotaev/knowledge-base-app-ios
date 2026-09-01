@@ -130,6 +130,10 @@ private final class HealthStoreMock: HealthStoreProtocol, DailyHealthKitDataProv
         requestAuthorizationCallCount += 1
     }
 
+    func readAuthorizationRequestStatus(read typesToRead: Set<HKObjectType>) async throws -> HKAuthorizationRequestStatus {
+        .unnecessary
+    }
+
     func statistics(
         for quantityType: HKQuantityType,
         from start: Date,

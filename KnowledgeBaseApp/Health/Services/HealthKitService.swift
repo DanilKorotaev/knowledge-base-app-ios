@@ -5,6 +5,8 @@ protocol HealthKitServiceProtocol {
     var isHealthDataAvailable: Bool { get }
     var requiredReadTypes: Set<HKObjectType> { get }
     func requestReadAuthorization() async throws
+    /// True when the user still needs to grant read access (Health permission sheet not completed).
+    func needsReadAuthorization() async -> Bool
     /// Fetches quantity aggregates, HR/HRV/SpO₂ samples, and sleep segments for the local calendar day containing `date`.
     func dailyAggregationInput(for date: Date) async throws -> DailyAggregationInput
     func makeDailyHealthData(from input: DailyAggregationInput) -> DailyHealthData
@@ -15,6 +17,7 @@ protocol HealthKitServiceProtocol {
 
 enum HealthKitServiceError: Error, Equatable {
     case healthDataUnavailable
+    case authorizationRequired
     case backgroundDeliveryEnableFailed
 }
 
@@ -60,6 +63,7 @@ struct WorkoutAggregationInput: Equatable {
 protocol HealthStoreProtocol {
     var isHealthDataAvailable: Bool { get }
     func requestAuthorization(toShare typesToShare: Set<HKSampleType>?, read typesToRead: Set<HKObjectType>?) async throws
+    func readAuthorizationRequestStatus(read typesToRead: Set<HKObjectType>) async throws -> HKAuthorizationRequestStatus
 }
 
 /// HealthKit APIs needed for background delivery and observer queries (same `HKHealthStore` as reads).
@@ -88,6 +92,18 @@ final class HealthStoreAdapter: HKBackgroundCapableHealthStore {
                     continuation.resume(throwing: error)
                 } else {
                     continuation.resume(returning: ())
+                }
+            }
+        }
+    }
+
+    func readAuthorizationRequestStatus(read typesToRead: Set<HKObjectType>) async throws -> HKAuthorizationRequestStatus {
+        try await withCheckedThrowingContinuation { continuation in
+            healthStore.getRequestStatusForAuthorization(toShare: Set<HKSampleType>(), read: typesToRead) { status, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: status)
                 }
             }
         }
@@ -182,9 +198,22 @@ final class HealthKitService: HealthKitServiceProtocol {
         try await healthStore.requestAuthorization(toShare: nil, read: requiredReadTypes)
     }
 
+    func needsReadAuthorization() async -> Bool {
+        guard isHealthDataAvailable else { return false }
+        do {
+            let status = try await healthStore.readAuthorizationRequestStatus(read: requiredReadTypes)
+            return status == .shouldRequest
+        } catch {
+            return true
+        }
+    }
+
     func dailyAggregationInput(for date: Date) async throws -> DailyAggregationInput {
         guard isHealthDataAvailable else {
             throw HealthKitServiceError.healthDataUnavailable
+        }
+        if await needsReadAuthorization() {
+            throw HealthKitServiceError.authorizationRequired
         }
         let dayStart = calendar.startOfDay(for: date)
         guard let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else {
@@ -385,6 +414,9 @@ final class HealthKitService: HealthKitServiceProtocol {
     ) {
         guard isHealthDataAvailable else {
             throw HealthKitServiceError.healthDataUnavailable
+        }
+        if await needsReadAuthorization() {
+            throw HealthKitServiceError.authorizationRequired
         }
         let hkAnchor: HKQueryAnchor?
         if let anchor = anchor {
