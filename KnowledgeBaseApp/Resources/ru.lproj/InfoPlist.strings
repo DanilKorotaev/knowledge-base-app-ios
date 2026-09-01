@@ -1,0 +1,2 @@
+"NSHealthShareUsageDescription" = "Приложение читает данные Apple Health (шаги, сон, тренировки), чтобы сохранить их в вашей базе знаний через сервер.";
+"NSHealthUpdateUsageDescription" = "Приложение не записывает данные в Apple Health.";

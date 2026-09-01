@@ -3,6 +3,9 @@ packages:
   Alamofire:
     url: https://github.com/Alamofire/Alamofire.git
     from: 5.9.0
+  ZIPFoundation:
+    url: https://github.com/weichsel/ZIPFoundation.git
+    from: 0.9.19
 options:
   bundleIdPrefix: com.coredan
   developmentLanguage: en
@@ -33,8 +36,11 @@ targets:
       - path: SharedIntents
       - path: SharedWatchConnectivity
       - path: SharedLocalization
+    resources:
+      - path: KnowledgeBaseApp/Resources/ru.lproj
     dependencies:
       - package: Alamofire
+      - package: ZIPFoundation
       - target: KnowledgeBaseWidgetExtension
         embed: true
       - target: KnowledgeBaseWatchApp
@@ -71,8 +77,8 @@ targets:
               - knowledgebase
         KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
         KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
-        NSHealthShareUsageDescription: Приложение читает данные Apple Health (шаги, сон, тренировки), чтобы сохранить их в вашей базе знаний через сервер.
-        NSHealthUpdateUsageDescription: Приложение не записывает данные в Apple Health.
+        NSHealthShareUsageDescription: The app reads Apple Health data (steps, sleep, workouts) to save it in your knowledge base via the server.
+        NSHealthUpdateUsageDescription: The app does not write data to Apple Health.
         BGTaskSchedulerPermittedIdentifiers:
           - com.coredan.KnowledgeBaseApp.health-sync.refresh
           - com.coredan.KnowledgeBaseApp.health-sync.processing

@@ -2,6 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.coredan.KnowledgeBaseApp.health-sync.refresh</string>
+		<string>com.coredan.KnowledgeBaseApp.health-sync.processing</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -38,16 +43,11 @@
 	<key>KBAppAuthToken</key>
 	<string>$(INFOPLIST_KEY_KBAppAuthToken)</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Приложение читает данные Apple Health (шаги, сон, тренировки), чтобы сохранить их в вашей базе знаний через сервер.</string>
+	<string>The app reads Apple Health data (steps, sleep, workouts) to save it in your knowledge base via the server.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Приложение не записывает данные в Apple Health.</string>
+	<string>The app does not write data to Apple Health.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.</string>
-	<key>BGTaskSchedulerPermittedIdentifiers</key>
-	<array>
-		<string>com.coredan.KnowledgeBaseApp.health-sync.refresh</string>
-		<string>com.coredan.KnowledgeBaseApp.health-sync.processing</string>
-	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

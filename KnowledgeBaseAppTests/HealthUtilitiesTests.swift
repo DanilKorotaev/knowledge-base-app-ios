@@ -5,6 +5,14 @@ import Testing
 
 @Suite("Health utilities")
 struct HealthUtilitiesTests {
+    @Test("WorkoutTypeSlug maps common HealthKit activity types")
+    func workoutTypeSlugMapsKnownActivities() {
+        #expect(WorkoutTypeSlug.snakeCase(.walking) == "walking")
+        #expect(WorkoutTypeSlug.snakeCase(.traditionalStrengthTraining) == "traditional_strength_training")
+        #expect(WorkoutTypeSlug.snakeCase(.running) == "running")
+        #expect(WorkoutTypeSlug.displayName(for: .walking) == "Walking")
+    }
+
     @Test("CalendarDayFormatter formats UTC day key")
     func calendarDayFormatterUTC() {
         let formatter = ISO8601DateFormatter()

@@ -3,12 +3,106 @@ import HealthKit
 
 enum WorkoutTypeSlug {
     static func snakeCase(_ activity: HKWorkoutActivityType) -> String {
-        let raw = String(describing: activity).replacingOccurrences(of: "HKWorkoutActivityType.", with: "")
-        return raw.camelCaseToSnakeCase()
+        switch activity {
+        case .americanFootball: return "american_football"
+        case .archery: return "archery"
+        case .australianFootball: return "australian_football"
+        case .badminton: return "badminton"
+        case .baseball: return "baseball"
+        case .basketball: return "basketball"
+        case .bowling: return "bowling"
+        case .boxing: return "boxing"
+        case .climbing: return "climbing"
+        case .cricket: return "cricket"
+        case .crossTraining: return "cross_training"
+        case .curling: return "curling"
+        case .cycling: return "cycling"
+        case .dance: return "dance"
+        case .danceInspiredTraining: return "dance_inspired_training"
+        case .elliptical: return "elliptical"
+        case .equestrianSports: return "equestrian_sports"
+        case .fencing: return "fencing"
+        case .fishing: return "fishing"
+        case .functionalStrengthTraining: return "functional_strength_training"
+        case .golf: return "golf"
+        case .gymnastics: return "gymnastics"
+        case .handball: return "handball"
+        case .hiking: return "hiking"
+        case .hockey: return "hockey"
+        case .hunting: return "hunting"
+        case .lacrosse: return "lacrosse"
+        case .martialArts: return "martial_arts"
+        case .mindAndBody: return "mind_and_body"
+        case .paddleSports: return "paddle_sports"
+        case .play: return "play"
+        case .preparationAndRecovery: return "preparation_and_recovery"
+        case .racquetball: return "racquetball"
+        case .rowing: return "rowing"
+        case .rugby: return "rugby"
+        case .running: return "running"
+        case .sailing: return "sailing"
+        case .skatingSports: return "skating_sports"
+        case .snowSports: return "snow_sports"
+        case .soccer: return "soccer"
+        case .softball: return "softball"
+        case .squash: return "squash"
+        case .stairClimbing: return "stair_climbing"
+        case .surfingSports: return "surfing_sports"
+        case .swimming: return "swimming"
+        case .tableTennis: return "table_tennis"
+        case .tennis: return "tennis"
+        case .trackAndField: return "track_and_field"
+        case .traditionalStrengthTraining: return "traditional_strength_training"
+        case .volleyball: return "volleyball"
+        case .walking: return "walking"
+        case .waterFitness: return "water_fitness"
+        case .waterPolo: return "water_polo"
+        case .waterSports: return "water_sports"
+        case .wrestling: return "wrestling"
+        case .yoga: return "yoga"
+        case .barre: return "barre"
+        case .coreTraining: return "core_training"
+        case .crossCountrySkiing: return "cross_country_skiing"
+        case .downhillSkiing: return "downhill_skiing"
+        case .flexibility: return "flexibility"
+        case .highIntensityIntervalTraining: return "high_intensity_interval_training"
+        case .jumpRope: return "jump_rope"
+        case .kickboxing: return "kickboxing"
+        case .pilates: return "pilates"
+        case .snowboarding: return "snowboarding"
+        case .stairs: return "stairs"
+        case .stepTraining: return "step_training"
+        case .wheelchairWalkPace: return "wheelchair_walk_pace"
+        case .wheelchairRunPace: return "wheelchair_run_pace"
+        case .taiChi: return "tai_chi"
+        case .mixedCardio: return "mixed_cardio"
+        case .handCycling: return "hand_cycling"
+        case .discSports: return "disc_sports"
+        case .fitnessGaming: return "fitness_gaming"
+        case .pickleball: return "pickleball"
+        case .cooldown: return "cooldown"
+        case .swimBikeRun: return "swim_bike_run"
+        case .transition: return "transition"
+        case .underwaterDiving: return "underwater_diving"
+        case .other: return "other"
+        @unknown default:
+            return legacySnakeCase(from: activity) ?? "activity_\(activity.rawValue)"
+        }
     }
 
     static func displayName(for activity: HKWorkoutActivityType) -> String {
-        snakeCase(activity).replacingOccurrences(of: "_", with: " ").capitalized
+        snakeCase(activity)
+            .replacingOccurrences(of: "_", with: " ")
+            .capitalized
+    }
+
+    /// Pre-iOS 18 `String(describing:)` returned `HKWorkoutActivityType.running`.
+    private static func legacySnakeCase(from activity: HKWorkoutActivityType) -> String? {
+        let described = String(describing: activity)
+        guard described.hasPrefix("HKWorkoutActivityType.") else { return nil }
+        let caseName = String(described.dropFirst("HKWorkoutActivityType.".count))
+        guard !caseName.contains("(") else { return nil }
+        return caseName.camelCaseToSnakeCase()
     }
 }
 

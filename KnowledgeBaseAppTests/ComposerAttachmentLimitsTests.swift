@@ -12,13 +12,13 @@ final class ComposerAttachmentLimitsTests: XCTestCase {
         )
     }
 
-    func testValidateAdding_rejectsSixthAttachment() {
-        let current = (1 ... 5).map { attachment(filename: "\($0).txt") }
+    func testValidateAdding_rejectsEleventhAttachment() {
+        let current = (1 ... 10).map { attachment(filename: "\($0).txt") }
         let error = ComposerAttachmentLimits.validateAdding(
             currentAttachments: current,
-            newAttachment: attachment(filename: "6.txt")
+            newAttachment: attachment(filename: "11.txt")
         )
-        XCTAssertEqual(error, .tooManyFiles(max: 5))
+        XCTAssertEqual(error, .tooManyFiles(max: 10))
     }
 
     func testValidateAdding_rejectsOversizedFile() {
@@ -40,15 +40,15 @@ final class ComposerAttachmentLimitsTests: XCTestCase {
     }
 
     func testRemainingFileSlots() {
-        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 0), 5)
-        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 4), 1)
-        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 5), 0)
-        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 9), 0)
+        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 0), 10)
+        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 9), 1)
+        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 10), 0)
+        XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 11), 0)
     }
 
     func testValidationErrorMessagesAreEnglish() {
         XCTAssertTrue(
-            ComposerAttachmentLimits.ValidationError.tooManyFiles(max: 5).message.contains("5")
+            ComposerAttachmentLimits.ValidationError.tooManyFiles(max: 10).message.contains("10")
         )
         XCTAssertTrue(
             ComposerAttachmentLimits.ValidationError.fileTooLarge(

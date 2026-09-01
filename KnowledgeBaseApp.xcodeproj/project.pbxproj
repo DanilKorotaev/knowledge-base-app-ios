@@ -10,10 +10,12 @@
 		00543EEFFC3C42A06BC4D2A0 /* KnowledgeBaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120ACA3751D4BA6BA15A924B /* KnowledgeBaseApp.swift */; };
 		00B4A333B4837D7EBF57046A /* StreamTextRevealEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 772CE82B329B59277B55FD6D /* StreamTextRevealEngineTests.swift */; };
 		015A76E1EF60C2CED7C2E577 /* VoiceAudioMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FB6B5CAE96EEAB57B2C07F2 /* VoiceAudioMerger.swift */; };
+		06888DC3AAFCBB1E56FCCF8F /* HealthDataArchiveBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7B83592B9C44311E1F9797E /* HealthDataArchiveBuilder.swift */; };
 		06A3544BD75A786CA7B46211 /* MessageDocumentAttachmentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10F211F0E64B798F71AC421 /* MessageDocumentAttachmentsView.swift */; };
 		06EF838837C8088EA77B9169 /* VoiceRecordingSessionLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C6AA294BA63593564C19CD /* VoiceRecordingSessionLogic.swift */; };
 		085F5CF1187DF4FF8B5E7909 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 0E0808C35646D0119BF1FF8B /* Localizable.xcstrings */; };
 		097856DFEAE7A41166D8221E /* MessageCopyContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 263C5B1B56AA607AEFAFA6ED /* MessageCopyContent.swift */; };
+		09FC4563E0D1BE9BE812065D /* HealthSyncViewModel+Backfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0AE4DBCE76C7C0A0BDFA036 /* HealthSyncViewModel+Backfill.swift */; };
 		0A170DC98DC75A960FF7EF14 /* ChatViewModelOfflineCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A81A67F374D7F8779EA6984 /* ChatViewModelOfflineCacheTests.swift */; };
 		0A660E15715ED8333DF109ED /* ChatOlderLoadScrollMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45F761F4F7F30733B8A308BC /* ChatOlderLoadScrollMetricsTests.swift */; };
 		0A8E9020A7CBD087E2AC07B8 /* KBChangedFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B2894684426095746A5DEC5 /* KBChangedFile.swift */; };
@@ -103,6 +105,7 @@
 		4F0AAAE926031FE35134F6EC /* UserDefaultsInspectorLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ED8182EE976DA1B0EFF6133 /* UserDefaultsInspectorLogger.swift */; };
 		4F3B22BF69BF7FB53E0F702E /* LoggingUtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8E1A68E164507C86BF6F76 /* LoggingUtilityTests.swift */; };
 		4F573D9E7AF42D21F3EC5AAD /* AssistantReplyPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F177E2C6F97AA880529F5F /* AssistantReplyPhase.swift */; };
+		53073E94FA8A2789C2A88DAE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 09E3BBC29E5C1D378BF4C8B8 /* InfoPlist.strings */; };
 		5374DA950655D9CDC1F7C21F /* PendingVoiceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE439ABCFABF62A1AFF2C11 /* PendingVoiceCapture.swift */; };
 		53FDB826E259B0CFCD14E27F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35BC1DA99AD0F7B6E33E63C5 /* Assets.xcassets */; };
 		5458DCA68DE3EFE20C17E7E9 /* KBAttachmentLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD8A15F6500D1B708191407C /* KBAttachmentLoader.swift */; };
@@ -152,6 +155,7 @@
 		782ACC1A488E03A5C032DC59 /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FB2E21355C1042F7C802AA0 /* HealthKitService.swift */; };
 		792E2306F6DE28AFDBC8DB82 /* WatchRelayAudioInbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB53440D2678FAF8E1960AF3 /* WatchRelayAudioInbox.swift */; };
 		79E18DAE6318F116715026A0 /* PinnedSessionsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32F3841E7F7F5E402E3EB911 /* PinnedSessionsStoreTests.swift */; };
+		79EBC018EF87F1C4FA09AC17 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 2ACA8B7943AA0D92083DCC4C /* ZIPFoundation */; };
 		7A1625DF58CFDBDF226CA234 /* ChatSSEEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC51017B814D106D4029E5FB /* ChatSSEEvent.swift */; };
 		7A6F67AA650023861693F478 /* VideoMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7EAB19024EC217C87C30B3 /* VideoMessageBubble.swift */; };
 		7C9EFC0606433244D53E97FB /* StreamTextRevealState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DCD743332007AE3FECBBEC2 /* StreamTextRevealState.swift */; };
@@ -391,6 +395,7 @@
 		083AE4B66B10E887F48ACF7D /* LogPreviewViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPreviewViewModelTests.swift; sourceTree = "<group>"; };
 		0918361EBC76BB3D5E095F37 /* KnowledgeBaseWatchWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseWatchWidgets.swift; sourceTree = "<group>"; };
 		092D9E142BC28FE855BC3E92 /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
+		09E3BBC29E5C1D378BF4C8B8 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		09F23EE9AB7E0B9FBE89013E /* ChatAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAPIClient.swift; sourceTree = "<group>"; };
 		0A4E4A6B2EB9CB6A37558F20 /* PendingVoiceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingVoiceStore.swift; sourceTree = "<group>"; };
 		0A693442AD2D8D1A6EE3D948 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -603,11 +608,13 @@
 		BFE66E36D575D6879DC9F0F6 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		C0698FBE56BD54E6CF3EDB49 /* UserDefaultsDebugValueCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDebugValueCodec.swift; sourceTree = "<group>"; };
 		C07DC10C8D0D845CEDD120EA /* AppLanguageStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguageStoreTests.swift; sourceTree = "<group>"; };
+		C0AE4DBCE76C7C0A0BDFA036 /* HealthSyncViewModel+Backfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HealthSyncViewModel+Backfill.swift"; sourceTree = "<group>"; };
 		C100ED17A9613A9AF7351824 /* LogsMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsMenuView.swift; sourceTree = "<group>"; };
 		C1BDEE39C2A096C09D9AEB7A /* ChatAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAPIClientTests.swift; sourceTree = "<group>"; };
 		C51E561F9F891984481E9FC8 /* ChatComposerDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerDraft.swift; sourceTree = "<group>"; };
 		C547FCA30D83FF15B131AAB3 /* ConsoleLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleLoggerTests.swift; sourceTree = "<group>"; };
 		C54A4C38492534F34CD1E7A2 /* LoggerTestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTestSupport.swift; sourceTree = "<group>"; };
+		C7B83592B9C44311E1F9797E /* HealthDataArchiveBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthDataArchiveBuilder.swift; sourceTree = "<group>"; };
 		C8F0F7B4C16684A701355980 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		CA18FCA48ECCD8FB03EF2108 /* KBLoggerTagsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBLoggerTagsProviderTests.swift; sourceTree = "<group>"; };
 		CAB0849721176D880774CB44 /* HealthAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthAPIClient.swift; sourceTree = "<group>"; };
@@ -682,6 +689,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				974D5AD737F4CBC371D95A2A /* Alamofire in Frameworks */,
+				79EBC018EF87F1C4FA09AC17 /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -728,6 +736,7 @@
 			children = (
 				35BC1DA99AD0F7B6E33E63C5 /* Assets.xcassets */,
 				9193CB5D05F676D78DC1F959 /* Info.plist */,
+				09E3BBC29E5C1D378BF4C8B8 /* InfoPlist.strings */,
 				5530CA85EFB82842E33B912A /* LaunchScreen.storyboard */,
 			);
 			path = Resources;
@@ -1070,6 +1079,7 @@
 				6AC4DBB0A273ACE02E8AE739 /* HealthBackgroundTaskIdentifier.swift */,
 				EF3CC48FAB8EB2F61FCF0199 /* HealthSyncPreferences.swift */,
 				44F83D3F4984E865BBB6D374 /* HealthSyncViewModel.swift */,
+				C0AE4DBCE76C7C0A0BDFA036 /* HealthSyncViewModel+Backfill.swift */,
 			);
 			path = Health;
 			sourceTree = "<group>";
@@ -1239,6 +1249,7 @@
 			children = (
 				EC30808A94368AFDF66DDF39 /* DailyHealthKitDataProviding.swift */,
 				CAB0849721176D880774CB44 /* HealthAPIClient.swift */,
+				C7B83592B9C44311E1F9797E /* HealthDataArchiveBuilder.swift */,
 				5FB2E21355C1042F7C802AA0 /* HealthKitService.swift */,
 				010024768DA53950B806E3C6 /* KBHealthSyncService.swift */,
 				A12871E5600575B644981CDD /* WorkoutAnchoredQuery.swift */,
@@ -1392,6 +1403,7 @@
 			name = KnowledgeBaseApp;
 			packageProductDependencies = (
 				A53081AADE3701107D386F51 /* Alamofire */,
+				2ACA8B7943AA0D92083DCC4C /* ZIPFoundation */,
 			);
 			productName = KnowledgeBaseApp;
 			productReference = 160117490E0F8809EC811C14 /* KnowledgeBaseApp.app */;
@@ -1495,6 +1507,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				587C214919DA5A6765B7C017 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				81F0ABDE5996AC0C991C559C /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 00C02605A379D5F26A8DA592 /* Products */;
@@ -1524,6 +1537,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				53FDB826E259B0CFCD14E27F /* Assets.xcassets in Resources */,
+				53073E94FA8A2789C2A88DAE /* InfoPlist.strings in Resources */,
 				DA9DAF0DF6FF9DF23CD0F785 /* LaunchScreen.storyboard in Resources */,
 				CC8C60EB3BB710849ED3279C /* Localizable.xcstrings in Resources */,
 			);
@@ -1601,9 +1615,11 @@
 				B0967F9E3C55119676A77E4B /* HKQueryAnchorCoder.swift in Sources */,
 				3F977937071908419B09162D /* HealthAPIClient.swift in Sources */,
 				D62D3AC3B04D6FE450595647 /* HealthBackgroundTaskIdentifier.swift in Sources */,
+				06888DC3AAFCBB1E56FCCF8F /* HealthDataArchiveBuilder.swift in Sources */,
 				782ACC1A488E03A5C032DC59 /* HealthKitService.swift in Sources */,
 				56E3D9228B5DFBDC42C1CD40 /* HealthSettingsView.swift in Sources */,
 				4A2103E34568D5ECE9011DBD /* HealthSyncPreferences.swift in Sources */,
+				09FC4563E0D1BE9BE812065D /* HealthSyncViewModel+Backfill.swift in Sources */,
 				FEA4E0C72AA2CAAEEE664BD2 /* HealthSyncViewModel.swift in Sources */,
 				E3DD07C68CCA6753CBA95863 /* HealthTabView.swift in Sources */,
 				A20F3680AAD62B498CD7240D /* ImagePreviewSheet.swift in Sources */,
@@ -2281,9 +2297,22 @@
 				minimumVersion = 5.9.0;
 			};
 		};
+		81F0ABDE5996AC0C991C559C /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.19;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		2ACA8B7943AA0D92083DCC4C /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 81F0ABDE5996AC0C991C559C /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
 		A53081AADE3701107D386F51 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 587C214919DA5A6765B7C017 /* XCRemoteSwiftPackageReference "Alamofire" */;

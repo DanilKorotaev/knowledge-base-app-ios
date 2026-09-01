@@ -2,7 +2,7 @@ import Foundation
 
 /// Client-side limits aligned with KB App API (`MAX_ATTACHMENTS_PER_MESSAGE`, 25 MB per file).
 enum ComposerAttachmentLimits {
-    static let maxFileAttachments = 5
+    static let maxFileAttachments = 10
     static let maxBytesPerAttachment: Int64 = 25 * 1024 * 1024
 
     enum ValidationError: Equatable {

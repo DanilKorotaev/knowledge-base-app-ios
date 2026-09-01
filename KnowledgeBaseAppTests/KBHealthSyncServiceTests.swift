@@ -5,8 +5,8 @@ import Testing
 
 @Suite("KBHealthSyncService")
 struct KBHealthSyncServiceTests {
-    @Test("uploads daily and sync_state when no workouts")
-    func syncNowUploadsDailyAndState() async throws {
+    @Test("syncRecent uploads daily and sync_state when no workouts")
+    func syncRecentUploadsDailyAndState() async throws {
         let fixedDate = ISO8601DateFormatter().date(from: "2026-03-01T12:00:00Z")!
         let healthKit = MockHealthKitService()
         healthKit.isHealthDataAvailable = true
@@ -32,28 +32,28 @@ struct KBHealthSyncServiceTests {
             healthKit: healthKit,
             apiClient: api,
             clock: { fixedDate },
-            dailyBackfillBatchSize: 0,
             uploadBatchSize: 5
         )
 
-        try await service.syncNow()
+        try await service.syncRecent()
 
         #expect(api.uploadedFiles.contains { $0.path == "daily/2026-03-01.json" })
         #expect(api.uploadedFiles.contains { $0.path == "sync_state.json" })
+        #expect(!api.uploadedFiles.contains { $0.path.hasPrefix("daily/2026-02") })
     }
 
-    @Test("throws when HealthKit is unavailable")
-    func syncNowThrowsWhenUnavailable() async {
+    @Test("syncRecent throws when HealthKit is unavailable")
+    func syncRecentThrowsWhenUnavailable() async {
         let healthKit = MockHealthKitService()
         healthKit.isHealthDataAvailable = false
         let service = KBHealthSyncService(healthKit: healthKit, apiClient: StubHealthAPIClient())
         await #expect(throws: KBHealthSyncServiceError.healthDataUnavailable) {
-            try await service.syncNow()
+            try await service.syncRecent()
         }
     }
 
-    @Test("uploads workout JSON files")
-    func syncNowUploadsWorkouts() async throws {
+    @Test("syncRecent uploads workout JSON files")
+    func syncRecentUploadsWorkouts() async throws {
         let fixedDate = ISO8601DateFormatter().date(from: "2026-03-01T12:00:00Z")!
         let healthKit = MockHealthKitService()
         healthKit.workoutBatches = [
@@ -84,13 +84,53 @@ struct KBHealthSyncServiceTests {
             healthKit: healthKit,
             apiClient: api,
             clock: { fixedDate },
-            dailyBackfillBatchSize: 0,
             uploadBatchSize: 10
         )
 
-        try await service.syncNow()
+        try await service.syncRecent()
 
         #expect(api.uploadedFiles.contains { $0.path == "workouts/2026-03-01_ABC.json" })
+    }
+
+    @Test("syncDailyHistory uploads each day in range")
+    func syncDailyHistoryUploadsRange() async throws {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(secondsFromGMT: 0)!
+        let fixedDate = ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z")!
+        let healthKit = MockHealthKitService()
+        healthKit.dailyInput = DailyAggregationInput(
+            date: "2026-03-01",
+            steps: 100,
+            distanceKm: 1,
+            activeCalories: 10,
+            basalCalories: 20,
+            exerciseMinutes: 5,
+            standHours: 1,
+            restingHeartRate: nil,
+            hrvValues: [],
+            oxygenSaturationValues: [],
+            heartRateValues: [],
+            heartRateSummary: nil,
+            sleep: nil,
+            syncedAt: nil
+        )
+
+        let start = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 3)))
+        let end = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 4)))
+        let api = StubHealthAPIClient()
+        let service = KBHealthSyncService(
+            healthKit: healthKit,
+            apiClient: api,
+            clock: { fixedDate },
+            calendar: utc,
+            uploadBatchSize: 10
+        )
+
+        try await service.syncDailyHistory(from: start, to: end)
+
+        let dailyPaths = api.uploadedFiles.filter { $0.path.hasPrefix("daily/") }.map(\.path)
+        #expect(dailyPaths.contains("daily/2026-03-03.json"))
+        #expect(dailyPaths.contains("daily/2026-03-04.json"))
     }
 
     @Test("loadTodayPreview returns daily data")
@@ -129,7 +169,9 @@ private final class MockHealthKitService: HealthKitServiceProtocol {
     func needsReadAuthorization() async -> Bool { false }
 
     func dailyAggregationInput(for date: Date) async throws -> DailyAggregationInput {
-        dailyInput
+        var copy = dailyInput
+        copy.date = CalendarDayFormatter.yyyyMMdd(for: date)
+        return copy
     }
 
     func makeDailyHealthData(from input: DailyAggregationInput) -> DailyHealthData {

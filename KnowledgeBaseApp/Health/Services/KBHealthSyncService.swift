@@ -3,6 +3,7 @@ import Foundation
 enum KBHealthSyncServiceError: Error, Equatable {
     case healthDataUnavailable
     case apiUnavailable
+    case invalidDateRange
 }
 
 /// Orchestrates HealthKit export and upload via KB App API (no client-side WebDAV).
@@ -13,14 +14,13 @@ final class KBHealthSyncService {
     private let apiClient: HealthAPIClientProtocol
     private let clock: () -> Date
     private let jsonEncoder: () -> JSONEncoder
-    private let jsonDecoder: () -> JSONDecoder
     private let calendar: Calendar
-    private let dailyBackfillMaxAgeDays: Int
-    private let dailyBackfillBatchSize: Int
     private let uploadBatchSize: Int
 
     private static let syncStatePath = "sync_state.json"
     private static let workoutBatchLimit = 50
+
+    static let defaultDailyBackfillMaxAgeDays = 1095
 
     var onProgress: ProgressHandler?
 
@@ -34,24 +34,19 @@ final class KBHealthSyncService {
             encoder.dateEncodingStrategy = .iso8601
             return encoder
         },
-        jsonDecoder: @escaping () -> JSONDecoder = { JSONDecoder() },
         calendar: Calendar = .current,
-        dailyBackfillMaxAgeDays: Int = 730,
-        dailyBackfillBatchSize: Int = 7,
         uploadBatchSize: Int = 10
     ) {
         self.healthKit = healthKit
         self.apiClient = apiClient
         self.clock = clock
         self.jsonEncoder = jsonEncoder
-        self.jsonDecoder = jsonDecoder
         self.calendar = calendar
-        self.dailyBackfillMaxAgeDays = dailyBackfillMaxAgeDays
-        self.dailyBackfillBatchSize = dailyBackfillBatchSize
         self.uploadBatchSize = uploadBatchSize
     }
 
-    func syncNow() async throws {
+    /// Incremental workouts + today's daily summary. Does not export historical daily data.
+    func syncRecent() async throws {
         guard healthKit.isHealthDataAvailable else {
             throw KBHealthSyncServiceError.healthDataUnavailable
         }
@@ -73,9 +68,8 @@ final class KBHealthSyncService {
         }
 
         onProgress?("workouts", uploadedCount)
-
-        var anchorData: Data? = remoteState?.workoutQueryAnchor.flatMap { Data(base64Encoded: $0) }
-        var workoutAnchorBase64: String? = remoteState?.workoutQueryAnchor
+        var anchorData = remoteState?.workoutQueryAnchor.flatMap { Data(base64Encoded: $0) }
+        var workoutAnchorBase64 = remoteState?.workoutQueryAnchor
 
         while true {
             let (batch, newAnchorData) = try await healthKit.fetchWorkoutsIncremental(
@@ -85,53 +79,89 @@ final class KBHealthSyncService {
             if let newAnchorData {
                 workoutAnchorBase64 = newAnchorData.base64EncodedString()
             }
-            if batch.isEmpty {
-                break
-            }
+            if batch.isEmpty { break }
             for input in batch {
                 let workout = healthKit.makeWorkoutData(from: input)
                 let fileData = try encoder.encode(workout)
-                let path = "workouts/\(input.date)_\(input.sourceIdentifier).json"
-                pendingUploads.append((fileData, path))
+                pendingUploads.append((fileData, "workouts/\(input.date)_\(input.sourceIdentifier).json"))
                 try await flushIfNeeded()
             }
             anchorData = newAnchorData
         }
 
         onProgress?("daily", uploadedCount)
-
         let dailyInput = try await healthKit.dailyAggregationInput(for: now)
         let daily = healthKit.makeDailyHealthData(from: dailyInput)
-        let dailyData = try encoder.encode(daily)
-        let dayKey = dailyInput.date
-        pendingUploads.append((dailyData, "daily/\(dayKey).json"))
+        pendingUploads.append((try encoder.encode(daily), "daily/\(dailyInput.date).json"))
 
-        var dailyBackfillOldest = remoteState?.dailyBackfillOldestCompleted
-        if dailyBackfillBatchSize > 0 {
-            onProgress?("backfill", uploadedCount)
-            let result = try await dailyBackfillEntries(
-                now: now,
-                encoder: encoder,
-                remoteState: remoteState,
-                startingMergedOldest: dailyBackfillOldest
-            )
-            for payload in result.payloads {
-                pendingUploads.append((payload.data, payload.path))
-                try await flushIfNeeded()
+        let state = SyncState(
+            lastSyncedAt: CalendarDayFormatter.iso8601UTCSeconds(from: now),
+            lastDailyExportDate: dailyInput.date,
+            workoutQueryAnchor: workoutAnchorBase64,
+            dailyBackfillOldestCompleted: remoteState?.dailyBackfillOldestCompleted,
+            notes: remoteState?.notes
+        )
+        pendingUploads.append((try encoder.encode(state), Self.syncStatePath))
+
+        try await flushIfNeeded(force: true)
+        SyncRunStore.recordSuccess(at: clock())
+        onProgress?("done", uploadedCount)
+    }
+
+    /// Upload daily JSON files for each calendar day in the inclusive range.
+    func syncDailyHistory(from startDate: Date, to endDate: Date) async throws {
+        guard healthKit.isHealthDataAvailable else {
+            throw KBHealthSyncServiceError.healthDataUnavailable
+        }
+
+        let range = normalizedDayRange(from: startDate, to: endDate)
+        guard range.start <= range.end else {
+            throw KBHealthSyncServiceError.invalidDateRange
+        }
+
+        let now = clock()
+        let encoder = jsonEncoder()
+        let remoteState = try await apiClient.fetchSyncState()
+
+        var pendingUploads: [(Data, String)] = []
+        var uploadedCount = 0
+
+        func flushIfNeeded(force: Bool = false) async throws {
+            guard force || pendingUploads.count >= uploadBatchSize else { return }
+            guard !pendingUploads.isEmpty else { return }
+            let batch = pendingUploads
+            pendingUploads = []
+            try await upload(batch: batch, uploadedSoFar: uploadedCount)
+            uploadedCount += batch.count
+        }
+
+        var mergedOldest = remoteState?.dailyBackfillOldestCompleted
+        var latestDaily = remoteState?.lastDailyExportDate
+
+        onProgress?("history", uploadedCount)
+        var cursor = range.end
+        while cursor >= range.start {
+            let input = try await healthKit.dailyAggregationInput(for: cursor)
+            let daily = healthKit.makeDailyHealthData(from: input)
+            pendingUploads.append((try encoder.encode(daily), "daily/\(input.date).json"))
+            mergedOldest = [mergedOldest, input.date].compactMap { $0 }.min()
+            if latestDaily == nil || input.date > (latestDaily ?? "") {
+                latestDaily = input.date
             }
-            dailyBackfillOldest = result.mergedOldestCompleted
+            try await flushIfNeeded()
+            onProgress?("history", uploadedCount + pendingUploads.count)
+            guard let previous = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
+            cursor = previous
         }
 
         let state = SyncState(
             lastSyncedAt: CalendarDayFormatter.iso8601UTCSeconds(from: now),
-            lastDailyExportDate: dayKey,
-            workoutQueryAnchor: workoutAnchorBase64,
-            dailyBackfillOldestCompleted: dailyBackfillOldest,
+            lastDailyExportDate: latestDaily,
+            workoutQueryAnchor: remoteState?.workoutQueryAnchor,
+            dailyBackfillOldestCompleted: mergedOldest,
             notes: remoteState?.notes
         )
-        let stateData = try encoder.encode(state)
-        pendingUploads.append((stateData, Self.syncStatePath))
-
+        pendingUploads.append((try encoder.encode(state), Self.syncStatePath))
         try await flushIfNeeded(force: true)
         SyncRunStore.recordSuccess(at: clock())
         onProgress?("done", uploadedCount)
@@ -151,56 +181,11 @@ final class KBHealthSyncService {
         _ = try await apiClient.uploadSyncFiles(files)
     }
 
-    private struct DailyBackfillPayload {
-        let data: Data
-        let path: String
-    }
-
-    private func dailyBackfillEntries(
-        now: Date,
-        encoder: JSONEncoder,
-        remoteState: SyncState?,
-        startingMergedOldest: String?
-    ) async throws -> (paths: [String], payloads: [DailyBackfillPayload], mergedOldestCompleted: String?) {
-        let todayStart = calendar.startOfDay(for: now)
-        guard let minDate = calendar.date(byAdding: .day, value: -dailyBackfillMaxAgeDays, to: todayStart),
-              let yesterday = calendar.date(byAdding: .day, value: -1, to: todayStart) else {
-            return ([], [], startingMergedOldest)
-        }
-
-        let startCursor: Date
-        if let oldestStr = remoteState?.dailyBackfillOldestCompleted,
-           let oldestDay = CalendarDayFormatter.startOfDay(fromYyyyMMdd: oldestStr, calendar: calendar) {
-            let oldestStart = calendar.startOfDay(for: oldestDay)
-            startCursor = calendar.date(byAdding: .day, value: -1, to: oldestStart) ?? oldestStart
-        } else {
-            startCursor = calendar.startOfDay(for: yesterday)
-        }
-
-        var cursor = startCursor
-        var paths: [String] = []
-        var payloads: [DailyBackfillPayload] = []
-        var mergedOldest = startingMergedOldest
-        var uploadCount = 0
-
-        while uploadCount < dailyBackfillBatchSize {
-            if cursor < minDate {
-                break
-            }
-            let input = try await healthKit.dailyAggregationInput(for: cursor)
-            let daily = healthKit.makeDailyHealthData(from: input)
-            let data = try encoder.encode(daily)
-            let path = "daily/\(input.date).json"
-            paths.append(path)
-            payloads.append(DailyBackfillPayload(data: data, path: path))
-            mergedOldest = [mergedOldest, input.date].compactMap { $0 }.min()
-            uploadCount += 1
-            guard let prev = calendar.date(byAdding: .day, value: -1, to: cursor) else {
-                break
-            }
-            cursor = prev
-        }
-
-        return (paths, payloads, mergedOldest)
+    private func normalizedDayRange(from start: Date, to end: Date) -> (start: Date, end: Date) {
+        let todayStart = calendar.startOfDay(for: clock())
+        let rawStart = calendar.startOfDay(for: min(start, end))
+        let rawEnd = calendar.startOfDay(for: max(start, end))
+        let cappedEnd = min(rawEnd, todayStart)
+        return (rawStart, cappedEnd)
     }
 }
