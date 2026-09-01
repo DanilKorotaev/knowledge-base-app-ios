@@ -256,6 +256,7 @@
 		D1D7DED927CE0C65BF1A9FB5 /* UserDefaultsDebugModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A80FE5F9653B651D01D327 /* UserDefaultsDebugModelsTests.swift */; };
 		D4C0CB3D834E93F25B31AC7D /* UserDefaultsInspectorSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7867145911FE7BBDB15120 /* UserDefaultsInspectorSettings.swift */; };
 		D5C276039635B79F34E0CC34 /* TerminalSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2275625576ECA85FCCB63FD /* TerminalSanitizer.swift */; };
+		D62D3AC3B04D6FE450595647 /* HealthBackgroundTaskIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AC4DBB0A273ACE02E8AE739 /* HealthBackgroundTaskIdentifier.swift */; };
 		D6D207CCA71A84653D0751EF /* OrientationLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32B3B95E949DC1CC7BE06DA7 /* OrientationLock.swift */; };
 		D6E8D46C738DB3D7060B84B6 /* UserDefaultsListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E0C466B6C648760620097AD /* UserDefaultsListViewModelTests.swift */; };
 		D8E57D2BFD1F7A51F88B0DA7 /* DebugGestureOverlays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DDDCF113D57DD6C3680CC7E /* DebugGestureOverlays.swift */; };
@@ -496,6 +497,7 @@
 		68C876AD1653C71DDD05F309 /* LogPreviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPreviewViewModel.swift; sourceTree = "<group>"; };
 		68D7D7540BDE11E24D80AA21 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		6A25FF66F4AC2937BC805B91 /* SyncStatusBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusBannerView.swift; sourceTree = "<group>"; };
+		6AC4DBB0A273ACE02E8AE739 /* HealthBackgroundTaskIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthBackgroundTaskIdentifier.swift; sourceTree = "<group>"; };
 		6D06253EF2F27BC06C693BA3 /* VoiceRecordingSendResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingSendResult.swift; sourceTree = "<group>"; };
 		6E4CA74CD5565ED72504F908 /* WatchVoiceSessionContextSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchVoiceSessionContextSync.swift; sourceTree = "<group>"; };
 		6FD8B85391698AF8E13EE6F4 /* KnowledgeBaseAppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAppShortcuts.swift; sourceTree = "<group>"; };
@@ -1056,6 +1058,7 @@
 				C39AA7358A94FCC075C01E28 /* Services */,
 				8839A7554792DDC3A1037DDA /* Utilities */,
 				DE653A856357880716D44545 /* Views */,
+				6AC4DBB0A273ACE02E8AE739 /* HealthBackgroundTaskIdentifier.swift */,
 				EF3CC48FAB8EB2F61FCF0199 /* HealthSyncPreferences.swift */,
 				44F83D3F4984E865BBB6D374 /* HealthSyncViewModel.swift */,
 			);
@@ -1588,6 +1591,7 @@
 				2E5EFC151911E88B15FA7337 /* FilesAPIClient.swift in Sources */,
 				B0967F9E3C55119676A77E4B /* HKQueryAnchorCoder.swift in Sources */,
 				3F977937071908419B09162D /* HealthAPIClient.swift in Sources */,
+				D62D3AC3B04D6FE450595647 /* HealthBackgroundTaskIdentifier.swift in Sources */,
 				782ACC1A488E03A5C032DC59 /* HealthKitService.swift in Sources */,
 				56E3D9228B5DFBDC42C1CD40 /* HealthSettingsView.swift in Sources */,
 				4A2103E34568D5ECE9011DBD /* HealthSyncPreferences.swift in Sources */,

@@ -67,6 +67,9 @@ targets:
         KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
         NSHealthShareUsageDescription: Приложение читает данные Apple Health (шаги, сон, тренировки), чтобы сохранить их в вашей базе знаний через сервер.
         NSHealthUpdateUsageDescription: Приложение не записывает данные в Apple Health.
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.coredan.KnowledgeBaseApp.health-sync.refresh
+          - com.coredan.KnowledgeBaseApp.health-sync.processing
         UIBackgroundModes:
           - fetch
           - processing

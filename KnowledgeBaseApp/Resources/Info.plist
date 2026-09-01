@@ -43,6 +43,11 @@
 	<string>Приложение не записывает данные в Apple Health.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.coredan.KnowledgeBaseApp.health-sync.refresh</string>
+		<string>com.coredan.KnowledgeBaseApp.health-sync.processing</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
