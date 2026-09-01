@@ -38,6 +38,14 @@ struct HealthSettingsView: View {
                 }
                 .disabled(!viewModel.isHealthDataAvailable)
             }
+
+            if case let .failed(message) = viewModel.phase {
+                Section("health.section.error") {
+                    Text(message)
+                        .foregroundStyle(.red)
+                        .font(.footnote)
+                }
+            }
         }
         .navigationTitle("health.settings.title")
         .task {

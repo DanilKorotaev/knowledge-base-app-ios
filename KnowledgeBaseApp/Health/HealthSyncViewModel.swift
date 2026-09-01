@@ -122,6 +122,10 @@ final class HealthSyncViewModel {
     }
 
     private static func userFacingMessage(for error: Error) -> String {
+        let description = error.localizedDescription
+        if description.localizedCaseInsensitiveContains("healthkit entitlement") {
+            return String(localized: "health.error.missing_entitlement")
+        }
         if let error = error as? HealthKitServiceError, error == .authorizationRequired {
             return String(localized: "health.error.authorization_required")
         }

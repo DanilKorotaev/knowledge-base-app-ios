@@ -21,4 +21,5 @@ if ! command -v xcodegen >/dev/null 2>&1; then
 fi
 
 xcodegen generate
+bash "$(dirname "$0")/verify_entitlements.sh"
 echo "xcodegen generate: ok"

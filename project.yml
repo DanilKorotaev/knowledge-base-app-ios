@@ -50,6 +50,12 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
     entitlements:
       path: KnowledgeBaseApp/KnowledgeBaseApp.entitlements
+      properties:
+        aps-environment: $(APS_ENVIRONMENT)
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.background-delivery: true
+        com.apple.security.application-groups:
+          - group.com.coredan.KnowledgeBaseApp
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
@@ -107,6 +113,9 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
     entitlements:
       path: KnowledgeBaseWidget/KnowledgeBaseWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.coredan.KnowledgeBaseApp
     info:
       path: KnowledgeBaseWidget/Info.plist
       properties:

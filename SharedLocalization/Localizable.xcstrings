@@ -1057,6 +1057,12 @@
         }
       }
     },
+    "health.error.missing_entitlement": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "This build is missing the HealthKit entitlement. Install a newer TestFlight build after the CI fix." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "В этой сборке нет HealthKit entitlement. Установите более новую сборку из TestFlight после исправления CI." } }
+      }
+    },
     "health.error.authorization_required": {
       "localizations": {
         "en": { "stringUnit": { "state": "translated", "value": "Allow Health access in Settings → Health, then try again." } },
