@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.34 | 147 | `ios/v1.0.34` | 2026-09-01 | Health sync resilience, composer chips, chat open UX |
 | 1.0.33 | 146 | `ios/v1.0.33` | 2026-09-01 | Health sync checkpoints, chat nav, table inline markdown |
 | 1.0.32 | 145 | `ios/v1.0.32` | 2026-09-01 | Stream health history sync, chat open UX, composer height |
 | 1.0.31 | 144 | `ios/v1.0.31` | 2026-09-01 | Composer height with attachments, L10n sync progress, chat open perf |
