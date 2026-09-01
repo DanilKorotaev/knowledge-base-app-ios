@@ -127,10 +127,11 @@ struct ChatComposerView: View {
 
             ZStack(alignment: .trailing) {
                 TextField("composer.message_placeholder", text: $viewModel.composerDraft.text, axis: .vertical)
-                    .lineLimit(1 ... 8)
+                    .lineLimit(hasDraftMedia ? 3 ... 8 : 1 ... 8)
                     .textFieldStyle(.plain)
                     .disabled(isBusy)
                     .padding(.horizontal, 2)
+                    .frame(minHeight: hasDraftMedia ? 64 : nil, alignment: .topLeading)
 
                 if showsTextFieldTranscribingIndicator {
                     ProgressView()

@@ -143,6 +143,7 @@ struct ChatView: View {
             ChatComposerView(viewModel: viewModel, voiceViewModel: voiceViewModel)
                 .background(Color(.systemBackground))
         }
+        .hidesTabBarWhenPushed()
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if voiceViewModel.phase != .idle {
                 MicRecordControl(viewModel: voiceViewModel)

@@ -103,7 +103,8 @@ final class ChatViewModel {
     }
 
     func load() async {
-        bootstrapFromCacheIfNeeded()
+        await bootstrapFromCacheIfNeeded()
+        restoreInFlightReplyUIIfNeeded()
         let hadCachedMessages = !messages.isEmpty
         if hadCachedMessages {
             syncStatus = .refreshing
@@ -174,10 +175,14 @@ final class ChatViewModel {
         }
     }
 
-    private func bootstrapFromCacheIfNeeded() {
-        guard messages.isEmpty,
-              let cached = messageCache.loadWindow(sessionId: session.id),
-              !cached.messages.isEmpty else { return }
+    private func bootstrapFromCacheIfNeeded() async {
+        guard messages.isEmpty else { return }
+        let sessionId = session.id
+        let cache = messageCache
+        let cached = await Task.detached(priority: .userInitiated) {
+            cache.loadWindow(sessionId: sessionId)
+        }.value
+        guard let cached, !cached.messages.isEmpty else { return }
         apply(page: cached, requestedLimit: cached.messages.count, kind: "cache")
     }
 

@@ -79,7 +79,12 @@ struct HealthTabView: View {
             }
             if let lastSyncedAt = viewModel.lastSyncedAt, viewModel.workoutsAreOnServer {
                 LabeledContent("health.workouts.last_sync") {
-                    Text(lastSyncedAt.formatted(date: .abbreviated, time: .shortened))
+                    Text(
+                        lastSyncedAt.formatted(
+                            Date.FormatStyle(date: .abbreviated, time: .shortened)
+                                .locale(AppLanguageStore.shared.resolvedLocale)
+                        )
+                    )
                 }
             }
         } header: {
