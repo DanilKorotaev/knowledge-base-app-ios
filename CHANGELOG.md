@@ -12,6 +12,20 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.24] - 2026-09-01
+
+### Added
+
+- Embed HealthKit sync via KB App API
+
+### Changed
+
+- Expand Health module coverage above CI threshold
+
+### Fixed
+
+- Add BGTaskSchedulerPermittedIdentifiers for Health background modes
+
 ## [1.0.23] - 2026-08-31
 
 ### Fixed
@@ -216,7 +230,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.23...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.24...HEAD
+[1.0.24]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.24
 [1.0.23]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.23
 [1.0.22]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.22
 [1.0.21]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.21
