@@ -7,9 +7,9 @@ struct MarkdownTableView: View {
     @State private var viewportWidth: CGFloat = 280
     @State private var fullscreenTable: MarkdownTableData?
 
-    /// ~72% of bubble width so the next column peeks and hints at horizontal scroll.
+    /// ~48% of bubble width — enough to read a column without oversized peek.
     private var columnWidth: CGFloat {
-        max(112, viewportWidth * 0.72)
+        max(96, viewportWidth * 0.48)
     }
 
     var body: some View {

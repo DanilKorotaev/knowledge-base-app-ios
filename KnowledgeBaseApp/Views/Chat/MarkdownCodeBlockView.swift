@@ -12,13 +12,18 @@ struct MarkdownCodeBlockView: View {
                     .foregroundStyle(.secondary)
                     .textCase(.lowercase)
             }
-            ScrollView(.horizontal, showsIndicators: true) {
-                Text(code)
-                    .font(.system(.footnote, design: .monospaced))
-                    .foregroundStyle(.primary)
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            ScrollView(.vertical, showsIndicators: true) {
+                ScrollView(.horizontal, showsIndicators: true) {
+                    Text(code)
+                        .font(.system(.footnote, design: .monospaced))
+                        .foregroundStyle(.primary)
+                        .textSelection(.enabled)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
+            .frame(maxHeight: 320)
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -55,8 +55,8 @@ struct ComposerAttachmentStripView: View {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 72, height: 72)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .frame(width: 52, height: 52)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                     } else {
                         ComposerFileChipView(attachment: attachment, onRemove: {})
                     }

@@ -88,31 +88,37 @@ struct HealthKitServiceTests {
     @Test("makeWorkoutData calculates heart rate zones")
     func makeWorkoutDataCalculatesHeartRateAndZones() {
         let sut = HealthKitService(healthStore: HealthStoreMock())
+        let start = ISO8601DateFormatter().date(from: "2026-03-30T10:00:00Z")!
+        let end = start.addingTimeInterval(3600)
         let input = WorkoutAggregationInput(
             sourceIdentifier: "00000000-0000-0000-0000-000000000001",
             date: "2026-03-30",
+            startAt: start,
+            endAt: end,
             workoutType: "traditional_strength_training",
-            workoutTypeDisplay: "Strength",
-            isGym: true,
             durationMinutes: 60,
             distanceKm: nil,
+            elevationGainM: nil,
+            averagePaceMinPerKm: nil,
             activeCalories: 300,
             totalCalories: 420,
             heartRateSamples: [
-                .init(bpm: 90, durationMinutes: 10),
-                .init(bpm: 105, durationMinutes: 15),
-                .init(bpm: 120, durationMinutes: 20),
-                .init(bpm: 135, durationMinutes: 10),
-                .init(bpm: 150, durationMinutes: 5),
+                .init(timestamp: start, bpm: 90, durationMinutes: 10),
+                .init(timestamp: start.addingTimeInterval(600), bpm: 105, durationMinutes: 15),
+                .init(timestamp: start.addingTimeInterval(1500), bpm: 120, durationMinutes: 20),
+                .init(timestamp: start.addingTimeInterval(2700), bpm: 135, durationMinutes: 10),
+                .init(timestamp: start.addingTimeInterval(3300), bpm: 150, durationMinutes: 5),
             ],
+            route: nil,
             linkedNote: nil,
             syncedAt: "2026-03-30T10:00:00Z"
         )
         let result = sut.makeWorkoutData(from: input)
         #expect(result.averageHeartRate == 120)
         #expect(result.maxHeartRate == 150)
-        #expect(result.heartRateZones?.zone2From60To70 == 10)
-        #expect(result.heartRateZones?.zone5Above90 == 15)
+        #expect(result.heartRateZones?.maxHeartRateBpm == 185)
+        let zoneMinutes = result.heartRateZones?.zones.map(\.minutes) ?? []
+        #expect(zoneMinutes == [25, 20, 10, 5, 0])
     }
 }
 

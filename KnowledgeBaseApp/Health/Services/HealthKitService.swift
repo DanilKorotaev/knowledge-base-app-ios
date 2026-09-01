@@ -39,23 +39,26 @@ struct DailyAggregationInput: Equatable {
     var syncedAt: String?
 }
 
-struct WorkoutAggregationInput: Equatable {
-    struct HeartRateSample: Equatable {
+struct WorkoutAggregationInput {
+    struct HeartRateSample {
+        var timestamp: Date
         var bpm: Double
         var durationMinutes: Double
     }
 
-    /// `HKWorkout.uuid` string for naming and JSON `source_id`.
     var sourceIdentifier: String
     var date: String
+    var startAt: Date
+    var endAt: Date
     var workoutType: String
-    var workoutTypeDisplay: String
-    var isGym: Bool
     var durationMinutes: Double
     var distanceKm: Double?
+    var elevationGainM: Double?
+    var averagePaceMinPerKm: Double?
     var activeCalories: Double?
     var totalCalories: Double?
     var heartRateSamples: [HeartRateSample]
+    var route: WorkoutRouteExport?
     var linkedNote: String?
     var syncedAt: String?
 }
@@ -146,23 +149,47 @@ final class HealthStoreAdapter: HKBackgroundCapableHealthStore {
     }
 }
 
+protocol WorkoutRouteProviding: AnyObject {
+    func loadWorkoutRoute(for workout: HKWorkout) async throws -> WorkoutRouteExport?
+    func dateOfBirth() -> Date?
+}
+
+extension HealthStoreAdapter: WorkoutRouteProviding {
+    func loadWorkoutRoute(for workout: HKWorkout) async throws -> WorkoutRouteExport? {
+        try await WorkoutRouteLoader.loadRoute(for: workout, store: healthStore)
+    }
+
+    func dateOfBirth() -> Date? {
+        guard let components = try? healthStore.dateOfBirthComponents(),
+              let date = Calendar.current.date(from: components) else {
+            return nil
+        }
+        return date
+    }
+}
+
 /// Reads samples from HealthKit and manages authorization.
 final class HealthKitService: HealthKitServiceProtocol {
     private let healthStore: HealthStoreProtocol
     private let queryStore: DailyHealthKitDataProviding
     private let workoutAnchorStore: WorkoutAnchoredQueryProviding
+    private let routeProvider: WorkoutRouteProviding
     private let calendar: Calendar
 
     init(
         healthStore: HealthStoreProtocol = HealthStoreAdapter.shared,
         queryStore: DailyHealthKitDataProviding? = nil,
         workoutAnchorStore: WorkoutAnchoredQueryProviding? = nil,
+        routeProvider: WorkoutRouteProviding? = nil,
         calendar: Calendar = .current
     ) {
         self.healthStore = healthStore
         self.queryStore = queryStore ?? (healthStore as? DailyHealthKitDataProviding) ?? HealthStoreAdapter.shared
         self.workoutAnchorStore = workoutAnchorStore
             ?? (healthStore as? WorkoutAnchoredQueryProviding)
+            ?? HealthStoreAdapter.shared
+        self.routeProvider = routeProvider
+            ?? (healthStore as? WorkoutRouteProviding)
             ?? HealthStoreAdapter.shared
         self.calendar = calendar
     }
@@ -172,7 +199,7 @@ final class HealthKitService: HealthKitServiceProtocol {
     }
 
     var requiredReadTypes: Set<HKObjectType> {
-        var types: Set<HKObjectType> = [HKObjectType.workoutType()]
+        var types: Set<HKObjectType> = [HKObjectType.workoutType(), HKSeriesType.workoutRoute()]
         [
             HKObjectType.quantityType(forIdentifier: .stepCount),
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning),
@@ -277,11 +304,18 @@ final class HealthKitService: HealthKitServiceProtocol {
                 from: sleepQueryStart,
                 to: dayEnd
             )
-            sleep = DailyMetricsSleepAggregator.buildSummary(
+            var summary = DailyMetricsSleepAggregator.buildSummary(
                 categorySamples: sleepSamples,
                 dayStart: dayStart,
                 dayEnd: dayEnd
             )
+            if var summary, let segments = summary.segments,
+               let window = DailyMetricsSleepAggregator.sleepWindow(from: segments) {
+                summary.heartRate = try await heartRateStatistics(from: window.start, to: window.end)
+                sleep = summary
+            } else {
+                sleep = summary
+            }
         } else {
             sleep = nil
         }
@@ -438,21 +472,38 @@ final class HealthKitService: HealthKitServiceProtocol {
     func makeWorkoutData(from input: WorkoutAggregationInput) -> WorkoutData {
         let averageHeartRate = input.heartRateSamples.isEmpty ? nil : input.heartRateSamples.map(\.bpm).average
         let maxHeartRate = input.heartRateSamples.map(\.bpm).max()
-        let zones = makeHeartRateZones(from: input.heartRateSamples)
+        let maxHRForZones = HeartRateZoneCalculator.estimatedMaxHeartRate(
+            dateOfBirth: routeProvider.dateOfBirth(),
+            referenceDate: input.endAt
+        )
+        let zoneSamples = input.heartRateSamples.map {
+            HeartRateZoneCalculator.TimedSample(bpm: $0.bpm, durationMinutes: $0.durationMinutes)
+        }
+        let zones = HeartRateZoneCalculator.summarize(samples: zoneSamples, maxHeartRateBpm: maxHRForZones)
+        let timeline = input.heartRateSamples.map {
+            HeartRateSamplePoint(
+                timestamp: CalendarDayFormatter.iso8601UTCSeconds(from: $0.timestamp),
+                bpm: $0.bpm
+            )
+        }
 
         return WorkoutData(
             sourceIdentifier: input.sourceIdentifier,
             date: input.date,
+            startAt: CalendarDayFormatter.iso8601UTCSeconds(from: input.startAt),
+            endAt: CalendarDayFormatter.iso8601UTCSeconds(from: input.endAt),
             workoutType: input.workoutType,
-            workoutTypeDisplay: input.workoutTypeDisplay,
-            isGym: input.isGym,
             durationMinutes: input.durationMinutes,
             distanceKm: input.distanceKm,
+            elevationGainM: input.elevationGainM,
+            averagePaceMinPerKm: input.averagePaceMinPerKm,
             activeCalories: input.activeCalories,
             totalCalories: input.totalCalories,
             averageHeartRate: averageHeartRate,
             maxHeartRate: maxHeartRate,
             heartRateZones: zones,
+            heartRateSamples: timeline.isEmpty ? nil : timeline,
+            route: input.route,
             linkedNote: input.linkedNote,
             syncedAt: input.syncedAt
         )
@@ -465,17 +516,29 @@ final class HealthKitService: HealthKitServiceProtocol {
         let distanceKm = workout.totalDistance.map { $0.doubleValue(for: HKUnit.meter()) / 1000.0 }
         let activeCalories = workout.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie())
         let durationMinutes = workout.duration / 60.0
+        let elevationGainM = workout.metadata?[HKMetadataKeyElevationAscended] as? Double
+        let averagePaceMinPerKm: Double?
+        if let distanceKm, distanceKm > 0, durationMinutes > 0 {
+            averagePaceMinPerKm = durationMinutes / distanceKm
+        } else {
+            averagePaceMinPerKm = nil
+        }
+        let route = try? await routeProvider.loadWorkoutRoute(for: workout)
+
         return WorkoutAggregationInput(
             sourceIdentifier: workout.uuid.uuidString,
             date: dayKey,
+            startAt: workout.startDate,
+            endAt: workout.endDate,
             workoutType: WorkoutTypeSlug.snakeCase(workout.workoutActivityType),
-            workoutTypeDisplay: WorkoutTypeSlug.displayName(for: workout.workoutActivityType),
-            isGym: Self.isGymStyleWorkout(workout.workoutActivityType),
             durationMinutes: durationMinutes,
             distanceKm: distanceKm,
+            elevationGainM: elevationGainM,
+            averagePaceMinPerKm: averagePaceMinPerKm,
             activeCalories: activeCalories,
             totalCalories: activeCalories,
             heartRateSamples: heartRateSamples,
+            route: route,
             linkedNote: nil,
             syncedAt: syncedAt
         )
@@ -496,58 +559,15 @@ final class HealthKitService: HealthKitServiceProtocol {
             let end = i + 1 < sorted.count ? sorted[i + 1].startDate : workout.endDate
             let minutes = max(0, end.timeIntervalSince(start) / 60.0)
             let bpm = sorted[i].quantity.doubleValue(for: bpmUnit)
-            result.append(WorkoutAggregationInput.HeartRateSample(bpm: bpm, durationMinutes: minutes))
+            result.append(
+                WorkoutAggregationInput.HeartRateSample(
+                    timestamp: start,
+                    bpm: bpm,
+                    durationMinutes: minutes
+                )
+            )
         }
         return result
-    }
-
-    private static func isGymStyleWorkout(_ activity: HKWorkoutActivityType) -> Bool {
-        switch activity {
-        case .traditionalStrengthTraining,
-             .functionalStrengthTraining,
-             .coreTraining,
-             .crossTraining,
-             .flexibility,
-             .mixedCardio,
-             .highIntensityIntervalTraining:
-            return true
-        default:
-            return false
-        }
-    }
-
-    private func makeHeartRateZones(from samples: [WorkoutAggregationInput.HeartRateSample]) -> HeartRateZones? {
-        guard !samples.isEmpty else { return nil }
-        let maxObserved = max(samples.map(\.bpm).max() ?? 0, 1)
-        var zone1 = 0.0
-        var zone2 = 0.0
-        var zone3 = 0.0
-        var zone4 = 0.0
-        var zone5 = 0.0
-
-        for sample in samples {
-            let percent = sample.bpm / maxObserved
-            switch percent {
-            case ..<0.6:
-                zone1 += sample.durationMinutes
-            case ..<0.7:
-                zone2 += sample.durationMinutes
-            case ..<0.8:
-                zone3 += sample.durationMinutes
-            case ..<0.9:
-                zone4 += sample.durationMinutes
-            default:
-                zone5 += sample.durationMinutes
-            }
-        }
-
-        return HeartRateZones(
-            zone1Below60: zone1,
-            zone2From60To70: zone2,
-            zone3From70To80: zone3,
-            zone4From80To90: zone4,
-            zone5Above90: zone5
-        )
     }
 }
 

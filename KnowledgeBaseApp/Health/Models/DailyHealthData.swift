@@ -53,6 +53,8 @@ struct SleepSummary: Codable, Equatable {
     var remMinutes: Double?
     var lightMinutes: Double?
     var awakeMinutes: Double?
+    var segments: [SleepSegment]?
+    var heartRate: HeartRateStats?
 
     enum CodingKeys: String, CodingKey {
         case totalMinutes = "total_minutes"
@@ -60,5 +62,15 @@ struct SleepSummary: Codable, Equatable {
         case remMinutes = "rem_minutes"
         case lightMinutes = "light_minutes"
         case awakeMinutes = "awake_minutes"
+        case segments
+        case heartRate = "heart_rate"
     }
+}
+
+struct SleepSegment: Codable, Equatable {
+    /// `awake`, `rem`, `core`, `deep`, or `unspecified`.
+    var stage: String
+    var start: String
+    var end: String
+    var minutes: Double
 }
