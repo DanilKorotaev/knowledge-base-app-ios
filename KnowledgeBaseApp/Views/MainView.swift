@@ -405,6 +405,8 @@ struct MainView: View {
             navigationPath.append(session)
         } label: {
             sessionRowLabel(session)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .swipeActions(edge: .leading, allowsFullSwipe: false) {

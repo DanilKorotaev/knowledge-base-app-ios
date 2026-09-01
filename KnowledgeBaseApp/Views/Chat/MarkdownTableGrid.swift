@@ -60,7 +60,7 @@ struct MarkdownTableGrid: View {
 
     @ViewBuilder
     private func cellText(_ value: String, bold: Bool) -> some View {
-        Text(MessageContentRenderer.plainTableCellText(value))
+        Text(MessageContentRenderer.inlineAttributedText(value))
             .font(bold ? .footnote.weight(.semibold) : .footnote)
             .multilineTextAlignment(.leading)
             .foregroundStyle(.primary)

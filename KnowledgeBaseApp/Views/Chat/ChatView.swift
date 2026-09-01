@@ -35,11 +35,10 @@ struct ChatView: View {
 
             ZStack {
                 messagesScrollView
-                    .opacity(showsCenteredLoader ? 0 : 1)
-                    .allowsHitTesting(!showsCenteredLoader)
 
                 if showsCenteredLoader {
                     ProgressView("chat.loading_messages")
+                        .allowsHitTesting(false)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -288,13 +287,7 @@ struct ChatView: View {
     }
 
     private var showsCenteredLoader: Bool {
-        if viewModel.isLoading, viewModel.messages.isEmpty {
-            return true
-        }
-        if !viewModel.messages.isEmpty, !isChatScrollReady {
-            return true
-        }
-        return false
+        viewModel.isLoading && viewModel.messages.isEmpty
     }
 
     @ViewBuilder

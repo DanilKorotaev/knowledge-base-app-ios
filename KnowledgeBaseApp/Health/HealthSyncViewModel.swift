@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 @MainActor
 @Observable
@@ -200,6 +201,18 @@ final class HealthSyncViewModel {
             }
         }
         phase = .syncing(stage: "starting", uploadedCount: 0, totalCount: nil)
+        var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+        backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "HealthSync") {
+            if backgroundTaskID != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTaskID)
+                backgroundTaskID = .invalid
+            }
+        }
+        defer {
+            if backgroundTaskID != .invalid {
+                UIApplication.shared.endBackgroundTask(backgroundTaskID)
+            }
+        }
         do {
             try await operation()
             lastSyncedAt = SyncRunStore.lastSuccessfulSyncAt

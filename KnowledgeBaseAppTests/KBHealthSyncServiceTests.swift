@@ -135,6 +135,37 @@ struct KBHealthSyncServiceTests {
         #expect(dailyPaths.contains("daily/2026-03-03.json"))
         #expect(dailyPaths.contains("daily/2026-03-04.json"))
         #expect(api.uploadedFiles.contains { $0.path == "sync_state.json" })
+        #expect(api.uploadedFiles.filter { $0.path == "sync_state.json" }.count >= 1)
+    }
+
+    @Test("syncDailyHistory resumes after checkpoint")
+    func syncDailyHistoryResumesAfterCheckpoint() async throws {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(secondsFromGMT: 0)!
+        let fixedDate = ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z")!
+        let healthKit = MockHealthKitService()
+        let api = StubHealthAPIClient()
+        api.syncState = SyncState(
+            lastSyncedAt: "2026-03-01T12:00:00Z",
+            lastDailyExportDate: "2026-03-04",
+            workoutQueryAnchor: nil,
+            dailyBackfillOldestCompleted: "2026-03-04",
+            notes: nil
+        )
+        let service = KBHealthSyncService(
+            healthKit: healthKit,
+            apiClient: api,
+            clock: { fixedDate },
+            calendar: utc,
+            uploadBatchSize: 10
+        )
+
+        let start = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 3)))
+        let end = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 4)))
+        try await service.syncDailyHistory(from: start, to: end)
+
+        let dailyPaths = api.uploadedFiles.filter { $0.path.hasPrefix("daily/") }.map(\.path)
+        #expect(dailyPaths == ["daily/2026-03-03.json"])
     }
 
     @Test("syncDailyHistory streams uploads in batches")
