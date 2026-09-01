@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.25 | 137 | `ios/v1.0.25` | 2026-09-01 | Handle missing HealthKit authorization before sync |
 | 1.0.24 | 136 | `ios/v1.0.24` | 2026-09-01 | Expand Health module coverage above CI threshold |
 | 1.0.23 | 132 | `ios/v1.0.23` | 2026-08-31 | TestFlight release |
 | 1.0.22 | 130 | `ios/v1.0.22` | 2026-08-31 | Fix cache preview test for UTType jpeg extension. |
