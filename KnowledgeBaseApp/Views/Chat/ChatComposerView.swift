@@ -124,7 +124,6 @@ struct ChatComposerView: View {
                     onTapImage: { previewImageItem = PreviewImageItem(url: $0) },
                     onTapFile: { quickLookFileURL = $0 }
                 )
-                .frame(maxHeight: 56)
             }
 
             ZStack(alignment: .trailing) {
@@ -133,7 +132,7 @@ struct ChatComposerView: View {
                     .textFieldStyle(.plain)
                     .disabled(isBusy)
                     .padding(.horizontal, 2)
-                    .frame(minHeight: hasDraftMedia ? 44 : 24, alignment: .topLeading)
+                    .frame(minHeight: hasDraftMedia ? 88 : 24, alignment: .topLeading)
 
                 if showsTextFieldTranscribingIndicator {
                     ProgressView()

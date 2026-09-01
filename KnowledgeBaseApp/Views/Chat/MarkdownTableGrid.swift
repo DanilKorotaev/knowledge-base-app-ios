@@ -40,7 +40,6 @@ struct MarkdownTableGrid: View {
                     Rectangle()
                         .fill(borderColor)
                         .frame(width: 1)
-                        .frame(maxHeight: .infinity)
                 }
                 cellText(cells[safe: col] ?? "", bold: bold)
                     .padding(.horizontal, cellPaddingH)

@@ -7,9 +7,9 @@ struct MarkdownTableView: View {
     @State private var viewportWidth: CGFloat = 280
     @State private var fullscreenTable: MarkdownTableData?
 
-    /// ~48% of bubble width — enough to read a column without oversized peek.
+    /// ~72% of bubble width so the next column peeks and hints at horizontal scroll.
     private var columnWidth: CGFloat {
-        max(96, viewportWidth * 0.48)
+        max(112, viewportWidth * 0.72)
     }
 
     var body: some View {
@@ -20,6 +20,11 @@ struct MarkdownTableView: View {
                 columnWidth: columnWidth,
                 compactPadding: true
             )
+        }
+        .onGeometryChange(for: CGFloat.self) { proxy in
+            proxy.size.width
+        } action: { _, newValue in
+            viewportWidth = max(1, newValue)
         }
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay {
@@ -38,22 +43,11 @@ struct MarkdownTableView: View {
         .onTapGesture {
             fullscreenTable = MarkdownTableData(header: header, rows: rows)
         }
-        .background(widthReader)
         .frame(maxWidth: .infinity, alignment: .leading)
         .fullScreenCover(item: $fullscreenTable) { table in
             MarkdownTableFullscreenView(table: table) {
                 fullscreenTable = nil
             }
-        }
-    }
-
-    private var widthReader: some View {
-        GeometryReader { geo in
-            Color.clear
-                .onAppear { viewportWidth = geo.size.width }
-                .onChange(of: geo.size.width) { _, newValue in
-                    viewportWidth = max(1, newValue)
-                }
         }
     }
 }
