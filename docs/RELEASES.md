@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.30 | 143 | `ios/v1.0.30` | 2026-09-01 | Match archive progress callback signature for CI build |
 | 1.0.29 | 141 | `ios/v1.0.29` | 2026-09-01 | Table row height, composer text field, restore 72% columns |
 | 1.0.28 | 140 | `ios/v1.0.28` | 2026-09-01 | Expand Health export and fix chat composer rendering |
 | 1.0.27 | 139 | `ios/v1.0.27` | 2026-09-01 | Split Health sync UX, ZIP export, and attachment limit 10 |
