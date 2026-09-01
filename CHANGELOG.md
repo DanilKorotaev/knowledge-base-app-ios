@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.35] - 2026-09-01
+
+### Fixed
+
+- Treat HealthKit empty days as zero, restore file chip remove
+
 ## [1.0.34] - 2026-09-01
 
 ### Fixed
@@ -291,7 +297,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.34...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.35...HEAD
+[1.0.35]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.35
 [1.0.34]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.34
 [1.0.33]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.33
 [1.0.32]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.32
