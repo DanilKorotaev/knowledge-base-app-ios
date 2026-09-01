@@ -39,11 +39,6 @@ struct ChatComposerView: View {
             || !viewModel.pendingVoiceCaptures.isEmpty
     }
 
-    /// Extra text-field height only when file/image attachments need room beside the strip.
-    private var needsExpandedComposerTextField: Bool {
-        !viewModel.composerDraft.attachments.isEmpty
-    }
-
     var body: some View {
         composerContent
             .padding(14)
@@ -132,11 +127,10 @@ struct ChatComposerView: View {
 
             ZStack(alignment: .trailing) {
                 TextField("composer.message_placeholder", text: $viewModel.composerDraft.text, axis: .vertical)
-                    .lineLimit(needsExpandedComposerTextField ? 3 ... 8 : 1 ... 8)
+                    .lineLimit(1 ... 8)
                     .textFieldStyle(.plain)
                     .disabled(isBusy)
                     .padding(.horizontal, 2)
-                    .frame(minHeight: needsExpandedComposerTextField ? 64 : nil, alignment: .topLeading)
 
                 if showsTextFieldTranscribingIndicator {
                     ProgressView()

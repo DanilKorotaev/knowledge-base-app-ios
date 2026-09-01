@@ -58,7 +58,7 @@ struct ComposerAttachmentStripView: View {
                             .frame(width: 72, height: 72)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     } else {
-                        ComposerFileChipView(attachment: attachment, onRemove: {})
+                        ComposerFileChipView(attachment: attachment, showsRemoveButton: false, onRemove: {})
                     }
                 }
                 .buttonStyle(.plain)
@@ -76,7 +76,7 @@ struct ComposerAttachmentStripView: View {
                 Button {
                     onTapFile(attachment.localURL)
                 } label: {
-                    ComposerFileChipView(attachment: attachment, onRemove: {})
+                    ComposerFileChipView(attachment: attachment, showsRemoveButton: false, onRemove: {})
                 }
                 .buttonStyle(.plain)
 

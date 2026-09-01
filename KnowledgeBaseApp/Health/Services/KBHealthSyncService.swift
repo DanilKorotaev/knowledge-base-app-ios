@@ -110,7 +110,6 @@ final class KBHealthSyncService {
             throw KBHealthSyncServiceError.invalidDateRange
         }
 
-        let totalDays = inclusiveDayCount(from: range.start, to: range.end)
         let now = clock()
         let encoder = jsonEncoder()
         let remoteState = try await apiClient.fetchSyncState()
@@ -120,9 +119,7 @@ final class KBHealthSyncService {
         var latestDaily = remoteState?.lastDailyExportDate
         var processedDays = 0
         var uploadedDailyFiles = 0
-        let uploadTotal = totalDays + 1 // +1 for sync_state.json
 
-        onProgress?("history", 0, totalDays)
         var cursor = range.end
         if let oldestKey = remoteState?.dailyBackfillOldestCompleted,
            let oldestDay = CalendarDayFormatter.startOfDay(fromYyyyMMdd: oldestKey, calendar: calendar),
@@ -130,6 +127,18 @@ final class KBHealthSyncService {
            let resumeCursor = calendar.date(byAdding: .day, value: -1, to: oldestDay) {
             cursor = min(cursor, resumeCursor)
         }
+
+        let totalDays = inclusiveDayCount(from: range.start, to: cursor)
+        let uploadTotal = max(totalDays, 1)
+        let resumeKey = CalendarDayFormatter.yyyyMMdd(for: cursor)
+        HealthSyncLogger.historyStarted(
+            from: CalendarDayFormatter.yyyyMMdd(for: range.start),
+            to: CalendarDayFormatter.yyyyMMdd(for: range.end),
+            resumeFrom: resumeKey,
+            totalDays: totalDays
+        )
+
+        onProgress?("history", 0, totalDays)
         while cursor >= range.start {
             let input = try await healthKit.dailyAggregationInput(for: cursor)
             let daily = healthKit.makeDailyHealthData(from: input)
@@ -179,6 +188,7 @@ final class KBHealthSyncService {
 
         SyncRunStore.recordSuccess(at: clock())
         onProgress?("done", uploadTotal, uploadTotal)
+        HealthSyncLogger.historyFinished(uploaded: uploadedDailyFiles, total: uploadTotal, oldest: mergedOldest)
     }
 
     func loadTodayPreview() async throws -> DailyHealthData {
@@ -236,6 +246,7 @@ final class KBHealthSyncService {
         onProgress?("uploading", uploadedDailyFiles, uploadTotal)
         let files = pendingBatch.map { HealthSyncFileUpload(path: $0.1, data: $0.0) }
         _ = try await apiClient.uploadSyncFiles(files)
+        let batchCount = pendingBatch.count
         pendingBatch.removeAll(keepingCapacity: true)
 
         let checkpoint = SyncState(
@@ -249,5 +260,11 @@ final class KBHealthSyncService {
         _ = try await apiClient.uploadSyncFiles([
             HealthSyncFileUpload(path: Self.syncStatePath, data: stateData),
         ])
+        HealthSyncLogger.batchUploaded(
+            days: batchCount,
+            uploaded: uploadedDailyFiles,
+            total: uploadTotal,
+            oldest: mergedOldest
+        )
     }
 }

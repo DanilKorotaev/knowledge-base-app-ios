@@ -121,6 +121,7 @@ struct ChatView: View {
             viewModel.applyExternalAssistantPhase(parsed.phase, activityLabel: parsed.activityLabel)
         }
         .onAppear {
+            ChatOpenLogger.viewAppeared(sessionId: viewModel.session.id)
             voiceRouting.activeSessionId = viewModel.session.id
             voiceRouting.useKnowledgeBase = viewModel.useKnowledgeBase
             voiceRouting.usesComposerDraft = true
@@ -185,7 +186,7 @@ struct ChatView: View {
     private var messagesScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                LazyVStack(alignment: .leading, spacing: 10) {
                     if viewModel.hasMoreOlder {
                         Color.clear
                             .frame(height: 1)
@@ -324,9 +325,12 @@ struct ChatView: View {
     }
 
     private func armChatScrollAfterInitialLoad() {
+        let armedAt = CFAbsoluteTimeGetCurrent()
         isChatScrollReady = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             isChatScrollReady = true
+            let ms = Int((CFAbsoluteTimeGetCurrent() - armedAt) * 1000)
+            ChatOpenLogger.initialLayoutReady(sessionId: viewModel.session.id, milliseconds: ms)
             ChatPaginationLogger.scrollArmed(afterSeconds: 0.4)
             if let sample = latestScrollSample, sample.isNearOldestEdge {
                 userHasScrolled = true

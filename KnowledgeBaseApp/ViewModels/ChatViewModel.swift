@@ -103,10 +103,20 @@ final class ChatViewModel {
     }
 
     func load() async {
+        let loadStarted = CFAbsoluteTimeGetCurrent()
         if messages.isEmpty {
             isLoading = true
         }
+        let cacheStarted = CFAbsoluteTimeGetCurrent()
         await bootstrapFromCacheIfNeeded()
+        if !messages.isEmpty {
+            let cacheMs = Int((CFAbsoluteTimeGetCurrent() - cacheStarted) * 1000)
+            ChatOpenLogger.cacheBootstrapFinished(
+                sessionId: session.id,
+                messageCount: messages.count,
+                milliseconds: cacheMs
+            )
+        }
         restoreInFlightReplyUIIfNeeded()
         let hadCachedMessages = !messages.isEmpty
         if hadCachedMessages {
@@ -118,6 +128,12 @@ final class ChatViewModel {
         ChatPaginationLogger.initialLoadStarted(sessionId: session.id)
         defer { isLoading = false }
         await refreshFromNetwork(hadLocalData: hadCachedMessages, kind: "initial")
+        let loadMs = Int((CFAbsoluteTimeGetCurrent() - loadStarted) * 1000)
+        ChatOpenLogger.networkLoadFinished(
+            sessionId: session.id,
+            messageCount: messages.count,
+            milliseconds: loadMs
+        )
         restoreInFlightReplyUIIfNeeded()
         await resumeAwaitingReplyIfNeeded(allowWhileSending: false)
     }

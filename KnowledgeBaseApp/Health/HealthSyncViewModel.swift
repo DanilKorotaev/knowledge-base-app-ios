@@ -46,6 +46,9 @@ final class HealthSyncViewModel {
     private let apiClient: HealthAPIClientProtocol
     private let calendar: Calendar
 
+    /// Detached from SwiftUI view lifecycle so tab switches don't cancel long backfills.
+    private static var historySyncTask: Task<Void, Never>?
+
     init(
         healthKit: HealthKitServiceProtocol = HealthKitService(),
         apiClient: HealthAPIClientProtocol? = URLSessionHealthAPIClient(),
@@ -128,10 +131,20 @@ final class HealthSyncViewModel {
         activeOperation = .none
     }
 
-    func syncHistoryRange() async {
-        activeOperation = .history
-        await runSync { try await self.syncService.syncDailyHistory(from: self.historyRangeStart, to: self.historyRangeEnd) }
-        activeOperation = .none
+    func syncHistoryRange() {
+        guard !isBusy else { return }
+        Self.historySyncTask?.cancel()
+        Self.historySyncTask = Task.detached(priority: .userInitiated) { @MainActor in
+            self.activeOperation = .history
+            await self.runSync {
+                try await self.syncService.syncDailyHistory(
+                    from: self.historyRangeStart,
+                    to: self.historyRangeEnd
+                )
+            }
+            self.activeOperation = .none
+            Self.historySyncTask = nil
+        }
     }
 
     func exportArchive() async {
@@ -221,22 +234,16 @@ final class HealthSyncViewModel {
             await refresh()
             phase = .idle
         } catch is CancellationError {
+            HealthSyncLogger.historyCancelled()
             phase = .failed(String(localized: "health.sync.cancelled"))
         } catch {
+            HealthSyncLogger.historyFailed(error.localizedDescription)
             phase = .failed(Self.userFacingMessage(for: error))
         }
     }
 
     private func alignHistoryPickersWithRemoteState() {
-        guard let oldestKey = remoteSyncState?.dailyBackfillOldestCompleted,
-              let oldestDay = CalendarDayFormatter.startOfDay(fromYyyyMMdd: oldestKey, calendar: calendar),
-              let dayBefore = calendar.date(byAdding: .day, value: -1, to: oldestDay) else {
-            return
-        }
-        historyRangeEnd = min(historyRangeEnd, dayBefore)
-        if historyRangeStart > historyRangeEnd {
-            historyRangeStart = calendar.date(byAdding: .day, value: -30, to: historyRangeEnd) ?? historyRangeEnd
-        }
+        // Resume cursor is applied in KBHealthSyncService — do not shrink the user's date pickers.
     }
 
     private static func userFacingMessage(for error: Error) -> String {

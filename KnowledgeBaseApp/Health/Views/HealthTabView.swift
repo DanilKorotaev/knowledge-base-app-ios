@@ -166,7 +166,7 @@ struct HealthTabView: View {
                 displayedComponents: .date
             )
             Button {
-                Task { await viewModel.syncHistoryRange() }
+                viewModel.syncHistoryRange()
             } label: {
                 if viewModel.isBusy && viewModel.activeOperation == .history {
                     HStack {

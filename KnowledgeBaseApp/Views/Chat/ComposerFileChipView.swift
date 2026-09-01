@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ComposerFileChipView: View {
     let attachment: PendingAttachment
+    var showsRemoveButton = true
     var onRemove: () -> Void
 
     var body: some View {
@@ -18,11 +19,13 @@ struct ComposerFileChipView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            Button(action: onRemove) {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(.secondary)
+            if showsRemoveButton {
+                Button(action: onRemove) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)

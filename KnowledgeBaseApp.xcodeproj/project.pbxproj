@@ -221,6 +221,7 @@
 		ACE07F15C0B912CCAED162EA /* LogPreviewFilterItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EADEB745D7953303F043242 /* LogPreviewFilterItem.swift */; };
 		AD595EAB06F1B33A094BE881 /* HealthKitServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD99CB4D16156C53F1271080 /* HealthKitServiceTests.swift */; };
 		ADC84A9BA647EDF3B191EC7C /* StructuredUIRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3437BBC1C2F275D7B26E2984 /* StructuredUIRenderer.swift */; };
+		AE6265749CDAE08075501655 /* ChatOpenLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61887B0295976CE2DB0ED5EC /* ChatOpenLogger.swift */; };
 		AF04C9BBDA00B31310F4F010 /* URLRequest+KBcURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B95112B8F9D178D979DF582 /* URLRequest+KBcURL.swift */; };
 		AF705776208378A8B67EDDBB /* KBApiLoggerBase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E10C9E4799EFEAEF0BF3014 /* KBApiLoggerBase.swift */; };
 		AF7274CEAC6693BBBD6AAA94 /* AppLanguageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D184EFF645B89B6C09863A2 /* AppLanguageStore.swift */; };
@@ -307,6 +308,7 @@
 		FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */; };
 		FB5A444FCE744EEE9F10610B /* SessionKBModeStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E56BCA024656EBDBEF39529E /* SessionKBModeStoreTests.swift */; };
 		FBC0E06E2AEC59519057796A /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2881D4994BFE39C88210FA46 /* PushNotificationService.swift */; };
+		FE041692FAE7C2DD1F5CAEF5 /* HealthSyncLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0C3F57ACA4331AEE9460C6A /* HealthSyncLogger.swift */; };
 		FEA4E0C72AA2CAAEEE664BD2 /* HealthSyncViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F83D3F4984E865BBB6D374 /* HealthSyncViewModel.swift */; };
 		FED1E2A93982B51A75591988 /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 092D9E142BC28FE855BC3E92 /* LoggerTests.swift */; };
 		FF1DA536914F22410B15E6AF /* PushNotificationLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDBF5EA04BBF2E2041F2632 /* PushNotificationLogger.swift */; };
@@ -498,6 +500,7 @@
 		5E10C9E4799EFEAEF0BF3014 /* KBApiLoggerBase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBApiLoggerBase.swift; sourceTree = "<group>"; };
 		5F15F8746763D8F7653EFBD7 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		5FB2E21355C1042F7C802AA0 /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		61887B0295976CE2DB0ED5EC /* ChatOpenLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatOpenLogger.swift; sourceTree = "<group>"; };
 		628FE9B079229FA0D1A6750E /* UserDefaultsAddView+ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaultsAddView+ViewModel.swift"; sourceTree = "<group>"; };
 		63959B6467980507BD3E546C /* MarkdownTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTableView.swift; sourceTree = "<group>"; };
 		651E6C5B6C9A56713E4B7665 /* TerminalSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSanitizerTests.swift; sourceTree = "<group>"; };
@@ -670,6 +673,7 @@
 		EDFAB7FEB5479E83C2732B8E /* InMemoryKBStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InMemoryKBStoreTests.swift; sourceTree = "<group>"; };
 		EEEFA3A4F790A0D4F4518439 /* ComposerDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerDraftStore.swift; sourceTree = "<group>"; };
 		EF3CC48FAB8EB2F61FCF0199 /* HealthSyncPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSyncPreferences.swift; sourceTree = "<group>"; };
+		F0C3F57ACA4331AEE9460C6A /* HealthSyncLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSyncLogger.swift; sourceTree = "<group>"; };
 		F1F1A32EC3C527B28CE3530D /* DefaultVoiceSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVoiceSessionStore.swift; sourceTree = "<group>"; };
 		F2A80FE5F9653B651D01D327 /* UserDefaultsDebugModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDebugModelsTests.swift; sourceTree = "<group>"; };
 		F37068BCB435E8B9D7A76D28 /* UserDefaultsDebugModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsDebugModels.swift; sourceTree = "<group>"; };
@@ -1081,6 +1085,7 @@
 				8839A7554792DDC3A1037DDA /* Utilities */,
 				DE653A856357880716D44545 /* Views */,
 				6AC4DBB0A273ACE02E8AE739 /* HealthBackgroundTaskIdentifier.swift */,
+				F0C3F57ACA4331AEE9460C6A /* HealthSyncLogger.swift */,
 				EF3CC48FAB8EB2F61FCF0199 /* HealthSyncPreferences.swift */,
 				44F83D3F4984E865BBB6D374 /* HealthSyncViewModel.swift */,
 				C0AE4DBCE76C7C0A0BDFA036 /* HealthSyncViewModel+Backfill.swift */,
@@ -1206,6 +1211,7 @@
 				0F402A7D191773857BCD1B01 /* CameraPicker.swift */,
 				B29047F670AB8802A9E303ED /* ChatComposerView.swift */,
 				B57D4607FB06D773C15DF69E /* ChatOlderLoadScrollMetrics.swift */,
+				61887B0295976CE2DB0ED5EC /* ChatOpenLogger.swift */,
 				31518A7CB9209D080EF5FA72 /* ChatPaginationLogger.swift */,
 				BFE66E36D575D6879DC9F0F6 /* ChatView.swift */,
 				2D1E545EFDDBC919031B443F /* ComposerAttachmentStripView.swift */,
@@ -1590,6 +1596,7 @@
 				DFAB7C5A2990B1A186A1CF16 /* ChatComposerView.swift in Sources */,
 				DBDF17E90F9D4D859CE4003A /* ChatMicButton.swift in Sources */,
 				33ADE23DC2858D4008C85C15 /* ChatOlderLoadScrollMetrics.swift in Sources */,
+				AE6265749CDAE08075501655 /* ChatOpenLogger.swift in Sources */,
 				A957FB73E2CAB65BE78B03FB /* ChatPaginationLogger.swift in Sources */,
 				7A1625DF58CFDBDF226CA234 /* ChatSSEEvent.swift in Sources */,
 				1604232C93A3882110241CB4 /* ChatSessionFocusTracker.swift in Sources */,
@@ -1624,6 +1631,7 @@
 				06888DC3AAFCBB1E56FCCF8F /* HealthDataArchiveBuilder.swift in Sources */,
 				782ACC1A488E03A5C032DC59 /* HealthKitService.swift in Sources */,
 				56E3D9228B5DFBDC42C1CD40 /* HealthSettingsView.swift in Sources */,
+				FE041692FAE7C2DD1F5CAEF5 /* HealthSyncLogger.swift in Sources */,
 				4A2103E34568D5ECE9011DBD /* HealthSyncPreferences.swift in Sources */,
 				09FC4563E0D1BE9BE812065D /* HealthSyncViewModel+Backfill.swift in Sources */,
 				FEA4E0C72AA2CAAEEE664BD2 /* HealthSyncViewModel.swift in Sources */,

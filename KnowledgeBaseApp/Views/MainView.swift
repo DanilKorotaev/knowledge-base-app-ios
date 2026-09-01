@@ -401,14 +401,12 @@ struct MainView: View {
 
     @ViewBuilder
     private func sessionRow(_ session: KBSession) -> some View {
-        Button {
-            navigationPath.append(session)
-        } label: {
+        NavigationLink(value: session) {
             sessionRowLabel(session)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             if voiceRouting.isDefaultVoiceSession(session.id) {
                 Button {

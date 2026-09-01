@@ -24,5 +24,6 @@ extension LoggerTag {
     static let push = LoggerTag(rawValue: "Push")
     static let config = LoggerTag(rawValue: "Config")
     static let debug = LoggerTag(rawValue: "Debug")
+    static let health = LoggerTag(rawValue: "Health")
     static let userDefaultsService = LoggerTag(rawValue: "UserDefaultsService")
 }
