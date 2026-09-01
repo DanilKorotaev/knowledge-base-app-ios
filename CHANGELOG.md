@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.28] - 2026-09-01
+
+### Added
+
+- Expand Health export and fix chat composer rendering
+
 ## [1.0.27] - 2026-09-01
 
 ### Added
@@ -248,7 +254,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.27...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.28...HEAD
+[1.0.28]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.28
 [1.0.27]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.27
 [1.0.26]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.26
 [1.0.25]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.25

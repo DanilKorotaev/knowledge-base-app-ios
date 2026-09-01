@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.28 | 140 | `ios/v1.0.28` | 2026-09-01 | Expand Health export and fix chat composer rendering |
 | 1.0.27 | 139 | `ios/v1.0.27` | 2026-09-01 | Split Health sync UX, ZIP export, and attachment limit 10 |
 | 1.0.26 | 138 | `ios/v1.0.26` | 2026-09-01 | Preserve HealthKit entitlements through XcodeGen in CI |
 | 1.0.25 | 137 | `ios/v1.0.25` | 2026-09-01 | Handle missing HealthKit authorization before sync |
