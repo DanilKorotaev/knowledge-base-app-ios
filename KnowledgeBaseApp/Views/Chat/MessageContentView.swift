@@ -25,6 +25,11 @@ enum MessageContentRenderer {
         TerminalSanitizer.stripEscapeSequences(content)
     }
 
+    /// Plain text for table cells — avoids AttributedString markdown expanding row height.
+    static func plainTableCellText(_ content: String) -> String {
+        sanitizedContent(content)
+    }
+
     /// Inline markdown only (bold, code) — preserves structure when rendered line-by-line.
     static func inlineAttributedText(_ content: String) -> AttributedString {
         guard !content.isEmpty else { return AttributedString("") }

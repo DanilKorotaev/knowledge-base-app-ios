@@ -12,7 +12,7 @@ struct MarkdownTableGrid: View {
     }
 
     private var cellPaddingH: CGFloat { compactPadding ? 8 : 10 }
-    private var cellPaddingV: CGFloat { compactPadding ? 6 : 8 }
+    private var cellPaddingV: CGFloat { compactPadding ? 4 : 8 }
 
     private var borderColor: Color { Color.primary.opacity(0.14) }
     private var headerFill: Color { Color(.secondarySystemFill) }
@@ -60,8 +60,8 @@ struct MarkdownTableGrid: View {
 
     @ViewBuilder
     private func cellText(_ value: String, bold: Bool) -> some View {
-        Text(MessageContentRenderer.inlineAttributedText(value))
-            .font(bold ? .subheadline.weight(.semibold) : .subheadline)
+        Text(MessageContentRenderer.plainTableCellText(value))
+            .font(bold ? .footnote.weight(.semibold) : .footnote)
             .multilineTextAlignment(.leading)
             .foregroundStyle(.primary)
     }

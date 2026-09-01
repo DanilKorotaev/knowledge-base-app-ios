@@ -41,12 +41,11 @@ struct ChatComposerView: View {
 
     var body: some View {
         composerContent
-            .padding(.horizontal, 12)
-            .padding(.vertical, hasDraftMedia ? 8 : 10)
+            .padding(14)
             .background(composerPanelShape.fill(Color(.secondarySystemGroupedBackground)))
             .padding(.horizontal, 10)
-            .padding(.top, 4)
-            .padding(.bottom, 8)
+            .padding(.top, 6)
+            .padding(.bottom, 10)
             .photosPicker(
                 isPresented: $showGalleryPicker,
                 selection: $photoPickerItems,
@@ -109,7 +108,7 @@ struct ChatComposerView: View {
     }
 
     private var composerContent: some View {
-        VStack(alignment: .leading, spacing: hasDraftMedia ? 6 : 10) {
+        VStack(alignment: .leading, spacing: 10) {
             if hasDraftMedia {
                 ComposerAttachmentStripView(
                     attachments: viewModel.composerDraft.attachments,
@@ -132,7 +131,6 @@ struct ChatComposerView: View {
                     .textFieldStyle(.plain)
                     .disabled(isBusy)
                     .padding(.horizontal, 2)
-                    .frame(minHeight: hasDraftMedia ? 88 : 24, alignment: .topLeading)
 
                 if showsTextFieldTranscribingIndicator {
                     ProgressView()

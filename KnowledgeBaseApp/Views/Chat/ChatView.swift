@@ -139,21 +139,22 @@ struct ChatView: View {
                     }
                 }
             }
+
+            ChatComposerView(viewModel: viewModel, voiceViewModel: voiceViewModel)
+                .background(Color(.systemBackground))
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            VStack(spacing: 0) {
-                if voiceViewModel.phase != .idle {
-                    MicRecordControl(viewModel: voiceViewModel)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background {
-                            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                                .fill(Color(.secondarySystemGroupedBackground))
-                        }
-                        .padding(.horizontal, 10)
-                        .padding(.bottom, 8)
-                }
-                ChatComposerView(viewModel: viewModel, voiceViewModel: voiceViewModel)
+            if voiceViewModel.phase != .idle {
+                MicRecordControl(viewModel: voiceViewModel)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background {
+                        RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            .fill(Color(.secondarySystemGroupedBackground))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 8)
+                    .background(Color(.systemBackground))
             }
         }
         .navigationTitle(viewModel.session.title)

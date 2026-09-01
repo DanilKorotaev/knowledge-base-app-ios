@@ -8,7 +8,7 @@ enum KBHealthSyncServiceError: Error, Equatable {
 
 /// Orchestrates HealthKit export and upload via KB App API (no client-side WebDAV).
 final class KBHealthSyncService {
-    typealias ProgressHandler = (_ stage: String, _ uploadedFileCount: Int) -> Void
+    typealias ProgressHandler = (_ stage: String, _ uploadedCount: Int, _ totalCount: Int?) -> Void
 
     private let healthKit: HealthKitServiceProtocol
     private let apiClient: HealthAPIClientProtocol
@@ -56,18 +56,8 @@ final class KBHealthSyncService {
         let remoteState = try await apiClient.fetchSyncState()
 
         var pendingUploads: [(Data, String)] = []
-        var uploadedCount = 0
 
-        func flushIfNeeded(force: Bool = false) async throws {
-            guard force || pendingUploads.count >= uploadBatchSize else { return }
-            guard !pendingUploads.isEmpty else { return }
-            let batch = pendingUploads
-            pendingUploads = []
-            try await upload(batch: batch, uploadedSoFar: uploadedCount)
-            uploadedCount += batch.count
-        }
-
-        onProgress?("workouts", uploadedCount)
+        onProgress?("workouts", 0, nil)
         var anchorData = remoteState?.workoutQueryAnchor.flatMap { Data(base64Encoded: $0) }
         var workoutAnchorBase64 = remoteState?.workoutQueryAnchor
 
@@ -84,12 +74,12 @@ final class KBHealthSyncService {
                 let workout = healthKit.makeWorkoutData(from: input)
                 let fileData = try encoder.encode(workout)
                 pendingUploads.append((fileData, "workouts/\(input.date)_\(input.sourceIdentifier).json"))
-                try await flushIfNeeded()
             }
+            onProgress?("workouts", pendingUploads.count, nil)
             anchorData = newAnchorData
         }
 
-        onProgress?("daily", uploadedCount)
+        onProgress?("daily", pendingUploads.count, nil)
         let dailyInput = try await healthKit.dailyAggregationInput(for: now)
         let daily = healthKit.makeDailyHealthData(from: dailyInput)
         pendingUploads.append((try encoder.encode(daily), "daily/\(dailyInput.date).json"))
@@ -103,9 +93,9 @@ final class KBHealthSyncService {
         )
         pendingUploads.append((try encoder.encode(state), Self.syncStatePath))
 
-        try await flushIfNeeded(force: true)
+        try await uploadAll(pendingUploads)
         SyncRunStore.recordSuccess(at: clock())
-        onProgress?("done", uploadedCount)
+        onProgress?("done", pendingUploads.count, pendingUploads.count)
     }
 
     /// Upload daily JSON files for each calendar day in the inclusive range.
@@ -124,21 +114,10 @@ final class KBHealthSyncService {
         let remoteState = try await apiClient.fetchSyncState()
 
         var pendingUploads: [(Data, String)] = []
-        var uploadedCount = 0
-
-        func flushIfNeeded(force: Bool = false) async throws {
-            guard force || pendingUploads.count >= uploadBatchSize else { return }
-            guard !pendingUploads.isEmpty else { return }
-            let batch = pendingUploads
-            pendingUploads = []
-            try await upload(batch: batch, uploadedSoFar: uploadedCount)
-            uploadedCount += batch.count
-        }
-
         var mergedOldest = remoteState?.dailyBackfillOldestCompleted
         var latestDaily = remoteState?.lastDailyExportDate
 
-        onProgress?("history", uploadedCount)
+        onProgress?("history", 0, nil)
         var cursor = range.end
         while cursor >= range.start {
             let input = try await healthKit.dailyAggregationInput(for: cursor)
@@ -148,8 +127,7 @@ final class KBHealthSyncService {
             if latestDaily == nil || input.date > (latestDaily ?? "") {
                 latestDaily = input.date
             }
-            try await flushIfNeeded()
-            onProgress?("history", uploadedCount + pendingUploads.count)
+            onProgress?("history", pendingUploads.count, nil)
             guard let previous = calendar.date(byAdding: .day, value: -1, to: cursor) else { break }
             cursor = previous
         }
@@ -162,9 +140,10 @@ final class KBHealthSyncService {
             notes: remoteState?.notes
         )
         pendingUploads.append((try encoder.encode(state), Self.syncStatePath))
-        try await flushIfNeeded(force: true)
+
+        try await uploadAll(pendingUploads)
         SyncRunStore.recordSuccess(at: clock())
-        onProgress?("done", uploadedCount)
+        onProgress?("done", pendingUploads.count, pendingUploads.count)
     }
 
     func loadTodayPreview() async throws -> DailyHealthData {
@@ -175,10 +154,20 @@ final class KBHealthSyncService {
         return healthKit.makeDailyHealthData(from: input)
     }
 
-    private func upload(batch: [(Data, String)], uploadedSoFar: Int) async throws {
-        let files = batch.map { HealthSyncFileUpload(path: $0.1, data: $0.0) }
-        onProgress?("uploading", uploadedSoFar + files.count)
-        _ = try await apiClient.uploadSyncFiles(files)
+    private func uploadAll(_ pendingUploads: [(Data, String)]) async throws {
+        let total = pendingUploads.count
+        guard total > 0 else { return }
+        var uploaded = 0
+        var index = pendingUploads.startIndex
+        while index < pendingUploads.endIndex {
+            let end = pendingUploads.index(index, offsetBy: uploadBatchSize, limitedBy: pendingUploads.endIndex) ?? pendingUploads.endIndex
+            let batch = Array(pendingUploads[index ..< end])
+            let files = batch.map { HealthSyncFileUpload(path: $0.1, data: $0.0) }
+            uploaded += batch.count
+            onProgress?("uploading", uploaded, total)
+            _ = try await apiClient.uploadSyncFiles(files)
+            index = end
+        }
     }
 
     private func normalizedDayRange(from start: Date, to end: Date) -> (start: Date, end: Date) {

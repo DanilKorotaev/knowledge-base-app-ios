@@ -6,7 +6,7 @@ final class HealthSyncViewModel {
     enum Phase: Equatable {
         case idle
         case loadingPreview
-        case syncing(stage: String, uploadedCount: Int)
+        case syncing(stage: String, uploadedCount: Int, totalCount: Int? = nil)
         case failed(String)
     }
 
@@ -146,15 +146,15 @@ final class HealthSyncViewModel {
 
         exportArchiveURL = nil
         activeOperation = .archive
-        phase = .syncing(stage: "archive", uploadedCount: 0)
+        phase = .syncing(stage: "archive", uploadedCount: 0, totalCount: nil)
         do {
             let url = try await archiveBuilder.buildArchive(
                 dailyFrom: archiveRangeStart,
                 dailyTo: archiveRangeEnd,
                 includeWorkouts: archiveIncludesWorkouts
-            ) { [weak self] stage, count in
+            ) { [weak self] stage, count, total in
                 Task { @MainActor in
-                    self?.phase = .syncing(stage: stage, uploadedCount: count)
+                    self?.phase = .syncing(stage: stage, uploadedCount: count, totalCount: total)
                 }
             }
             exportArchiveURL = url
@@ -194,12 +194,12 @@ final class HealthSyncViewModel {
             phase = .failed(String(localized: "health.error.authorization_required"))
             return
         }
-        syncService.onProgress = { [weak self] stage, count in
+        syncService.onProgress = { [weak self] stage, count, total in
             Task { @MainActor in
-                self?.phase = .syncing(stage: stage, uploadedCount: count)
+                self?.phase = .syncing(stage: stage, uploadedCount: count, totalCount: total)
             }
         }
-        phase = .syncing(stage: "starting", uploadedCount: 0)
+        phase = .syncing(stage: "starting", uploadedCount: 0, totalCount: nil)
         do {
             try await operation()
             lastSyncedAt = SyncRunStore.lastSuccessfulSyncAt

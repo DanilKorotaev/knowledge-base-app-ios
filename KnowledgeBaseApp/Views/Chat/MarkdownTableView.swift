@@ -21,6 +21,7 @@ struct MarkdownTableView: View {
                 compactPadding: true
             )
         }
+        .fixedSize(horizontal: false, vertical: true)
         .onGeometryChange(for: CGFloat.self) { proxy in
             proxy.size.width
         } action: { _, newValue in
