@@ -140,7 +140,14 @@ final class KBHealthSyncService {
 
         onProgress?("history", 0, totalDays)
         while cursor >= range.start {
-            let input = try await healthKit.dailyAggregationInput(for: cursor)
+            let dayKey = CalendarDayFormatter.yyyyMMdd(for: cursor)
+            let input: DailyAggregationInput
+            do {
+                input = try await healthKit.dailyAggregationInput(for: cursor)
+            } catch {
+                HealthSyncLogger.historyFailed("day \(dayKey): \(error.localizedDescription)")
+                throw error
+            }
             let daily = healthKit.makeDailyHealthData(from: input)
             pendingBatch.append((try encoder.encode(daily), "daily/\(input.date).json"))
             mergedOldest = [mergedOldest, input.date].compactMap { $0 }.min()

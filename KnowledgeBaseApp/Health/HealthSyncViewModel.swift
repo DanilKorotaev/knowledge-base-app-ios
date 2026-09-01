@@ -64,9 +64,8 @@ final class HealthSyncViewModel {
         self.isHealthDataAvailable = healthKit.isHealthDataAvailable
 
         let today = calendar.startOfDay(for: Date())
-        let defaultEnd = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        let defaultStart = calendar.date(byAdding: .day, value: -30, to: defaultEnd) ?? defaultEnd
-        self.historyRangeEnd = defaultEnd
+        let defaultStart = calendar.date(byAdding: .day, value: -30, to: today) ?? today
+        self.historyRangeEnd = today
         self.historyRangeStart = defaultStart
         self.archiveRangeEnd = today
         self.archiveRangeStart = calendar.date(
@@ -230,9 +229,8 @@ final class HealthSyncViewModel {
             try await operation()
             lastSyncedAt = SyncRunStore.lastSuccessfulSyncAt
             remoteSyncState = try await apiClient.fetchSyncState()
-            alignHistoryPickersWithRemoteState()
-            await refresh()
             phase = .idle
+            await reloadTodayPreviewIfNeeded()
         } catch is CancellationError {
             HealthSyncLogger.historyCancelled()
             phase = .failed(String(localized: "health.sync.cancelled"))
@@ -244,6 +242,15 @@ final class HealthSyncViewModel {
 
     private func alignHistoryPickersWithRemoteState() {
         // Resume cursor is applied in KBHealthSyncService — do not shrink the user's date pickers.
+    }
+
+    private func reloadTodayPreviewIfNeeded() async {
+        guard isHealthDataAvailable, !needsHealthAuthorization else { return }
+        do {
+            todayPreview = try await syncService.loadTodayPreview()
+        } catch {
+            // Keep existing preview on failure.
+        }
     }
 
     private static func userFacingMessage(for error: Error) -> String {

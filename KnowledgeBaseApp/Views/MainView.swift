@@ -347,7 +347,7 @@ struct MainView: View {
 
     @ViewBuilder
     private var mainStackContent: some View {
-        if isLoading {
+        if isLoading, sessions.isEmpty {
             ProgressView("main.loading_sessions")
         } else if let loadError {
             ContentUnavailableView(

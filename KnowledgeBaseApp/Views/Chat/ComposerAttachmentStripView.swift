@@ -72,21 +72,11 @@ struct ComposerAttachmentStripView: View {
                 .offset(x: 6, y: -6)
             }
         case .file:
-            ZStack(alignment: .topTrailing) {
-                Button {
-                    onTapFile(attachment.localURL)
-                } label: {
-                    ComposerFileChipView(attachment: attachment, showsRemoveButton: false, onRemove: {})
-                }
-                .buttonStyle(.plain)
-
-                Button {
-                    onRemoveAttachment(attachment.id)
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                }
-                .offset(x: 4, y: -4)
+            ComposerFileChipView(attachment: attachment) {
+                onRemoveAttachment(attachment.id)
+            }
+            .onTapGesture {
+                onTapFile(attachment.localURL)
             }
         }
     }

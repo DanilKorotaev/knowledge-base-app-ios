@@ -6,6 +6,14 @@ struct HealthTabView: View {
 
     var body: some View {
         List {
+            if case let .failed(message) = viewModel.phase {
+                Section {
+                    Text(message)
+                        .foregroundStyle(.red)
+                        .font(.footnote)
+                }
+            }
+
             if !viewModel.isHealthDataAvailable {
                 Section {
                     Text("health.error.unavailable")
@@ -18,14 +26,6 @@ struct HealthTabView: View {
                 quickSyncSection
                 historySection
                 archiveSection
-
-                if case let .failed(message) = viewModel.phase {
-                    Section("health.section.error") {
-                        Text(message)
-                            .foregroundStyle(.red)
-                            .font(.footnote)
-                    }
-                }
             }
         }
         .navigationTitle("tab.health")

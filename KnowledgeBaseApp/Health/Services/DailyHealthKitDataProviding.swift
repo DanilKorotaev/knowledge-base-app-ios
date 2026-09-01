@@ -24,6 +24,11 @@ protocol DailyHealthKitDataProviding: AnyObject {
 }
 
 extension HealthStoreAdapter: DailyHealthKitDataProviding {
+    private func isNoDataError(_ error: Error) -> Bool {
+        let ns = error as NSError
+        return ns.domain == HKErrorDomain && ns.code == HKError.errorNoData.rawValue
+    }
+
     func statistics(
         for quantityType: HKQuantityType,
         from start: Date,
@@ -38,6 +43,10 @@ extension HealthStoreAdapter: DailyHealthKitDataProviding {
                 options: options
             ) { _, result, error in
                 if let error {
+                    if self.isNoDataError(error) {
+                        continuation.resume(returning: nil)
+                        return
+                    }
                     continuation.resume(throwing: error)
                     return
                 }
@@ -62,6 +71,10 @@ extension HealthStoreAdapter: DailyHealthKitDataProviding {
                 sortDescriptors: [sort]
             ) { _, samples, error in
                 if let error {
+                    if self.isNoDataError(error) {
+                        continuation.resume(returning: [])
+                        return
+                    }
                     continuation.resume(throwing: error)
                     return
                 }
@@ -86,6 +99,10 @@ extension HealthStoreAdapter: DailyHealthKitDataProviding {
                 sortDescriptors: [sort]
             ) { _, samples, error in
                 if let error {
+                    if self.isNoDataError(error) {
+                        continuation.resume(returning: [])
+                        return
+                    }
                     continuation.resume(throwing: error)
                     return
                 }
