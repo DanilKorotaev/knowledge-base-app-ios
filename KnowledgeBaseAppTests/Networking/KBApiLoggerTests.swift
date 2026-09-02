@@ -41,6 +41,24 @@ final class KBApiLoggerTests: XCTestCase {
         XCTAssertTrue(message.contains("\"ok\""))
     }
 
+    func testLargeHTTPBodyIsTruncatedWhenEnabled() {
+        settings.truncateLargeHTTPBodies = true
+        settings.maxHTTPBodyLogBytes = 1_024
+        let body = Data(repeating: 0x61, count: 2_048)
+        let message = base.logMessage(from: body)
+        XCTAssertTrue(message.contains("truncated"))
+        XCTAssertTrue(message.contains("2048"))
+    }
+
+    func testLargeHTTPBodyIsKeptWhenTruncationDisabled() {
+        settings.truncateLargeHTTPBodies = false
+        let payload = String(repeating: "a", count: 5_000)
+        let body = Data("{\"data\":\"\(payload)\"}".utf8)
+        let message = base.logMessage(from: body)
+        XCTAssertFalse(message.contains("truncated"))
+        XCTAssertTrue(message.contains(payload.prefix(100)))
+    }
+
     func testShortUrlIncludesPathAndQuery() {
         let url = URL(string: "https://kb.test/api/sessions?limit=10")!
         XCTAssertEqual(base.shortUrl(url), "/api/sessions?limit=10")

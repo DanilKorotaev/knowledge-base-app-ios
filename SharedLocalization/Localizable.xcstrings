@@ -1059,434 +1059,1154 @@
     },
     "health.error.missing_entitlement": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "This build is missing the HealthKit entitlement. Install a newer TestFlight build after the CI fix." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "В этой сборке нет HealthKit entitlement. Установите более новую сборку из TestFlight после исправления CI." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build is missing the HealthKit entitlement. Install a newer TestFlight build after the CI fix."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этой сборке нет HealthKit entitlement. Установите более новую сборку из TestFlight после исправления CI."
+          }
+        }
       }
     },
     "health.error.authorization_required": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Allow Health access in Settings → Health, then try again." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Разрешите доступ к Health в настройках вкладки, затем повторите." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Health access in Settings → Health, then try again."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите доступ к Health в настройках вкладки, затем повторите."
+          }
+        }
       }
     },
     "health.authorization.prompt": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Grant read access to show today’s summary and sync data." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Разрешите чтение данных Health, чтобы показать сводку за сегодня и синхронизировать." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grant read access to show today’s summary and sync data."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите чтение данных Health, чтобы показать сводку за сегодня и синхронизировать."
+          }
+        }
       }
     },
     "health.sync.no_preview": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No data for today yet." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Данных за сегодня пока нет." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No data for today yet."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Данных за сегодня пока нет."
+          }
+        }
       }
     },
     "health.error.unavailable": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Health data is not available on this device." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Данные Health недоступны на этом устройстве." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health data is not available on this device."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Данные Health недоступны на этом устройстве."
+          }
+        }
       }
     },
     "health.loading_preview": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Loading today…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Загрузка данных за сегодня…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading today…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка данных за сегодня…"
+          }
+        }
       }
     },
     "health.request_access": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Allow Health access" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Разрешить доступ к Health" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Health access"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить доступ к Health"
+          }
+        }
       }
     },
     "health.section.today": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Today" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Сегодня" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сегодня"
+          }
+        }
       }
     },
     "health.section.sync": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sync" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизация"
+          }
+        }
       }
     },
     "health.section.error": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Error" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Ошибка" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ошибка"
+          }
+        }
       }
     },
     "health.sync.now": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sync now" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизировать" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync now"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизировать"
+          }
+        }
       }
     },
     "health.sync.running": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Syncing…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Syncing…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизация…"
+          }
+        }
       }
     },
     "health.sync.no_state": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No sync state yet — run your first sync." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Состояние синхронизации пока пустое — запустите первую синхронизацию." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No sync state yet — run your first sync."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Состояние синхронизации пока пустое — запустите первую синхронизацию."
+          }
+        }
       }
     },
     "health.sync.backfill_cursor": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Backfill cursor" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Курсор backfill" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backfill cursor"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Курсор backfill"
+          }
+        }
       }
     },
     "health.sync.history_through": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "History exported through" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "История выгружена до" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History exported through"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "История выгружена до"
+          }
+        }
       }
     },
     "health.sync.history_remaining": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Days of history left" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Осталось дней истории" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days of history left"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Осталось дней истории"
+          }
+        }
       }
     },
     "health.sync.backfill_hint": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Tap Sync again to export older daily summaries (~30 days per run). Workouts are already fully synced." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Нажмите Sync ещё раз, чтобы выгрузить более старые дневные сводки (~30 дней за раз). Тренировки уже выгружены полностью." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap Sync again to export older daily summaries (~30 days per run). Workouts are already fully synced."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите Sync ещё раз, чтобы выгрузить более старые дневные сводки (~30 дней за раз). Тренировки уже выгружены полностью."
+          }
+        }
       }
     },
     "health.sync.last_success %@": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Last sync: %@" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Последняя синхронизация: %@" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last sync: %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последняя синхронизация: %@"
+          }
+        }
       }
     },
     "health.sync.stage.starting": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Preparing sync…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Подготовка синхронизации…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing sync…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовка синхронизации…"
+          }
+        }
       }
     },
     "health.sync.stage.workouts": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Exporting workouts from Health…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Экспорт тренировок из Health…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporting workouts from Health…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт тренировок из Health…"
+          }
+        }
       }
     },
     "health.sync.stage.daily": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Exporting today’s summary…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Экспорт сводки за сегодня…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporting today’s summary…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт сводки за сегодня…"
+          }
+        }
       }
     },
     "health.sync.stage.backfill": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Exporting older daily summaries…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Экспорт более старых дневных сводок…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporting older daily summaries…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт более старых дневных сводок…"
+          }
+        }
       }
     },
     "health.sync.stage.uploading %lld": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Uploading files (%1$lld so far)…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Загрузка файлов (уже %1$lld)…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uploading files (%1$lld so far)…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка файлов (уже %1$lld)…"
+          }
+        }
       }
     },
     "health.sync.stage.uploading_progress %lld %lld %lld": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Uploading files %1$lld of %2$lld (%3$lld%%)…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Загрузка файлов %1$lld из %2$lld (%3$lld%%)…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uploading files %1$lld of %2$lld (%3$lld%%)…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка файлов %1$lld из %2$lld (%3$lld%%)…"
+          }
+        }
       }
     },
     "health.sync.stage.workouts_count %lld": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Preparing workouts (%1$lld found)…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Подготовка тренировок (найдено %1$lld)…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing workouts (%1$lld found)…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовка тренировок (найдено %1$lld)…"
+          }
+        }
       }
     },
     "health.sync.stage.finishing": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Finishing sync…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Завершение синхронизации…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finishing sync…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершение синхронизации…"
+          }
+        }
       }
     },
     "health.section.workouts": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Workouts" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Тренировки" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workouts"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Тренировки"
+          }
+        }
       }
     },
     "health.section.daily": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Daily summaries" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Дневные сводки" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily summaries"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дневные сводки"
+          }
+        }
       }
     },
     "health.section.quick_sync": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Quick sync" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Быстрая синхронизация" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quick sync"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Быстрая синхронизация"
+          }
+        }
       }
     },
     "health.section.history": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Daily history" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "История по дням" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily history"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "История по дням"
+          }
+        }
       }
     },
     "health.section.archive": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Export archive" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Экспорт архива" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export archive"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт архива"
+          }
+        }
       }
     },
     "health.sync.recent": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sync recent data" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизировать недавние данные" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync recent data"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизировать недавние данные"
+          }
+        }
       }
     },
     "health.sync.recent_footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Uploads new/changed workouts and today’s daily summary. Does not export older days." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Загружает новые/изменённые тренировки и сводку за сегодня. Старые дни не выгружает." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uploads new/changed workouts and today’s daily summary. Does not export older days."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загружает новые/изменённые тренировки и сводку за сегодня. Старые дни не выгружает."
+          }
+        }
       }
     },
     "health.workouts.status": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Server status" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Статус на сервере" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server status"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Статус на сервере"
+          }
+        }
       }
     },
     "health.workouts.status.synced": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Up to date" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Актуально" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to date"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Актуально"
+          }
+        }
       }
     },
     "health.workouts.status.pending": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Needs sync" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Нужна синхронизация" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs sync"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нужна синхронизация"
+          }
+        }
       }
     },
     "health.workouts.last_sync": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Last sync" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Последняя синхронизация" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last sync"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последняя синхронизация"
+          }
+        }
       }
     },
     "health.workouts.footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Each workout is stored as a separate JSON file with type, calories, and heart rate." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Каждая тренировка — отдельный JSON с типом, калориями и пульсом." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each workout is stored as a separate JSON file with type, calories, and heart rate."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Каждая тренировка — отдельный JSON с типом, калориями и пульсом."
+          }
+        }
       }
     },
     "health.daily.status.none": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No daily history exported yet" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Дневная история ещё не выгружалась" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No daily history exported yet"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дневная история ещё не выгружалась"
+          }
+        }
       }
     },
     "health.daily.footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Daily files contain steps, sleep, and calories per calendar day. Use Daily history to export a date range." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Daily-файлы — шаги, сон и калории за каждый день. Для выгрузки периода используйте «История по дням»." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily files contain steps, sleep, and calories per calendar day. Use Daily history to export a date range."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily-файлы — шаги, сон и калории за каждый день. Для выгрузки периода используйте «История по дням»."
+          }
+        }
       }
     },
     "health.history.from": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "From" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "С" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С"
+          }
+        }
       }
     },
     "health.history.to": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "To" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "По" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По"
+          }
+        }
       }
     },
     "health.history.sync_button": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Upload selected period" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Выгрузить выбранный период" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upload selected period"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выгрузить выбранный период"
+          }
+        }
       }
     },
     "health.history.footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Uploads one daily JSON per day in the selected range. Keep the app open (screen may lock); force-quitting stops the upload. Enable “Re-export all days” after schema updates. Live Activity progress is planned next." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Загружает по одному daily JSON на каждый день периода. Держите приложение открытым (экран можно погасить); принудительное закрытие останавливает выгрузку. «Перезаписать все дни» — после обновления схемы. Live Activity с прогрессом — в следующем шаге." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uploads one daily JSON per day in the selected range. Keep the app open (screen may lock); force-quitting stops the upload. Enable “Re-export all days” after schema updates. Live Activity progress is planned next."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загружает по одному daily JSON на каждый день периода. Держите приложение открытым (экран можно погасить); принудительное закрытие останавливает выгрузку. «Перезаписать все дни» — после обновления схемы. Live Activity с прогрессом — в следующем шаге."
+          }
+        }
       }
     },
     "health.history.reexport_all": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Re-export all days in range" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Перезаписать все дни периода" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Re-export all days in range"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перезаписать все дни периода"
+          }
+        }
       }
     },
     "health.alert.error_title": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Health sync" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация Health" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health sync"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизация Health"
+          }
+        }
       }
     },
     "health.alert.success_title": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Done" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Готово" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        }
       }
     },
     "health.sync.recent_success": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Recent workouts and today’s summary were uploaded." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Недавние тренировки и сводка за сегодня загружены." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent workouts and today’s summary were uploaded."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недавние тренировки и сводка за сегодня загружены."
+          }
+        }
       }
     },
     "health.history.success": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Daily history export finished successfully." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Выгрузка истории по дням успешно завершена." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily history export finished successfully."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выгрузка истории по дням успешно завершена."
+          }
+        }
       }
     },
     "health.archive.success_message": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Archive is ready to share." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Архив готов к отправке." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive is ready to share."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Архив готов к отправке."
+          }
+        }
       }
     },
     "health.sync.success_generic": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Health sync finished successfully." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация Health успешно завершена." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health sync finished successfully."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизация Health успешно завершена."
+          }
+        }
       }
     },
     "health.sync.stage.history %lld": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Exporting daily summaries (%lld days)…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Экспорт дневных сводок (%lld дн.)…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporting daily summaries (%lld days)…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт дневных сводок (%lld дн.)…"
+          }
+        }
       }
     },
     "health.sync.stage.history_progress %lld %lld": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Exporting daily summaries (%1$lld of %2$lld)…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Экспорт дневных сводок (%1$lld из %2$lld)…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exporting daily summaries (%1$lld of %2$lld)…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Экспорт дневных сводок (%1$lld из %2$lld)…"
+          }
+        }
       }
     },
     "health.sync.cancelled": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Sync was cancelled." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация отменена." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync was cancelled."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизация отменена."
+          }
+        }
       }
     },
     "health.sync.stage.archive %lld": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Building archive (%lld files)…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Сборка архива (%lld файлов)…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Building archive (%lld files)…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сборка архива (%lld файлов)…"
+          }
+        }
       }
     },
     "health.archive.include_workouts": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Include all workouts" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Включить все тренировки" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Include all workouts"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить все тренировки"
+          }
+        }
       }
     },
     "health.archive.export_button": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Create ZIP archive" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Создать ZIP-архив" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create ZIP archive"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создать ZIP-архив"
+          }
+        }
       }
     },
     "health.archive.building": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Building archive…" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Сборка архива…" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Building archive…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сборка архива…"
+          }
+        }
       }
     },
     "health.archive.footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Creates a local ZIP with HealthData/ layout. Share or save it without uploading." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Создаёт локальный ZIP в формате HealthData/. Можно сохранить или отправить без загрузки на сервер." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creates a local ZIP with HealthData/ layout. Share or save it without uploading."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создаёт локальный ZIP в формате HealthData/. Можно сохранить или отправить без загрузки на сервер."
+          }
+        }
       }
     },
     "health.archive.empty": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "No data to export for the selected range." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Нет данных для экспорта в выбранном периоде." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No data to export for the selected range."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет данных для экспорта в выбранном периоде."
+          }
+        }
       }
     },
     "health.error.invalid_date_range": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Invalid date range." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Некорректный диапазон дат." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid date range."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Некорректный диапазон дат."
+          }
+        }
       }
     },
     "health.sync.last_daily": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Last daily export" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Последний daily export" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last daily export"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последний daily export"
+          }
+        }
       }
     },
     "health.settings.section": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Health" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Здоровье" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здоровье"
+          }
+        }
       }
     },
     "health.settings.title": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Health sync" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Синхронизация Health" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health sync"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Синхронизация Health"
+          }
+        }
       }
     },
     "health.settings.enable": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Enable Health tab" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Включить вкладку Health" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable Health tab"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включить вкладку Health"
+          }
+        }
       }
     },
     "health.settings.enable_footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "When enabled, a Health tab appears with today’s summary and sync controls." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Появится вкладка Health с краткой сводкой за сегодня и управлением синхронизацией." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When enabled, a Health tab appears with today’s summary and sync controls."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Появится вкладка Health с краткой сводкой за сегодня и управлением синхронизацией."
+          }
+        }
       }
     },
     "health.settings.folder_section": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Vault folder" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Папка в vault" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vault folder"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Папка в vault"
+          }
+        }
       }
     },
     "health.settings.folder": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Relative path" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Относительный путь" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relative path"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Относительный путь"
+          }
+        }
       }
     },
     "health.settings.folder_footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Stored on the server under your knowledge base (default HealthData/)." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Хранится на сервере в базе знаний (по умолчанию HealthData/)." } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stored on the server under your knowledge base (default HealthData/)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Хранится на сервере в базе знаний (по умолчанию HealthData/)."
+          }
+        }
       }
     },
     "health.settings.availability": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "HealthKit" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "HealthKit" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HealthKit"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HealthKit"
+          }
+        }
       }
     },
     "health.settings.available": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Available" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Доступен" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступен"
+          }
+        }
       }
     },
     "health.settings.unavailable": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Unavailable" } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Недоступен" } }
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unavailable"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недоступен"
+          }
+        }
       }
     },
     "common.save": {
@@ -4086,13 +4806,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "When enabled, shake the device to attach the current log file to the open chat."
+            "value": "When enabled, shake attaches the current log file to the open chat. If the file exceeds the 25 MB attachment limit, the oldest lines are dropped and the newest (tail) are kept."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Если включено, встряхивание устройства прикрепляет текущий лог к открытому чату."
+            "value": "Встряхивание прикрепляет текущий лог-файл к открытому чату. Если файл больше лимита вложения 25 МБ, отбрасывается начало (старые строки), остаются последние записи."
           }
         }
       }
@@ -5373,6 +6093,54 @@
           "stringUnit": {
             "state": "translated",
             "value": "Изменить значение"
+          }
+        }
+      }
+    },
+    "logs.truncate_http_bodies": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Truncate large HTTP bodies"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обрезать большие HTTP body"
+          }
+        }
+      }
+    },
+    "logs.http_body_limit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Max body size in logs"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лимит размера body в логах"
+          }
+        }
+      }
+    },
+    "logs.truncate_http_bodies_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When on, verbose network logs keep only the first N bytes of each request/response body. Turn off to keep full bodies (can grow log files very large during Health sync)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если включено, подробные сетевые логи сохраняют только первые N байт body запроса/ответа. Выключите, чтобы писать body целиком (логи сильно раздуваются при Health sync)."
           }
         }
       }

@@ -94,6 +94,18 @@ enum UserDefaultsKeyRegistry {
             valueType: .bool
         ),
         .init(
+            key: .loggerTruncateHTTPBodies,
+            description: "Truncate large HTTP bodies in verbose logs",
+            category: .logs,
+            valueType: .bool
+        ),
+        .init(
+            key: .loggerMaxHTTPBodyBytes,
+            description: "Max HTTP body bytes kept when truncation is on",
+            category: .logs,
+            valueType: .integer
+        ),
+        .init(
             key: .loggerMaxLogFiles,
             description: "Max log files to keep on disk",
             category: .logs,

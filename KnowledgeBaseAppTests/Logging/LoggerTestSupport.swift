@@ -5,6 +5,8 @@ final class MockLoggerSettings: LoggerSettingsProviderDescription {
     var isDebugLogger = true
     var isFileLoggerEnabled = false
     var isVerboseLog = false
+    var truncateLargeHTTPBodies = true
+    var maxHTTPBodyLogBytes = 4_096
 }
 
 final class MockExcludedLoggerTagsProvider: ExcludedLoggerTagsProviderDescription {

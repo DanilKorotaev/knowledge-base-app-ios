@@ -38,6 +38,8 @@ extension UserDefaultsKey {
     static let loggerDebugConsole = UserDefaultsKey("kb.logger.isDebugLogger")
     static let loggerFileEnabled = UserDefaultsKey("kb.logger.isFileLoggerEnabled")
     static let loggerVerboseNetwork = UserDefaultsKey("kb.logger.isVerboseLog")
+    static let loggerTruncateHTTPBodies = UserDefaultsKey("kb.logger.truncateLargeHTTPBodies")
+    static let loggerMaxHTTPBodyBytes = UserDefaultsKey("kb.logger.maxHTTPBodyLogBytes")
     static let loggerMaxLogFiles = UserDefaultsKey("kb.logger.maxFilesToStorage")
     static let loggerSessionId = UserDefaultsKey("kb.logger.session.currentId")
     static let debugShakeToSendLogs = UserDefaultsKey("kb.debug.shakeToSendLogs")

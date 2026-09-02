@@ -4,6 +4,10 @@ protocol LoggerSettingsProviderDescription: AnyObject {
     var isDebugLogger: Bool { get }
     var isFileLoggerEnabled: Bool { get }
     var isVerboseLog: Bool { get }
+    /// When true, large HTTP request/response bodies are truncated in verbose logs.
+    var truncateLargeHTTPBodies: Bool { get }
+    /// Max bytes of HTTP body kept in verbose logs when truncation is enabled.
+    var maxHTTPBodyLogBytes: Int { get }
 }
 
 protocol ExcludedLoggerTagsProviderDescription: AnyObject {
