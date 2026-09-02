@@ -100,7 +100,12 @@ final class KBHealthSyncService {
 
     /// Upload daily JSON files for each calendar day in the inclusive range.
     /// Exports and uploads in batches so multi-year backfills do not retain every day in memory.
-    func syncDailyHistory(from startDate: Date, to endDate: Date) async throws {
+    /// Set `ignoreBackfillCheckpoint` to re-export days that were uploaded in a prior run.
+    func syncDailyHistory(
+        from startDate: Date,
+        to endDate: Date,
+        ignoreBackfillCheckpoint: Bool = false
+    ) async throws {
         guard healthKit.isHealthDataAvailable else {
             throw KBHealthSyncServiceError.healthDataUnavailable
         }
@@ -121,7 +126,8 @@ final class KBHealthSyncService {
         var uploadedDailyFiles = 0
 
         var cursor = range.end
-        if let oldestKey = remoteState?.dailyBackfillOldestCompleted,
+        if !ignoreBackfillCheckpoint,
+           let oldestKey = remoteState?.dailyBackfillOldestCompleted,
            let oldestDay = CalendarDayFormatter.startOfDay(fromYyyyMMdd: oldestKey, calendar: calendar),
            oldestDay >= range.start,
            let resumeCursor = calendar.date(byAdding: .day, value: -1, to: oldestDay) {

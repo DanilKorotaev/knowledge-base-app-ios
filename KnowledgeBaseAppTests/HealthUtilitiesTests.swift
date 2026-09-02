@@ -114,6 +114,7 @@ private final class ViewModelHealthKitMock: HealthKitServiceProtocol {
             heartRateValues: [],
             heartRateSummary: nil,
             sleep: nil,
+            activityRings: nil,
             syncedAt: nil
         )
     }
@@ -158,4 +159,6 @@ private final class HealthStoreMock: HealthStoreProtocol, DailyHealthKitDataProv
         from start: Date,
         to end: Date
     ) async throws -> [HKCategorySample] { [] }
+
+    func activitySummary(for dayStart: Date, calendar: Calendar) async throws -> HKActivitySummary? { nil }
 }

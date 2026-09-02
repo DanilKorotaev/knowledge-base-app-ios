@@ -165,6 +165,7 @@ struct HealthTabView: View {
                 in: viewModel.historyRangeStart...Date(),
                 displayedComponents: .date
             )
+            Toggle("health.history.reexport_all", isOn: $viewModel.forceDailyHistoryReexport)
             Button {
                 viewModel.syncHistoryRange()
             } label: {

@@ -1317,8 +1317,14 @@
     },
     "health.history.footer": {
       "localizations": {
-        "en": { "stringUnit": { "state": "translated", "value": "Uploads one daily JSON per day in the selected range to your knowledge base." } },
-        "ru": { "stringUnit": { "state": "translated", "value": "Загружает по одному daily JSON на каждый день выбранного периода в базу знаний." } }
+        "en": { "stringUnit": { "state": "translated", "value": "Uploads one daily JSON per day in the selected range to your knowledge base. Enable “Re-export all days” to overwrite existing daily files (e.g. after a schema update)." } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Загружает по одному daily JSON на каждый день выбранного периода в базу знаний. «Перезаписать все дни» — заново выгрузить уже синхронизированные дни (например после обновления приложения)." } }
+      }
+    },
+    "health.history.reexport_all": {
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Re-export all days in range" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Перезаписать все дни периода" } }
       }
     },
     "health.sync.stage.history %lld": {

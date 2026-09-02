@@ -10,6 +10,7 @@ struct HealthKitServiceTests {
         #expect(sut.requiredReadTypes.contains(HKObjectType.workoutType()))
         #expect(sut.requiredReadTypes.contains(HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!))
         #expect(sut.requiredReadTypes.contains(HKObjectType.quantityType(forIdentifier: .stepCount)!))
+        #expect(sut.requiredReadTypes.contains(HKObjectType.activitySummaryType()))
     }
 
     @Test("requestReadAuthorization throws when Health data unavailable")
@@ -51,6 +52,7 @@ struct HealthKitServiceTests {
             heartRateValues: [40, 200],
             heartRateSummary: HeartRateStats(min: 60, max: 120, average: 90),
             sleep: SleepSummary(totalMinutes: 420, deepMinutes: 90, remMinutes: 100, lightMinutes: 180, awakeMinutes: 50),
+            activityRings: nil,
             syncedAt: "2026-03-30T10:00:00Z"
         )
         let result = sut.makeDailyHealthData(from: input)
@@ -59,7 +61,37 @@ struct HealthKitServiceTests {
         #expect(result.heartRate?.average == 90)
     }
 
-    @Test("makeDailyHealthData calculates derived fields from samples")
+    @Test("makeDailyHealthData includes activity rings when present")
+    func makeDailyHealthDataIncludesActivityRings() {
+        let sut = HealthKitService(healthStore: HealthStoreMock())
+        let rings = ActivityRingsSummary(
+            activeCalories: 600,
+            activeCaloriesGoal: 750,
+            exerciseMinutes: 45,
+            exerciseMinutesGoal: 60,
+            standHours: 11,
+            standHoursGoal: 12
+        )
+        let input = DailyAggregationInput(
+            date: "2026-03-30",
+            steps: 8000,
+            distanceKm: 6.1,
+            activeCalories: 450,
+            basalCalories: 1600,
+            exerciseMinutes: 70,
+            standHours: 12,
+            restingHeartRate: nil,
+            hrvValues: [],
+            oxygenSaturationValues: [],
+            heartRateValues: [],
+            heartRateSummary: nil,
+            sleep: nil,
+            activityRings: rings,
+            syncedAt: nil
+        )
+        let result = sut.makeDailyHealthData(from: input)
+        #expect(result.activityRings == rings)
+    }
     func makeDailyHealthDataCalculatesDerivedFields() {
         let sut = HealthKitService(healthStore: HealthStoreMock())
         let input = DailyAggregationInput(
@@ -76,6 +108,7 @@ struct HealthKitServiceTests {
             heartRateValues: [60, 90, 120],
             heartRateSummary: nil,
             sleep: SleepSummary(totalMinutes: 420, deepMinutes: 90, remMinutes: 100, lightMinutes: 180, awakeMinutes: 50),
+            activityRings: nil,
             syncedAt: "2026-03-30T10:00:00Z"
         )
         let result = sut.makeDailyHealthData(from: input)
@@ -158,4 +191,6 @@ private final class HealthStoreMock: HealthStoreProtocol, DailyHealthKitDataProv
         from start: Date,
         to end: Date
     ) async throws -> [HKCategorySample] { [] }
+
+    func activitySummary(for dayStart: Date, calendar: Calendar) async throws -> HKActivitySummary? { nil }
 }

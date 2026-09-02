@@ -36,6 +36,7 @@ struct DailyAggregationInput: Equatable {
     var heartRateValues: [Double]
     var heartRateSummary: HeartRateStats?
     var sleep: SleepSummary?
+    var activityRings: ActivityRingsSummary?
     var syncedAt: String?
 }
 
@@ -215,6 +216,7 @@ final class HealthKitService: HealthKitServiceProtocol {
         ]
         .compactMap { $0 }
         .forEach { types.insert($0) }
+        types.insert(HKObjectType.activitySummaryType())
         return types
     }
 
@@ -320,6 +322,8 @@ final class HealthKitService: HealthKitServiceProtocol {
             sleep = nil
         }
 
+        let activityRings = try await activityRingsSummary(for: dayStart)
+
         return DailyAggregationInput(
             date: dayKey,
             steps: steps,
@@ -334,8 +338,16 @@ final class HealthKitService: HealthKitServiceProtocol {
             heartRateValues: [],
             heartRateSummary: heartRateSummary,
             sleep: sleep,
+            activityRings: activityRings,
             syncedAt: syncedAt
         )
+    }
+
+    private func activityRingsSummary(for dayStart: Date) async throws -> ActivityRingsSummary? {
+        guard let summary = try await queryStore.activitySummary(for: dayStart, calendar: calendar) else {
+            return nil
+        }
+        return ActivityRingsSummaryParser.parse(summary)
     }
 
     private func cumulativeSum(
@@ -438,6 +450,7 @@ final class HealthKitService: HealthKitServiceProtocol {
             oxygenSaturationAverage: input.oxygenSaturationValues.averageOrNil,
             heartRate: heartRateStats,
             sleep: input.sleep,
+            activityRings: input.activityRings,
             syncedAt: input.syncedAt
         )
     }
@@ -579,5 +592,21 @@ private extension Array where Element == Double {
     var average: Double {
         guard !isEmpty else { return 0 }
         return reduce(0, +) / Double(count)
+    }
+}
+
+private enum ActivityRingsSummaryParser {
+    static func parse(_ summary: HKActivitySummary) -> ActivityRingsSummary {
+        let kcal = HKUnit.kilocalorie()
+        let minutes = HKUnit.minute()
+        let standCount = HKUnit.count()
+        return ActivityRingsSummary(
+            activeCalories: summary.activeEnergyBurned.doubleValue(for: kcal),
+            activeCaloriesGoal: summary.activeEnergyBurnedGoal.doubleValue(for: kcal),
+            exerciseMinutes: summary.appleExerciseTime.doubleValue(for: minutes),
+            exerciseMinutesGoal: summary.appleExerciseTimeGoal.doubleValue(for: minutes),
+            standHours: summary.appleStandHours.doubleValue(for: standCount),
+            standHoursGoal: summary.appleStandHoursGoal.doubleValue(for: standCount)
+        )
     }
 }

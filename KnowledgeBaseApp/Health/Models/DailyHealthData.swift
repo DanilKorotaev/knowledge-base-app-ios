@@ -1,5 +1,23 @@
 import Foundation
 
+struct ActivityRingsSummary: Codable, Equatable {
+    var activeCalories: Double
+    var activeCaloriesGoal: Double
+    var exerciseMinutes: Double
+    var exerciseMinutesGoal: Double
+    var standHours: Double
+    var standHoursGoal: Double
+
+    enum CodingKeys: String, CodingKey {
+        case activeCalories = "active_calories"
+        case activeCaloriesGoal = "active_calories_goal"
+        case exerciseMinutes = "exercise_minutes"
+        case exerciseMinutesGoal = "exercise_minutes_goal"
+        case standHours = "stand_hours"
+        case standHoursGoal = "stand_hours_goal"
+    }
+}
+
 /// Daily aggregate export shape (see project documentation for full JSON schema).
 struct DailyHealthData: Codable, Equatable {
     var date: String
@@ -15,6 +33,8 @@ struct DailyHealthData: Codable, Equatable {
     var oxygenSaturationAverage: Double?
     var heartRate: HeartRateStats?
     var sleep: SleepSummary?
+    /// Move / Exercise / Stand rings from `HKActivitySummary` (actual + goals for that day).
+    var activityRings: ActivityRingsSummary?
     var syncedAt: String?
 
     enum CodingKeys: String, CodingKey {
@@ -31,6 +51,7 @@ struct DailyHealthData: Codable, Equatable {
         case oxygenSaturationAverage = "spo2_avg"
         case heartRate = "heart_rate"
         case sleep
+        case activityRings = "activity_rings"
         case syncedAt = "synced_at"
     }
 }

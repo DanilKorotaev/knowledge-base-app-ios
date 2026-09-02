@@ -33,6 +33,8 @@ final class HealthSyncViewModel {
     var archiveRangeStart: Date
     var archiveRangeEnd: Date
     var archiveIncludesWorkouts = true
+    /// When true, history sync re-exports every day in the range (ignores backfill checkpoint).
+    var forceDailyHistoryReexport = false
     private(set) var exportArchiveURL: URL?
 
     var isBusy: Bool {
@@ -138,7 +140,8 @@ final class HealthSyncViewModel {
             await self.runSync {
                 try await self.syncService.syncDailyHistory(
                     from: self.historyRangeStart,
-                    to: self.historyRangeEnd
+                    to: self.historyRangeEnd,
+                    ignoreBackfillCheckpoint: self.forceDailyHistoryReexport
                 )
             }
             self.activeOperation = .none

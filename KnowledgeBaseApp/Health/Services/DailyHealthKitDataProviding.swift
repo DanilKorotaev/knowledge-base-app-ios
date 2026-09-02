@@ -21,6 +21,9 @@ protocol DailyHealthKitDataProviding: AnyObject {
         from start: Date,
         to end: Date
     ) async throws -> [HKCategorySample]
+
+    /// Activity rings for a calendar day (`HKActivitySummary`), if available.
+    func activitySummary(for dayStart: Date, calendar: Calendar) async throws -> HKActivitySummary?
 }
 
 extension HealthStoreAdapter: DailyHealthKitDataProviding {
@@ -107,6 +110,26 @@ extension HealthStoreAdapter: DailyHealthKitDataProviding {
                     return
                 }
                 continuation.resume(returning: (samples as? [HKCategorySample]) ?? [])
+            }
+            execute(query: query)
+        }
+    }
+
+    func activitySummary(for dayStart: Date, calendar: Calendar) async throws -> HKActivitySummary? {
+        try await withCheckedThrowingContinuation { continuation in
+            var components = calendar.dateComponents([.year, .month, .day], from: dayStart)
+            components.calendar = calendar
+            let predicate = HKQuery.predicateForActivitySummary(with: components)
+            let query = HKActivitySummaryQuery(predicate: predicate) { _, summaries, error in
+                if let error {
+                    if self.isNoDataError(error) {
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: summaries?.first)
             }
             execute(query: query)
         }
