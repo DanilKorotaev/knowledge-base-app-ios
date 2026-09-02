@@ -12,17 +12,15 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
-<<<<<<< HEAD
+### Added
+
+- Share Extension: share text/URLs/images/files into a chat draft or send immediately.
+
 ## [1.0.39] - 2026-09-02
 
 ### Changed
 
 - Make HTTP body log truncation configurable in Debug log settings.
-=======
-### Added
-
-- Share Extension: share text/URLs/images/files into a chat draft or send immediately.
->>>>>>> 2431eb6 (Add Share Extension to compose into chat drafts or send.)
 
 ## [1.0.38] - 2026-09-02
 
