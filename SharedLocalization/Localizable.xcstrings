@@ -6370,6 +6370,23 @@
           }
         }
       }
+    },
+    "share.existing_draft_attachments_format": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Also in draft: %lld attachment(s). Send includes them."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уже в черновике: %lld влож. Отправка включит их."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

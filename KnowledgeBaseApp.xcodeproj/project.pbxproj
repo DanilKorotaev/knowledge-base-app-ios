@@ -40,6 +40,7 @@
 		214D3EC25914BB171DBD1E87 /* NewSessionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8AE7FD6B7E7A644A425D13 /* NewSessionSheet.swift */; };
 		222DDA3B8ECB24833B90E1EF /* MicRecordControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C4A1C8B0EB9EF78C2E6290 /* MicRecordControl.swift */; };
 		239E2814652B7CD9403125BD /* SyncStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3802DC4D84E6184DDC4917 /* SyncStatusTests.swift */; };
+		24BB0D42FB9430653E163132 /* ShareFileLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22627F301AA406CF59C46CE9 /* ShareFileLogger.swift */; };
 		24CCF89E496B8DAF8C6ECDD0 /* UserDefaultsKeyRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11FCB9FA16131BFAD5134E69 /* UserDefaultsKeyRegistryTests.swift */; };
 		24D02CA8AE36992525CA48E7 /* SessionListSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E5E3295CD00874C8FDE24A /* SessionListSorter.swift */; };
 		2544FBD6843FBC5F14940461 /* ChatViewModelVoiceRetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB675B9ECBAE5827A868C672 /* ChatViewModelVoiceRetryTests.swift */; };
@@ -87,6 +88,7 @@
 		3E2F9C0F40FABA3251F9FD3A /* UserDefaultsAddView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 628FE9B079229FA0D1A6750E /* UserDefaultsAddView+ViewModel.swift */; };
 		3E3686DD8A6345F55E307ADD /* KnowledgeBaseAppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD8B85391698AF8E13EE6F4 /* KnowledgeBaseAppShortcuts.swift */; };
 		3F176C8F58423CDF2F5223CF /* AppLanguageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D184EFF645B89B6C09863A2 /* AppLanguageStore.swift */; };
+		3F623F626BBD77218BF5C7E9 /* ComposerDraftMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6D03559789EDF7C080FA71 /* ComposerDraftMerger.swift */; };
 		3F8EEDABA7DDEEB198245960 /* UserDefaultsTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91CAF6150A511EF48A26E1E1 /* UserDefaultsTestSupport.swift */; };
 		3F977937071908419B09162D /* HealthAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB0849721176D880774CB44 /* HealthAPIClient.swift */; };
 		4000B1481D59B69B849A0E8D /* UserDefaultsValueEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5537ED8C51E85D4C7BDA95C9 /* UserDefaultsValueEditView.swift */; };
@@ -198,6 +200,7 @@
 		8E662397EE1E7DA89A57540D /* WatchVoiceSessionContextSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4CA74CD5565ED72504F908 /* WatchVoiceSessionContextSync.swift */; };
 		8EA7B22797C58040B1043037 /* UserDefaultsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4172111889978BC06253A14 /* UserDefaultsListView.swift */; };
 		8EE213BFF838074AC1C1F7DD /* FileLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D0D315E14D5A6B60588936 /* FileLogger.swift */; };
+		8F229A66046E53B46C811E59 /* ComposerDraftMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C6D03559789EDF7C080FA71 /* ComposerDraftMerger.swift */; };
 		8F4C100202455246536B8F5A /* KnowledgeBaseWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFD644C3B0F531601E4EDA40 /* KnowledgeBaseWidgets.swift */; };
 		8FC0FF83AA6F51B0EF92342A /* ShareComposeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A1018AE95930222AF1298D6 /* ShareComposeViewModel.swift */; };
 		9121A3C29B812AD222D3F80B /* UserDefaultsAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1871404DFC46A1D8C1B403 /* UserDefaultsAddView.swift */; };
@@ -463,6 +466,7 @@
 		203DD90A4EC3FE23B3512868 /* GalleryMediaImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryMediaImporter.swift; sourceTree = "<group>"; };
 		20A328D45D26CDE9FB8FD222 /* ShareItemLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareItemLoader.swift; sourceTree = "<group>"; };
 		211ACC966022058BAB807988 /* KnowledgeBaseWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KnowledgeBaseWidget.entitlements; sourceTree = "<group>"; };
+		22627F301AA406CF59C46CE9 /* ShareFileLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareFileLogger.swift; sourceTree = "<group>"; };
 		2286C15E3D7C0401E90849FC /* VoiceDefaultExpiredBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDefaultExpiredBanner.swift; sourceTree = "<group>"; };
 		24458BFB04D9DEEB1FAFA7F3 /* StructuredUIResourceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredUIResourceFetcher.swift; sourceTree = "<group>"; };
 		24FF70CC6A65986EE353A257 /* SelectableLogTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectableLogTextView.swift; sourceTree = "<group>"; };
@@ -611,6 +615,7 @@
 		9835C92439B0701A5602E466 /* TodayPreviewSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayPreviewSection.swift; sourceTree = "<group>"; };
 		993516AA881F79E88B999693 /* ShareAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareAPIClient.swift; sourceTree = "<group>"; };
 		9B48F9DB6476C6F0BE2941A0 /* PushNotificationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationTests.swift; sourceTree = "<group>"; };
+		9C6D03559789EDF7C080FA71 /* ComposerDraftMerger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerDraftMerger.swift; sourceTree = "<group>"; };
 		9C7171683A804A7927F85F23 /* WatchMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchMainView.swift; sourceTree = "<group>"; };
 		9CDA0D68D37DAB187815F6FE /* HealthSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthSettingsView.swift; sourceTree = "<group>"; };
 		9E1A8F05C5B1D04E7700B124 /* VoiceDefaultSessionIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDefaultSessionIndicator.swift; sourceTree = "<group>"; };
@@ -1161,6 +1166,7 @@
 				1EAC19C4484AE5AF41732D6D /* CachedAttachmentKind.swift */,
 				C51E561F9F891984481E9FC8 /* ChatComposerDraft.swift */,
 				7C3EDADE4DF0C48E757D3D3B /* ComposerAttachmentLimits.swift */,
+				9C6D03559789EDF7C080FA71 /* ComposerDraftMerger.swift */,
 				00B6DE7CE3DEB1F152DD7DAD /* DefaultVoiceSessionPreference.swift */,
 				7597BE0C87DD8C9F0AF11186 /* FailedSendRetry.swift */,
 				70947C74DA8C579280E8E9A7 /* KBAttachment.swift */,
@@ -1234,6 +1240,7 @@
 				D484CD901ECC34DB7B21B49A /* ShareComposeView.swift */,
 				7A1018AE95930222AF1298D6 /* ShareComposeViewModel.swift */,
 				690B7F859F8729C525DE59A6 /* ShareConfiguration.swift */,
+				22627F301AA406CF59C46CE9 /* ShareFileLogger.swift */,
 				20A328D45D26CDE9FB8FD222 /* ShareItemLoader.swift */,
 				AD4BD208DA55494B2968EF08 /* ShareViewController.swift */,
 			);
@@ -1710,6 +1717,7 @@
 				2B71CED7CA14D0C19C814D13 /* Collection+Group.swift in Sources */,
 				2733E61AC1FF6FF37B8289A1 /* ComposerAttachmentLimits.swift in Sources */,
 				9C5D8905C1CB182817170639 /* ComposerAttachmentStripView.swift in Sources */,
+				3F623F626BBD77218BF5C7E9 /* ComposerDraftMerger.swift in Sources */,
 				4DE93F88FE354D9D129090A3 /* ComposerDraftStore.swift in Sources */,
 				28917E2D9873D85AB54E9F6F /* ComposerFileChipView.swift in Sources */,
 				FFB6B584B6FEB1EC5D80D696 /* ComposerPendingVoiceCaptureView.swift in Sources */,
@@ -1993,6 +2001,7 @@
 				3F176C8F58423CDF2F5223CF /* AppLanguageStore.swift in Sources */,
 				CA9531D76C140AA2F6FE0C99 /* ChatComposerDraft.swift in Sources */,
 				F84534E00EA1A414A307F690 /* ComposerAttachmentLimits.swift in Sources */,
+				8F229A66046E53B46C811E59 /* ComposerDraftMerger.swift in Sources */,
 				F3D093042F096FA194389F0B /* ComposerDraftStore.swift in Sources */,
 				2A28CCC380B5A40C8F5E5E7B /* KBSession.swift in Sources */,
 				AD545FFE622E59C2752A2BDA /* KeychainTokenStore.swift in Sources */,
@@ -2003,6 +2012,7 @@
 				0234C6D337CE8371BD83BCE0 /* ShareComposeView.swift in Sources */,
 				8FC0FF83AA6F51B0EF92342A /* ShareComposeViewModel.swift in Sources */,
 				F521E87E79F9C9D6AADD4EBA /* ShareConfiguration.swift in Sources */,
+				24BB0D42FB9430653E163132 /* ShareFileLogger.swift in Sources */,
 				CDD26D592687BBFFCDA19F90 /* ShareItemLoader.swift in Sources */,
 				7336FDBA1CE96F739F861C69 /* ShareViewController.swift in Sources */,
 				A241332EBF0AB492476CED1E /* URL+MIME.swift in Sources */,

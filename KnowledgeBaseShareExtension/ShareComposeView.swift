@@ -72,6 +72,17 @@ struct ShareComposeView: View {
                             .font(.subheadline)
                     }
                 }
+
+                if viewModel.existingDraftAttachmentCount > 0 {
+                    Text(
+                        L10n.format(
+                            "share.existing_draft_attachments_format",
+                            viewModel.existingDraftAttachmentCount
+                        )
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
             } header: {
                 Text(L10n.string("share.payload_section"))
             }

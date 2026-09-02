@@ -16,6 +16,8 @@ final class ShareComposeViewModel {
     var selectedSessionId: String?
     var composerText: String = ""
     private(set) var attachments: [PendingAttachment] = []
+    /// Attachments already stored in the session draft (shown for context when sending).
+    private(set) var existingDraftAttachmentCount = 0
     var showCreateSession = false
     var newSessionTitle = ""
     var newSessionUseKnowledgeBase = true
@@ -34,9 +36,8 @@ final class ShareComposeViewModel {
     }
 
     var canSubmit: Bool {
-        guard selectedSessionId != nil else { return false }
-        let trimmed = composerText.trimmingCharacters(in: .whitespacesAndNewlines)
-        return !trimmed.isEmpty || !attachments.isEmpty
+        guard let sessionId = selectedSessionId else { return false }
+        return buildOutgoingDraft(sessionId: sessionId).canSend
     }
 
     var selectedSessionTitle: String {
@@ -50,6 +51,7 @@ final class ShareComposeViewModel {
     func bootstrap(extensionContext: NSExtensionContext?) async {
         phase = .loadingPayload
         loadSharedPrefs()
+        ShareFileLogger.info("bootstrap start")
 
         async let payloadTask = ShareItemLoader.load(from: extensionContext)
         async let sessionsTask: [KBSession] = {
@@ -63,11 +65,13 @@ final class ShareComposeViewModel {
         composerText = payload.text
         attachments = payload.attachments
         sessions = SessionListSorter.displayOrder(sessions: fetched, pinnedIds: pinnedIds)
+        ShareFileLogger.info(
+            "bootstrap payload textLen=\(payload.text.count) attachments=\(payload.attachments.count) sessions=\(sessions.count)"
+        )
 
         if apiClient == nil {
             phase = .failed(L10n.string("share.error_missing_config"))
-        } else if sessions.isEmpty && fetched.isEmpty {
-            phase = .ready
+            ShareFileLogger.error("bootstrap missing API config")
         } else {
             phase = .ready
         }
@@ -75,6 +79,10 @@ final class ShareComposeViewModel {
 
     func selectSession(_ session: KBSession) {
         selectedSessionId = session.id
+        refreshExistingDraftSummary(for: session.id)
+        ShareFileLogger.info(
+            "selectSession id=\(session.id) existingDraftAttachments=\(existingDraftAttachmentCount)"
+        )
     }
 
     func createSession() async {
@@ -97,11 +105,14 @@ final class ShareComposeViewModel {
                 pinnedIds: pinnedIds
             )
             selectedSessionId = created.id
+            existingDraftAttachmentCount = 0
             newSessionTitle = ""
             newSessionUseKnowledgeBase = true
             showCreateSession = false
             phase = .ready
+            ShareFileLogger.info("createSession ok id=\(created.id)")
         } catch {
+            ShareFileLogger.error("createSession failed: \(error)")
             phase = .failed(L10n.string("share.error_create_session"))
         }
     }
@@ -109,6 +120,9 @@ final class ShareComposeViewModel {
     func addToDraft() -> Bool {
         guard let sessionId = selectedSessionId else { return false }
         phase = .working
+        ShareFileLogger.info(
+            "addToDraft session=\(sessionId) textLen=\(composerText.count) attachments=\(attachments.count)"
+        )
         let result = draftStore.merge(
             sessionId: sessionId,
             text: composerText,
@@ -119,9 +133,11 @@ final class ShareComposeViewModel {
             return false
         }
         if result == nil {
+            ShareFileLogger.error("addToDraft save failed")
             phase = .failed(L10n.string("share.error_save_draft"))
             return false
         }
+        ShareFileLogger.info("addToDraft ok attachments=\(result?.draft.attachments.count ?? 0)")
         return true
     }
 
@@ -131,32 +147,55 @@ final class ShareComposeViewModel {
             return false
         }
 
-        var draft = ChatComposerDraft()
-        draft.text = composerText
-        draft.attachments = attachments
-        guard draft.canSend else { return false }
+        let existingPending = draftStore.load(sessionId: sessionId)?.pendingVoiceCaptures ?? []
+        let outgoing = buildOutgoingDraft(sessionId: sessionId)
+        guard outgoing.canSend else { return false }
 
         phase = .working
         let useKB = kbModeBySession[sessionId]
             ?? sessions.first(where: { $0.id == sessionId })?.useKnowledgeBase
             ?? true
 
+        ShareFileLogger.info(
+            "send merge session=\(sessionId) outgoingTextLen=\(outgoing.text.count) outgoingAttachments=\(outgoing.attachments.count)"
+        )
+
         do {
             try await apiClient.sendComposed(
                 sessionId: sessionId,
-                draft: draft,
+                draft: outgoing,
                 useKnowledgeBase: useKB
             )
+            draftStore.clear(sessionId: sessionId)
+            existingDraftAttachmentCount = 0
+            ShareFileLogger.info("send accepted and draft cleared session=\(sessionId)")
             return true
         } catch {
-            _ = draftStore.merge(
+            ShareFileLogger.error("send failed: \(error) — persisting merged draft")
+            _ = draftStore.save(
                 sessionId: sessionId,
-                text: composerText,
-                attachments: attachments
+                draft: outgoing,
+                pendingVoiceCaptures: existingPending
             )
+            refreshExistingDraftSummary(for: sessionId)
             phase = .failed(L10n.string("share.error_send_saved_draft"))
             return false
         }
+    }
+
+    /// Current share payload merged on top of any existing session draft (append, do not replace).
+    func buildOutgoingDraft(sessionId: String) -> ChatComposerDraft {
+        let existing = draftStore.load(sessionId: sessionId)?.draft ?? ChatComposerDraft()
+        return ComposerDraftMerger.merge(
+            existing: existing,
+            text: composerText,
+            attachments: attachments
+        )
+    }
+
+    private func refreshExistingDraftSummary(for sessionId: String) {
+        let loaded = draftStore.load(sessionId: sessionId)
+        existingDraftAttachmentCount = loaded?.draft.attachments.count ?? 0
     }
 
     private func loadSharedPrefs() {

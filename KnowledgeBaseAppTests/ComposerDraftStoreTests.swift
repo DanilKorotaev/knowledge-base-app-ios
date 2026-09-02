@@ -145,6 +145,34 @@ final class ComposerDraftStoreTests: XCTestCase {
     }
 }
 
+final class ComposerDraftMergerTests: XCTestCase {
+    func testMergerAppendsTextAndAttachmentsWithoutTouchingDisk() throws {
+        var existing = ChatComposerDraft()
+        existing.text = "Old"
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("merge-\(UUID().uuidString).jpg")
+        try Data("x".utf8).write(to: file)
+        defer { try? FileManager.default.removeItem(at: file) }
+
+        let merged = ComposerDraftMerger.merge(
+            existing: existing,
+            text: "New",
+            attachments: [
+                PendingAttachment(
+                    localURL: file,
+                    kind: .image,
+                    filename: "new.jpg",
+                    mimeType: "image/jpeg",
+                    fileSize: 1
+                )
+            ]
+        )
+        XCTAssertEqual(merged.text, "Old\nNew")
+        XCTAssertEqual(merged.attachments.map(\.filename), ["new.jpg"])
+        XCTAssertEqual(existing.text, "Old")
+        XCTAssertTrue(existing.attachments.isEmpty)
+    }
+}
+
 final class AppGroupComposerDraftMigrationTests: XCTestCase {
     func testMigratesLegacyDraftsOnceAndIsIdempotent() throws {
         let fm = FileManager.default

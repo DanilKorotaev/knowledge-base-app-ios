@@ -24,6 +24,7 @@ final class ShareAPIClient: @unchecked Sendable {
     }
 
     func fetchSessions() async throws -> [KBSession] {
+        ShareFileLogger.info("fetchSessions start")
         var all: [KBSession] = []
         var page = 1
         let perPage = 100
@@ -38,10 +39,12 @@ final class ShareAPIClient: @unchecked Sendable {
             all.append(contentsOf: batch.sessions)
             page += 1
         }
+        ShareFileLogger.info("fetchSessions done count=\(all.count)")
         return all
     }
 
     func createSession(title: String, useKnowledgeBase: Bool) async throws -> KBSession {
+        ShareFileLogger.info("createSession titleLen=\(title.count) useKB=\(useKnowledgeBase)")
         let url = baseURL.appendingPathComponent("api/sessions")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -67,9 +70,14 @@ final class ShareAPIClient: @unchecked Sendable {
         throw ShareAPIError.decodingFailed
     }
 
-    /// Sends compose payload and waits for completion (JSON or drained SSE).
+    /// Uploads compose payload and returns as soon as the server accepts the request (SSE headers).
+    /// Does **not** wait for the assistant reply stream — disconnect is intentional; API keeps processing.
     func sendComposed(sessionId: String, draft: ChatComposerDraft, useKnowledgeBase: Bool) async throws {
         guard draft.canSend else { return }
+
+        ShareFileLogger.info(
+            "sendComposed session=\(sessionId) textLen=\(draft.text.count) attachments=\(draft.attachments.count) useKB=\(useKnowledgeBase)"
+        )
 
         let url = baseURL
             .appendingPathComponent("api")
@@ -79,21 +87,28 @@ final class ShareAPIClient: @unchecked Sendable {
             .appendingPathComponent("compose")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        request.timeoutInterval = 120
+        // Upload can be large; reply stream must not block Share UI.
+        request.timeoutInterval = 180
         applyAuth(to: &request)
 
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json, text/event-stream;q=0.8", forHTTPHeaderField: "Accept")
+        // Prefer SSE so the server returns headers after persisting uploads and keeps work after disconnect.
+        request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         request.httpBody = try multipartComposeBody(boundary: boundary, draft: draft, useKnowledgeBase: useKnowledgeBase)
 
-        let (_, response) = try await urlSession.data(for: request)
+        let (bytes, response) = try await urlSession.bytes(for: request)
         guard let http = response as? HTTPURLResponse else {
+            ShareFileLogger.error("sendComposed missing HTTPURLResponse")
             throw ShareAPIError.invalidResponse(statusCode: -1)
         }
         guard (200 ... 299).contains(http.statusCode) else {
+            ShareFileLogger.error("sendComposed rejected status=\(http.statusCode)")
             throw ShareAPIError.invalidResponse(statusCode: http.statusCode)
         }
+
+        ShareFileLogger.info("sendComposed accepted status=\(http.statusCode) — cancelling SSE body wait")
+        bytes.task.cancel()
     }
 
     // MARK: - Private

@@ -118,6 +118,7 @@ targets:
       - path: SharedLocalization
       - path: KnowledgeBaseApp/Models/ChatComposerDraft.swift
       - path: KnowledgeBaseApp/Models/ComposerAttachmentLimits.swift
+      - path: KnowledgeBaseApp/Models/ComposerDraftMerger.swift
       - path: KnowledgeBaseApp/Models/PendingVoiceCapture.swift
       - path: KnowledgeBaseApp/Models/KBSession.swift
       - path: KnowledgeBaseApp/Utilities/URL+MIME.swift

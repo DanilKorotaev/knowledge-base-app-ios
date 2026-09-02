@@ -220,32 +220,18 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         text: String?,
         attachments: [PendingAttachment]
     ) -> LoadedComposerDraft? {
-        let existing = load(sessionId: sessionId)
-        var draft = existing?.draft ?? ChatComposerDraft()
-        let pendingVoiceCaptures = existing?.pendingVoiceCaptures ?? []
-
         let incoming = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        if !incoming.isEmpty {
-            if draft.trimmedText.isEmpty {
-                draft.text = incoming
-            } else if draft.text.hasSuffix("\n") {
-                draft.text += incoming
-            } else {
-                draft.text += "\n" + incoming
-            }
-        }
-
-        for attachment in attachments {
-            if ComposerAttachmentLimits.validateAdding(
-                currentAttachments: draft.attachments,
-                newAttachment: attachment
-            ) != nil {
-                break
-            }
-            draft.attachments.append(attachment)
-        }
-
-        return save(sessionId: sessionId, draft: draft, pendingVoiceCaptures: pendingVoiceCaptures)
+        let existing = load(sessionId: sessionId)
+        let merged = ComposerDraftMerger.merge(
+            existing: existing?.draft ?? ChatComposerDraft(),
+            text: incoming.isEmpty ? nil : incoming,
+            attachments: attachments
+        )
+        return save(
+            sessionId: sessionId,
+            draft: merged,
+            pendingVoiceCaptures: existing?.pendingVoiceCaptures ?? []
+        )
     }
 
     func clear(sessionId: String) {

@@ -27,10 +27,13 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 ### Added
 
 - Gallery picker and Share Extension accept videos (not only photos/files).
+- Share Extension writes its own App Group log file (`KBShareLogs/share-extension.log`).
 
 ### Changed
 
 - Share Extension: session rows match main list styling, New Session in the sessions section, sticky draft/send bar.
+- Share Send merges the current payload with the existing session draft, then clears the draft after accept.
+- Share Send dismisses after the compose request is accepted (does not wait for assistant SSE).
 
 ## [1.0.41] - 2026-09-02
 

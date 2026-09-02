@@ -8,4 +8,5 @@ enum AppGroupIdentifiers {
     static let keychainAccessGroup = "66C9VGAZR5.com.coredan.KnowledgeBaseApp"
 
     static let composerDraftsFolderName = "KBComposerDrafts"
+    static let shareLogsFolderName = "KBShareLogs"
 }
