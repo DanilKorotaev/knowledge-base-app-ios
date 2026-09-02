@@ -12,6 +12,18 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.42] - 2026-09-02
+
+### Changed
+
+- Gallery picker and Share Extension accept videos (not only photos/files).
+- Share Extension: session rows match main list styling, New Session in the sessions section, sticky draft/send bar.
+- Polish Share Extension UX and allow gallery videos.
+
+### Fixed
+
+- Fix CHANGELOG sections after Share UX rebase.
+
 ### Added
 
 - Gallery picker and Share Extension accept videos (not only photos/files).
@@ -341,7 +353,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.41...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.42...HEAD
+[1.0.42]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.42
 [1.0.41]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.41
 [1.0.40]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.40
 [1.0.39]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.39

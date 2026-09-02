@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.42 | 156 | `ios/v1.0.42` | 2026-09-02 | Fix CHANGELOG sections after Share UX rebase. |
 | 1.0.41 | 154 | `ios/v1.0.41` | 2026-09-02 | TestFlight release |
 | 1.0.40 | 153 | `ios/v1.0.40` | 2026-09-02 | Add Share Extension to compose into chat drafts or send. |
 | 1.0.39 | 152 | `ios/v1.0.39` | 2026-09-02 | Make HTTP body log truncation configurable in Debug log settings. |
