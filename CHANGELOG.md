@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.43] - 2026-09-02
+
+### Changed
+
+- Share Send merges drafts, logs locally, and exits after accept.
+
 ## [1.0.42] - 2026-09-02
 
 ### Changed
@@ -356,7 +362,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.42...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.43...HEAD
+[1.0.43]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.43
 [1.0.42]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.42
 [1.0.41]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.41
 [1.0.40]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.40
