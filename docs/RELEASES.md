@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.45 | 159 | `ios/v1.0.45` | 2026-09-02 | TestFlight release |
 | 1.0.44 | 158 | `ios/v1.0.44` | 2026-09-02 | TestFlight release |
 | 1.0.43 | 157 | `ios/v1.0.43` | 2026-09-02 | Share Send merges drafts, logs locally, and exits after accept. |
 | 1.0.42 | 156 | `ios/v1.0.42` | 2026-09-02 | Fix CHANGELOG sections after Share UX rebase. |
