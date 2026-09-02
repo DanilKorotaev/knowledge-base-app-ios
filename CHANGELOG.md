@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.38] - 2026-09-02
+
+### Changed
+
+- Show Health sync alerts, truncate huge debug logs, and note foreground limits.
+
 ## [1.0.37] - 2026-09-02
 
 ### Changed
@@ -309,7 +315,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.37...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.38...HEAD
+[1.0.38]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.38
 [1.0.37]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.37
 [1.0.36]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.36
 [1.0.35]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.35
