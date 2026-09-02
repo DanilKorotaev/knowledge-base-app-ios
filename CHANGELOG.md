@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.41] - 2026-09-02
+
+### Changed
+
+- Share Extension: share text/URLs/images/files into a chat draft or send immediately.
+
 ## [1.0.40] - 2026-09-02
 
 ### Changed
@@ -331,7 +337,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.40...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.41...HEAD
+[1.0.41]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.41
 [1.0.40]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.40
 [1.0.39]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.39
 [1.0.38]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.38
