@@ -10,10 +10,7 @@ enum ShareFileLogger {
     }()
 
     static var logFileURL: URL? {
-        guard let root = AppGroupContainer.containerURL else { return nil }
-        let dir = root.appendingPathComponent(AppGroupIdentifiers.shareLogsFolderName, isDirectory: true)
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent("share-extension.log", isDirectory: false)
+        ShareLogPaths.currentLogFileURL()
     }
 
     static func info(_ message: String, file: String = #fileID, function: String = #function) {

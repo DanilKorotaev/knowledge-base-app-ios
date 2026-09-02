@@ -4723,6 +4723,125 @@
         }
       }
     },
+    "logs.section_main_app": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Main app"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Основное приложение"
+          }
+        }
+      }
+    },
+    "logs.section_main_app_footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session logs written by the main Knowledge Base app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Логи сессий основного приложения Knowledge Base."
+          }
+        }
+      }
+    },
+    "logs.section_share_extension": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Extension"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Extension"
+          }
+        }
+      }
+    },
+    "logs.section_share_extension_footer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separate App Group file from the Share sheet flow (not mixed with main-app logs)."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отдельный файл в App Group из Share sheet (не смешивается с логами основного приложения)."
+          }
+        }
+      }
+    },
+    "logs.share_extension_badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Extension"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Extension"
+          }
+        }
+      }
+    },
+    "logs.no_main_app_files": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No main-app log files yet."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока нет логов основного приложения."
+          }
+        }
+      }
+    },
+    "logs.no_share_files": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Share Extension logs yet. Use Share → Knowledge Base once."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока нет логов Share Extension. Один раз поделитесь чем-то в Базу знаний."
+          }
+        }
+      }
+    },
     "logs.settings": {
       "localizations": {
         "en": {

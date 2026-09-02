@@ -106,6 +106,7 @@
 		47012A890FE0AFAAFF082875 /* GalleryMediaImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 203DD90A4EC3FE23B3512868 /* GalleryMediaImporter.swift */; };
 		47020B31DD5BDCD101CEBC76 /* PendingVoiceStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE72BF07353CD3B4039C4A5D /* PendingVoiceStoreTests.swift */; };
 		4704EAA1FCE52A805257DCE6 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E8507F60F3F1F8BE4CB3FB /* MainView.swift */; };
+		47659E9D912EFEB82DC3EDB9 /* LogFilesProviderShareListingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC61FD43DD5D986CCD55CEF /* LogFilesProviderShareListingTests.swift */; };
 		47777CEED86925B6495E3520 /* KBMessageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9045AD9F3D838066801585 /* KBMessageTests.swift */; };
 		48185E4DB4163FE9BE58FD7A /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68D7D7540BDE11E24D80AA21 /* L10n.swift */; };
 		488F9CD2FC8124618105D0E9 /* ChatComposerDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868C4B147BF1919D66A5B7CC /* ChatComposerDraftTests.swift */; };
@@ -194,6 +195,7 @@
 		89EEB90AA9DAA7B7B3FD614B /* VoiceSessionTargetResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD04BBF3695F6E725789AE24 /* VoiceSessionTargetResolver.swift */; };
 		8A2C3ACBAD904B5C198DD917 /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F56F73720756CA11B8BFA8 /* ChatViewModelTests.swift */; };
 		8ACC4B7D0E9CA6959AB13AF3 /* StartVoiceRecordingIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */; };
+		8B5137F32140F0CC7DD81E55 /* ShareLogPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3041EE1093820A1E39AB6743 /* ShareLogPaths.swift */; };
 		8BDF6A1CEA21D980C873C1C6 /* VoicePipelineErrorMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3D1BEFC7BB2818C077F350 /* VoicePipelineErrorMessage.swift */; };
 		8CCC8BD91612CF53240186D9 /* ThreadSafeArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C32DA3700C6C543F4C4BA5 /* ThreadSafeArray.swift */; };
 		8DC8AD81C964530F60816C54 /* UserDefaultsDetailView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3E65E8C37973ED8CC3ACD11 /* UserDefaultsDetailView+ViewModel.swift */; };
@@ -256,6 +258,7 @@
 		BC7734C34A3DB7AA754298A3 /* PinnedSessionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72C3C2F09F77514EEFACBA35 /* PinnedSessionsStore.swift */; };
 		BD428F46D03C041F283BCEE6 /* StartVoiceRecordingIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D7532ECFE7ED1FC788A4E1 /* StartVoiceRecordingIntent.swift */; };
 		BDDCCA41733C09513170A2BD /* FailedSendRetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7597BE0C87DD8C9F0AF11186 /* FailedSendRetry.swift */; };
+		BE68F433B5FBCACA086C23C5 /* ShareLogPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3041EE1093820A1E39AB6743 /* ShareLogPaths.swift */; };
 		BF9F1C8D2822B67C2C59BBAC /* KBApiLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A7201A1617CECC84202979 /* KBApiLoggerTests.swift */; };
 		C1DEA60F24EF5EAD87A479AE /* InFlightReplyStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A1D72B14CD88842D8029A4 /* InFlightReplyStoreTests.swift */; };
 		C1F9205CFB34C4F007712D2C /* UserDefaultsInspectorSettingsView+ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14546BF772C42C661349825C /* UserDefaultsInspectorSettingsView+ViewModel.swift */; };
@@ -486,6 +489,7 @@
 		2EABACE67AA14AB98FB6859D /* URLMIMETypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLMIMETypeTests.swift; sourceTree = "<group>"; };
 		2EADEB745D7953303F043242 /* LogPreviewFilterItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogPreviewFilterItem.swift; sourceTree = "<group>"; };
 		2EF4519DD724F2F559A382A7 /* KBHealthSyncServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBHealthSyncServiceTests.swift; sourceTree = "<group>"; };
+		3041EE1093820A1E39AB6743 /* ShareLogPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareLogPaths.swift; sourceTree = "<group>"; };
 		31518A7CB9209D080EF5FA72 /* ChatPaginationLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPaginationLogger.swift; sourceTree = "<group>"; };
 		315DC33B7497A57AA69F42AB /* StructuredUIURLPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StructuredUIURLPolicy.swift; sourceTree = "<group>"; };
 		32B3B95E949DC1CC7BE06DA7 /* OrientationLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrientationLock.swift; sourceTree = "<group>"; };
@@ -552,6 +556,7 @@
 		690B7F859F8729C525DE59A6 /* ShareConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareConfiguration.swift; sourceTree = "<group>"; };
 		6A25FF66F4AC2937BC805B91 /* SyncStatusBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusBannerView.swift; sourceTree = "<group>"; };
 		6AC4DBB0A273ACE02E8AE739 /* HealthBackgroundTaskIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthBackgroundTaskIdentifier.swift; sourceTree = "<group>"; };
+		6BC61FD43DD5D986CCD55CEF /* LogFilesProviderShareListingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFilesProviderShareListingTests.swift; sourceTree = "<group>"; };
 		6D06253EF2F27BC06C693BA3 /* VoiceRecordingSendResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingSendResult.swift; sourceTree = "<group>"; };
 		6E4CA74CD5565ED72504F908 /* WatchVoiceSessionContextSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchVoiceSessionContextSync.swift; sourceTree = "<group>"; };
 		6FD8B85391698AF8E13EE6F4 /* KnowledgeBaseAppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseAppShortcuts.swift; sourceTree = "<group>"; };
@@ -821,6 +826,7 @@
 				C547FCA30D83FF15B131AAB3 /* ConsoleLoggerTests.swift */,
 				0EA466A7869F7E268F52C361 /* FileBatchWriterTests.swift */,
 				CA18FCA48ECCD8FB03EF2108 /* KBLoggerTagsProviderTests.swift */,
+				6BC61FD43DD5D986CCD55CEF /* LogFilesProviderShareListingTests.swift */,
 				092D9E142BC28FE855BC3E92 /* LoggerTests.swift */,
 				C54A4C38492534F34CD1E7A2 /* LoggerTestSupport.swift */,
 				8C8E1A68E164507C86BF6F76 /* LoggingUtilityTests.swift */,
@@ -1392,6 +1398,7 @@
 			children = (
 				83A58004530A611B5A62A92F /* AppGroupContainer.swift */,
 				FB44AE73E71BDE91C840BC28 /* AppGroupIdentifiers.swift */,
+				3041EE1093820A1E39AB6743 /* ShareLogPaths.swift */,
 			);
 			path = SharedAppGroup;
 			sourceTree = "<group>";
@@ -1831,6 +1838,7 @@
 				54B4AE59DDC6EF7A11434048 /* SessionKBModeStore.swift in Sources */,
 				14E4AB259ADD394DD6728F3B /* SessionListSorter.swift in Sources */,
 				56BC350D0E5F60915D5AA1B1 /* SettingsView.swift in Sources */,
+				BE68F433B5FBCACA086C23C5 /* ShareLogPaths.swift in Sources */,
 				8ACC4B7D0E9CA6959AB13AF3 /* StartVoiceRecordingIntent.swift in Sources */,
 				3D78A962F6C87700AFBB58FA /* StreamTextRevealEngine.swift in Sources */,
 				7C9EFC0606433244D53E97FB /* StreamTextRevealState.swift in Sources */,
@@ -1943,6 +1951,7 @@
 				C5C4BA21D89CFF1BBF1ADB4D /* KeychainTokenStoreTests.swift in Sources */,
 				CE2C5AF5E090B2902797E2F0 /* KnowledgeBaseAPIClientTests.swift in Sources */,
 				42E5A6556C7E37D86B366541 /* KnowledgeBaseAPIE2ETests.swift in Sources */,
+				47659E9D912EFEB82DC3EDB9 /* LogFilesProviderShareListingTests.swift in Sources */,
 				E571BCB1EB334A2B6A360619 /* LogPreviewFilterItemTests.swift in Sources */,
 				9FB81B48D196F240E350E509 /* LogPreviewViewModelTests.swift in Sources */,
 				1F5C701BEB27E0F18C3303D7 /* LoggerTestSupport.swift in Sources */,
@@ -2014,6 +2023,7 @@
 				F521E87E79F9C9D6AADD4EBA /* ShareConfiguration.swift in Sources */,
 				24BB0D42FB9430653E163132 /* ShareFileLogger.swift in Sources */,
 				CDD26D592687BBFFCDA19F90 /* ShareItemLoader.swift in Sources */,
+				8B5137F32140F0CC7DD81E55 /* ShareLogPaths.swift in Sources */,
 				7336FDBA1CE96F739F861C69 /* ShareViewController.swift in Sources */,
 				A241332EBF0AB492476CED1E /* URL+MIME.swift in Sources */,
 			);

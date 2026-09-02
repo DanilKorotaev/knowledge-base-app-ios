@@ -12,11 +12,17 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+<<<<<<< HEAD
 ## [1.0.43] - 2026-09-02
 
 ### Changed
 
 - Share Send merges drafts, logs locally, and exits after accept.
+=======
+### Added
+
+- Debug → Logs → Files lists Share Extension App Group logs in a separate section from main-app logs.
+>>>>>>> 871e310 (Show Share Extension logs in Debug Log Files.)
 
 ## [1.0.42] - 2026-09-02
 
