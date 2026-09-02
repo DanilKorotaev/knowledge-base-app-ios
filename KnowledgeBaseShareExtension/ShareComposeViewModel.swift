@@ -43,6 +43,10 @@ final class ShareComposeViewModel {
         sessions.first(where: { $0.id == selectedSessionId })?.title ?? ""
     }
 
+    func isPinned(_ sessionId: String) -> Bool {
+        pinnedIds.contains(sessionId)
+    }
+
     func bootstrap(extensionContext: NSExtensionContext?) async {
         phase = .loadingPayload
         loadSharedPrefs()

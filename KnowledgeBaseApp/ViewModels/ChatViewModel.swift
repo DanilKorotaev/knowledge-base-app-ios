@@ -427,8 +427,9 @@ final class ChatViewModel {
         await transcribePendingVoiceCapture(id: id)
     }
 
-    func addPendingAttachment(_ attachment: PendingAttachment) {
-        _ = tryAddPendingAttachment(attachment)
+    @discardableResult
+    func addPendingAttachment(_ attachment: PendingAttachment) -> Bool {
+        tryAddPendingAttachment(attachment)
     }
 
     @discardableResult
@@ -566,7 +567,10 @@ final class ChatViewModel {
                 let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? NSNumber)?
                     .int64Value
                 let mime = dest.kbPreferredMIMEType
-                let kind: PendingAttachmentKind = mime.hasPrefix("image/") ? .image : .file
+                let kind = PendingAttachmentKind.infer(
+                    mimeType: mime,
+                    filenameExtension: dest.pathExtension
+                )
                 let attachment = PendingAttachment(
                     localURL: dest,
                     kind: kind,
@@ -1013,7 +1017,13 @@ final class ChatViewModel {
             attachments.append(
                 KBAttachment(
                     id: "optimistic-\(item.id)",
-                    fileType: item.kind == .image ? "photo" : "document",
+                    fileType: {
+                        switch item.kind {
+                        case .image: return "photo"
+                        case .video: return "video"
+                        case .file: return "document"
+                        }
+                    }(),
                     fileName: item.filename,
                     fileSize: item.fileSize.map(Int.init),
                     mimeType: item.mimeType,

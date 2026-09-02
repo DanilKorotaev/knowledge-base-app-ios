@@ -2593,6 +2593,40 @@
         }
       }
     },
+    "composer.photos_and_videos": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos & Videos"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Фото и видео"
+          }
+        }
+      }
+    },
+    "composer.gallery_import_failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not import the selected media."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось импортировать выбранный медиафайл."
+          }
+        }
+      }
+    },
     "composer.camera": {
       "localizations": {
         "en": {

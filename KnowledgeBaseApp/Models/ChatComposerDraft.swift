@@ -2,7 +2,33 @@ import Foundation
 
 enum PendingAttachmentKind: String, Equatable, Codable {
     case image
+    case video
     case file
+
+    static func infer(mimeType: String, filenameExtension: String? = nil) -> PendingAttachmentKind {
+        let mime = mimeType.lowercased()
+        if mime.hasPrefix("image/") { return .image }
+        if mime.hasPrefix("video/") { return .video }
+        if let ext = filenameExtension?.lowercased() {
+            switch ext {
+            case "jpg", "jpeg", "png", "heic", "heif", "gif", "webp":
+                return .image
+            case "mp4", "mov", "m4v", "avi", "mkv":
+                return .video
+            default:
+                break
+            }
+        }
+        return .file
+    }
+
+    var systemImageName: String {
+        switch self {
+        case .image: return "photo"
+        case .video: return "video.fill"
+        case .file: return "doc.fill"
+        }
+    }
 }
 
 struct PendingAttachment: Identifiable, Equatable {

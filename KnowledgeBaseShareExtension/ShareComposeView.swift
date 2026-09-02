@@ -12,17 +12,7 @@ struct ShareComposeView: View {
                 case .loadingPayload:
                     ProgressView(L10n.string("share.loading"))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                case .failed(let message):
-                    content
-                        .safeAreaInset(edge: .bottom) {
-                            Text(message)
-                                .font(.footnote)
-                                .foregroundStyle(.red)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding()
-                                .background(.ultraThinMaterial)
-                        }
-                case .ready, .working:
+                case .failed, .ready, .working:
                     content
                         .overlay {
                             if viewModel.phase == .working {
@@ -40,12 +30,9 @@ struct ShareComposeView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.string("common.cancel"), action: onCancel)
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button(L10n.string("main.new_session")) {
-                        viewModel.showCreateSession = true
-                    }
-                    .disabled(viewModel.phase == .working || viewModel.phase == .loadingPayload)
-                }
+            }
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                bottomBar
             }
             .sheet(isPresented: $viewModel.showCreateSession) {
                 NavigationStack {
@@ -81,7 +68,7 @@ struct ShareComposeView: View {
 
                 if !viewModel.attachments.isEmpty {
                     ForEach(viewModel.attachments) { attachment in
-                        Label(attachment.filename, systemImage: attachment.kind == .image ? "photo" : "doc")
+                        Label(attachment.filename, systemImage: attachment.kind.systemImageName)
                             .font(.subheadline)
                     }
                 }
@@ -90,6 +77,14 @@ struct ShareComposeView: View {
             }
 
             Section {
+                Button {
+                    viewModel.showCreateSession = true
+                } label: {
+                    Label(L10n.string("main.new_session"), systemImage: "plus.circle.fill")
+                        .font(.body.weight(.semibold))
+                }
+                .disabled(viewModel.phase == .working || viewModel.phase == .loadingPayload)
+
                 if viewModel.sessions.isEmpty {
                     Text(L10n.string("share.no_sessions"))
                         .foregroundStyle(.secondary)
@@ -98,45 +93,89 @@ struct ShareComposeView: View {
                         Button {
                             viewModel.selectSession(session)
                         } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(session.title)
-                                        .foregroundStyle(.primary)
-                                    Text(session.kbModeLabel)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                if viewModel.selectedSessionId == session.id {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.tint)
-                                }
-                            }
+                            sessionRow(session)
                         }
+                        .buttonStyle(.plain)
                     }
                 }
             } header: {
                 Text(L10n.string("share.session_section"))
             }
+        }
+    }
 
-            Section {
-                Button(L10n.string("share.add_to_draft")) {
+    private func sessionRow(_ session: KBSession) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(session.title)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    if viewModel.isPinned(session.id) {
+                        Image(systemName: "pin.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Text(
+                    L10n.format(
+                        "main.messages_count_format",
+                        session.messageCount,
+                        session.kbModeLabel
+                    )
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 8)
+            if viewModel.selectedSessionId == session.id {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.tint)
+            }
+        }
+        .contentShape(Rectangle())
+        .padding(.vertical, 2)
+    }
+
+    private var bottomBar: some View {
+        VStack(spacing: 8) {
+            if case .failed(let message) = viewModel.phase {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            VStack(spacing: 10) {
+                Button {
                     if viewModel.addToDraft() {
                         onFinished()
                     }
+                } label: {
+                    Text(L10n.string("share.add_to_draft"))
+                        .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.bordered)
                 .disabled(!viewModel.canSubmit || viewModel.phase == .working)
 
-                Button(L10n.string("share.send")) {
+                Button {
                     Task {
                         if await viewModel.send() {
                             onFinished()
                         }
                     }
+                } label: {
+                    Text(L10n.string("share.send"))
+                        .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.borderedProminent)
                 .disabled(!viewModel.canSubmit || viewModel.phase == .working)
             }
         }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 12)
+        .background(.bar)
     }
 }
 

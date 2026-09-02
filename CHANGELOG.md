@@ -27,6 +27,11 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 ### Added
 
 - Share Extension: share text/URLs/images/files into a chat draft or send immediately.
+- Gallery picker and Share Extension accept videos (not only photos/files).
+
+### Changed
+
+- Share Extension: session rows match main list styling, New Session in the sessions section, sticky draft/send bar.
 
 ## [1.0.39] - 2026-09-02
 

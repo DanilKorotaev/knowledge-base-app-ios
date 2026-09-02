@@ -71,7 +71,7 @@ struct ComposerAttachmentStripView: View {
                 }
                 .offset(x: 6, y: -6)
             }
-        case .file:
+        case .video, .file:
             ComposerFileChipView(attachment: attachment) {
                 onRemoveAttachment(attachment.id)
             }

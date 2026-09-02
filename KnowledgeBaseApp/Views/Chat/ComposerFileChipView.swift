@@ -7,7 +7,7 @@ struct ComposerFileChipView: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: attachment.kind == .image ? "photo" : "doc.fill")
+            Image(systemName: attachment.kind.systemImageName)
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 2) {
                 Text(attachment.filename)

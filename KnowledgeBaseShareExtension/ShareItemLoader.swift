@@ -86,16 +86,29 @@ enum ShareItemLoader {
         from provider: NSItemProvider,
         into directory: URL
     ) async -> PendingAttachment? {
+        let videoTypes = [
+            UTType.movie.identifier,
+            UTType.video.identifier,
+            UTType.mpeg4Movie.identifier,
+            UTType.quickTimeMovie.identifier,
+            UTType.avi.identifier,
+        ]
+        for type in videoTypes where provider.hasItemConformingToTypeIdentifier(type) {
+            if let attachment = await copyProviderItem(provider, typeIdentifier: type, into: directory, preferredKind: .video) {
+                return attachment
+            }
+        }
+
         let imageTypes = [UTType.image.identifier, UTType.jpeg.identifier, UTType.png.identifier, UTType.heic.identifier]
         for type in imageTypes where provider.hasItemConformingToTypeIdentifier(type) {
-            if let attachment = await copyProviderItem(provider, typeIdentifier: type, into: directory, preferImage: true) {
+            if let attachment = await copyProviderItem(provider, typeIdentifier: type, into: directory, preferredKind: .image) {
                 return attachment
             }
         }
 
         let fileTypes = [UTType.fileURL.identifier, UTType.pdf.identifier, UTType.data.identifier]
         for type in fileTypes where provider.hasItemConformingToTypeIdentifier(type) {
-            if let attachment = await copyProviderItem(provider, typeIdentifier: type, into: directory, preferImage: false) {
+            if let attachment = await copyProviderItem(provider, typeIdentifier: type, into: directory, preferredKind: .file) {
                 return attachment
             }
         }
@@ -106,11 +119,11 @@ enum ShareItemLoader {
         _ provider: NSItemProvider,
         typeIdentifier: String,
         into directory: URL,
-        preferImage: Bool
+        preferredKind: PendingAttachmentKind
     ) async -> PendingAttachment? {
         await withCheckedContinuation { continuation in
             provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
-                let result = materializeAttachment(item: item, into: directory, preferImage: preferImage)
+                let result = materializeAttachment(item: item, into: directory, preferredKind: preferredKind)
                 continuation.resume(returning: result)
             }
         }
@@ -119,7 +132,7 @@ enum ShareItemLoader {
     private static func materializeAttachment(
         item: NSSecureCoding?,
         into directory: URL,
-        preferImage: Bool
+        preferredKind: PendingAttachmentKind
     ) -> PendingAttachment? {
         let fileManager = FileManager.default
 
@@ -128,16 +141,25 @@ enum ShareItemLoader {
             defer {
                 if didAccess { url.stopAccessingSecurityScopedResource() }
             }
-            guard let data = try? Data(contentsOf: url) else { return nil }
             let filename = url.lastPathComponent.isEmpty ? "share.bin" : url.lastPathComponent
             let dest = directory.appendingPathComponent("\(UUID().uuidString)-\(filename)")
             do {
-                try data.write(to: dest)
+                if fileManager.fileExists(atPath: dest.path) {
+                    try fileManager.removeItem(at: dest)
+                }
+                try fileManager.copyItem(at: url, to: dest)
             } catch {
-                return nil
+                // Some providers only yield in-memory data; fall back for small payloads.
+                guard let data = try? Data(contentsOf: url) else { return nil }
+                do {
+                    try data.write(to: dest)
+                } catch {
+                    return nil
+                }
             }
             let mime = dest.kbPreferredMIMEType
-            let kind: PendingAttachmentKind = preferImage || mime.hasPrefix("image/") ? .image : .file
+            let kind = PendingAttachmentKind.infer(mimeType: mime, filenameExtension: dest.pathExtension)
+                .preferring(preferredKind)
             let size = (try? fileManager.attributesOfItem(atPath: dest.path)[.size] as? NSNumber)?.int64Value
             return PendingAttachment(
                 localURL: dest,
@@ -149,7 +171,12 @@ enum ShareItemLoader {
         }
 
         if let data = item as? Data {
-            let ext = preferImage ? "jpg" : "bin"
+            let ext: String
+            switch preferredKind {
+            case .image: ext = "jpg"
+            case .video: ext = "mp4"
+            case .file: ext = "bin"
+            }
             let filename = "share.\(ext)"
             let dest = directory.appendingPathComponent("\(UUID().uuidString)-\(filename)")
             do {
@@ -158,7 +185,8 @@ enum ShareItemLoader {
                 return nil
             }
             let mime = dest.kbPreferredMIMEType
-            let kind: PendingAttachmentKind = preferImage || mime.hasPrefix("image/") ? .image : .file
+            let kind = PendingAttachmentKind.infer(mimeType: mime, filenameExtension: dest.pathExtension)
+                .preferring(preferredKind)
             return PendingAttachment(
                 localURL: dest,
                 kind: kind,
@@ -168,7 +196,9 @@ enum ShareItemLoader {
             )
         }
 
-        if let image = item as? UIImage, let data = image.jpegData(compressionQuality: 0.9) {
+        if preferredKind == .image,
+           let image = item as? UIImage,
+           let data = image.jpegData(compressionQuality: 0.9) {
             let filename = "share.jpg"
             let dest = directory.appendingPathComponent("\(UUID().uuidString)-\(filename)")
             do {
@@ -186,5 +216,15 @@ enum ShareItemLoader {
         }
 
         return nil
+    }
+}
+
+private extension PendingAttachmentKind {
+    func preferring(_ preferred: PendingAttachmentKind) -> PendingAttachmentKind {
+        switch preferred {
+        case .video where self == .file: return .video
+        case .image where self == .file: return .image
+        default: return self
+        }
     }
 }

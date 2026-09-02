@@ -50,7 +50,7 @@ struct ChatComposerView: View {
                 isPresented: $showGalleryPicker,
                 selection: $photoPickerItems,
                 maxSelectionCount: max(1, remainingAttachmentSlots),
-                matching: .images
+                matching: .any(of: [.images, .videos])
             )
             .onChange(of: photoPickerItems) { _, items in
                 guard !items.isEmpty else { return }
@@ -61,12 +61,21 @@ struct ChatComposerView: View {
                             skippedLimit = true
                             break
                         }
-                        guard let data = try? await item.loadTransferable(type: Data.self) else {
-                            viewModel.reportError("Could not read photo.")
-                            continue
-                        }
-                        if !viewModel.addPhotoData(data) {
-                            skippedLimit = true
+                        do {
+                            let media = try await GalleryMediaImporter.importItem(item)
+                            if !viewModel.addPendingAttachment(
+                                PendingAttachment(
+                                    localURL: media.localURL,
+                                    kind: media.kind,
+                                    filename: media.filename,
+                                    mimeType: media.mimeType,
+                                    fileSize: media.fileSize
+                                )
+                            ) {
+                                skippedLimit = true
+                            }
+                        } catch {
+                            viewModel.reportError(L10n.string("composer.gallery_import_failed"))
                         }
                     }
                     if skippedLimit {
@@ -156,7 +165,7 @@ struct ChatComposerView: View {
             Button {
                 showGalleryPicker = true
             } label: {
-                Label("composer.photos", systemImage: "photo.on.rectangle")
+                Label("composer.photos_and_videos", systemImage: "photo.on.rectangle")
             }
             .disabled(remainingAttachmentSlots == 0)
             if UIImagePickerController.isSourceTypeAvailable(.camera) {
