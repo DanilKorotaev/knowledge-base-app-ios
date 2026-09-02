@@ -186,7 +186,7 @@ struct ChatView: View {
     private var messagesScrollView: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                LazyVStack(alignment: .leading, spacing: 10) {
                     if viewModel.hasMoreOlder {
                         Color.clear
                             .frame(height: 1)
