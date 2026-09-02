@@ -40,16 +40,26 @@ class KBApiLoggerBase {
     }
 
     func logMessage(from body: Data) -> String {
+        let maxBodyBytes = 4_096
+        if body.count > maxBodyBytes {
+            return "HTTP Body: [\(body.count) bytes — truncated for logs]"
+        }
         let bodyText: String
         if let object = try? JSONSerialization.jsonObject(with: body, options: .allowFragments),
            JSONSerialization.isValidJSONObject(object),
            let pretty = try? JSONSerialization.data(withJSONObject: object, options: .prettyPrinted),
            let prettyString = String(data: pretty, encoding: .utf8) {
-            bodyText = prettyString
+            bodyText = Self.redactLargeJSONFields(prettyString)
         } else {
             bodyText = String(data: body, encoding: .utf8) ?? "N/A"
         }
         return "HTTP Body: [\n\(bodyText)\n]"
+    }
+
+    /// Avoid dumping base64 health payloads into verbose logs.
+    private static func redactLargeJSONFields(_ text: String) -> String {
+        guard text.count > 8_192 else { return text }
+        return String(text.prefix(8_192)) + "\n… [truncated \(text.count - 8_192) chars]"
     }
 
     func shortUrl(_ url: URL?) -> String {

@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import UserNotifications
 
 @MainActor
 @Observable
@@ -8,7 +9,18 @@ final class HealthSyncViewModel {
         case idle
         case loadingPreview
         case syncing(stage: String, uploadedCount: Int, totalCount: Int? = nil)
-        case failed(String)
+    }
+
+    struct PresentedAlert: Identifiable, Equatable {
+        enum Kind: Equatable {
+            case error
+            case success
+        }
+
+        let id = UUID()
+        var kind: Kind
+        var title: String
+        var message: String
     }
 
     private(set) var phase: Phase = .idle
@@ -19,6 +31,7 @@ final class HealthSyncViewModel {
     private(set) var isHealthDataAvailable = false
     private(set) var authorizationGranted = false
     private(set) var needsHealthAuthorization = false
+    var presentedAlert: PresentedAlert?
     enum ActiveOperation: Equatable {
         case none
         case recent
@@ -40,6 +53,10 @@ final class HealthSyncViewModel {
     var isBusy: Bool {
         if case .syncing = phase { return true }
         return false
+    }
+
+    func dismissAlert() {
+        presentedAlert = nil
     }
 
     private let healthKit: HealthKitServiceProtocol
@@ -110,7 +127,7 @@ final class HealthSyncViewModel {
             todayPreview = nil
             phase = .idle
         } catch {
-            phase = .failed(Self.userFacingMessage(for: error))
+            presentError(Self.userFacingMessage(for: error))
         }
     }
 
@@ -122,13 +139,13 @@ final class HealthSyncViewModel {
             needsHealthAuthorization = false
             await refresh()
         } catch {
-            phase = .failed(Self.userFacingMessage(for: error))
+            presentError(Self.userFacingMessage(for: error))
         }
     }
 
     func syncRecent() async {
         activeOperation = .recent
-        await runSync { try await self.syncService.syncRecent() }
+        await runSync(operationKind: .recent) { try await self.syncService.syncRecent() }
         activeOperation = .none
     }
 
@@ -137,7 +154,7 @@ final class HealthSyncViewModel {
         Self.historySyncTask?.cancel()
         Self.historySyncTask = Task.detached(priority: .userInitiated) { @MainActor in
             self.activeOperation = .history
-            await self.runSync {
+            await self.runSync(operationKind: .history) {
                 try await self.syncService.syncDailyHistory(
                     from: self.historyRangeStart,
                     to: self.historyRangeEnd,
@@ -151,12 +168,12 @@ final class HealthSyncViewModel {
 
     func exportArchive() async {
         guard isHealthDataAvailable else {
-            phase = .failed(String(localized: "health.error.unavailable"))
+            presentError(String(localized: "health.error.unavailable"))
             return
         }
         if await healthKit.needsReadAuthorization() {
             needsHealthAuthorization = true
-            phase = .failed(String(localized: "health.error.authorization_required"))
+            presentError(String(localized: "health.error.authorization_required"))
             return
         }
 
@@ -176,11 +193,15 @@ final class HealthSyncViewModel {
             exportArchiveURL = url
             phase = .idle
             activeOperation = .none
+            presentSuccess(
+                title: String(localized: "health.alert.success_title"),
+                message: String(localized: "health.archive.success_message")
+            )
         } catch HealthDataArchiveBuilderError.emptyArchive {
-            phase = .failed(String(localized: "health.archive.empty"))
+            presentError(String(localized: "health.archive.empty"))
             activeOperation = .none
         } catch {
-            phase = .failed(Self.userFacingMessage(for: error))
+            presentError(Self.userFacingMessage(for: error))
             activeOperation = .none
         }
     }
@@ -196,18 +217,18 @@ final class HealthSyncViewModel {
             let settings = try await apiClient.updateSettings(healthDataRelative: trimmed)
             healthDataRelative = settings.healthDataRelative
         } catch {
-            phase = .failed(Self.userFacingMessage(for: error))
+            presentError(Self.userFacingMessage(for: error))
         }
     }
 
-    private func runSync(_ operation: () async throws -> Void) async {
+    private func runSync(operationKind: ActiveOperation, _ operation: () async throws -> Void) async {
         guard isHealthDataAvailable else {
-            phase = .failed(String(localized: "health.error.unavailable"))
+            presentError(String(localized: "health.error.unavailable"))
             return
         }
         if await healthKit.needsReadAuthorization() {
             needsHealthAuthorization = true
-            phase = .failed(String(localized: "health.error.authorization_required"))
+            presentError(String(localized: "health.error.authorization_required"))
             return
         }
         syncService.onProgress = { [weak self] stage, count, total in
@@ -234,13 +255,33 @@ final class HealthSyncViewModel {
             remoteSyncState = try await apiClient.fetchSyncState()
             phase = .idle
             await reloadTodayPreviewIfNeeded()
+            presentSuccess(
+                title: String(localized: "health.alert.success_title"),
+                message: Self.successMessage(for: operationKind)
+            )
+            Self.scheduleCompletionNotification(success: true, message: Self.successMessage(for: operationKind))
         } catch is CancellationError {
             HealthSyncLogger.historyCancelled()
-            phase = .failed(String(localized: "health.sync.cancelled"))
+            presentError(String(localized: "health.sync.cancelled"))
         } catch {
             HealthSyncLogger.historyFailed(error.localizedDescription)
-            phase = .failed(Self.userFacingMessage(for: error))
+            let message = Self.userFacingMessage(for: error)
+            presentError(message)
+            Self.scheduleCompletionNotification(success: false, message: message)
         }
+    }
+
+    private func presentError(_ message: String) {
+        phase = .idle
+        presentedAlert = PresentedAlert(
+            kind: .error,
+            title: String(localized: "health.alert.error_title"),
+            message: message
+        )
+    }
+
+    private func presentSuccess(title: String, message: String) {
+        presentedAlert = PresentedAlert(kind: .success, title: title, message: message)
     }
 
     private func alignHistoryPickersWithRemoteState() {
@@ -254,6 +295,34 @@ final class HealthSyncViewModel {
         } catch {
             // Keep existing preview on failure.
         }
+    }
+
+    private static func successMessage(for operation: ActiveOperation) -> String {
+        switch operation {
+        case .recent:
+            return String(localized: "health.sync.recent_success")
+        case .history:
+            return String(localized: "health.history.success")
+        case .archive:
+            return String(localized: "health.archive.success_message")
+        case .none:
+            return String(localized: "health.sync.success_generic")
+        }
+    }
+
+    private static func scheduleCompletionNotification(success: Bool, message: String) {
+        let content = UNMutableNotificationContent()
+        content.title = success
+            ? String(localized: "health.alert.success_title")
+            : String(localized: "health.alert.error_title")
+        content.body = message
+        content.sound = .default
+        let request = UNNotificationRequest(
+            identifier: "health-sync-\(UUID().uuidString)",
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
     }
 
     private static func userFacingMessage(for error: Error) -> String {

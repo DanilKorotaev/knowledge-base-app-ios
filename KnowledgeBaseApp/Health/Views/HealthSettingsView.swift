@@ -38,14 +38,6 @@ struct HealthSettingsView: View {
                 }
                 .disabled(!viewModel.isHealthDataAvailable)
             }
-
-            if case let .failed(message) = viewModel.phase {
-                Section("health.section.error") {
-                    Text(message)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
-                }
-            }
         }
         .navigationTitle("health.settings.title")
         .task {
@@ -54,6 +46,19 @@ struct HealthSettingsView: View {
         }
         .onChange(of: viewModel.healthDataRelative) { _, newValue in
             folderDraft = newValue
+        }
+        .alert(
+            viewModel.presentedAlert?.title ?? "",
+            isPresented: Binding(
+                get: { viewModel.presentedAlert != nil },
+                set: { if !$0 { viewModel.dismissAlert() } }
+            )
+        ) {
+            Button("common.ok", role: .cancel) {
+                viewModel.dismissAlert()
+            }
+        } message: {
+            Text(viewModel.presentedAlert?.message ?? "")
         }
     }
 }

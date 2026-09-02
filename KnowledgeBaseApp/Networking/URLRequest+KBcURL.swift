@@ -10,7 +10,10 @@ extension URLRequest {
             .joined(separator: " \\\n")
         let dataPart: String?
         if let httpBody, !httpBody.isEmpty {
-            if let object = try? JSONSerialization.jsonObject(with: httpBody),
+            let maxBodyBytes = 4_096
+            if httpBody.count > maxBodyBytes {
+                dataPart = "--data '<\(httpBody.count) bytes — truncated for logs>'"
+            } else if let object = try? JSONSerialization.jsonObject(with: httpBody),
                let pretty = try? JSONSerialization.data(withJSONObject: object, options: .prettyPrinted),
                let prettyString = String(data: pretty, encoding: .utf8) {
                 let escaped = prettyString.replacingOccurrences(of: "'", with: "'\\''")

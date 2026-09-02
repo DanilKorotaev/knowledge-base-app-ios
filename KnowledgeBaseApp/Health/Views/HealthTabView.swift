@@ -6,14 +6,6 @@ struct HealthTabView: View {
 
     var body: some View {
         List {
-            if case let .failed(message) = viewModel.phase {
-                Section {
-                    Text(message)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
-                }
-            }
-
             if !viewModel.isHealthDataAvailable {
                 Section {
                     Text("health.error.unavailable")
@@ -31,6 +23,19 @@ struct HealthTabView: View {
         .navigationTitle("tab.health")
         .task {
             await viewModel.refresh()
+        }
+        .alert(
+            viewModel.presentedAlert?.title ?? "",
+            isPresented: Binding(
+                get: { viewModel.presentedAlert != nil },
+                set: { if !$0 { viewModel.dismissAlert() } }
+            )
+        ) {
+            Button("common.ok", role: .cancel) {
+                viewModel.dismissAlert()
+            }
+        } message: {
+            Text(viewModel.presentedAlert?.message ?? "")
         }
         .sheet(isPresented: $showArchiveShareSheet, onDismiss: {
             viewModel.clearExportArchive()

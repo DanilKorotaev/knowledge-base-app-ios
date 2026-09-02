@@ -494,7 +494,11 @@ final class ChatViewModel {
             if FileManager.default.fileExists(atPath: dest.path) {
                 try FileManager.default.removeItem(at: dest)
             }
-            try FileManager.default.copyItem(at: sourceURL, to: dest)
+            try Self.copyLogFileTruncatingIfNeeded(
+                from: sourceURL,
+                to: dest,
+                maxBytes: ComposerAttachmentLimits.maxBytesPerAttachment
+            )
             let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? NSNumber)?
                 .int64Value
             let attachment = PendingAttachment(
@@ -509,6 +513,26 @@ final class ChatViewModel {
             reportError(error.localizedDescription)
             return false
         }
+    }
+
+    /// Keeps the end of oversized debug logs so they still fit the composer limit.
+    private static func copyLogFileTruncatingIfNeeded(from source: URL, to dest: URL, maxBytes: Int64) throws {
+        let attrs = try FileManager.default.attributesOfItem(atPath: source.path)
+        let size = (attrs[.size] as? NSNumber)?.int64Value ?? 0
+        if size <= maxBytes {
+            try FileManager.default.copyItem(at: source, to: dest)
+            return
+        }
+        let handle = try FileHandle(forReadingFrom: source)
+        defer { try? handle.close() }
+        let keep = maxBytes - 256
+        try handle.seek(toOffset: UInt64(max(0, size - keep)))
+        var data = try handle.readToEnd() ?? Data()
+        let header = Data(
+            "… [truncated; showing last \(keep) of \(size) bytes]\n\n".utf8
+        )
+        data = header + data
+        try data.write(to: dest, options: .atomic)
     }
 
     func addCameraImage(_ image: UIImage) async {

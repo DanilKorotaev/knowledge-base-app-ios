@@ -63,7 +63,11 @@ final class DebugQuickActionsController {
             if FileManager.default.fileExists(atPath: dest.path) {
                 try FileManager.default.removeItem(at: dest)
             }
-            try FileManager.default.copyItem(at: source, to: dest)
+            try Self.copyLogFileTruncatingIfNeeded(
+                from: source,
+                to: dest,
+                maxBytes: ComposerAttachmentLimits.maxBytesPerAttachment
+            )
         } catch {
             statusMessage = L10n.string("debug.copy_log_failed")
             return
@@ -89,5 +93,24 @@ final class DebugQuickActionsController {
 
     func clearStatusMessage() {
         statusMessage = nil
+    }
+
+    private static func copyLogFileTruncatingIfNeeded(from source: URL, to dest: URL, maxBytes: Int64) throws {
+        let attrs = try FileManager.default.attributesOfItem(atPath: source.path)
+        let size = (attrs[.size] as? NSNumber)?.int64Value ?? 0
+        if size <= maxBytes {
+            try FileManager.default.copyItem(at: source, to: dest)
+            return
+        }
+        let handle = try FileHandle(forReadingFrom: source)
+        defer { try? handle.close() }
+        let keep = maxBytes - 256
+        try handle.seek(toOffset: UInt64(max(0, size - keep)))
+        var data = try handle.readToEnd() ?? Data()
+        let header = Data(
+            "… [truncated; showing last \(keep) of \(size) bytes]\n\n".utf8
+        )
+        data = header + data
+        try data.write(to: dest, options: .atomic)
     }
 }
