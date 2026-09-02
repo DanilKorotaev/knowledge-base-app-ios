@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.39 | 152 | `ios/v1.0.39` | 2026-09-02 | Make HTTP body log truncation configurable in Debug log settings. |
 | 1.0.38 | 151 | `ios/v1.0.38` | 2026-09-02 | Show Health sync alerts, truncate huge debug logs, and note foreground limits. |
 | 1.0.37 | 150 | `ios/v1.0.37` | 2026-09-02 | Export Activity ring goals from HKActivitySummary in daily JSON. |
 | 1.0.36 | 149 | `ios/v1.0.36` | 2026-09-02 | Restore LazyVStack for chat message list |
