@@ -97,7 +97,8 @@ platform :ios do
       widget_prof = mapping[widget_id]
       watch_prof = mapping[watch_id]
       watch_widget_prof = mapping[watch_widget_id]
-      UI.user_error!("Match did not set provisioning profile mapping for app targets") unless main_prof && widget_prof && watch_prof && watch_widget_prof
+      share_prof = mapping[share_id]
+      UI.user_error!("Match did not set provisioning profile mapping for app targets") unless main_prof && widget_prof && watch_prof && watch_widget_prof && share_prof
 
       update_code_signing_settings(
         path: "KnowledgeBaseApp.xcodeproj",
@@ -116,6 +117,15 @@ platform :ios do
         team_id: team_id,
         code_sign_identity: "Apple Distribution",
         profile_name: widget_prof
+      )
+      update_code_signing_settings(
+        path: "KnowledgeBaseApp.xcodeproj",
+        use_automatic_signing: false,
+        targets: ["KnowledgeBaseShareExtension"],
+        build_configurations: ["Release"],
+        team_id: team_id,
+        code_sign_identity: "Apple Distribution",
+        profile_name: share_prof
       )
       update_code_signing_settings(
         path: "KnowledgeBaseApp.xcodeproj",

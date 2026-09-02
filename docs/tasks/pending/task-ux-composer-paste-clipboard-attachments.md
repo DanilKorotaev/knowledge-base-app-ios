@@ -3,7 +3,7 @@
 **Status:** Backlog  
 **Priority:** Medium  
 **Category:** Product / Chat UX  
-**Related:** [`task-feature-share-extension-compose.md`](task-feature-share-extension-compose.md) (share-in is separate; this is **inside** the main app composer)
+**Related:** [`task-feature-share-extension-compose.md`](../done/task-feature-share-extension-compose.md) (share-in is separate; this is **inside** the main app composer)
 
 ## Problem
 

@@ -28,7 +28,7 @@ fi
 
 CHANGED="$(git diff --name-only "$BASE_REF"...HEAD)"
 
-APP_PATH_REGEX='^(KnowledgeBaseApp/|SharedIntents/|SharedWatchConnectivity/|SharedLocalization/|KnowledgeBaseWatchApp/|KnowledgeBaseWatchWidget/|KnowledgeBaseWidget/|project\.yml$)'
+APP_PATH_REGEX='^(KnowledgeBaseApp/|SharedIntents/|SharedWatchConnectivity/|SharedLocalization/|SharedAppGroup/|KnowledgeBaseWatchApp/|KnowledgeBaseWatchWidget/|KnowledgeBaseWidget/|KnowledgeBaseShareExtension/|project\.yml$)'
 
 if ! echo "$CHANGED" | grep -E "$APP_PATH_REGEX" >/dev/null; then
   echo "No app source changes requiring a version bump."

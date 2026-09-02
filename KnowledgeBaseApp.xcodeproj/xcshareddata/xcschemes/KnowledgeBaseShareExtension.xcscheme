@@ -35,34 +35,6 @@
                ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F6F83AC71EF5CF7FF9EF0BD8"
-               BuildableName = "KnowledgeBaseWatchApp.app"
-               BlueprintName = "KnowledgeBaseWatchApp"
-               ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "FC7C542520938DAE55A84E10"
-               BuildableName = "KnowledgeBaseWatchWidgetExtension.appex"
-               BlueprintName = "KnowledgeBaseWatchWidgetExtension"
-               ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -70,7 +42,6 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
-      codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "NO">
       <MacroExpansion>
          <BuildableReference
@@ -82,20 +53,7 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "44F6EDC2898840F0AF989B34"
-               BuildableName = "KnowledgeBaseAppTests.xctest"
-               BlueprintName = "KnowledgeBaseAppTests"
-               ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
-      <CommandLineArguments>
-      </CommandLineArguments>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

@@ -63,6 +63,118 @@ final class ComposerDraftStoreTests: XCTestCase {
         XCTAssertNil(store.save(sessionId: sessionId, draft: draft, pendingVoiceCaptures: []))
         XCTAssertNil(store.load(sessionId: sessionId))
     }
+
+    func testMergeAppendsTextAndAttachments() throws {
+        let sessionId = "session-merge"
+        var first = ChatComposerDraft()
+        first.text = "Hello"
+        _ = store.save(sessionId: sessionId, draft: first, pendingVoiceCaptures: [])
+
+        let fileA = tempRoot.appendingPathComponent("a.pdf")
+        try Data("pdf-a".utf8).write(to: fileA)
+        let attachmentA = PendingAttachment(
+            localURL: fileA,
+            kind: .file,
+            filename: "a.pdf",
+            mimeType: "application/pdf",
+            fileSize: 5
+        )
+
+        let merged = try XCTUnwrap(
+            store.merge(sessionId: sessionId, text: "World", attachments: [attachmentA])
+        )
+        XCTAssertEqual(merged.draft.text, "Hello\nWorld")
+        XCTAssertEqual(merged.draft.attachments.count, 1)
+        XCTAssertEqual(merged.draft.attachments[0].filename, "a.pdf")
+
+        let fileB = tempRoot.appendingPathComponent("b.png")
+        try Data("png".utf8).write(to: fileB)
+        let attachmentB = PendingAttachment(
+            localURL: fileB,
+            kind: .image,
+            filename: "b.png",
+            mimeType: "image/png",
+            fileSize: 3
+        )
+        let again = try XCTUnwrap(
+            store.merge(sessionId: sessionId, text: nil, attachments: [attachmentB])
+        )
+        XCTAssertEqual(again.draft.text, "Hello\nWorld")
+        XCTAssertEqual(again.draft.attachments.map(\.filename), ["a.pdf", "b.png"])
+    }
+
+    func testMergeStopsAtAttachmentLimit() throws {
+        let sessionId = "session-limit"
+        var attachments: [PendingAttachment] = []
+        for index in 0..<ComposerAttachmentLimits.maxFileAttachments {
+            let url = tempRoot.appendingPathComponent("f\(index).bin")
+            try Data("x".utf8).write(to: url)
+            attachments.append(
+                PendingAttachment(
+                    localURL: url,
+                    kind: .file,
+                    filename: "f\(index).bin",
+                    mimeType: "application/octet-stream",
+                    fileSize: 1
+                )
+            )
+        }
+        var draft = ChatComposerDraft()
+        draft.attachments = attachments
+        _ = store.save(sessionId: sessionId, draft: draft, pendingVoiceCaptures: [])
+
+        let extra = tempRoot.appendingPathComponent("extra.bin")
+        try Data("y".utf8).write(to: extra)
+        let merged = try XCTUnwrap(
+            store.merge(
+                sessionId: sessionId,
+                text: "note",
+                attachments: [
+                    PendingAttachment(
+                        localURL: extra,
+                        kind: .file,
+                        filename: "extra.bin",
+                        mimeType: "application/octet-stream",
+                        fileSize: 1
+                    )
+                ]
+            )
+        )
+        XCTAssertEqual(merged.draft.attachments.count, ComposerAttachmentLimits.maxFileAttachments)
+        XCTAssertEqual(merged.draft.text, "note")
+    }
+}
+
+final class AppGroupComposerDraftMigrationTests: XCTestCase {
+    func testMigratesLegacyDraftsOnceAndIsIdempotent() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("app-group-migrate-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+
+        let destination = root.appendingPathComponent("KBComposerDrafts", isDirectory: true)
+        let legacy = root.appendingPathComponent("Legacy/KBComposerDrafts", isDirectory: true)
+        try fm.createDirectory(at: destination, withIntermediateDirectories: true)
+        try fm.createDirectory(at: legacy.appendingPathComponent("session1", isDirectory: true), withIntermediateDirectories: true)
+        try Data("ok".utf8).write(
+            to: legacy.appendingPathComponent("session1/manifest.json")
+        )
+
+        AppGroupContainer.migrateLegacyComposerDraftsIfNeeded(
+            to: destination,
+            fileManager: fm,
+            legacyRoot: legacy
+        )
+        XCTAssertTrue(fm.fileExists(atPath: destination.appendingPathComponent("session1/manifest.json").path))
+        XCTAssertTrue(fm.fileExists(atPath: destination.appendingPathComponent(".migrated-from-app-support").path))
+
+        try fm.removeItem(at: destination.appendingPathComponent("session1"))
+        AppGroupContainer.migrateLegacyComposerDraftsIfNeeded(
+            to: destination,
+            fileManager: fm,
+            legacyRoot: legacy
+        )
+        XCTAssertFalse(fm.fileExists(atPath: destination.appendingPathComponent("session1").path))
+    }
 }
 
 @MainActor

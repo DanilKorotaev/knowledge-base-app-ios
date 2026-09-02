@@ -33,6 +33,7 @@ targets:
     platform: iOS
     sources:
       - path: KnowledgeBaseApp
+      - path: SharedAppGroup
       - path: SharedIntents
       - path: SharedWatchConnectivity
       - path: SharedLocalization
@@ -42,6 +43,8 @@ targets:
       - package: Alamofire
       - package: ZIPFoundation
       - target: KnowledgeBaseWidgetExtension
+        embed: true
+      - target: KnowledgeBaseShareExtension
         embed: true
       - target: KnowledgeBaseWatchApp
         embed: true
@@ -62,6 +65,8 @@ targets:
         com.apple.developer.healthkit.background-delivery: true
         com.apple.security.application-groups:
           - group.com.coredan.KnowledgeBaseApp
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)com.coredan.KnowledgeBaseApp
     info:
       path: KnowledgeBaseApp/Resources/Info.plist
       properties:
@@ -104,6 +109,54 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
         INFOPLIST_KEY_KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
+  KnowledgeBaseShareExtension:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: KnowledgeBaseShareExtension
+      - path: SharedAppGroup
+      - path: SharedLocalization
+      - path: KnowledgeBaseApp/Models/ChatComposerDraft.swift
+      - path: KnowledgeBaseApp/Models/ComposerAttachmentLimits.swift
+      - path: KnowledgeBaseApp/Models/PendingVoiceCapture.swift
+      - path: KnowledgeBaseApp/Models/KBSession.swift
+      - path: KnowledgeBaseApp/Utilities/URL+MIME.swift
+      - path: KnowledgeBaseApp/Services/ComposerDraftStore.swift
+      - path: KnowledgeBaseApp/Services/SessionListSorter.swift
+      - path: KnowledgeBaseApp/Configuration/KeychainTokenStore.swift
+    settings:
+      base:
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: "66C9VGAZR5"
+        PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseApp.Share
+        GENERATE_INFOPLIST_FILE: NO
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_KEY_CFBundleDisplayName: Knowledge Base
+    entitlements:
+      path: KnowledgeBaseShareExtension/KnowledgeBaseShareExtension.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.coredan.KnowledgeBaseApp
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)com.coredan.KnowledgeBaseApp
+    info:
+      path: KnowledgeBaseShareExtension/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDisplayName: Knowledge Base
+        KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
+        KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsText: true
+              NSExtensionActivationSupportsWebURLWithMaxCount: 10
+              NSExtensionActivationSupportsWebPageWithMaxCount: 1
+              NSExtensionActivationSupportsImageWithMaxCount: 10
+              NSExtensionActivationSupportsFileWithMaxCount: 10
   KnowledgeBaseWidgetExtension:
     type: app-extension
     platform: iOS
@@ -189,6 +242,7 @@ schemes:
         KnowledgeBaseApp: all
         KnowledgeBaseWatchApp: all
         KnowledgeBaseWatchWidgetExtension: all
+        KnowledgeBaseShareExtension: all
     run:
       config: Debug
     test:
@@ -196,6 +250,19 @@ schemes:
       gatherCoverageData: true
       targets:
         - KnowledgeBaseAppTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+  KnowledgeBaseShareExtension:
+    build:
+      targets:
+        KnowledgeBaseShareExtension: all
+        KnowledgeBaseApp: all
+    run:
+      config: Debug
     profile:
       config: Release
     analyze:

@@ -13,7 +13,7 @@ final class SessionKBModeStoreTests: XCTestCase {
         suiteName = isolated.suiteName
         previousShared = UserDefaultsService.shared
         UserDefaultsService.shared = UserDefaultsService(storage: storage)
-        store = SessionKBModeStore()
+        store = SessionKBModeStore(sharedSuite: nil)
     }
 
     override func tearDownWithError() throws {
@@ -52,7 +52,7 @@ final class SessionKBModeStoreTests: XCTestCase {
 @MainActor
 final class ChatViewModelSessionKBModeTests: XCTestCase {
     func testUsesPersistedSessionKBMode() {
-        let store = SessionKBModeStore()
+        let store = SessionKBModeStore(sharedSuite: nil)
         store.save(sessionId: "s1", useKnowledgeBase: false)
         let session = KBSession(id: "s1", title: "Chat", messageCount: 0, updatedAt: nil, useKnowledgeBase: true)
         let viewModel = ChatViewModel(

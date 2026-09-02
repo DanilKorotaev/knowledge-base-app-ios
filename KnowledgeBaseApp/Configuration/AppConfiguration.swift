@@ -46,13 +46,13 @@ enum AppConfiguration {
         }
         let storageKey = userDefaultsStorageKey(for: key)
         if key == Keys.apiBaseURL {
-            if let value {
-                UserDefaultsService.shared.set(
-                    value.trimmingCharacters(in: .whitespacesAndNewlines),
-                    forKey: .apiBaseURL
-                )
+            let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
+            if let trimmed, !trimmed.isEmpty {
+                UserDefaultsService.shared.set(trimmed, forKey: .apiBaseURL)
+                AppGroupContainer.sharedDefaults?.set(trimmed, forKey: UserDefaultsKey.apiBaseURL.rawValue)
             } else {
                 UserDefaultsService.shared.removeObject(forKey: .apiBaseURL)
+                AppGroupContainer.sharedDefaults?.removeObject(forKey: UserDefaultsKey.apiBaseURL.rawValue)
             }
             return
         }
@@ -68,6 +68,13 @@ enum AppConfiguration {
         let storageKey: UserDefaultsKey
         if key == Keys.apiBaseURL {
             storageKey = .apiBaseURL
+            AppGroupContainer.migrateUserDefaultsValue(forKey: storageKey.rawValue)
+            if let shared = AppGroupContainer.sharedDefaults?
+                .string(forKey: storageKey.rawValue)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .nilIfEmpty {
+                return shared
+            }
         } else if key == Keys.authToken {
             return nil
         } else {

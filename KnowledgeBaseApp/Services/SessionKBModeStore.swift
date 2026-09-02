@@ -13,10 +13,16 @@ final class SessionKBModeStore: SessionKBModeStoreProtocol {
     static let shared = SessionKBModeStore()
 
     private let userDefaults: UserDefaultsServiceDescription
+    private let sharedSuite: UserDefaults?
     private let storageKey: UserDefaultsKey = UserDefaultsKey("kb.sessions.use_knowledge_base")
 
-    init(userDefaults: UserDefaultsServiceDescription = UserDefaultsService.shared) {
+    init(
+        userDefaults: UserDefaultsServiceDescription = UserDefaultsService.shared,
+        sharedSuite: UserDefaults? = AppGroupContainer.sharedDefaults
+    ) {
         self.userDefaults = userDefaults
+        self.sharedSuite = sharedSuite
+        AppGroupContainer.migrateUserDefaultsValue(forKey: storageKey.rawValue)
     }
 
     func load(sessionId: String) -> Bool? {
@@ -47,13 +53,17 @@ final class SessionKBModeStore: SessionKBModeStoreProtocol {
     }
 
     private func dictionary() -> [String: Bool] {
-        guard let data = userDefaults.object(forKey: storageKey) as? Data else { return [:] }
-        return (try? JSONDecoder().decode([String: Bool].self, from: data)) ?? [:]
+        if let data = sharedSuite?.data(forKey: storageKey.rawValue)
+            ?? (userDefaults.object(forKey: storageKey) as? Data) {
+            return (try? JSONDecoder().decode([String: Bool].self, from: data)) ?? [:]
+        }
+        return [:]
     }
 
     private func persist(_ map: [String: Bool]) {
         guard let data = try? JSONEncoder().encode(map) else { return }
         userDefaults.set(data, forKey: storageKey)
+        sharedSuite?.set(data, forKey: storageKey.rawValue)
     }
 }
 

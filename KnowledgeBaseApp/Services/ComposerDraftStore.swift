@@ -13,6 +13,13 @@ protocol ComposerDraftStoreProtocol: Sendable {
         draft: ChatComposerDraft,
         pendingVoiceCaptures: [PendingVoiceCapture]
     ) -> LoadedComposerDraft?
+    /// Appends text/attachments into an existing draft (or creates one). Does not replace prior content.
+    @discardableResult
+    func merge(
+        sessionId: String,
+        text: String?,
+        attachments: [PendingAttachment]
+    ) -> LoadedComposerDraft?
     func clear(sessionId: String)
 }
 
@@ -48,7 +55,7 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         let state: PendingVoiceCaptureState
     }
 
-    private let lock = NSLock()
+    private let lock = NSRecursiveLock()
     private let fileManager: FileManager
     private let baseURL: URL
     private let encoder = JSONEncoder()
@@ -59,9 +66,7 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         if let baseURL {
             self.baseURL = baseURL
         } else {
-            let root = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-                ?? fileManager.temporaryDirectory
-            self.baseURL = root.appendingPathComponent("KBComposerDrafts", isDirectory: true)
+            self.baseURL = AppGroupContainer.composerDraftsDirectory(fileManager: fileManager)
         }
         try? fileManager.createDirectory(at: self.baseURL, withIntermediateDirectories: true)
     }
@@ -207,6 +212,40 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         try? data.write(to: sessionDir.appendingPathComponent("manifest.json"), options: .atomic)
 
         return LoadedComposerDraft(draft: normalizedDraft, pendingVoiceCaptures: normalizedPending)
+    }
+
+    @discardableResult
+    func merge(
+        sessionId: String,
+        text: String?,
+        attachments: [PendingAttachment]
+    ) -> LoadedComposerDraft? {
+        let existing = load(sessionId: sessionId)
+        var draft = existing?.draft ?? ChatComposerDraft()
+        let pendingVoiceCaptures = existing?.pendingVoiceCaptures ?? []
+
+        let incoming = text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !incoming.isEmpty {
+            if draft.trimmedText.isEmpty {
+                draft.text = incoming
+            } else if draft.text.hasSuffix("\n") {
+                draft.text += incoming
+            } else {
+                draft.text += "\n" + incoming
+            }
+        }
+
+        for attachment in attachments {
+            if ComposerAttachmentLimits.validateAdding(
+                currentAttachments: draft.attachments,
+                newAttachment: attachment
+            ) != nil {
+                break
+            }
+            draft.attachments.append(attachment)
+        }
+
+        return save(sessionId: sessionId, draft: draft, pendingVoiceCaptures: pendingVoiceCaptures)
     }
 
     func clear(sessionId: String) {

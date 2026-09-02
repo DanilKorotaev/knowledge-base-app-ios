@@ -138,6 +138,7 @@ TELEGRAM_NOTIFY_DISABLED=1 python3 scripts/ci/telegram_notify.py tests --outcome
 | `WIDGET_APP_IDENTIFIER`         | Optional; default `com.coredan.KnowledgeBaseApp.Widget` — **lane `beta`** runs Match for app + widget                                     |
 | `WATCH_APP_IDENTIFIER`          | Optional; default `com.coredan.KnowledgeBaseApp.watch` — watchOS companion embedded in iOS app                                           |
 | `WATCH_WIDGET_APP_IDENTIFIER`   | Optional; default `com.coredan.KnowledgeBaseApp.watch.widget` — watchOS complication (WidgetKit extension)                               |
+| `SHARE_APP_IDENTIFIER`          | Optional; default `com.coredan.KnowledgeBaseApp.Share` — Share Extension (embedded; Match + Manual signing on CI)                        |
 | `TEAM_ID`                       | Apple Developer Team ID if needed for signing                    |
 | `TELEGRAM_BOT_TOKEN`            | **CI / TestFlight** — Telegram Bot API token (from @BotFather)   |
 | `TELEGRAM_CHAT_ID`              | **CI / TestFlight** — chat id to receive notifications           |

@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 MAIN_ENT="$ROOT/KnowledgeBaseApp/KnowledgeBaseApp.entitlements"
 WIDGET_ENT="$ROOT/KnowledgeBaseWidget/KnowledgeBaseWidget.entitlements"
+SHARE_ENT="$ROOT/KnowledgeBaseShareExtension/KnowledgeBaseShareExtension.entitlements"
 
 require_key() {
   local file="$1"
@@ -15,7 +16,7 @@ require_key() {
   fi
 }
 
-for file in "$MAIN_ENT" "$WIDGET_ENT"; do
+for file in "$MAIN_ENT" "$WIDGET_ENT" "$SHARE_ENT"; do
   if [[ ! -f "$file" ]]; then
     echo "error: entitlements file not found: $file" >&2
     exit 1
@@ -25,6 +26,9 @@ done
 require_key "$MAIN_ENT" "com.apple.developer.healthkit"
 require_key "$MAIN_ENT" "com.apple.developer.healthkit.background-delivery"
 require_key "$MAIN_ENT" "com.apple.security.application-groups"
+require_key "$MAIN_ENT" "keychain-access-groups"
 require_key "$WIDGET_ENT" "com.apple.security.application-groups"
+require_key "$SHARE_ENT" "com.apple.security.application-groups"
+require_key "$SHARE_ENT" "keychain-access-groups"
 
 echo "verify_entitlements: ok"

@@ -5,6 +5,8 @@
 - `KnowledgeBaseApp/` — Swift sources (App, Configuration, Models, Services, Views, Resources)
 - `SharedIntents/` — **`StartVoiceRecordingIntent`** opens `knowledgebase://record` with **`OpenURLIntent`** (iOS 18+); used by widget buttons and **`KnowledgeBaseAppShortcuts`** (Shortcuts / Siri).
 - `KnowledgeBaseWidget/` — WidgetKit extension; **`NSExtension` / `widgetkit-extension`** is declared in `Info.plist` and merged from **`project.yml`** (`info.properties`); simulator install fails without it.
+- `KnowledgeBaseShareExtension/` — Share Extension (`com.coredan.KnowledgeBaseApp.Share`): system Share sheet → pick/create session → **Add to draft** / **Send**. Drafts live in App Group `group.com.coredan.KnowledgeBaseApp`; API token via shared Keychain access group.
+- `SharedAppGroup/` — App Group id, container URL, composer-draft migration helpers (main app + Share).
 - `KnowledgeBaseWatchApp/` — watchOS companion (`com.coredan.KnowledgeBaseApp.watch`), embedded in the iOS app.
 - `SharedWatchConnectivity/` — WCSession metadata keys + `WatchVoiceContext` (iOS + watchOS).
 - `SharedLocalization/` — `Localizable.xcstrings` (EN base + RU), `AppLanguageStore`, `L10n` helper.

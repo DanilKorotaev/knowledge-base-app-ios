@@ -22,7 +22,7 @@ final class PinnedSessionsStoreTests: XCTestCase {
     }
 
     func testPinPrependsAndMovesExistingToTop() {
-        let store = PinnedSessionsStore()
+        let store = PinnedSessionsStore(sharedSuite: nil)
         store.pin(sessionId: "a")
         store.pin(sessionId: "b")
         XCTAssertEqual(store.loadOrderedIds(), ["b", "a"])
@@ -32,7 +32,7 @@ final class PinnedSessionsStoreTests: XCTestCase {
     }
 
     func testUnpinRemovesId() {
-        let store = PinnedSessionsStore()
+        let store = PinnedSessionsStore(sharedSuite: nil)
         store.pin(sessionId: "a")
         store.pin(sessionId: "b")
         store.unpin(sessionId: "b")
@@ -40,21 +40,21 @@ final class PinnedSessionsStoreTests: XCTestCase {
     }
 
     func testIsPinned() {
-        let store = PinnedSessionsStore()
+        let store = PinnedSessionsStore(sharedSuite: nil)
         store.pin(sessionId: "42")
         XCTAssertTrue(store.isPinned("42"))
         XCTAssertFalse(store.isPinned("7"))
     }
 
     func testRemoveSameAsUnpin() {
-        let store = PinnedSessionsStore()
+        let store = PinnedSessionsStore(sharedSuite: nil)
         store.pin(sessionId: "1")
         store.remove(sessionId: "1")
         XCTAssertTrue(store.loadOrderedIds().isEmpty)
     }
 
     func testPruneDropsMissingSessions() {
-        let store = PinnedSessionsStore()
+        let store = PinnedSessionsStore(sharedSuite: nil)
         store.pin(sessionId: "keep")
         store.pin(sessionId: "drop")
         store.prune(validSessionIds: ["keep"])
@@ -62,7 +62,7 @@ final class PinnedSessionsStoreTests: XCTestCase {
     }
 
     func testPruneNoOpWhenAllValid() {
-        let store = PinnedSessionsStore()
+        let store = PinnedSessionsStore(sharedSuite: nil)
         store.pin(sessionId: "a")
         store.pin(sessionId: "b")
         store.prune(validSessionIds: ["a", "b", "c"])
@@ -71,7 +71,7 @@ final class PinnedSessionsStoreTests: XCTestCase {
 
     func testLoadReturnsEmptyForCorruptPayload() {
         storage.set(Data([0x00, 0x01]), forKey: UserDefaultsKey.pinnedSessionIds.rawValue)
-        let store = PinnedSessionsStore()
+        let store = PinnedSessionsStore(sharedSuite: nil)
         XCTAssertTrue(store.loadOrderedIds().isEmpty)
     }
 }

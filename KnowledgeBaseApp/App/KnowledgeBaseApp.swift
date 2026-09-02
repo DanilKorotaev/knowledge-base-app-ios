@@ -20,6 +20,10 @@ struct KnowledgeBaseApp: App {
         }
         #endif
         NetworkPathMonitor.shared.start()
+        // Ensure App Group draft root exists and legacy Application Support drafts are copied once.
+        _ = ComposerDraftStore.shared
+        // Promote Settings token into the shared Keychain access group for Share Extension.
+        _ = KeychainTokenStore.token()
     }
 
     var body: some Scene {

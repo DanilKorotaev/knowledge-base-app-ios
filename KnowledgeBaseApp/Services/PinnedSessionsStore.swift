@@ -13,14 +13,23 @@ final class PinnedSessionsStore: PinnedSessionsStoreProtocol {
     static let shared = PinnedSessionsStore()
 
     private let userDefaults: UserDefaultsServiceDescription
+    private let sharedSuite: UserDefaults?
 
-    init(userDefaults: UserDefaultsServiceDescription = UserDefaultsService.shared) {
+    init(
+        userDefaults: UserDefaultsServiceDescription = UserDefaultsService.shared,
+        sharedSuite: UserDefaults? = AppGroupContainer.sharedDefaults
+    ) {
         self.userDefaults = userDefaults
+        self.sharedSuite = sharedSuite
+        AppGroupContainer.migrateUserDefaultsValue(forKey: UserDefaultsKey.pinnedSessionIds.rawValue)
     }
 
     func loadOrderedIds() -> [String] {
-        guard let data = userDefaults.object(forKey: .pinnedSessionIds) as? Data else { return [] }
-        return (try? JSONDecoder().decode([String].self, from: data)) ?? []
+        if let data = sharedSuite?.data(forKey: UserDefaultsKey.pinnedSessionIds.rawValue)
+            ?? (userDefaults.object(forKey: .pinnedSessionIds) as? Data) {
+            return (try? JSONDecoder().decode([String].self, from: data)) ?? []
+        }
+        return []
     }
 
     func pin(sessionId: String) {
@@ -52,5 +61,6 @@ final class PinnedSessionsStore: PinnedSessionsStoreProtocol {
     private func save(_ ids: [String]) {
         guard let data = try? JSONEncoder().encode(ids) else { return }
         userDefaults.set(data, forKey: .pinnedSessionIds)
+        sharedSuite?.set(data, forKey: UserDefaultsKey.pinnedSessionIds.rawValue)
     }
 }
