@@ -12,6 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Fixed
+
+- Stop eternal chat “processing” when the last user message never got an assistant reply (give up after poll / ignore stale orphans).
+
 ## [1.0.45] - 2026-09-02
 
 ### Changed
@@ -24,9 +28,6 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 - Release packaging / TestFlight upload.
 
-### Added
-
-- Debug → Logs → Files lists Share Extension App Group logs in a separate section from main-app logs.
 
 ## [1.0.43] - 2026-09-02
 

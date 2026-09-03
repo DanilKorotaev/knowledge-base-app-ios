@@ -1098,9 +1098,13 @@ final class ChatViewModel {
         if isPollingForReply { return false }
         if isSending, !allowWhileSending { return false }
         let hasMarker = inFlightReplyStore.load(sessionId: session.id) != nil
-        guard looksAwaitingAssistantReply || hasMarker else { return false }
         guard looksAwaitingAssistantReply else {
-            clearInFlightReply()
+            if hasMarker { clearInFlightReply() }
+            return false
+        }
+        // Orphan last-user (pipeline died, marker expired): do not spin forever.
+        guard hasMarker || isRecentAwaitingUserMessage else {
+            assistantReplyPhase = .idle
             return false
         }
 
@@ -1120,6 +1124,14 @@ final class ChatViewModel {
     private var looksAwaitingAssistantReply: Bool {
         messages.last?.role == .user
     }
+
+    /// Share Send may not write an in-flight marker; still poll briefly for a fresh last user message.
+    private var isRecentAwaitingUserMessage: Bool {
+        guard let last = messages.last, last.role == .user, let createdAt = last.createdAt else { return false }
+        return Date().timeIntervalSince(createdAt) <= Self.orphanAwaitingGraceInterval
+    }
+
+    private static let orphanAwaitingGraceInterval: TimeInterval = 60 * 10
 
     private func pollUntilAssistantReply() async {
         let maxAttempts = max(1, replyPollMaxAttempts)
@@ -1141,6 +1153,7 @@ final class ChatViewModel {
                 )
                 apply(page: page, requestedLimit: normalizedLimit, kind: "pollReply")
                 if messages.last?.role == .assistant {
+                    clearInFlightReply()
                     scrollIntent = .scrollToBottom
                     return
                 }
@@ -1148,13 +1161,18 @@ final class ChatViewModel {
                 ChatPaginationLogger.loadFailed("pollReply", error: error.localizedDescription)
             }
         }
-        // Keep marker so a later return to chat can resume; leave waiting UI if still awaiting.
-        if looksAwaitingAssistantReply {
-            assistantReplyPhase = .waiting
-        } else {
-            clearInFlightReply()
-            assistantReplyPhase = .idle
+        // No assistant after a full poll cycle.
+        // Keep in-flight only when we still have streamed partial (resume later within maxAge).
+        // Otherwise clear — orphan user messages must not spin processing forever.
+        cursorActivityLabel = nil
+        let partial = inFlightReplyStore.load(sessionId: session.id)?.partialText?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if looksAwaitingAssistantReply, let partial, !partial.isEmpty {
+            assistantReplyPhase = .streaming(text: partial)
+            return
         }
+        clearInFlightReply()
+        assistantReplyPhase = .idle
     }
 
     func clearError() {

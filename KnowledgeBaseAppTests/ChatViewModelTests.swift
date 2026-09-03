@@ -399,7 +399,13 @@ final class ChatViewModelTests: XCTestCase {
         store.replaceMessages([user], sessionId: sessionId)
 
         let client = DelayedAssistantReplyChatAPIClient(store: store)
-        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        let inFlight = ChatViewModelTestsMemoryInFlightStore()
+        inFlight.save(InFlightReplyState(sessionId: sessionId, startedAt: Date(), partialText: nil))
+        let viewModel = ChatViewModel(
+            session: makeSession(id: sessionId),
+            client: client,
+            inFlightReplyStore: inFlight
+        )
         viewModel.messages = [user]
 
         XCTAssertEqual(viewModel.messages.last?.role, .user)
@@ -408,6 +414,48 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertTrue(resumed)
         XCTAssertEqual(viewModel.messages.last?.role, .assistant)
         XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+        XCTAssertNil(inFlight.load(sessionId: sessionId))
+    }
+
+    func testResumeAwaitingReplyIfNeeded_ignoresStaleOrphanUserWithoutMarker() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let stale = Date().addingTimeInterval(-60 * 60)
+        let user = KBMessage(id: "user-stale", role: .user, content: "old", createdAt: stale)
+        store.replaceMessages([user], sessionId: sessionId)
+
+        let client = StubChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        viewModel.messages = [user]
+        viewModel.assistantReplyPhase = .waiting
+
+        let resumed = await viewModel.resumeAwaitingReplyIfNeeded()
+
+        XCTAssertFalse(resumed)
+        XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+    }
+
+    func testPollExhausted_clearsWaitingInsteadOfSpinningForever() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        let user = KBMessage(id: "user-1", role: .user, content: "hi", createdAt: Date())
+        store.replaceMessages([user], sessionId: sessionId)
+
+        let client = StubChatAPIClient(store: store)
+        let inFlight = ChatViewModelTestsMemoryInFlightStore()
+        inFlight.save(InFlightReplyState(sessionId: sessionId, startedAt: Date(), partialText: nil))
+        let viewModel = ChatViewModel(
+            session: makeSession(id: sessionId),
+            client: client,
+            inFlightReplyStore: inFlight
+        )
+        viewModel.messages = [user]
+        viewModel.replyPollMaxAttempts = 2
+        viewModel.replyPollIntervalNanoseconds = 0
+
+        let resumed = await viewModel.resumeAwaitingReplyIfNeeded()
+
+        XCTAssertTrue(resumed)
+        XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+        XCTAssertNil(inFlight.load(sessionId: sessionId))
     }
 
     func testSendText_showsCursorActivityUntilFirstDelta() async throws {
