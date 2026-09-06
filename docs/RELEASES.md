@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.47 | 163 | `ios/v1.0.47` | 2026-09-06 | Raise clipboard paste coverage above the CI gate. |
 | 1.0.46 | 161 | `ios/v1.0.46` | 2026-09-03 | Stop eternal chat processing on orphan user messages. |
 | 1.0.45 | 159 | `ios/v1.0.45` | 2026-09-02 | TestFlight release |
 | 1.0.44 | 158 | `ios/v1.0.44` | 2026-09-02 | TestFlight release |
