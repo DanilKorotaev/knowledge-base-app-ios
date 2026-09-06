@@ -12,16 +12,16 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Added
+
+- Chat composer: paste and drag-and-drop images as attachment chips (clipboard / drop).
+
 ## [1.0.46] - 2026-09-03
 
 ### Changed
 
 - Stop eternal chat “processing” when the last user message never got an assistant reply (give up after poll / ignore stale orphans).
 - Stop eternal chat processing on orphan user messages.
-
-### Fixed
-
-- Stop eternal chat “processing” when the last user message never got an assistant reply (give up after poll / ignore stale orphans).
 
 ## [1.0.45] - 2026-09-02
 

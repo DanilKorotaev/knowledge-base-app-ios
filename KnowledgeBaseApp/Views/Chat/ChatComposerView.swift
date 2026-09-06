@@ -46,6 +46,14 @@ struct ChatComposerView: View {
             .padding(.horizontal, 10)
             .padding(.top, 6)
             .padding(.bottom, 10)
+            .onDrop(
+                of: [.image, .jpeg, .png, .heic, .heif, .gif, .webP, .fileURL],
+                isTargeted: nil
+            ) { providers in
+                guard !isBusy else { return false }
+                Task { await attachDroppedProviders(providers) }
+                return true
+            }
             .photosPicker(
                 isPresented: $showGalleryPicker,
                 selection: $photoPickerItems,
@@ -135,11 +143,14 @@ struct ChatComposerView: View {
             }
 
             ZStack(alignment: .trailing) {
-                TextField("composer.message_placeholder", text: $viewModel.composerDraft.text, axis: .vertical)
-                    .lineLimit(1 ... 8)
-                    .textFieldStyle(.plain)
-                    .disabled(isBusy)
-                    .padding(.horizontal, 2)
+                ComposerPasteTextView(
+                    text: $viewModel.composerDraft.text,
+                    placeholder: L10n.string("composer.message_placeholder"),
+                    isEnabled: !isBusy,
+                    onPasteImages: { pasteClipboardImages() }
+                )
+                .frame(minHeight: 24)
+                .padding(.horizontal, 2)
 
                 if showsTextFieldTranscribingIndicator {
                     ProgressView()
@@ -209,5 +220,62 @@ struct ChatComposerView: View {
         }
         .disabled(!viewModel.canSendComposer || isBusy)
         .accessibilityLabel(Text("composer.send_a11y"))
+    }
+
+    private func pasteClipboardImages() {
+        guard !isBusy else { return }
+        Task { @MainActor in
+            let slots = viewModel.remainingComposerAttachmentSlots
+            guard slots > 0 else {
+                viewModel.reportAttachmentLimitReached()
+                return
+            }
+            let attachments = await ClipboardMediaImporter.loadAttachmentsFromPasteboard(maxCount: slots)
+            addImportedAttachments(attachments)
+        }
+    }
+
+    private func attachDroppedProviders(_ providers: [NSItemProvider]) async {
+        let imageProviders = providers.filter {
+            ClipboardMediaImporter.providerHasImage($0)
+                || $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier)
+        }
+        guard !imageProviders.isEmpty else { return }
+
+        let initialSlots = await MainActor.run { viewModel.remainingComposerAttachmentSlots }
+        guard initialSlots > 0 else {
+            await MainActor.run { viewModel.reportAttachmentLimitReached() }
+            return
+        }
+
+        var imported: [PendingAttachment] = []
+        let startingCount = await MainActor.run { viewModel.composerDraft.attachments.count }
+        for provider in imageProviders {
+            let used = startingCount + imported.count
+            if ComposerAttachmentLimits.remainingFileSlots(currentCount: used) == 0 {
+                break
+            }
+            if let attachment = await ClipboardMediaImporter.attachment(from: provider) {
+                imported.append(attachment)
+            }
+        }
+
+        await MainActor.run {
+            addImportedAttachments(imported)
+            if imported.count < imageProviders.count,
+               viewModel.remainingComposerAttachmentSlots == 0 {
+                viewModel.reportAttachmentLimitReached()
+            }
+        }
+    }
+
+    private func addImportedAttachments(_ attachments: [PendingAttachment]) {
+        for attachment in attachments {
+            guard viewModel.remainingComposerAttachmentSlots > 0 else {
+                viewModel.reportAttachmentLimitReached()
+                return
+            }
+            _ = viewModel.addPendingAttachment(attachment)
+        }
     }
 }

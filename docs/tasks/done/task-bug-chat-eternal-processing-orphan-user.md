@@ -1,6 +1,6 @@
 # Bug: eternal “processing” when last message is user without reply
 
-**Status:** Fixed in code (pending TestFlight)  
+**Status:** Done  
 **Priority:** High  
 **Category:** Bug, chat, resume/poll
 

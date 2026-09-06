@@ -1,9 +1,9 @@
 # UX: Paste / drop clipboard images as composer attachments
 
-**Status:** Backlog  
+**Status:** Done  
 **Priority:** Medium  
 **Category:** Product / Chat UX  
-**Related:** [`task-feature-share-extension-compose.md`](../done/task-feature-share-extension-compose.md) (share-in is separate; this is **inside** the main app composer)
+**Related:** [`task-feature-share-extension-compose.md`](task-feature-share-extension-compose.md) (share-in is separate; this is **inside** the main app composer)
 
 ## Problem
 
@@ -24,11 +24,11 @@ In the main app chat composer (and optionally chat scroll area):
 
 ## Scope
 
-- [ ] Detect pasteboard image (and maybe file URL) when user pastes into composer or taps an explicit **Paste** affordance if the text field doesn’t expose image paste  
-- [ ] Convert to staged file in draft store (same as other attachments)  
-- [ ] Drag-and-drop onto composer strip / text field  
+- [x] Detect pasteboard image (and maybe file URL) when user pastes into composer or taps an explicit **Paste** affordance if the text field doesn’t expose image paste  
+- [x] Convert to staged file in draft store (same as other attachments)  
+- [x] Drag-and-drop onto composer strip / text field  
 - [ ] Optional: banner “Image on clipboard — tap to attach” when becoming active with image on pasteboard (nice-to-have; can defer)  
-- [ ] Unit tests for pasteboard → `PendingAttachment` mapping  
+- [x] Unit tests for pasteboard → `PendingAttachment` mapping  
 - [ ] Manual: screenshot → copy → paste in composer; Photos copy → paste; drag from Photos (if supported on device)
 
 ## Out of scope
@@ -45,6 +45,14 @@ In the main app chat composer (and optionally chat scroll area):
 
 ## Acceptance
 
-- [ ] Pasting a copied screenshot/image adds an attachment chip, not only ignored paste  
-- [ ] Draft survives leave/reopen chat  
-- [ ] Over-limit paste shows the same limit UX as picking too many files  
+- [x] Pasting a copied screenshot/image adds an attachment chip, not only ignored paste  
+- [x] Draft survives leave/reopen chat  
+- [x] Over-limit paste shows the same limit UX as picking too many files  
+
+
+## Implementation notes
+
+- `ClipboardMediaImporter` — pasteboard / `NSItemProvider` → image `PendingAttachment`
+- `ComposerPasteTextView` — `UITextView` overrides `paste(_:)` when pasteboard has images
+- `ChatComposerView` — `.onDrop` for image/fileURL providers; uses same attach limits as gallery
+- Clipboard banner deferred
