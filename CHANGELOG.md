@@ -12,6 +12,13 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.48] - 2026-09-07
+
+### Changed
+
+- Chat composer text field stays compact when empty (no full-height UITextView stretch).
+- Keep composer text field compact when empty.
+
 ### Fixed
 
 - Chat composer text field stays compact when empty (no full-height UITextView stretch).
@@ -394,7 +401,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.47...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.48...HEAD
+[1.0.48]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.48
 [1.0.47]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.47
 [1.0.46]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.46
 [1.0.45]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.45
