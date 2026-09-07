@@ -12,6 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Fixed
+
+- Chat composer text field stays compact when empty (no full-height UITextView stretch).
+
 ## [1.0.47] - 2026-09-06
 
 ### Changed
@@ -19,10 +23,6 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 - Chat composer: paste and drag-and-drop images as attachment chips (clipboard / drop).
 - Add paste and drop of images into the chat composer.
 - Raise clipboard paste coverage above the CI gate.
-
-### Added
-
-- Chat composer: paste and drag-and-drop images as attachment chips (clipboard / drop).
 
 ## [1.0.46] - 2026-09-03
 

@@ -22,7 +22,10 @@ struct ComposerPasteTextView: UIViewRepresentable {
         textView.adjustsFontForContentSizeCategory = true
         textView.isScrollEnabled = false
         textView.keyboardDismissMode = .interactive
+        // Keep compact in SwiftUI layouts — do not expand to fill leftover chat height.
+        textView.setContentHuggingPriority(.required, for: .vertical)
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        textView.setContentCompressionResistancePriority(.required, for: .vertical)
         textView.onPasteImages = {
             context.coordinator.parent.onPasteImages()
         }
@@ -40,10 +43,10 @@ struct ComposerPasteTextView: UIViewRepresentable {
         textView.isUserInteractionEnabled = isEnabled
         if textView.text != text {
             textView.text = text
+            textView.invalidateIntrinsicContentSize()
         }
         context.coordinator.placeholderLabel?.text = placeholder
         context.coordinator.updatePlaceholderVisibility(in: textView)
-        textView.invalidateIntrinsicContentSize()
     }
 
     private func makePlaceholderLabel(in textView: PasteAwareTextView) -> UILabel {
@@ -71,13 +74,13 @@ struct ComposerPasteTextView: UIViewRepresentable {
         }
 
         func textViewDidChange(_ textView: UITextView) {
-            parent.text = textView.text
+            parent.text = textView.text ?? ""
             updatePlaceholderVisibility(in: textView)
             textView.invalidateIntrinsicContentSize()
         }
 
         func updatePlaceholderVisibility(in textView: UITextView) {
-            placeholderLabel?.isHidden = !textView.text.isEmpty
+            placeholderLabel?.isHidden = !(textView.text ?? "").isEmpty
         }
     }
 }
@@ -86,19 +89,22 @@ final class PasteAwareTextView: UITextView {
     var onPasteImages: (() -> Void)?
 
     private let minHeight: CGFloat = 24
+    /// ~8 lines of body text — matches previous TextField lineLimit(1...8).
     private let maxHeight: CGFloat = 176
 
     override var intrinsicContentSize: CGSize {
-        let width = bounds.width > 0 ? bounds.width : UIScreen.main.bounds.width
-        let fitting = sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        let width = bounds.width > 1 ? bounds.width : (superview?.bounds.width ?? UIScreen.main.bounds.width - 48)
+        let fitting = sizeThatFits(CGSize(width: max(width, 1), height: .greatestFiniteMagnitude))
         let height = min(max(fitting.height, minHeight), maxHeight)
         return CGSize(width: UIView.noIntrinsicMetric, height: height)
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        invalidateIntrinsicContentSize()
-        isScrollEnabled = bounds.height >= maxHeight - 0.5
+        let shouldScroll = bounds.height >= maxHeight - 0.5
+        if isScrollEnabled != shouldScroll {
+            isScrollEnabled = shouldScroll
+        }
     }
 
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {

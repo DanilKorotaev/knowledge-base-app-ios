@@ -270,6 +270,16 @@ final class PasteAwareTextViewTests: XCTestCase {
         textView.font = UIFont.preferredFont(forTextStyle: .body)
         let size = textView.intrinsicContentSize
         XCTAssertGreaterThanOrEqual(size.height, 24)
+        XCTAssertLessThanOrEqual(size.height, 176)
+    }
+
+    func testIntrinsicContentSize_emptyStaysCompact() {
+        let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 320, height: 400))
+        textView.text = ""
+        textView.font = UIFont.preferredFont(forTextStyle: .body)
+        // Even if the view was laid out tall, intrinsic height must stay compact when empty.
+        let size = textView.intrinsicContentSize
+        XCTAssertLessThan(size.height, 80)
     }
 
     private func solidJPEGImage() -> UIImage? {

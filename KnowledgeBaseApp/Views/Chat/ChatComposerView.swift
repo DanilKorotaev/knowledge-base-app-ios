@@ -149,7 +149,9 @@ struct ChatComposerView: View {
                     isEnabled: !isBusy,
                     onPasteImages: { pasteClipboardImages() }
                 )
-                .frame(minHeight: 24)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minHeight: 24, maxHeight: 176)
                 .padding(.horizontal, 2)
 
                 if showsTextFieldTranscribingIndicator {
