@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.56] - 2026-09-09
+
+### Changed
+
+- Handle image drops while the composer text field is focused.
+
 ## [1.0.55] - 2026-09-09
 
 ### Changed
@@ -471,7 +477,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.55...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.56...HEAD
+[1.0.56]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.56
 [1.0.55]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.55
 [1.0.54]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.54
 [1.0.53]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.53
