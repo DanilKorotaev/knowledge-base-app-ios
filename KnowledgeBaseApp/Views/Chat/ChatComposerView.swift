@@ -44,6 +44,14 @@ struct ChatComposerView: View {
         !viewModel.composerDraft.attachments.isEmpty
     }
 
+    private var composerTextFieldHeight: CGFloat {
+        ComposerTextFieldMetrics.height(
+            text: viewModel.composerDraft.text,
+            width: max(UIScreen.main.bounds.width - 68, 120),
+            minimumLineCount: needsExpandedComposerTextField ? 3 : 1
+        )
+    }
+
     var body: some View {
         composerContent
             .padding(14)
@@ -152,16 +160,12 @@ struct ChatComposerView: View {
                     text: $viewModel.composerDraft.text,
                     placeholder: L10n.string("composer.message_placeholder"),
                     isEnabled: !isBusy,
-                    minimumLineCount: needsExpandedComposerTextField ? 3 : 1,
                     onPasteImages: { pasteClipboardImages() }
                 )
-                // sizeThatFits drives height; fixedSize keeps SwiftUI from stretching the representable.
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(
-                    maxWidth: .infinity,
-                    minHeight: needsExpandedComposerTextField ? 64 : 24,
-                    alignment: .topLeading
-                )
+                // SwiftUI owns height — UITextView only fills/scrolls inside this frame.
+                .frame(maxWidth: .infinity)
+                .frame(height: composerTextFieldHeight)
+                .clipped()
                 .padding(.horizontal, 2)
 
                 if showsTextFieldTranscribingIndicator {
@@ -243,6 +247,12 @@ struct ChatComposerView: View {
                 return
             }
             let attachments = await ClipboardMediaImporter.loadAttachmentsFromPasteboard(maxCount: slots)
+            if attachments.isEmpty {
+                if ClipboardMediaImporter.pasteboardHasImages {
+                    viewModel.reportError(L10n.string("composer.paste_image_failed"))
+                }
+                return
+            }
             addImportedAttachments(attachments)
         }
     }

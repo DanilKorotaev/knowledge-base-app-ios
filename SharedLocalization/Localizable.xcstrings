@@ -2627,6 +2627,23 @@
         }
       }
     },
+    "composer.paste_image_failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not paste the image from the clipboard. Try again in a moment."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось вставить картинку из буфера. Попробуйте ещё раз чуть позже."
+          }
+        }
+      }
+    },
     "composer.camera": {
       "localizations": {
         "en": {

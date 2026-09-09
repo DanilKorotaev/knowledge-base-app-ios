@@ -303,43 +303,45 @@ final class PasteAwareTextViewTests: XCTestCase {
     }
 
     func testIntrinsicContentSize_hasMinimumHeight() {
-        let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 200, height: 10))
-        textView.text = "a"
-        textView.font = UIFont.preferredFont(forTextStyle: .body)
-        textView.minimumLineCount = 1
-        let size = textView.intrinsicContentSize
-        XCTAssertGreaterThanOrEqual(size.height, 24)
-        XCTAssertLessThanOrEqual(size.height, 200)
+        // Height is owned by SwiftUI via ComposerTextFieldMetrics.
+        let height = ComposerTextFieldMetrics.height(
+            text: "a",
+            width: 200,
+            minimumLineCount: 1
+        )
+        XCTAssertGreaterThanOrEqual(height, 24)
+        XCTAssertLessThanOrEqual(height, 200)
     }
 
     func testIntrinsicContentSize_emptyStaysCompact() {
-        let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 320, height: 400))
-        textView.text = ""
-        textView.font = UIFont.preferredFont(forTextStyle: .body)
-        textView.minimumLineCount = 1
-        // Even if the view was laid out tall, intrinsic height must stay compact when empty.
-        let size = textView.intrinsicContentSize
-        XCTAssertLessThan(size.height, 80)
+        let height = ComposerTextFieldMetrics.height(
+            text: "",
+            width: 320,
+            minimumLineCount: 1
+        )
+        XCTAssertLessThan(height, 80)
     }
 
     func testPreferredHeight_withAttachmentsUsesThreeLineMinimum() {
-        let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 320, height: 10))
-        textView.text = ""
-        textView.font = UIFont.preferredFont(forTextStyle: .body)
-        textView.minimumLineCount = 3
-        let height = textView.preferredHeight(forWidth: 320)
+        let height = ComposerTextFieldMetrics.height(
+            text: "",
+            width: 320,
+            minimumLineCount: 3
+        )
         XCTAssertGreaterThanOrEqual(height, 64)
         XCTAssertLessThan(height, 120)
     }
 
     func testPreferredHeight_longTextCapsNearEightLines() {
-        let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 280, height: 10))
-        textView.font = UIFont.preferredFont(forTextStyle: .body)
-        textView.minimumLineCount = 1
-        textView.text = Array(repeating: "long line of composer text that wraps", count: 20)
+        let text = Array(repeating: "long line of composer text that wraps", count: 20)
             .joined(separator: "\n")
-        let height = textView.preferredHeight(forWidth: 280)
-        let maxExpected = ceil(textView.font!.lineHeight * 8 + 20)
+        let height = ComposerTextFieldMetrics.height(
+            text: text,
+            width: 280,
+            minimumLineCount: 1
+        )
+        let font = UIFont.preferredFont(forTextStyle: .body)
+        let maxExpected = ceil(font.lineHeight * 8 + ComposerTextFieldMetrics.verticalInsets)
         XCTAssertLessThanOrEqual(height, maxExpected + 4)
         XCTAssertGreaterThan(height, 100)
     }

@@ -10,44 +10,98 @@ enum ClipboardMediaImporter {
         return board.itemProviders.contains { providerHasImage($0) }
     }
 
-    /// Loads image attachments from the general pasteboard (async provider load + sync UIImage fallback).
+    /// Loads image attachments from the general pasteboard (async provider load + sync fallbacks).
     static func loadAttachmentsFromPasteboard(
         maxCount: Int = ComposerAttachmentLimits.maxFileAttachments
     ) async -> [PendingAttachment] {
         guard maxCount > 0 else { return [] }
-        let board = UIPasteboard.general
-        ComposerPasteLogger.loadStarted(
-            maxCount: maxCount,
-            hasImages: pasteboardHasImages,
-            providerCount: board.itemProviders.count
-        )
 
-        var result = await loadAttachmentsOnce(from: board, maxCount: maxCount)
+        let delaysNs: [UInt64] = [0, 120_000_000, 280_000_000, 550_000_000, 900_000_000]
+        var lastAttempt = 1
         var usedFallback = false
-        var attempt = 1
+        var source = "none"
+        var result: [PendingAttachment] = []
 
-        // Screenshot / Photos pasteboard providers are sometimes empty on the first paste tick.
-        if result.isEmpty, pasteboardHasImages {
-            try? await Task.sleep(nanoseconds: 180_000_000)
-            attempt = 2
-            result = await loadAttachmentsOnce(from: UIPasteboard.general, maxCount: maxCount)
-        }
+        for (index, delay) in delaysNs.enumerated() {
+            if delay > 0 {
+                try? await Task.sleep(nanoseconds: delay)
+            }
+            lastAttempt = index + 1
+            let board = UIPasteboard.general
+            if index == 0 {
+                ComposerPasteLogger.loadStarted(
+                    maxCount: maxCount,
+                    hasImages: pasteboardHasImages,
+                    providerCount: board.itemProviders.count,
+                    types: board.types.joined(separator: ",")
+                )
+            }
 
-        if result.isEmpty, let image = UIPasteboard.general.image,
-           let attachment = attachment(fromImage: image, preferredFilename: "paste.jpg") {
-            result = [attachment]
-            usedFallback = true
+            result = await loadAttachmentsOnce(from: board, maxCount: maxCount)
+            if !result.isEmpty {
+                source = "providers"
+                break
+            }
+
+            if let data = pasteboardImageData(from: board),
+               let attachment = attachment(fromImageData: data, filename: "paste.jpg") {
+                result = [attachment]
+                usedFallback = true
+                source = "pasteboard-data"
+                break
+            }
+
+            if let image = board.image,
+               let attachment = attachment(fromImage: image, preferredFilename: "paste.jpg") {
+                result = [attachment]
+                usedFallback = true
+                source = "pasteboard-image"
+                break
+            }
         }
 
         ComposerPasteLogger.loadFinished(
             count: result.count,
-            attempt: attempt,
-            usedFallbackImage: usedFallback
+            attempt: lastAttempt,
+            usedFallbackImage: usedFallback,
+            source: source
         )
         if result.isEmpty, pasteboardHasImages {
             ComposerPasteLogger.loadEmptyAfterRetry(hasImages: true)
         }
         return result
+    }
+
+    private static func pasteboardImageData(from board: UIPasteboard) -> Data? {
+        let typeCandidates = [
+            UTType.png.identifier,
+            UTType.jpeg.identifier,
+            UTType.heic.identifier,
+            UTType.heif.identifier,
+            UTType.image.identifier,
+            "public.png",
+            "public.jpeg",
+            "public.heic",
+            "public.image",
+        ]
+        for type in typeCandidates {
+            if let data = board.data(forPasteboardType: type), !data.isEmpty,
+               mimeTypeForImageData(data) != nil || UIImage(data: data) != nil {
+                return data
+            }
+        }
+        for item in board.items {
+            for (_, value) in item {
+                if let data = value as? Data, !data.isEmpty,
+                   mimeTypeForImageData(data) != nil || UIImage(data: data) != nil {
+                    return data
+                }
+                if let image = value as? UIImage {
+                    return image.jpegData(compressionQuality: 0.92)
+                }
+            }
+        }
+        return nil
     }
 
     private static func loadAttachmentsOnce(
@@ -66,6 +120,10 @@ enum ClipboardMediaImporter {
     }
 
     static func attachment(from provider: NSItemProvider) async -> PendingAttachment? {
+        if let data = await loadDataRepresentation(from: provider) {
+            let filename = suggestedFilename(for: provider, data: data)
+            return attachment(fromImageData: data, filename: filename)
+        }
         if let data = await loadImageData(from: provider) {
             let filename = suggestedFilename(for: provider, data: data)
             return attachment(fromImageData: data, filename: filename)
@@ -180,6 +238,20 @@ enum ClipboardMediaImporter {
             return attachment(fromImageData: data, filename: filename, mimeType: "image/heic")
         }
         return attachment(fromImageData: data, filename: filename, mimeType: mime)
+    }
+
+    private static func loadDataRepresentation(from provider: NSItemProvider) async -> Data? {
+        for type in imageTypeIdentifiers where provider.hasItemConformingToTypeIdentifier(type) {
+            let data: Data? = await withCheckedContinuation { continuation in
+                _ = provider.loadDataRepresentation(forTypeIdentifier: type) { data, _ in
+                    continuation.resume(returning: data)
+                }
+            }
+            if let data, !data.isEmpty {
+                return data
+            }
+        }
+        return nil
     }
 
     private static func loadImageData(from provider: NSItemProvider) async -> Data? {
