@@ -12,6 +12,14 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.53] - 2026-09-09
+
+### Changed
+
+- Recording overlay: hide the redundant large mic icon; keep rounded card padding.
+- Dismiss composer keyboard/focus as soon as hold-to-record starts.
+- Dismiss keyboard on record start and drop overlay mic icon.
+
 ### Changed
 
 - Recording overlay: hide the redundant large mic icon; keep rounded card padding.
@@ -450,7 +458,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.52...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.53...HEAD
+[1.0.53]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.53
 [1.0.52]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.52
 [1.0.51]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.51
 [1.0.50]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.50
