@@ -12,6 +12,18 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.50] - 2026-09-09
+
+### Changed
+
+- Composer: 3-line minimum height when image/file attachments are present; empty field stays one line.
+- Last composer line no longer clips under the text-view edge after bounce.
+- Retry clipboard image load once when the first paste tick returns no providers; log paste attempts under Chat tag.
+
+### Fixed
+
+- Fix composer 3-line min with attachments and last-line clip.
+
 ### Fixed
 
 - Composer: 3-line minimum height when image/file attachments are present; empty field stays one line.
@@ -415,7 +427,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.49...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.50...HEAD
+[1.0.50]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.50
 [1.0.49]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.49
 [1.0.48]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.48
 [1.0.47]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.47
