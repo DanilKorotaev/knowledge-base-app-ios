@@ -322,14 +322,14 @@ final class PasteAwareTextViewTests: XCTestCase {
         XCTAssertLessThan(height, 80)
     }
 
-    func testPreferredHeight_withAttachmentsUsesThreeLineMinimum() {
+    func testPreferredHeight_emptyAlwaysUsesOneLineMinimum() {
         let height = ComposerTextFieldMetrics.height(
             text: "",
             width: 320,
-            minimumLineCount: 3
+            minimumLineCount: 1
         )
-        XCTAssertGreaterThanOrEqual(height, 64)
-        XCTAssertLessThan(height, 120)
+        XCTAssertLessThan(height, 50)
+        XCTAssertGreaterThanOrEqual(height, 24)
     }
 
     func testPreferredHeight_longTextCapsNearFourLines() {

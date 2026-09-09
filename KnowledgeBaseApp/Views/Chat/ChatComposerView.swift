@@ -39,16 +39,11 @@ struct ChatComposerView: View {
             || !viewModel.pendingVoiceCaptures.isEmpty
     }
 
-    /// Extra text-field height only when file/image attachments need room beside the strip.
-    private var needsExpandedComposerTextField: Bool {
-        !viewModel.composerDraft.attachments.isEmpty
-    }
-
     private var composerTextFieldHeight: CGFloat {
         ComposerTextFieldMetrics.height(
             text: viewModel.composerDraft.text,
             width: max(UIScreen.main.bounds.width - 68, 120),
-            minimumLineCount: needsExpandedComposerTextField ? 3 : 1
+            minimumLineCount: 1
         )
     }
 
