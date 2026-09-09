@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.54] - 2026-09-09
+
+### Changed
+
+- Keep empty composer compact when attachments are present.
+
 ### Fixed
 
 - Empty composer with attachments stays one line tall (no forced 3-line text field).
@@ -457,7 +463,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.53...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.54...HEAD
+[1.0.54]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.54
 [1.0.53]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.53
 [1.0.52]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.52
 [1.0.51]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.51
