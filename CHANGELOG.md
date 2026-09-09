@@ -12,6 +12,11 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Fixed
+
+- Composer TextView no longer interactively dismisses the keyboard while scrolling (only the chat list does).
+- Cap composer text height at ~4 lines so long drafts scroll inside a smaller field.
+
 ## [1.0.51] - 2026-09-09
 
 ### Fixed

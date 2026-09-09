@@ -332,7 +332,7 @@ final class PasteAwareTextViewTests: XCTestCase {
         XCTAssertLessThan(height, 120)
     }
 
-    func testPreferredHeight_longTextCapsNearEightLines() {
+    func testPreferredHeight_longTextCapsNearFourLines() {
         let text = Array(repeating: "long line of composer text that wraps", count: 20)
             .joined(separator: "\n")
         let height = ComposerTextFieldMetrics.height(
@@ -341,9 +341,16 @@ final class PasteAwareTextViewTests: XCTestCase {
             minimumLineCount: 1
         )
         let font = UIFont.preferredFont(forTextStyle: .body)
-        let maxExpected = ceil(font.lineHeight * 8 + ComposerTextFieldMetrics.verticalInsets)
+        let maxExpected = ceil(
+            font.lineHeight * CGFloat(ComposerTextFieldMetrics.maxLines)
+                + ComposerTextFieldMetrics.verticalInsets
+        )
         XCTAssertLessThanOrEqual(height, maxExpected + 4)
-        XCTAssertGreaterThan(height, 100)
+        XCTAssertGreaterThan(height, 40)
+        XCTAssertEqual(
+            height,
+            ComposerTextFieldMetrics.height(text: text, width: 280, minimumLineCount: 1)
+        )
     }
 
     private func solidJPEGImage() -> UIImage? {

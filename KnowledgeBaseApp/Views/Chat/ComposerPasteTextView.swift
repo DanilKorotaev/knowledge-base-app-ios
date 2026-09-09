@@ -23,7 +23,8 @@ struct ComposerPasteTextView: UIViewRepresentable {
         textView.isScrollEnabled = true
         textView.alwaysBounceVertical = false
         textView.clipsToBounds = true
-        textView.keyboardDismissMode = .interactive
+        // Do not drag-dismiss keyboard while scrolling composer text — only the chat list does that.
+        textView.keyboardDismissMode = .none
         textView.setContentHuggingPriority(.defaultLow, for: .vertical)
         textView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
         textView.onPasteImages = {
@@ -112,7 +113,8 @@ final class PasteAwareTextView: UITextView {
 
 /// Computes composer text-field height in SwiftUI so UITextView cannot stretch the panel.
 enum ComposerTextFieldMetrics {
-    static let maxLines = 8
+    /// Cap growth so the keyboard + composer leave room for chat history.
+    static let maxLines = 4
     static let verticalInsets: CGFloat = 10
 
     static func height(
