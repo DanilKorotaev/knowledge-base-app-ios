@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.58 | 175 | `ios/v1.0.58` | 2026-09-09 | Stabilize paste image unit test against CI timing flakes. |
 | 1.0.57 | 173 | `ios/v1.0.57` | 2026-09-09 | Fix false paste error on focused screenshot drop. |
 | 1.0.56 | 172 | `ios/v1.0.56` | 2026-09-09 | Handle image drops while the composer text field is focused. |
 | 1.0.55 | 171 | `ios/v1.0.55` | 2026-09-09 | TestFlight release |
