@@ -1,12 +1,16 @@
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
-/// Paste-aware composer text view. Height is owned by SwiftUI (`.frame(height:)`); this view fills and scrolls.
+/// Paste/drop-aware composer text view. Height is owned by SwiftUI (`.frame(height:)`).
 struct ComposerPasteTextView: UIViewRepresentable {
     @Binding var text: String
     var placeholder: String
     var isEnabled: Bool
-    var onPasteImages: () -> Void
+    /// Returns `true` when at least one image attachment was added.
+    var onPasteImages: () async -> Bool
+    var onDropImages: ([NSItemProvider]) -> Void
+    var onPasteImagesFailed: () -> Void
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -15,6 +19,7 @@ struct ComposerPasteTextView: UIViewRepresentable {
     func makeUIView(context: Context) -> PasteAwareTextView {
         let textView = PasteAwareTextView()
         textView.delegate = context.coordinator
+        textView.textDropDelegate = context.coordinator
         textView.backgroundColor = .clear
         textView.textContainerInset = UIEdgeInsets(top: 4, left: 0, bottom: 6, right: 0)
         textView.textContainer.lineFragmentPadding = 0
@@ -27,8 +32,15 @@ struct ComposerPasteTextView: UIViewRepresentable {
         textView.keyboardDismissMode = .none
         textView.setContentHuggingPriority(.defaultLow, for: .vertical)
         textView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        textView.addInteraction(UIDropInteraction(delegate: context.coordinator))
         textView.onPasteImages = {
-            context.coordinator.parent.onPasteImages()
+            await context.coordinator.parent.onPasteImages()
+        }
+        textView.onPasteImagesFailed = {
+            context.coordinator.parent.onPasteImagesFailed()
+        }
+        textView.onDropImages = { providers in
+            context.coordinator.parent.onDropImages(providers)
         }
         context.coordinator.placeholderLabel = makePlaceholderLabel(in: textView)
         context.coordinator.updatePlaceholderVisibility(in: textView)
@@ -38,7 +50,13 @@ struct ComposerPasteTextView: UIViewRepresentable {
     func updateUIView(_ textView: PasteAwareTextView, context: Context) {
         context.coordinator.parent = self
         textView.onPasteImages = {
-            context.coordinator.parent.onPasteImages()
+            await context.coordinator.parent.onPasteImages()
+        }
+        textView.onPasteImagesFailed = {
+            context.coordinator.parent.onPasteImagesFailed()
+        }
+        textView.onDropImages = { providers in
+            context.coordinator.parent.onDropImages(providers)
         }
         textView.isEditable = isEnabled
         textView.isUserInteractionEnabled = isEnabled
@@ -65,7 +83,7 @@ struct ComposerPasteTextView: UIViewRepresentable {
         return label
     }
 
-    final class Coordinator: NSObject, UITextViewDelegate {
+    final class Coordinator: NSObject, UITextViewDelegate, UITextDropDelegate, UIDropInteractionDelegate {
         var parent: ComposerPasteTextView
         weak var placeholderLabel: UILabel?
 
@@ -81,11 +99,62 @@ struct ComposerPasteTextView: UIViewRepresentable {
         func updatePlaceholderVisibility(in textView: UITextView) {
             placeholderLabel?.isHidden = !(textView.text ?? "").isEmpty
         }
+
+        // MARK: UITextDropDelegate — keep images out of attributed text when focused
+
+        func textDroppableView(
+            _ textDroppableView: UIView & UITextDroppable,
+            proposalForDrop drop: UITextDropRequest
+        ) -> UITextDropProposal {
+            if PasteAwareTextView.sessionHasImportableImage(drop.dropSession) {
+                // Forbid UITextView's default NSTextAttachment insertion; UIDropInteraction handles copy.
+                return UITextDropProposal(operation: .forbidden)
+            }
+            return UITextDropProposal(operation: .copy)
+        }
+
+        // MARK: UIDropInteractionDelegate — works while UITextView is first responder
+
+        func dropInteraction(_ interaction: UIDropInteraction, canHandle session: UIDropSession) -> Bool {
+            PasteAwareTextView.sessionHasImportableImage(session)
+        }
+
+        func dropInteraction(
+            _ interaction: UIDropInteraction,
+            sessionDidUpdate session: UIDropSession
+        ) -> UIDropProposal {
+            UIDropProposal(operation: .copy)
+        }
+
+        func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+            let providers = session.items.map(\.itemProvider)
+            ComposerPasteLogger.dropPerformed(itemCount: providers.count, focused: true)
+            parent.onDropImages(providers)
+        }
     }
 }
 
 final class PasteAwareTextView: UITextView {
-    var onPasteImages: (() -> Void)?
+    var onPasteImages: (() async -> Bool)?
+    var onPasteImagesFailed: (() -> Void)?
+    var onDropImages: (([NSItemProvider]) -> Void)?
+
+    private static let imageTypeIdentifiers: [String] = [
+        UTType.image.identifier,
+        UTType.jpeg.identifier,
+        UTType.png.identifier,
+        UTType.heic.identifier,
+        UTType.heif.identifier,
+        UTType.gif.identifier,
+        UTType.webP.identifier,
+    ]
+
+    static func sessionHasImportableImage(_ session: UIDropSession) -> Bool {
+        if session.hasItemsConforming(toTypeIdentifiers: imageTypeIdentifiers) {
+            return true
+        }
+        return session.hasItemsConforming(toTypeIdentifiers: [UTType.fileURL.identifier])
+    }
 
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if action == #selector(paste(_:)), ClipboardMediaImporter.pasteboardHasImages {
@@ -95,19 +164,37 @@ final class PasteAwareTextView: UITextView {
     }
 
     override func paste(_ sender: Any?) {
-        if ClipboardMediaImporter.pasteboardHasImages {
-            ComposerPasteLogger.pasteInvoked(
-                hasImages: true,
-                itemCount: UIPasteboard.general.numberOfItems
-            )
-            onPasteImages?()
-            return
-        }
+        let claimsImages = ClipboardMediaImporter.pasteboardHasImages
         ComposerPasteLogger.pasteInvoked(
-            hasImages: false,
+            hasImages: claimsImages,
             itemCount: UIPasteboard.general.numberOfItems
         )
-        super.paste(sender)
+        guard claimsImages, let onPasteImages else {
+            super.paste(sender)
+            return
+        }
+
+        Task { @MainActor in
+            let attached = await onPasteImages()
+            if attached { return }
+
+            // Clipboard often advertises an image UTI alongside plain text (or a stale image).
+            // Prefer inserting text over a false-positive error when bytes never materialize.
+            if let string = UIPasteboard.general.string, !string.isEmpty {
+                let selected = selectedRange
+                if let range = Range(selected, in: text ?? "") {
+                    text?.replaceSubrange(range, with: string)
+                } else {
+                    insertText(string)
+                }
+                delegate?.textViewDidChange?(self)
+                return
+            }
+
+            if ClipboardMediaImporter.pasteboardHasImages {
+                onPasteImagesFailed?()
+            }
+        }
     }
 }
 
@@ -161,5 +248,9 @@ enum ComposerPasteLogger {
 
     static func loadEmptyAfterRetry(hasImages: Bool) {
         logger.warning("[composer-paste] load empty after retry hasImages=\(hasImages)")
+    }
+
+    static func dropPerformed(itemCount: Int, focused: Bool) {
+        logger.debugInfo("[composer-paste] drop performed items=\(itemCount) textFocused=\(focused)")
     }
 }

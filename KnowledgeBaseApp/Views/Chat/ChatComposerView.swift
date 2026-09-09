@@ -155,7 +155,13 @@ struct ChatComposerView: View {
                     text: $viewModel.composerDraft.text,
                     placeholder: L10n.string("composer.message_placeholder"),
                     isEnabled: !isBusy,
-                    onPasteImages: { pasteClipboardImages() }
+                    onPasteImages: { await pasteClipboardImages() },
+                    onDropImages: { providers in
+                        Task { await attachDroppedProviders(providers) }
+                    },
+                    onPasteImagesFailed: {
+                        viewModel.reportError(L10n.string("composer.paste_image_failed"))
+                    }
                 )
                 // SwiftUI owns height — UITextView only fills/scrolls inside this frame.
                 .frame(maxWidth: .infinity)
@@ -233,31 +239,26 @@ struct ChatComposerView: View {
         .accessibilityLabel(Text("composer.send_a11y"))
     }
 
-    private func pasteClipboardImages() {
-        guard !isBusy else { return }
-        Task { @MainActor in
-            let slots = viewModel.remainingComposerAttachmentSlots
-            guard slots > 0 else {
-                viewModel.reportAttachmentLimitReached()
-                return
-            }
-            let attachments = await ClipboardMediaImporter.loadAttachmentsFromPasteboard(maxCount: slots)
-            if attachments.isEmpty {
-                if ClipboardMediaImporter.pasteboardHasImages {
-                    viewModel.reportError(L10n.string("composer.paste_image_failed"))
-                }
-                return
-            }
-            addImportedAttachments(attachments)
+    @discardableResult
+    private func pasteClipboardImages() async -> Bool {
+        guard !isBusy else { return false }
+        let slots = viewModel.remainingComposerAttachmentSlots
+        guard slots > 0 else {
+            viewModel.reportAttachmentLimitReached()
+            return false
         }
+        let attachments = await ClipboardMediaImporter.loadAttachmentsFromPasteboard(maxCount: slots)
+        guard !attachments.isEmpty else { return false }
+        addImportedAttachments(attachments)
+        return true
     }
 
     private func attachDroppedProviders(_ providers: [NSItemProvider]) async {
-        let imageProviders = providers.filter {
-            ClipboardMediaImporter.providerHasImage($0)
-                || $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier)
-        }
-        guard !imageProviders.isEmpty else { return }
+        ComposerPasteLogger.dropPerformed(
+            itemCount: providers.count,
+            focused: false
+        )
+        guard !providers.isEmpty else { return }
 
         let initialSlots = await MainActor.run { viewModel.remainingComposerAttachmentSlots }
         guard initialSlots > 0 else {
@@ -267,19 +268,38 @@ struct ChatComposerView: View {
 
         var imported: [PendingAttachment] = []
         let startingCount = await MainActor.run { viewModel.composerDraft.attachments.count }
-        for provider in imageProviders {
+        for provider in providers {
             let used = startingCount + imported.count
             if ComposerAttachmentLimits.remainingFileSlots(currentCount: used) == 0 {
                 break
             }
+            // Try every provider — focused drops often expose fileURL before image UTIs settle.
             if let attachment = await ClipboardMediaImporter.attachment(from: provider) {
                 imported.append(attachment)
             }
         }
 
+        // Brief retry — in-app screenshot thumbnails sometimes aren't readable on first tick.
+        if imported.isEmpty {
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            for provider in providers {
+                let used = startingCount + imported.count
+                if ComposerAttachmentLimits.remainingFileSlots(currentCount: used) == 0 {
+                    break
+                }
+                if let attachment = await ClipboardMediaImporter.attachment(from: provider) {
+                    imported.append(attachment)
+                }
+            }
+        }
+
         await MainActor.run {
+            if imported.isEmpty {
+                viewModel.reportError(L10n.string("composer.paste_image_failed"))
+                return
+            }
             addImportedAttachments(imported)
-            if imported.count < imageProviders.count,
+            if imported.count < providers.count,
                viewModel.remainingComposerAttachmentSlots == 0 {
                 viewModel.reportAttachmentLimitReached()
             }

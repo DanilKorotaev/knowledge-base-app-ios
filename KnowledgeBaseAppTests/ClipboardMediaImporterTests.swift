@@ -271,14 +271,21 @@ final class PasteAwareTextViewTests: XCTestCase {
         super.tearDown()
     }
 
-    func testPaste_withImage_invokesHandlerAndSkipsTextInsertion() {
+    func testPaste_withImage_invokesHandlerAndSkipsTextInsertion() async {
         let textView = PasteAwareTextView()
         textView.text = "keep"
         var pasteImagesCalls = 0
-        textView.onPasteImages = { pasteImagesCalls += 1 }
+        textView.onPasteImages = {
+            pasteImagesCalls += 1
+            return true
+        }
 
         UIPasteboard.general.image = solidJPEGImage()
         textView.paste(nil)
+
+        // Paste kicks off an async Task; give it a turn on the main actor.
+        await Task.yield()
+        try? await Task.sleep(nanoseconds: 50_000_000)
 
         XCTAssertEqual(pasteImagesCalls, 1)
         XCTAssertEqual(textView.text, "keep")
@@ -291,7 +298,10 @@ final class PasteAwareTextViewTests: XCTestCase {
         let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
         textView.text = "keep"
         var pasteImagesCalls = 0
-        textView.onPasteImages = { pasteImagesCalls += 1 }
+        textView.onPasteImages = {
+            pasteImagesCalls += 1
+            return true
+        }
 
         UIPasteboard.general.string = "hello"
         XCTAssertFalse(ClipboardMediaImporter.pasteboardHasImages)

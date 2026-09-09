@@ -2633,13 +2633,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Could not paste the image from the clipboard. Try again in a moment."
+            "value": "Could not read an image from the clipboard. If you meant to paste text, copy it again and retry."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось вставить картинку из буфера. Попробуйте ещё раз чуть позже."
+            "value": "Не удалось прочитать картинку из буфера. Если нужен текст — скопируйте его ещё раз и вставьте."
           }
         }
       }

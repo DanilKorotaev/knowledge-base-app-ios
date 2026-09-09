@@ -27,6 +27,8 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 ### Fixed
 
 - Empty composer with attachments stays one line tall (no forced 3-line text field).
+- Drag-drop of screenshots into a focused composer text field (UITextView was swallowing the drop).
+- Paste: if clipboard claims an image but bytes are missing, fall back to pasting text instead of a false error when possible.
 
 ## [1.0.53] - 2026-09-09
 
