@@ -120,16 +120,12 @@ enum ClipboardMediaImporter {
     }
 
     static func attachment(from provider: NSItemProvider) async -> PendingAttachment? {
-        // In-app screenshot drags often expose a ready UIImage before raw bytes/UTIs settle.
+        // Prefer in-memory UIImage — avoids cross-process loadDataRepresentation.
         if let image = await loadObjectUIImage(from: provider) {
             return attachment(
                 fromImage: image,
                 preferredFilename: suggestedFilename(for: provider, data: nil)
             )
-        }
-        if let data = await loadDataRepresentation(from: provider) {
-            let filename = suggestedFilename(for: provider, data: data)
-            return attachment(fromImageData: data, filename: filename)
         }
         if let data = await loadImageData(from: provider) {
             let filename = suggestedFilename(for: provider, data: data)
@@ -141,10 +137,28 @@ enum ClipboardMediaImporter {
         if let url = await loadFileURL(from: provider) {
             return attachment(fromImageFileURL: url)
         }
+        // Last resort for pasteboard/file providers — can show system Import progress.
+        if let data = await loadDataRepresentation(from: provider) {
+            let filename = suggestedFilename(for: provider, data: data)
+            return attachment(fromImageData: data, filename: filename)
+        }
         return nil
     }
 
-    /// Loads attachments from a drop session with retries (screenshot thumbnails are flaky on first tick).
+    static func attachments(fromImages images: [UIImage], maxCount: Int) -> [PendingAttachment] {
+        guard maxCount > 0 else { return [] }
+        var imported: [PendingAttachment] = []
+        for image in images.prefix(maxCount) {
+            if let attachment = attachment(fromImage: image) {
+                imported.append(attachment)
+            }
+        }
+        ComposerPasteLogger.dropLoadFinished(count: imported.count, attempt: 1)
+        return imported
+    }
+
+    /// Drop-safe load: UIImage / loadItem / fileURL only — never `loadDataRepresentation`
+    /// (that API presents the system "Import N objects" sheet and often hangs on screenshot thumbs).
     static func attachments(
         fromDropProviders providers: [NSItemProvider],
         maxCount: Int
@@ -155,26 +169,35 @@ enum ClipboardMediaImporter {
             .joined(separator: " | ")
         ComposerPasteLogger.dropProviders(count: providers.count, types: types)
 
-        let delaysNs: [UInt64] = [0, 150_000_000, 350_000_000, 700_000_000]
         var imported: [PendingAttachment] = []
-        for (index, delay) in delaysNs.enumerated() {
-            if delay > 0 {
-                try? await Task.sleep(nanoseconds: delay)
-            }
-            imported = []
-            for provider in providers {
-                guard imported.count < maxCount else { break }
-                if let attachment = await attachment(from: provider) {
-                    imported.append(attachment)
-                }
-            }
-            if !imported.isEmpty {
-                ComposerPasteLogger.dropLoadFinished(count: imported.count, attempt: index + 1)
-                return imported
+        for provider in providers {
+            guard imported.count < maxCount else { break }
+            if let attachment = await attachmentFromDrop(provider) {
+                imported.append(attachment)
             }
         }
-        ComposerPasteLogger.dropLoadFinished(count: 0, attempt: delaysNs.count)
-        return []
+        ComposerPasteLogger.dropLoadFinished(count: imported.count, attempt: 1)
+        return imported
+    }
+
+    private static func attachmentFromDrop(_ provider: NSItemProvider) async -> PendingAttachment? {
+        if let image = await loadObjectUIImage(from: provider, timeout: 2.0) {
+            return attachment(
+                fromImage: image,
+                preferredFilename: suggestedFilename(for: provider, data: nil)
+            )
+        }
+        if let image = await loadUIImage(from: provider, timeout: 2.0) {
+            return attachment(fromImage: image, preferredFilename: suggestedFilename(for: provider, data: nil))
+        }
+        if let data = await loadImageData(from: provider, timeout: 2.0) {
+            let filename = suggestedFilename(for: provider, data: data)
+            return attachment(fromImageData: data, filename: filename)
+        }
+        if let url = await loadFileURL(from: provider, timeout: 2.0) {
+            return attachment(fromImageFileURL: url)
+        }
+        return nil
     }
 
     static func attachment(
@@ -280,20 +303,23 @@ enum ClipboardMediaImporter {
         return attachment(fromImageData: data, filename: filename, mimeType: mime)
     }
 
-    private static func loadObjectUIImage(from provider: NSItemProvider) async -> UIImage? {
+    private static func loadObjectUIImage(
+        from provider: NSItemProvider,
+        timeout: TimeInterval = 3.0
+    ) async -> UIImage? {
         guard provider.canLoadObject(ofClass: UIImage.self) else { return nil }
-        return await withCheckedContinuation { continuation in
+        return await withTimeout(timeout) { continuation in
             _ = provider.loadObject(ofClass: UIImage.self) { object, _ in
-                continuation.resume(returning: object as? UIImage)
+                continuation(object as? UIImage)
             }
         }
     }
 
     private static func loadDataRepresentation(from provider: NSItemProvider) async -> Data? {
         for type in imageTypeIdentifiers where provider.hasItemConformingToTypeIdentifier(type) {
-            let data: Data? = await withCheckedContinuation { continuation in
+            let data: Data? = await withTimeout(4.0) { continuation in
                 _ = provider.loadDataRepresentation(forTypeIdentifier: type) { data, _ in
-                    continuation.resume(returning: data)
+                    continuation(data)
                 }
             }
             if let data, !data.isEmpty {
@@ -303,62 +329,98 @@ enum ClipboardMediaImporter {
         return nil
     }
 
-    private static func loadImageData(from provider: NSItemProvider) async -> Data? {
+    private static func loadImageData(
+        from provider: NSItemProvider,
+        timeout: TimeInterval = 3.0
+    ) async -> Data? {
         for type in imageTypeIdentifiers where provider.hasItemConformingToTypeIdentifier(type) {
-            if let data = await loadData(from: provider, typeIdentifier: type) {
+            if let data = await loadData(from: provider, typeIdentifier: type, timeout: timeout) {
                 return data
             }
         }
         return nil
     }
 
-    private static func loadUIImage(from provider: NSItemProvider) async -> UIImage? {
+    private static func loadUIImage(
+        from provider: NSItemProvider,
+        timeout: TimeInterval = 3.0
+    ) async -> UIImage? {
         let type = UTType.image.identifier
         guard provider.hasItemConformingToTypeIdentifier(type) else { return nil }
-        return await withCheckedContinuation { continuation in
+        return await withTimeout(timeout) { continuation in
             provider.loadItem(forTypeIdentifier: type, options: nil) { item, _ in
                 if let image = item as? UIImage {
-                    continuation.resume(returning: image)
+                    continuation(image)
                 } else if let data = item as? Data, let image = UIImage(data: data) {
-                    continuation.resume(returning: image)
+                    continuation(image)
                 } else if let url = item as? URL, let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
-                    continuation.resume(returning: image)
+                    continuation(image)
                 } else {
-                    continuation.resume(returning: nil)
+                    continuation(nil)
                 }
             }
         }
     }
 
-    private static func loadFileURL(from provider: NSItemProvider) async -> URL? {
+    private static func loadFileURL(
+        from provider: NSItemProvider,
+        timeout: TimeInterval = 3.0
+    ) async -> URL? {
         let type = UTType.fileURL.identifier
         guard provider.hasItemConformingToTypeIdentifier(type) else { return nil }
-        return await withCheckedContinuation { continuation in
+        return await withTimeout(timeout) { continuation in
             provider.loadItem(forTypeIdentifier: type, options: nil) { item, _ in
                 if let url = item as? URL {
-                    continuation.resume(returning: url)
+                    continuation(url)
                 } else if let data = item as? Data,
                           let url = URL(dataRepresentation: data, relativeTo: nil) {
-                    continuation.resume(returning: url)
+                    continuation(url)
                 } else {
-                    continuation.resume(returning: nil)
+                    continuation(nil)
                 }
             }
         }
     }
 
-    private static func loadData(from provider: NSItemProvider, typeIdentifier: String) async -> Data? {
-        await withCheckedContinuation { continuation in
+    private static func loadData(
+        from provider: NSItemProvider,
+        typeIdentifier: String,
+        timeout: TimeInterval = 3.0
+    ) async -> Data? {
+        await withTimeout(timeout) { continuation in
             provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
                 if let data = item as? Data {
-                    continuation.resume(returning: data)
+                    continuation(data)
                 } else if let url = item as? URL, let data = try? Data(contentsOf: url) {
-                    continuation.resume(returning: data)
+                    continuation(data)
                 } else if let image = item as? UIImage {
-                    continuation.resume(returning: image.pngData() ?? image.jpegData(compressionQuality: 0.92))
+                    continuation(image.pngData() ?? image.jpegData(compressionQuality: 0.92))
                 } else {
-                    continuation.resume(returning: nil)
+                    continuation(nil)
                 }
+            }
+        }
+    }
+
+    /// Resume-once wrapper so hung NSItemProvider loads cannot block the UI forever
+    /// (and keep the system Import progress sheet up).
+    private static func withTimeout<T>(
+        _ seconds: TimeInterval,
+        _ start: (@escaping (T?) -> Void) -> Void
+    ) async -> T? {
+        await withCheckedContinuation { continuation in
+            let lock = NSLock()
+            var resumed = false
+            let finish: (T?) -> Void = { value in
+                lock.lock()
+                defer { lock.unlock() }
+                guard !resumed else { return }
+                resumed = true
+                continuation.resume(returning: value)
+            }
+            start(finish)
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + seconds) {
+                finish(nil)
             }
         }
     }

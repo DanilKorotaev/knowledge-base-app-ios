@@ -24,7 +24,8 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ### Fixed
 
-- Focused composer drop: ignore duplicate UIDrop + SwiftUI handlers so a failed second load no longer shows a false paste error; prefer `UIImage` load for in-app screenshot thumbnails.
+- Screenshot drag-drop: use `UIDropSession.loadObjects(UIImage)` instead of `loadDataRepresentation`, which showed a stuck system “Import 1 object” sheet and often ended in paste_image_failed.
+- Drop load timeouts + pasteboard fallback when the drop provider returns nothing.
 
 ## [1.0.56] - 2026-09-09
 

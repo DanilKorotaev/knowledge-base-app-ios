@@ -9,7 +9,10 @@ struct ComposerPasteTextView: UIViewRepresentable {
     var isEnabled: Bool
     /// Returns `true` when at least one image attachment was added.
     var onPasteImages: () async -> Bool
-    var onDropImages: ([NSItemProvider]) -> Void
+    /// Preferred path: `UIDropSession.loadObjects(UIImage)` (no system Import HUD).
+    var onDropUIImages: ([UIImage]) -> Void
+    /// Fallback when session has only providers (e.g. file URL) without a ready UIImage.
+    var onDropProviders: ([NSItemProvider]) -> Void
     var onPasteImagesFailed: () -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -39,9 +42,6 @@ struct ComposerPasteTextView: UIViewRepresentable {
         textView.onPasteImagesFailed = {
             context.coordinator.parent.onPasteImagesFailed()
         }
-        textView.onDropImages = { providers in
-            context.coordinator.parent.onDropImages(providers)
-        }
         context.coordinator.placeholderLabel = makePlaceholderLabel(in: textView)
         context.coordinator.updatePlaceholderVisibility(in: textView)
         return textView
@@ -54,9 +54,6 @@ struct ComposerPasteTextView: UIViewRepresentable {
         }
         textView.onPasteImagesFailed = {
             context.coordinator.parent.onPasteImagesFailed()
-        }
-        textView.onDropImages = { providers in
-            context.coordinator.parent.onDropImages(providers)
         }
         textView.isEditable = isEnabled
         textView.isUserInteractionEnabled = isEnabled
@@ -127,7 +124,21 @@ struct ComposerPasteTextView: UIViewRepresentable {
         }
 
         func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
-            parent.onDropImages(session.items.map(\.itemProvider))
+            // Prefer session.loadObjects(UIImage) — in-memory screenshot/thumb drops.
+            // loadDataRepresentation on the same providers triggers the system
+            // "Import N objects" progress sheet and often hangs / returns nil.
+            let providers = session.items.map(\.itemProvider)
+            session.loadObjects(ofClass: UIImage.self) { [weak self] objects in
+                let images = objects.compactMap { $0 as? UIImage }
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    if !images.isEmpty {
+                        self.parent.onDropUIImages(images)
+                    } else {
+                        self.parent.onDropProviders(providers)
+                    }
+                }
+            }
         }
     }
 }
@@ -135,7 +146,6 @@ struct ComposerPasteTextView: UIViewRepresentable {
 final class PasteAwareTextView: UITextView {
     var onPasteImages: (() async -> Bool)?
     var onPasteImagesFailed: (() -> Void)?
-    var onDropImages: (([NSItemProvider]) -> Void)?
 
     private static let imageTypeIdentifiers: [String] = [
         UTType.image.identifier,
