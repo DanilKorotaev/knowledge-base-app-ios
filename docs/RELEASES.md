@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.55 | 171 | `ios/v1.0.55` | 2026-09-09 | TestFlight release |
 | 1.0.54 | 170 | `ios/v1.0.54` | 2026-09-09 | Keep empty composer compact when attachments are present. |
 | 1.0.53 | 169 | `ios/v1.0.53` | 2026-09-09 | Dismiss keyboard on record start and drop overlay mic icon. |
 | 1.0.52 | 168 | `ios/v1.0.52` | 2026-09-09 | Stop composer scroll from moving the keyboard; cap field at 4 lines. |
