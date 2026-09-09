@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.51 | 167 | `ios/v1.0.51` | 2026-09-09 | Fix composer overflow by owning height in SwiftUI. |
 | 1.0.50 | 166 | `ios/v1.0.50` | 2026-09-09 | Fix composer 3-line min with attachments and last-line clip. |
 | 1.0.49 | 165 | `ios/v1.0.49` | 2026-09-09 | Fix pasted screenshot chips and composer text overflow. |
 | 1.0.48 | 164 | `ios/v1.0.48` | 2026-09-07 | Keep composer text field compact when empty. |
