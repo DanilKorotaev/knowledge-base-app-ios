@@ -127,9 +127,7 @@ struct ComposerPasteTextView: UIViewRepresentable {
         }
 
         func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
-            let providers = session.items.map(\.itemProvider)
-            ComposerPasteLogger.dropPerformed(itemCount: providers.count, focused: true)
-            parent.onDropImages(providers)
+            parent.onDropImages(session.items.map(\.itemProvider))
         }
     }
 }
@@ -252,5 +250,17 @@ enum ComposerPasteLogger {
 
     static func dropPerformed(itemCount: Int, focused: Bool) {
         logger.debugInfo("[composer-paste] drop performed items=\(itemCount) textFocused=\(focused)")
+    }
+
+    static func dropIgnoredDuplicate(source: String) {
+        logger.debugInfo("[composer-paste] drop ignored duplicate source=\(source)")
+    }
+
+    static func dropProviders(count: Int, types: String) {
+        logger.debugInfo("[composer-paste] drop providers=\(count) types=\(types)")
+    }
+
+    static func dropLoadFinished(count: Int, attempt: Int) {
+        logger.debugInfo("[composer-paste] drop load done count=\(count) attempt=\(attempt)")
     }
 }

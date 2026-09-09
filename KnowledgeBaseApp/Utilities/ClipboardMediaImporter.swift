@@ -120,6 +120,13 @@ enum ClipboardMediaImporter {
     }
 
     static func attachment(from provider: NSItemProvider) async -> PendingAttachment? {
+        // In-app screenshot drags often expose a ready UIImage before raw bytes/UTIs settle.
+        if let image = await loadObjectUIImage(from: provider) {
+            return attachment(
+                fromImage: image,
+                preferredFilename: suggestedFilename(for: provider, data: nil)
+            )
+        }
         if let data = await loadDataRepresentation(from: provider) {
             let filename = suggestedFilename(for: provider, data: data)
             return attachment(fromImageData: data, filename: filename)
@@ -135,6 +142,39 @@ enum ClipboardMediaImporter {
             return attachment(fromImageFileURL: url)
         }
         return nil
+    }
+
+    /// Loads attachments from a drop session with retries (screenshot thumbnails are flaky on first tick).
+    static func attachments(
+        fromDropProviders providers: [NSItemProvider],
+        maxCount: Int
+    ) async -> [PendingAttachment] {
+        guard maxCount > 0, !providers.isEmpty else { return [] }
+        let types = providers
+            .map { $0.registeredTypeIdentifiers.joined(separator: "+") }
+            .joined(separator: " | ")
+        ComposerPasteLogger.dropProviders(count: providers.count, types: types)
+
+        let delaysNs: [UInt64] = [0, 150_000_000, 350_000_000, 700_000_000]
+        var imported: [PendingAttachment] = []
+        for (index, delay) in delaysNs.enumerated() {
+            if delay > 0 {
+                try? await Task.sleep(nanoseconds: delay)
+            }
+            imported = []
+            for provider in providers {
+                guard imported.count < maxCount else { break }
+                if let attachment = await attachment(from: provider) {
+                    imported.append(attachment)
+                }
+            }
+            if !imported.isEmpty {
+                ComposerPasteLogger.dropLoadFinished(count: imported.count, attempt: index + 1)
+                return imported
+            }
+        }
+        ComposerPasteLogger.dropLoadFinished(count: 0, attempt: delaysNs.count)
+        return []
     }
 
     static func attachment(
@@ -238,6 +278,15 @@ enum ClipboardMediaImporter {
             return attachment(fromImageData: data, filename: filename, mimeType: "image/heic")
         }
         return attachment(fromImageData: data, filename: filename, mimeType: mime)
+    }
+
+    private static func loadObjectUIImage(from provider: NSItemProvider) async -> UIImage? {
+        guard provider.canLoadObject(ofClass: UIImage.self) else { return nil }
+        return await withCheckedContinuation { continuation in
+            _ = provider.loadObject(ofClass: UIImage.self) { object, _ in
+                continuation.resume(returning: object as? UIImage)
+            }
+        }
     }
 
     private static func loadDataRepresentation(from provider: NSItemProvider) async -> Data? {

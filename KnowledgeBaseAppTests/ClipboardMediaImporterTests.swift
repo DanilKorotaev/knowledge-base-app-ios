@@ -216,6 +216,19 @@ final class ClipboardMediaImporterTests: XCTestCase {
         XCTAssertEqual(attachment.kind, .image)
     }
 
+    func testAttachmentsFromDropProviders_loadsUIImage() async throws {
+        let image = try XCTUnwrap(solidJPEGImage())
+        let provider = NSItemProvider(object: image)
+        let imported = await ClipboardMediaImporter.attachments(
+            fromDropProviders: [provider],
+            maxCount: 3
+        )
+        XCTAssertEqual(imported.count, 1)
+        defer { try? FileManager.default.removeItem(at: imported[0].localURL) }
+        XCTAssertEqual(imported[0].kind, .image)
+        XCTAssertEqual(imported[0].mimeType, "image/jpeg")
+    }
+
     func testAttachmentFromItemProvider_fileURLImage() async throws {
         let image = try XCTUnwrap(solidJPEGImage())
         let data = try XCTUnwrap(image.jpegData(compressionQuality: 0.9))

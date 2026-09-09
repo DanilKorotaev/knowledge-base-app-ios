@@ -12,6 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Fixed
+
+- Focused composer drop: ignore duplicate UIDrop + SwiftUI handlers so a failed second load no longer shows a false paste error; prefer `UIImage` load for in-app screenshot thumbnails.
+
 ## [1.0.56] - 2026-09-09
 
 ### Changed

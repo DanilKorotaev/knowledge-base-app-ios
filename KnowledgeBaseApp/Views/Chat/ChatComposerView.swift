@@ -18,6 +18,8 @@ struct ChatComposerView: View {
     @State private var photoPickerItems: [PhotosPickerItem] = []
     @State private var previewImageItem: PreviewImageItem?
     @State private var quickLookFileURL: URL?
+    /// UIDropInteraction + SwiftUI.onDrop both fire for focused text drops ~5ms apart.
+    @State private var lastDropHandledAt: Date?
 
     private var remainingAttachmentSlots: Int {
         ComposerAttachmentLimits.remainingFileSlots(
@@ -59,7 +61,7 @@ struct ChatComposerView: View {
                 isTargeted: nil
             ) { providers in
                 guard !isBusy else { return false }
-                Task { await attachDroppedProviders(providers) }
+                enqueueDrop(providers, source: "swiftui")
                 return true
             }
             .photosPicker(
@@ -157,7 +159,7 @@ struct ChatComposerView: View {
                     isEnabled: !isBusy,
                     onPasteImages: { await pasteClipboardImages() },
                     onDropImages: { providers in
-                        Task { await attachDroppedProviders(providers) }
+                        enqueueDrop(providers, source: "uitext")
                     },
                     onPasteImagesFailed: {
                         viewModel.reportError(L10n.string("composer.paste_image_failed"))
@@ -239,6 +241,18 @@ struct ChatComposerView: View {
         .accessibilityLabel(Text("composer.send_a11y"))
     }
 
+    private func enqueueDrop(_ providers: [NSItemProvider], source: String) {
+        let now = Date()
+        if let last = lastDropHandledAt, now.timeIntervalSince(last) < 0.55 {
+            ComposerPasteLogger.dropIgnoredDuplicate(source: source)
+            return
+        }
+        lastDropHandledAt = now
+        let focused = source == "uitext"
+        ComposerPasteLogger.dropPerformed(itemCount: providers.count, focused: focused)
+        Task { await attachDroppedProviders(providers) }
+    }
+
     @discardableResult
     private func pasteClipboardImages() async -> Bool {
         guard !isBusy else { return false }
@@ -254,10 +268,6 @@ struct ChatComposerView: View {
     }
 
     private func attachDroppedProviders(_ providers: [NSItemProvider]) async {
-        ComposerPasteLogger.dropPerformed(
-            itemCount: providers.count,
-            focused: false
-        )
         guard !providers.isEmpty else { return }
 
         let initialSlots = await MainActor.run { viewModel.remainingComposerAttachmentSlots }
@@ -266,35 +276,17 @@ struct ChatComposerView: View {
             return
         }
 
-        var imported: [PendingAttachment] = []
         let startingCount = await MainActor.run { viewModel.composerDraft.attachments.count }
-        for provider in providers {
-            let used = startingCount + imported.count
-            if ComposerAttachmentLimits.remainingFileSlots(currentCount: used) == 0 {
-                break
-            }
-            // Try every provider — focused drops often expose fileURL before image UTIs settle.
-            if let attachment = await ClipboardMediaImporter.attachment(from: provider) {
-                imported.append(attachment)
-            }
-        }
-
-        // Brief retry — in-app screenshot thumbnails sometimes aren't readable on first tick.
-        if imported.isEmpty {
-            try? await Task.sleep(nanoseconds: 200_000_000)
-            for provider in providers {
-                let used = startingCount + imported.count
-                if ComposerAttachmentLimits.remainingFileSlots(currentCount: used) == 0 {
-                    break
-                }
-                if let attachment = await ClipboardMediaImporter.attachment(from: provider) {
-                    imported.append(attachment)
-                }
-            }
-        }
+        let imported = await ClipboardMediaImporter.attachments(
+            fromDropProviders: providers,
+            maxCount: initialSlots
+        )
 
         await MainActor.run {
+            let currentCount = viewModel.composerDraft.attachments.count
             if imported.isEmpty {
+                // A parallel drop handler may already have succeeded — don't false-alarm.
+                if currentCount > startingCount { return }
                 viewModel.reportError(L10n.string("composer.paste_image_failed"))
                 return
             }
