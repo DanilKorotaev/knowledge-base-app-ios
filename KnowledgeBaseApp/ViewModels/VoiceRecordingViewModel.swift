@@ -110,6 +110,7 @@ final class VoiceRecordingViewModel {
             phase = .holding
             recordingStartDate = Date()
             impactLight.impactOccurred()
+            dismissKeyboard()
             Task { await startRecordingAsync() }
         }
 
@@ -403,6 +404,15 @@ final class VoiceRecordingViewModel {
         recordingStartedForGesture = false
         cancelledByGesture = false
         lockedByGesture = false
+    }
+
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
     }
 
 }

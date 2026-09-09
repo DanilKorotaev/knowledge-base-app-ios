@@ -1,21 +1,21 @@
 import SwiftUI
 
-/// Hold-to-record, swipe left to cancel, swipe up to lock (Telegram-style). Requires mic permission.
+/// Hold-to-record overlay: swipe hints while holding, controls when locked.
+/// Gestures live on `ChatMicButton` in the composer — no duplicate mic icon here.
 struct MicRecordControl: View {
     @Bindable var viewModel: VoiceRecordingViewModel
 
     var body: some View {
-        VStack(spacing: 12) {
+        Group {
             if viewModel.phase == .locked {
                 lockedPanel
             } else if viewModel.phase == .holding {
                 holdingPanel
             }
-
-            micButton
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 4)
     }
 
     private var holdingPanel: some View {
@@ -79,7 +79,6 @@ struct MicRecordControl: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
     }
 
     private var recordingTimeline: some View {
@@ -94,33 +93,6 @@ struct MicRecordControl: View {
                     .monospacedDigit()
             }
             .frame(maxWidth: .infinity)
-        }
-    }
-
-    private var micButton: some View {
-        HStack {
-            Spacer(minLength: 0)
-            ZStack {
-                Circle()
-                    .fill(viewModel.phase == .idle ? Color.accentColor.opacity(0.15) : Color.red.opacity(0.2))
-                    .frame(width: 72, height: 72)
-                Image(systemName: "mic.fill")
-                    .font(.title)
-                    .foregroundStyle(viewModel.phase == .idle ? Color.accentColor : Color.red)
-            }
-            .opacity(viewModel.phase == .locked ? 0.35 : 1)
-            .allowsHitTesting(viewModel.phase != .locked)
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        viewModel.handleDragChanged(value.translation)
-                    }
-                    .onEnded { value in
-                        viewModel.handleDragEnded(value.translation)
-                    }
-            )
-            .accessibilityLabel(Text("voice.record_a11y"))
-            Spacer(minLength: 0)
         }
     }
 

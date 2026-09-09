@@ -12,6 +12,11 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Changed
+
+- Recording overlay: hide the redundant large mic icon; keep rounded card padding.
+- Dismiss composer keyboard/focus as soon as hold-to-record starts.
+
 ## [1.0.52] - 2026-09-09
 
 ### Changed
