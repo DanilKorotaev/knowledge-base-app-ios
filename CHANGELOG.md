@@ -12,7 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
-<<<<<<< HEAD
+### Fixed
+
+- Empty composer with attachments stays one line tall (no forced 3-line text field).
+
 ## [1.0.53] - 2026-09-09
 
 ### Changed
@@ -20,16 +23,6 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 - Recording overlay: hide the redundant large mic icon; keep rounded card padding.
 - Dismiss composer keyboard/focus as soon as hold-to-record starts.
 - Dismiss keyboard on record start and drop overlay mic icon.
-=======
-### Fixed
-
-- Empty composer with attachments stays one line tall (no forced 3-line text field).
->>>>>>> 5be03c0 (Keep empty composer compact when attachments are present.)
-
-### Changed
-
-- Recording overlay: hide the redundant large mic icon; keep rounded card padding.
-- Dismiss composer keyboard/focus as soon as hold-to-record starts.
 
 ## [1.0.52] - 2026-09-09
 
