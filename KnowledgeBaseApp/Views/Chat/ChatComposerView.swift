@@ -39,6 +39,11 @@ struct ChatComposerView: View {
             || !viewModel.pendingVoiceCaptures.isEmpty
     }
 
+    /// Extra text-field height only when file/image attachments need room beside the strip.
+    private var needsExpandedComposerTextField: Bool {
+        !viewModel.composerDraft.attachments.isEmpty
+    }
+
     var body: some View {
         composerContent
             .padding(14)
@@ -147,13 +152,16 @@ struct ChatComposerView: View {
                     text: $viewModel.composerDraft.text,
                     placeholder: L10n.string("composer.message_placeholder"),
                     isEnabled: !isBusy,
+                    minimumLineCount: needsExpandedComposerTextField ? 3 : 1,
                     onPasteImages: { pasteClipboardImages() }
                 )
-                // fixedSize → respect UITextView intrinsic height (avoid full-panel stretch).
-                // clipped → long text must not paint over attachments / chrome.
+                // sizeThatFits drives height; fixedSize keeps SwiftUI from stretching the representable.
                 .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 176, alignment: .topLeading)
-                .clipped()
+                .frame(
+                    maxWidth: .infinity,
+                    minHeight: needsExpandedComposerTextField ? 64 : 24,
+                    alignment: .topLeading
+                )
                 .padding(.horizontal, 2)
 
                 if showsTextFieldTranscribingIndicator {

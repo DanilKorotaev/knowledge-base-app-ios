@@ -306,18 +306,42 @@ final class PasteAwareTextViewTests: XCTestCase {
         let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 200, height: 10))
         textView.text = "a"
         textView.font = UIFont.preferredFont(forTextStyle: .body)
+        textView.minimumLineCount = 1
         let size = textView.intrinsicContentSize
         XCTAssertGreaterThanOrEqual(size.height, 24)
-        XCTAssertLessThanOrEqual(size.height, 176)
+        XCTAssertLessThanOrEqual(size.height, 200)
     }
 
     func testIntrinsicContentSize_emptyStaysCompact() {
         let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 320, height: 400))
         textView.text = ""
         textView.font = UIFont.preferredFont(forTextStyle: .body)
+        textView.minimumLineCount = 1
         // Even if the view was laid out tall, intrinsic height must stay compact when empty.
         let size = textView.intrinsicContentSize
         XCTAssertLessThan(size.height, 80)
+    }
+
+    func testPreferredHeight_withAttachmentsUsesThreeLineMinimum() {
+        let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 320, height: 10))
+        textView.text = ""
+        textView.font = UIFont.preferredFont(forTextStyle: .body)
+        textView.minimumLineCount = 3
+        let height = textView.preferredHeight(forWidth: 320)
+        XCTAssertGreaterThanOrEqual(height, 64)
+        XCTAssertLessThan(height, 120)
+    }
+
+    func testPreferredHeight_longTextCapsNearEightLines() {
+        let textView = PasteAwareTextView(frame: CGRect(x: 0, y: 0, width: 280, height: 10))
+        textView.font = UIFont.preferredFont(forTextStyle: .body)
+        textView.minimumLineCount = 1
+        textView.text = Array(repeating: "long line of composer text that wraps", count: 20)
+            .joined(separator: "\n")
+        let height = textView.preferredHeight(forWidth: 280)
+        let maxExpected = ceil(textView.font!.lineHeight * 8 + 20)
+        XCTAssertLessThanOrEqual(height, maxExpected + 4)
+        XCTAssertGreaterThan(height, 100)
     }
 
     private func solidJPEGImage() -> UIImage? {

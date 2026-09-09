@@ -16,8 +16,45 @@ enum ClipboardMediaImporter {
     ) async -> [PendingAttachment] {
         guard maxCount > 0 else { return [] }
         let board = UIPasteboard.general
-        var result: [PendingAttachment] = []
+        ComposerPasteLogger.loadStarted(
+            maxCount: maxCount,
+            hasImages: pasteboardHasImages,
+            providerCount: board.itemProviders.count
+        )
 
+        var result = await loadAttachmentsOnce(from: board, maxCount: maxCount)
+        var usedFallback = false
+        var attempt = 1
+
+        // Screenshot / Photos pasteboard providers are sometimes empty on the first paste tick.
+        if result.isEmpty, pasteboardHasImages {
+            try? await Task.sleep(nanoseconds: 180_000_000)
+            attempt = 2
+            result = await loadAttachmentsOnce(from: UIPasteboard.general, maxCount: maxCount)
+        }
+
+        if result.isEmpty, let image = UIPasteboard.general.image,
+           let attachment = attachment(fromImage: image, preferredFilename: "paste.jpg") {
+            result = [attachment]
+            usedFallback = true
+        }
+
+        ComposerPasteLogger.loadFinished(
+            count: result.count,
+            attempt: attempt,
+            usedFallbackImage: usedFallback
+        )
+        if result.isEmpty, pasteboardHasImages {
+            ComposerPasteLogger.loadEmptyAfterRetry(hasImages: true)
+        }
+        return result
+    }
+
+    private static func loadAttachmentsOnce(
+        from board: UIPasteboard,
+        maxCount: Int
+    ) async -> [PendingAttachment] {
+        var result: [PendingAttachment] = []
         for provider in board.itemProviders {
             guard result.count < maxCount else { break }
             guard providerHasImage(provider) else { continue }
@@ -25,12 +62,6 @@ enum ClipboardMediaImporter {
                 result.append(attachment)
             }
         }
-
-        if result.isEmpty, let image = board.image,
-           let attachment = attachment(fromImage: image, preferredFilename: "paste.jpg") {
-            result.append(attachment)
-        }
-
         return result
     }
 

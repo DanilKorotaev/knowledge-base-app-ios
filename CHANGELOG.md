@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Fixed
+
+- Composer: 3-line minimum height when image/file attachments are present; empty field stays one line.
+- Last composer line no longer clips under the text-view edge after bounce.
+- Retry clipboard image load once when the first paste tick returns no providers; log paste attempts under Chat tag.
+
 ## [1.0.49] - 2026-09-09
 
 ### Fixed
