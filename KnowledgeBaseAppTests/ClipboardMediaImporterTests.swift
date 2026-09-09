@@ -292,23 +292,31 @@ final class PasteAwareTextViewTests: XCTestCase {
         super.tearDown()
     }
 
-    func testPaste_withImage_invokesHandlerAndSkipsTextInsertion() async {
+    func testPaste_withImage_invokesHandlerAndSkipsTextInsertion() async throws {
         let textView = PasteAwareTextView()
         textView.text = "keep"
-        var pasteImagesCalls = 0
+
+        let didPasteImages = expectation(description: "onPasteImages")
         textView.onPasteImages = {
-            pasteImagesCalls += 1
+            didPasteImages.fulfill()
             return true
         }
 
-        UIPasteboard.general.image = solidJPEGImage()
+        let image = try XCTUnwrap(solidJPEGImage())
+        // Prefer typed pasteboard items — assigning `.image` alone is flaky on some CI simulators.
+        if let data = image.pngData() {
+            UIPasteboard.general.setData(data, forPasteboardType: UTType.png.identifier)
+        } else {
+            UIPasteboard.general.image = image
+        }
+        XCTAssertTrue(
+            ClipboardMediaImporter.pasteboardHasImages,
+            "pasteboard should advertise an image before invoking paste"
+        )
+
         textView.paste(nil)
+        await fulfillment(of: [didPasteImages], timeout: 2.0)
 
-        // Paste kicks off an async Task; give it a turn on the main actor.
-        await Task.yield()
-        try? await Task.sleep(nanoseconds: 50_000_000)
-
-        XCTAssertEqual(pasteImagesCalls, 1)
         XCTAssertEqual(textView.text, "keep")
         XCTAssertTrue(
             textView.canPerformAction(#selector(UIResponder.paste(_:)), withSender: nil)
