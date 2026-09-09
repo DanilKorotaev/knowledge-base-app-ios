@@ -7,7 +7,7 @@ struct ImagePreviewSheet: View {
     var body: some View {
         NavigationStack {
             Group {
-                if let image = UIImage(contentsOfFile: imageURL.path) {
+                if let image = UIImage.kbImage(contentsOf: imageURL) {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFit()

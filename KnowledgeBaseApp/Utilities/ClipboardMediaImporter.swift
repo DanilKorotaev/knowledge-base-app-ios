@@ -53,10 +53,9 @@ enum ClipboardMediaImporter {
         preferredFilename: String = "paste.jpg"
     ) -> PendingAttachment? {
         guard let data = image.jpegData(compressionQuality: 0.92) else { return nil }
-        let filename = preferredFilename.lowercased().hasSuffix(".jpg") || preferredFilename.lowercased().hasSuffix(".jpeg")
-            ? preferredFilename
-            : "\(preferredFilename).jpg"
-        return attachment(fromImageData: data, filename: filename, mimeType: "image/jpeg")
+        let base = displayBaseName(preferredFilename)
+        let filename = "\(base).jpg"
+        return writeImageAttachment(data: data, filename: filename, mimeType: "image/jpeg")
     }
 
     static func attachment(
@@ -65,31 +64,31 @@ enum ClipboardMediaImporter {
         mimeType: String? = nil
     ) -> PendingAttachment? {
         guard !data.isEmpty else { return nil }
-        let safeName = filename.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? "paste.jpg"
-            : filename
-        let dest = FileManager.default.temporaryDirectory
-            .appendingPathComponent("\(UUID().uuidString)-\(safeName)")
-        do {
-            try data.write(to: dest)
-            let mime = mimeType
-                ?? (dest.kbPreferredMIMEType.hasPrefix("image/")
-                    ? dest.kbPreferredMIMEType
-                    : mimeTypeForImageData(data) ?? "image/jpeg")
-            guard mime.hasPrefix("image/") else {
-                try? FileManager.default.removeItem(at: dest)
-                return nil
-            }
-            return PendingAttachment(
-                localURL: dest,
-                kind: .image,
-                filename: safeName,
-                mimeType: mime,
-                fileSize: Int64(data.count)
-            )
-        } catch {
-            return nil
+
+        let sniffed = mimeTypeForImageData(data)
+        let declared = mimeType?.lowercased()
+        let looksLikeImage = (sniffed?.hasPrefix("image/") == true)
+            || (declared?.hasPrefix("image/") == true)
+
+        // iOS screenshots often arrive as HEIC with a fake pathExtension like "57_PM"
+        // (from "9.21.57_PM"). Normalize those to JPEG so thumbnails, Quick Look, and
+        // backend mime guessing all work.
+        let ext = (filename as NSString).pathExtension.lowercased()
+        let hasRealImageExtension = knownImageExtensions.contains(ext)
+        let isHeicFamily = sniffed == "image/heic" || sniffed == "image/heif"
+            || declared == "image/heic" || declared == "image/heif"
+        if isHeicFamily || (looksLikeImage && !hasRealImageExtension),
+           let image = UIImage(data: data) {
+            return attachment(fromImage: image, preferredFilename: filename)
         }
+
+        let resolvedMime = sniffed
+            ?? (declared?.hasPrefix("image/") == true ? declared : nil)
+            ?? (hasRealImageExtension ? "image/\(ext == "jpg" ? "jpeg" : ext)" : nil)
+        guard let resolvedMime, resolvedMime.hasPrefix("image/") else { return nil }
+
+        let safeName = sanitizedImageFilename(filename, data: data)
+        return writeImageAttachment(data: data, filename: safeName, mimeType: resolvedMime)
     }
 
     static func providerHasImage(_ provider: NSItemProvider) -> Bool {
@@ -108,17 +107,48 @@ enum ClipboardMediaImporter {
         UTType.webP.identifier,
     ]
 
+    private static let knownImageExtensions: Set<String> = [
+        "jpg", "jpeg", "png", "heic", "heif", "gif", "webp",
+    ]
+
+    private static func writeImageAttachment(
+        data: Data,
+        filename: String,
+        mimeType: String
+    ) -> PendingAttachment? {
+        let dest = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(UUID().uuidString)-\(filename)")
+        do {
+            try data.write(to: dest)
+            return PendingAttachment(
+                localURL: dest,
+                kind: .image,
+                filename: filename,
+                mimeType: mimeType,
+                fileSize: Int64(data.count)
+            )
+        } catch {
+            return nil
+        }
+    }
+
     private static func attachment(fromImageFileURL url: URL) -> PendingAttachment? {
         let didAccess = url.startAccessingSecurityScopedResource()
         defer {
             if didAccess { url.stopAccessingSecurityScopedResource() }
         }
-        let ext = url.pathExtension.lowercased()
-        let kind = PendingAttachmentKind.infer(mimeType: url.kbPreferredMIMEType, filenameExtension: ext)
-        guard kind == .image else { return nil }
         guard let data = try? Data(contentsOf: url) else { return nil }
         let filename = url.lastPathComponent.isEmpty ? "paste.jpg" : url.lastPathComponent
-        return attachment(fromImageData: data, filename: filename, mimeType: url.kbPreferredMIMEType)
+        // Prefer magic-byte sniff over pathExtension — screenshot names often end in "57_PM".
+        let sniffed = mimeTypeForImageData(data)
+        let pathMime = url.kbPreferredMIMEType
+        let mime = sniffed ?? (pathMime.hasPrefix("image/") ? pathMime : nil)
+        guard let mime, mime.hasPrefix("image/") else {
+            // Last resort: UIImage can still decode HEIC without a real extension.
+            guard UIImage(data: data) != nil else { return nil }
+            return attachment(fromImageData: data, filename: filename, mimeType: "image/heic")
+        }
+        return attachment(fromImageData: data, filename: filename, mimeType: mime)
     }
 
     private static func loadImageData(from provider: NSItemProvider) async -> Data? {
@@ -184,14 +214,44 @@ enum ClipboardMediaImporter {
     private static func suggestedFilename(for provider: NSItemProvider, data: Data?) -> String {
         if let suggested = provider.suggestedName?.trimmingCharacters(in: .whitespacesAndNewlines),
            !suggested.isEmpty {
-            if (suggested as NSString).pathExtension.isEmpty {
-                let ext = fileExtension(for: data) ?? "jpg"
-                return "\(suggested).\(ext)"
-            }
-            return suggested
+            return sanitizedImageFilename(suggested, data: data)
         }
         let ext = fileExtension(for: data) ?? "jpg"
         return "paste.\(ext)"
+    }
+
+    /// Strips fake extensions like `57_PM` and appends a real image extension from sniffed bytes.
+    static func sanitizedImageFilename(_ raw: String, data: Data?) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let extFromData = fileExtension(for: data) ?? "jpg"
+        if trimmed.isEmpty {
+            return "paste.\(extFromData)"
+        }
+        let ns = trimmed as NSString
+        let ext = ns.pathExtension.lowercased()
+        if knownImageExtensions.contains(ext) {
+            return trimmed
+        }
+        let base = ext.isEmpty ? trimmed : ns.deletingPathExtension
+        let safeBase = base.trimmingCharacters(in: .whitespacesAndNewlines)
+        return "\((safeBase.isEmpty ? "paste" : safeBase)).\(extFromData)"
+    }
+
+    static func displayBaseName(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "paste" }
+        let ns = trimmed as NSString
+        let ext = ns.pathExtension.lowercased()
+        if knownImageExtensions.contains(ext) || ext == "jpeg" {
+            let base = ns.deletingPathExtension.trimmingCharacters(in: .whitespacesAndNewlines)
+            return base.isEmpty ? "paste" : base
+        }
+        if ext.isEmpty {
+            return trimmed
+        }
+        // Fake extension (e.g. "57_PM") — keep the stem before it.
+        let base = ns.deletingPathExtension.trimmingCharacters(in: .whitespacesAndNewlines)
+        return base.isEmpty ? "paste" : base
     }
 
     private static func fileExtension(for data: Data?) -> String? {
@@ -221,5 +281,17 @@ enum ClipboardMediaImporter {
             return "image/webp"
         }
         return nil
+    }
+}
+
+extension UIImage {
+    /// Loads an image from disk, falling back to `Data` decode when pathExtension is wrong
+    /// (e.g. HEIC screenshot named `…9.21.57_PM`).
+    static func kbImage(contentsOf url: URL) -> UIImage? {
+        if let image = UIImage(contentsOfFile: url.path) {
+            return image
+        }
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return UIImage(data: data)
     }
 }

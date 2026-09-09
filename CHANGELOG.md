@@ -21,6 +21,8 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ### Fixed
 
+- Paste/drop of iOS screenshots (HEIC / fake `57_PM` extension) as image chips, not opaque files.
+- Composer text no longer paints over attachments and + / mic / send when transcription is long.
 - Chat composer text field stays compact when empty (no full-height UITextView stretch).
 
 ## [1.0.47] - 2026-09-06

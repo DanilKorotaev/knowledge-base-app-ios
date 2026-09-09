@@ -147,7 +147,11 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
 
         do {
             normalizedDraft.attachments = try draft.attachments.map { attachment in
-                let storedFilename = try adoptFile(at: attachment.localURL, into: filesDir)
+                let storedFilename = try adoptFile(
+                    at: attachment.localURL,
+                    into: filesDir,
+                    mimeType: attachment.mimeType
+                )
                 return PendingAttachment(
                     id: attachment.id,
                     localURL: filesDir.appendingPathComponent(storedFilename),
@@ -263,13 +267,16 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         try? fileManager.removeItem(at: dir)
     }
 
-    private func adoptFile(at sourceURL: URL, into filesDirectory: URL) throws -> String {
+    private func adoptFile(at sourceURL: URL, into filesDirectory: URL, mimeType: String? = nil) throws -> String {
         let filesRoot = filesDirectory.path
         if sourceURL.path.hasPrefix(filesRoot) {
             return sourceURL.lastPathComponent
         }
 
-        let ext = sourceURL.pathExtension.isEmpty ? "bin" : sourceURL.pathExtension
+        let ext = Self.normalizedFileExtension(
+            pathExtension: sourceURL.pathExtension,
+            mimeType: mimeType
+        )
         let name = "\(UUID().uuidString).\(ext)"
         let dest = filesDirectory.appendingPathComponent(name)
         if fileManager.fileExists(atPath: dest.path) {
@@ -277,5 +284,36 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         }
         try fileManager.copyItem(at: sourceURL, to: dest)
         return name
+    }
+
+    private static let knownFileExtensions: Set<String> = [
+        "jpg", "jpeg", "png", "heic", "heif", "gif", "webp",
+        "mp4", "mov", "m4v", "avi", "mkv",
+        "m4a", "mp3", "wav", "ogg", "webm",
+        "pdf", "txt", "md", "json", "log", "bin",
+    ]
+
+    private static func normalizedFileExtension(pathExtension: String, mimeType: String?) -> String {
+        let ext = pathExtension.lowercased()
+        if knownFileExtensions.contains(ext) {
+            return ext == "jpeg" ? "jpg" : ext
+        }
+        if let mime = mimeType?.lowercased() {
+            switch mime {
+            case "image/jpeg": return "jpg"
+            case "image/png": return "png"
+            case "image/gif": return "gif"
+            case "image/webp": return "webp"
+            case "image/heic", "image/heif": return "heic"
+            case "video/mp4": return "mp4"
+            case "video/quicktime": return "mov"
+            case "audio/mp4", "audio/m4a": return "m4a"
+            case "application/pdf": return "pdf"
+            case "text/plain": return "txt"
+            default: break
+            }
+            if mime.hasPrefix("image/") { return "jpg" }
+        }
+        return ext.isEmpty ? "bin" : ext
     }
 }

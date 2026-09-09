@@ -566,6 +566,22 @@ final class ChatViewModel {
                 try FileManager.default.copyItem(at: url, to: dest)
                 let size = (try? FileManager.default.attributesOfItem(atPath: dest.path)[.size] as? NSNumber)?
                     .int64Value
+                let data = try? Data(contentsOf: dest)
+                // Screenshots / HEIC drops often have fake extensions — normalize via importer.
+                if let data,
+                   let normalized = ClipboardMediaImporter.attachment(
+                       fromImageData: data,
+                       filename: url.lastPathComponent
+                   ) {
+                    try? FileManager.default.removeItem(at: dest)
+                    if !tryAddPendingAttachment(normalized) {
+                        try? FileManager.default.removeItem(at: normalized.localURL)
+                        if remainingComposerAttachmentSlots == 0 {
+                            skippedLimit = true
+                        }
+                    }
+                    continue
+                }
                 let mime = dest.kbPreferredMIMEType
                 let kind = PendingAttachmentKind.infer(
                     mimeType: mime,

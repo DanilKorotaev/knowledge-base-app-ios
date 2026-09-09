@@ -51,7 +51,7 @@ struct ComposerAttachmentStripView: View {
                 Button {
                     onTapImage(attachment.localURL)
                 } label: {
-                    if let image = UIImage(contentsOfFile: attachment.localURL.path) {
+                    if let image = UIImage.kbImage(contentsOf: attachment.localURL) {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()

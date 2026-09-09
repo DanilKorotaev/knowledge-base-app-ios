@@ -72,7 +72,7 @@ private struct AuthenticatedAttachmentImage: View {
 
     private func load() async {
         if let local = localFileURL(from: attachment.downloadURL) {
-            if let ui = UIImage(contentsOfFile: local.path) {
+            if let ui = UIImage.kbImage(contentsOf: local) {
                 image = ui
                 return
             }

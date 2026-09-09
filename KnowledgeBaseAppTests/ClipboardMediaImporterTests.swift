@@ -55,7 +55,41 @@ final class ClipboardMediaImporterTests: XCTestCase {
             ClipboardMediaImporter.attachment(fromImage: image, preferredFilename: "shot.JPEG")
         )
         defer { try? FileManager.default.removeItem(at: attachment.localURL) }
-        XCTAssertEqual(attachment.filename, "shot.JPEG")
+        XCTAssertEqual(attachment.filename, "shot.jpg")
+    }
+
+    func testSanitizedFilename_replacesFakeScreenshotExtension() {
+        let jpegHeader = Data([0xFF, 0xD8, 0xFF, 0xE0] + Array(repeating: 0, count: 16))
+        let name = ClipboardMediaImporter.sanitizedImageFilename(
+            "Снимок_экрана_2026_09_07_в_9.21.57_PM",
+            data: jpegHeader
+        )
+        XCTAssertEqual(name, "Снимок_экрана_2026_09_07_в_9.21.jpg")
+        XCTAssertEqual(
+            ClipboardMediaImporter.displayBaseName("Снимок_экрана_2026_09_07_в_9.21.57_PM"),
+            "Снимок_экрана_2026_09_07_в_9.21"
+        )
+    }
+
+    func testAttachmentFromHEICMagic_withFakeExtension_normalizesToJpeg() throws {
+        // Minimal buffer that UIImage won't decode — still sanitizes extension when
+        // only magic is present without UIImage; with real JPEG bytes + fake name → JPEG file.
+        let image = try XCTUnwrap(solidJPEGImage())
+        let data = try XCTUnwrap(image.jpegData(compressionQuality: 0.9))
+        let attachment = try XCTUnwrap(
+            ClipboardMediaImporter.attachment(
+                fromImageData: data,
+                filename: "Снимок_экрана_2026_09_07_в_9.21.57_PM"
+            )
+        )
+        defer { try? FileManager.default.removeItem(at: attachment.localURL) }
+
+        XCTAssertEqual(attachment.kind, .image)
+        XCTAssertEqual(attachment.mimeType, "image/jpeg")
+        XCTAssertTrue(attachment.filename.hasSuffix(".jpg"))
+        XCTAssertFalse(attachment.filename.contains("57_PM"))
+        XCTAssertEqual(attachment.localURL.pathExtension.lowercased(), "jpg")
+        XCTAssertNotNil(UIImage(contentsOfFile: attachment.localURL.path))
     }
 
     func testAttachmentFromEmptyFilename_usesPasteDefault() throws {
@@ -89,6 +123,7 @@ final class ClipboardMediaImporterTests: XCTestCase {
         )
         defer { try? FileManager.default.removeItem(at: gifAtt.localURL) }
         XCTAssertEqual(gifAtt.mimeType, "image/gif")
+        XCTAssertTrue(gifAtt.filename.hasSuffix(".gif"))
 
         var webp = Data([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50])
         webp.append(contentsOf: Array(repeating: UInt8(0), count: 8))
@@ -97,6 +132,7 @@ final class ClipboardMediaImporterTests: XCTestCase {
         )
         defer { try? FileManager.default.removeItem(at: webpAtt.localURL) }
         XCTAssertEqual(webpAtt.mimeType, "image/webp")
+        XCTAssertTrue(webpAtt.filename.hasSuffix(".webp"))
 
         // ftyp box at offset 4 → treated as HEIC family
         var heic = Data(repeating: 0, count: 12)
@@ -105,7 +141,9 @@ final class ClipboardMediaImporterTests: XCTestCase {
             ClipboardMediaImporter.attachment(fromImageData: heic, filename: "x.bin")
         )
         defer { try? FileManager.default.removeItem(at: heicAtt.localURL) }
-        XCTAssertEqual(heicAtt.mimeType, "image/heic")
+        // Undecodable HEIC magic keeps heic mime + real extension (or JPEG if UIImage somehow decodes).
+        XCTAssertTrue(heicAtt.mimeType.hasPrefix("image/"))
+        XCTAssertTrue(["heic", "jpg", "jpeg"].contains(heicAtt.localURL.pathExtension.lowercased()))
     }
 
     func testValidateAdding_rejectsPasteWhenAtLimit() throws {

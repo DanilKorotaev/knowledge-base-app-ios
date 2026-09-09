@@ -149,9 +149,11 @@ struct ChatComposerView: View {
                     isEnabled: !isBusy,
                     onPasteImages: { pasteClipboardImages() }
                 )
+                // fixedSize → respect UITextView intrinsic height (avoid full-panel stretch).
+                // clipped → long text must not paint over attachments / chrome.
                 .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .frame(minHeight: 24, maxHeight: 176)
+                .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 176, alignment: .topLeading)
+                .clipped()
                 .padding(.horizontal, 2)
 
                 if showsTextFieldTranscribingIndicator {

@@ -21,6 +21,7 @@ struct ComposerPasteTextView: UIViewRepresentable {
         textView.font = UIFont.preferredFont(forTextStyle: .body)
         textView.adjustsFontForContentSizeCategory = true
         textView.isScrollEnabled = false
+        textView.clipsToBounds = true
         textView.keyboardDismissMode = .interactive
         // Keep compact in SwiftUI layouts — do not expand to fill leftover chat height.
         textView.setContentHuggingPriority(.required, for: .vertical)
@@ -101,7 +102,12 @@ final class PasteAwareTextView: UITextView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let shouldScroll = bounds.height >= maxHeight - 0.5
+        clipsToBounds = true
+        // Measure full content height; enable scroll once we hit the cap so text
+        // cannot paint over the attachment strip / chrome above and below.
+        let width = bounds.width > 1 ? bounds.width : (superview?.bounds.width ?? UIScreen.main.bounds.width - 48)
+        let fitting = sizeThatFits(CGSize(width: max(width, 1), height: .greatestFiniteMagnitude))
+        let shouldScroll = fitting.height > maxHeight + 0.5
         if isScrollEnabled != shouldScroll {
             isScrollEnabled = shouldScroll
         }
