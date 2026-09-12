@@ -57,6 +57,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-ux-chat-copy-message.md` | Copy entire message + optional copy sheet | code done |
 | `task-bug-chat-empty-message-bubble.md` | Empty bubble (space without content) | бэклог |
 | `task-bug-composer-send-voice-attachments-failure.md` | Voice/photo send fail (draft files cleared too early) | partially fixed |
+| `task-bug-chat-send-outbox-optimistic-merge.md` | Send без ack чистит draft; optimistic merge + outbox (инцидент 2026-09-11) | 📋 high |
 | `task-feature-api-client-version-metadata.md` | API client version headers for debugging | бэклог |
 | `task-feature-structured-ui-mvp.md` | Structured UI MVP | бэклог |
 | `task-ux-main-tab-shell-sessions-settings.md` | Tab shell: Chats + Settings, remove mic bar | code+tests done |
