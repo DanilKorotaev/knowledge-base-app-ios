@@ -53,6 +53,10 @@ final class ChatViewModel {
     /// Overridable in tests to avoid long background polls.
     var replyPollMaxAttempts = 150
     var replyPollIntervalNanoseconds: UInt64 = 2_000_000_000
+    /// Last persisted message id before the current send (optimistic merge / hard-fail baseline).
+    private var preSendLastMessageId: String?
+    /// True after SSE/JSON `user_message_acked` for the in-flight send.
+    private var userMessageAckedForCurrentSend = false
 
     private let client: ChatAPIClientProtocol
     private let messageCache: MessageCacheStoreProtocol
@@ -738,6 +742,49 @@ final class ChatViewModel {
         }
     }
 
+    private func beginSendAttempt() {
+        preSendLastMessageId = messages.last(where: { !$0.id.hasPrefix("kb-optimistic-") })?.id
+        userMessageAckedForCurrentSend = false
+    }
+
+    private func markUserMessageAcked(
+        serverMessageId: String,
+        optimisticId: String,
+        clientMessageId: String?
+    ) {
+        userMessageAckedForCurrentSend = true
+        if let index = messages.firstIndex(where: { $0.id == optimisticId }) {
+            let old = messages[index]
+            messages[index] = KBMessage(
+                id: serverMessageId,
+                role: old.role,
+                content: old.content,
+                createdAt: old.createdAt,
+                attachments: old.attachments,
+                contentFormat: old.contentFormat,
+                transcription: old.transcription,
+                relatedChangedFiles: old.relatedChangedFiles,
+                relatedChangedFilesSource: old.relatedChangedFilesSource,
+                structuredUI: old.structuredUI,
+                clientMessageId: clientMessageId ?? old.clientMessageId
+            )
+        }
+        clearSavedComposerDraft()
+    }
+
+    private func serverAcceptedCurrentSend() -> Bool {
+        if userMessageAckedForCurrentSend { return true }
+        let baseline = preSendLastMessageId
+        return messages.contains { message in
+            guard message.role == .user, !message.id.hasPrefix("kb-optimistic-") else { return false }
+            guard let baseline else { return true }
+            if let messageId = Int(message.id), let baselineId = Int(baseline) {
+                return messageId > baselineId
+            }
+            return message.id != baseline
+        }
+    }
+
     private func resendFailedDraft(_ draft: ChatComposerDraft) async {
         let route = ChatComposerSendPlanner.route(for: draft)
         if case .unsupported(let message) = route {
@@ -782,6 +829,7 @@ final class ChatViewModel {
         optimisticContent: String,
         retryDraft: ChatComposerDraft
     ) async -> Bool {
+        beginSendAttempt()
         let optimisticUser = KBMessage(
             id: "kb-optimistic-\(UUID().uuidString)",
             role: .user,
@@ -812,7 +860,8 @@ final class ChatViewModel {
         } catch {
             let partial = assistantReplyPhase.displayText
             if await handleResumableStreamInterruption(error, partialText: partial) {
-                return true
+                // Keep disk draft until we know the server accepted the user turn.
+                return userMessageAckedForCurrentSend || serverAcceptedCurrentSend()
             }
             return await finishHardSendFailure(
                 error: error,
@@ -857,6 +906,7 @@ final class ChatViewModel {
 
     @discardableResult
     private func sendSingleVoice(clip: PendingVoiceClip, text: String, retryDraft: ChatComposerDraft) async -> Bool {
+        beginSendAttempt()
         let optimisticUser = KBMessage(
             id: "kb-optimistic-\(UUID().uuidString)",
             role: .user,
@@ -889,7 +939,7 @@ final class ChatViewModel {
         } catch {
             let partial = assistantReplyPhase.displayText
             if await handleResumableStreamInterruption(error, partialText: partial) {
-                return true
+                return userMessageAckedForCurrentSend || serverAcceptedCurrentSend()
             }
             return await finishHardSendFailure(
                 error: error,
@@ -915,7 +965,11 @@ final class ChatViewModel {
             }
         }
 
-        let optimisticUser = buildOptimisticMessage(from: draft)
+        beginSendAttempt()
+        var draftForSend = draft
+        let clientMessageId = draft.clientMessageId ?? UUID().uuidString
+        draftForSend.clientMessageId = clientMessageId
+        let optimisticUser = buildOptimisticMessage(from: draftForSend)
         do {
             messages.append(optimisticUser)
             assistantReplyPhase = .waiting
@@ -925,12 +979,22 @@ final class ChatViewModel {
 
             let stream = try await client.streamComposedMessage(
                 sessionId: session.id,
-                draft: draft,
+                draft: draftForSend,
                 useKnowledgeBase: useKnowledgeBase
             )
-            try await AssistantReplyStreamConsumer.consume(stream) { update in
-                applyStreamUpdate(update)
-            }
+            try await AssistantReplyStreamConsumer.consume(
+                stream,
+                onUserMessageAcked: { messageId, ackedClientId in
+                    self.markUserMessageAcked(
+                        serverMessageId: messageId,
+                        optimisticId: optimisticUser.id,
+                        clientMessageId: ackedClientId ?? clientMessageId
+                    )
+                },
+                onUpdate: { update in
+                    applyStreamUpdate(update)
+                }
+            )
             await waitForStreamRevealAnimation()
             await reloadLatestWindow()
             clearInFlightReply()
@@ -946,11 +1010,11 @@ final class ChatViewModel {
         } catch {
             let partial = assistantReplyPhase.displayText
             if await handleResumableStreamInterruption(error, partialText: partial) {
-                return true
+                return userMessageAckedForCurrentSend || serverAcceptedCurrentSend()
             }
             return await finishHardSendFailure(
                 error: error,
-                retryDraft: draft,
+                retryDraft: draftForSend,
                 optimisticMessageId: optimisticUser.id,
                 errorText: VoicePipelineErrorMessage.forSend(error)
             )
@@ -971,7 +1035,7 @@ final class ChatViewModel {
 
         await reloadLatestWindow()
 
-        if messages.last?.role == .assistant {
+        if serverAcceptedCurrentSend(), messages.last?.role == .assistant {
             // User turn was accepted and a reply (including pipeline error) already exists.
             removeOptimisticMessages()
             clearSavedComposerDraft()
@@ -1069,7 +1133,8 @@ final class ChatViewModel {
             role: .user,
             content: content,
             createdAt: Date(),
-            attachments: attachments.isEmpty ? nil : attachments
+            attachments: attachments.isEmpty ? nil : attachments,
+            clientMessageId: draft.clientMessageId
         )
     }
 
@@ -1170,6 +1235,7 @@ final class ChatViewModel {
                 apply(page: page, requestedLimit: normalizedLimit, kind: "pollReply")
                 if messages.last?.role == .assistant {
                     clearInFlightReply()
+                    clearSavedComposerDraft()
                     scrollIntent = .scrollToBottom
                     return
                 }
@@ -1434,15 +1500,35 @@ final class ChatViewModel {
 
     private func mergeOlderLoadedMessages(with fetched: [KBMessage]) -> [KBMessage] {
         let fetchedIds = Set(fetched.map(\.id))
-        let serverHasUser = fetched.contains { $0.role == .user }
         let olderLoaded = messages.filter { message in
             if message.id.hasPrefix("kb-optimistic-") {
-                // Optimistic user bubble is superseded once the server persisted the real turn.
-                return !serverHasUser
+                return !serverAcknowledgesOptimistic(message, in: fetched)
             }
             return !fetchedIds.contains(message.id)
         }
         return olderLoaded + fetched
+    }
+
+    /// Drop optimistic only when the server page contains *this* send's user turn — not any historical user.
+    private func serverAcknowledgesOptimistic(_ optimistic: KBMessage, in fetched: [KBMessage]) -> Bool {
+        if let clientId = optimistic.clientMessageId,
+           fetched.contains(where: { $0.role == .user && $0.clientMessageId == clientId }) {
+            return true
+        }
+        if fetched.contains(where: { $0.id == optimistic.id }) {
+            return true
+        }
+        let baseline = preSendLastMessageId
+        return fetched.contains { message in
+            guard message.role == .user else { return false }
+            guard let baseline else {
+                return message.content == optimistic.content
+            }
+            if let messageId = Int(message.id), let baselineId = Int(baseline) {
+                return messageId > baselineId
+            }
+            return message.id != baseline
+        }
     }
 
     private func mergedMessagesForPersistence(_ inMemory: [KBMessage]) -> [KBMessage] {

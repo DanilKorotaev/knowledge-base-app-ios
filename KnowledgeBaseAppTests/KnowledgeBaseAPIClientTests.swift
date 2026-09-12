@@ -300,6 +300,14 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         XCTAssertEqual(event.label, "Читаю README.md…")
     }
 
+    func testChatSSEEventDecodesUserMessageAck() throws {
+        let json = #"{"user_message_acked":{"message_id":42,"client_message_id":"aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"}}"#
+            .data(using: .utf8)!
+        let event = try JSONDecoder().decode(ChatSSEEvent.self, from: json)
+        XCTAssertEqual(event.userMessageAcked?.messageId, 42)
+        XCTAssertEqual(event.userMessageAcked?.clientMessageId, "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee")
+    }
+
     /// Серверы часто разделяют SSE-события `\r\n\r\n`; поиск только `\n\n` в сырых байтах их пропускает.
     func testStreamTextMessageParsesSSEWithCRLFLineEndings() async throws {
         let config = URLSessionConfiguration.ephemeral

@@ -496,7 +496,7 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertEqual(latest, 100)
     }
 
-    func testReloadLatestWindow_dropsOptimisticUserWhenServerHasUser() async throws {
+    func testReloadLatestWindow_dropsOptimisticUserWhenServerHasMatchingUser() async throws {
         let (store, sessionId) = emptyStoreWithSession()
         _ = try await StubChatAPIClient(store: store).sendTextMessage(
             sessionId: sessionId,
@@ -516,6 +516,33 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertEqual(userMessages.count, 1)
         XCTAssertFalse(userMessages[0].id.hasPrefix("kb-optimistic-"))
         XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+    }
+
+    func testReloadLatestWindow_keepsOptimisticWhenHistoryAlreadyHasUser() async throws {
+        let (store, sessionId) = emptyStoreWithSession()
+        _ = try await StubChatAPIClient(store: store).sendTextMessage(
+            sessionId: sessionId,
+            text: "old turn",
+            useKnowledgeBase: false
+        )
+        let serverMessages = store.messages(for: sessionId)
+        let client = StubChatAPIClient(store: store)
+        let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
+        // Simulate long chat: persisted history + in-flight optimistic that never reached the server.
+        viewModel.messages = serverMessages + [
+            KBMessage(
+                id: "kb-optimistic-new",
+                role: .user,
+                content: "brand new send",
+                createdAt: Date(),
+                clientMessageId: "cccccccc-dddd-4eee-8fff-000000000001"
+            ),
+        ]
+
+        await viewModel.reloadLatestWindow()
+
+        XCTAssertTrue(viewModel.messages.contains { $0.id == "kb-optimistic-new" })
+        XCTAssertEqual(viewModel.messages.filter { $0.role == .user }.count, 2)
     }
 
     func testResumeAwaitingReply_clearsStreamingPlaceholderWhenAssistantAlreadyInFeed() async throws {

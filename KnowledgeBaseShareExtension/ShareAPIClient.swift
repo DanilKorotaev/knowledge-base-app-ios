@@ -177,6 +177,9 @@ final class ShareAPIClient: @unchecked Sendable {
 
         appendField(name: "content", value: draft.text)
         appendField(name: "use_knowledge_base", value: useKnowledgeBase ? "true" : "false")
+        if let clientMessageId = draft.clientMessageId, !clientMessageId.isEmpty {
+            appendField(name: "client_message_id", value: clientMessageId)
+        }
 
         for attachment in draft.attachments {
             let fileData = try Data(contentsOf: attachment.localURL)

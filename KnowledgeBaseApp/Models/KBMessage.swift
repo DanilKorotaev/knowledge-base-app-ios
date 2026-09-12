@@ -23,6 +23,7 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
     let relatedChangedFiles: [KBChangedFile]?
     let relatedChangedFilesSource: String?
     let structuredUI: KBStructuredUIDocument?
+    let clientMessageId: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -35,6 +36,7 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         case relatedChangedFiles = "related_changed_files"
         case relatedChangedFilesSource = "related_changed_files_source"
         case structuredUI = "structured_ui"
+        case clientMessageId = "client_message_id"
     }
 
     init(
@@ -47,7 +49,8 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         transcription: String? = nil,
         relatedChangedFiles: [KBChangedFile]? = nil,
         relatedChangedFilesSource: String? = nil,
-        structuredUI: KBStructuredUIDocument? = nil
+        structuredUI: KBStructuredUIDocument? = nil,
+        clientMessageId: String? = nil
     ) {
         self.id = id
         self.role = role
@@ -59,6 +62,7 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         self.relatedChangedFiles = relatedChangedFiles
         self.relatedChangedFilesSource = relatedChangedFilesSource
         self.structuredUI = structuredUI
+        self.clientMessageId = clientMessageId
     }
 
     var imageAttachments: [KBAttachment] {

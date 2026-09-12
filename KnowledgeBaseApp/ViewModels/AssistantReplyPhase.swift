@@ -1,9 +1,10 @@
 import Foundation
 
-/// SSE stream item from `POST …/messages` (`delta` text or Cursor tool `activity`).
+/// SSE stream item from `POST …/messages` (`delta` text, Cursor tool `activity`, or early user ack).
 enum AssistantStreamEvent: Equatable, Sendable {
     case activity(label: String)
     case delta(String)
+    case userMessageAcked(messageId: String, clientMessageId: String?)
 }
 
 /// Phase + optional Cursor activity label for a single stream tick.
@@ -73,6 +74,7 @@ enum AssistantReplyStreamConsumer {
     /// Yields phase + activity updates while reading SSE; ends in `.finalizing`.
     static func consume(
         _ stream: AsyncThrowingStream<AssistantStreamEvent, Error>,
+        onUserMessageAcked: (@MainActor (String, String?) -> Void)? = nil,
         onUpdate: @MainActor (AssistantReplyStreamUpdate) -> Void
     ) async throws {
         await onUpdate(AssistantReplyStreamUpdate(phase: .waiting, activityLabel: nil))
@@ -81,6 +83,8 @@ enum AssistantReplyStreamConsumer {
         var chunkIndex = 0
         for try await event in stream {
             switch event {
+            case .userMessageAcked(let messageId, let clientMessageId):
+                await onUserMessageAcked?(messageId, clientMessageId)
             case .activity(let label):
                 activityLabel = label
                 let phase: AssistantReplyPhase = accumulated.isEmpty

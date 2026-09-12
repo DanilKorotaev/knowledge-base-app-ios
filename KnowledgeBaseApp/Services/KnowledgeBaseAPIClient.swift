@@ -598,13 +598,26 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        struct Envelope: Codable {
+        struct Envelope: Decodable {
             let messages: [KBMessage]?
+            let userMessageAcked: ChatSSEUserMessageAck?
+
+            enum CodingKeys: String, CodingKey {
+                case messages
+                case userMessageAcked = "user_message_acked"
+            }
         }
 
+        var ackEvent: AssistantStreamEvent?
         let messages: [KBMessage]
         if let env = try? decoder.decode(Envelope.self, from: data), let m = env.messages {
             messages = m
+            if let ack = env.userMessageAcked {
+                ackEvent = .userMessageAcked(
+                    messageId: String(ack.messageId),
+                    clientMessageId: ack.clientMessageId
+                )
+            }
         } else if let list = try? decoder.decode([KBMessage].self, from: data) {
             messages = list
         } else {
@@ -612,9 +625,29 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         }
 
         guard let assistant = messages.last(where: { $0.role == .assistant }) else {
+            if let ackEvent {
+                return AsyncThrowingStream { continuation in
+                    continuation.yield(ackEvent)
+                    continuation.finish()
+                }
+            }
             return AsyncThrowingStream { $0.finish() }
         }
-        return streamAssistantByWord(assistant.content)
+        let wordStream = streamAssistantByWord(assistant.content)
+        guard let ackEvent else { return wordStream }
+        return AsyncThrowingStream { continuation in
+            continuation.yield(ackEvent)
+            Task {
+                do {
+                    for try await event in wordStream {
+                        continuation.yield(event)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
     }
 
     private func collectAsyncBytes(_ bytes: URLSession.AsyncBytes) async throws -> Data {
@@ -694,6 +727,15 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
             if let err = evt.error, !err.isEmpty {
                 continuation.finish(throwing: KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: err))
                 return true
+            }
+            if let ack = evt.userMessageAcked {
+                continuation.yield(
+                    .userMessageAcked(
+                        messageId: String(ack.messageId),
+                        clientMessageId: ack.clientMessageId
+                    )
+                )
+                return false
             }
             if evt.status != nil {
                 return false
@@ -974,6 +1016,9 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
         appendField(name: "content", value: draft.text)
         appendField(name: "use_knowledge_base", value: useKnowledgeBase ? "true" : "false")
+        if let clientMessageId = draft.clientMessageId, !clientMessageId.isEmpty {
+            appendField(name: "client_message_id", value: clientMessageId)
+        }
 
         let transcriptions = draft.voiceClips.map(\.transcriptionSegment)
         if !transcriptions.isEmpty {
