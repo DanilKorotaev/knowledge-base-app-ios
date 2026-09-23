@@ -3,6 +3,7 @@ import SwiftUI
 struct MainView: View {
     private enum RootTab: Hashable {
         case sessions
+        case boards
         case health
         case settings
     }
@@ -82,6 +83,12 @@ struct MainView: View {
                 Label("tab.chats", systemImage: "bubble.left.and.bubble.right")
             }
             .tag(RootTab.sessions)
+
+            BoardsTabView()
+                .tabItem {
+                    Label("tab.overview", systemImage: "square.grid.2x2")
+                }
+                .tag(RootTab.boards)
 
             if healthSyncEnabled {
                 NavigationStack {

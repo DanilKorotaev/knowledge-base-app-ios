@@ -12,6 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Added
+
+- Overview tab (Boards): list + detail screens driven by `/api/boards`, with demo fallback when the API is not deployed yet; Structured UI `metric` and `table` nodes.
+
 ## [1.0.60] - 2026-09-12
 
 ### Fixed

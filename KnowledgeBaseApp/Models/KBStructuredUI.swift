@@ -36,6 +36,11 @@ struct KBStructuredUIOption: Codable, Equatable, Sendable {
     let label: String
 }
 
+struct KBStructuredUITableColumn: Codable, Equatable, Sendable {
+    let id: String
+    let label: String
+}
+
 struct KBStructuredUINode: Codable, Equatable, Sendable {
     let type: String
     let id: String
@@ -79,6 +84,10 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let maximum: Double?
     /// Step for `slider` / `stepper`.
     let step: Double?
+    /// Column headers for `table`.
+    let columns: [KBStructuredUITableColumn]?
+    /// Row cells for `table` (string grid).
+    let rows: [[String]]?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -107,6 +116,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case minimum = "min"
         case maximum = "max"
         case step
+        case columns
+        case rows
     }
 
     init(
@@ -136,7 +147,9 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         progressFraction: Double? = nil,
         minimum: Double? = nil,
         maximum: Double? = nil,
-        step: Double? = nil
+        step: Double? = nil,
+        columns: [KBStructuredUITableColumn]? = nil,
+        rows: [[String]]? = nil
     ) {
         self.type = type
         self.id = id
@@ -165,6 +178,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.minimum = minimum
         self.maximum = maximum
         self.step = step
+        self.columns = columns
+        self.rows = rows
     }
 
     init(from decoder: Decoder) throws {
@@ -194,6 +209,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         minimum = try container.decodeIfPresent(Double.self, forKey: .minimum)
         maximum = try container.decodeIfPresent(Double.self, forKey: .maximum)
         step = try container.decodeIfPresent(Double.self, forKey: .step)
+        columns = try container.decodeIfPresent([KBStructuredUITableColumn].self, forKey: .columns)
+        rows = try container.decodeIfPresent([[String]].self, forKey: .rows)
 
         if type == "progress", let fraction = try? container.decode(Double.self, forKey: .value) {
             value = nil
@@ -239,13 +256,15 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         try container.encodeIfPresent(minimum, forKey: .minimum)
         try container.encodeIfPresent(maximum, forKey: .maximum)
         try container.encodeIfPresent(step, forKey: .step)
+        try container.encodeIfPresent(columns, forKey: .columns)
+        try container.encodeIfPresent(rows, forKey: .rows)
     }
 
     var isSupported: Bool {
         switch type {
         case "vstack", "hstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
              "image", "link", "file", "divider", "callout", "spacer", "progress", "date", "time",
-             "slider", "stepper", "confirm", "markdown":
+             "slider", "stepper", "confirm", "markdown", "metric", "table":
             return true
         default:
             return false

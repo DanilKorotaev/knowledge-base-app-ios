@@ -255,6 +255,24 @@ Timeout клиента на SSE: **600 s** (Cursor + sync могут заним�
 
 Ответ revert: `{ "ok": true, "change_id": "…", "path": "…" }`.
 
+## Boards (Overview)
+
+Клиент рисует каталог и документ; структура БЗ на устройстве **не** зашита.
+
+| Метод | Путь | Ответ |
+|-------|------|--------|
+| GET | `/api/boards` | `200` — `{ "boards": [ Board ], "total" }` (или `"items"`) |
+| GET | `/api/boards/{board_id}` | `200` — `{ "board", "document", "rendered_at?" }` |
+| POST | `/api/boards/{board_id}/refresh` | `200` — тот же shape, что detail (force recompute / remote refetch) |
+
+**Board (список):** `id`, `title`, `subtitle?`, `icon?` (SF Symbol), `kind` (`cached_view` \| `remote` \| `system`), `sort_order`, `enabled`, `list_cell?`, `rendered_at?`.
+
+**list_cell:** `kind` (`plain` \| `metrics` \| `status`), `title?`, `subtitle?`, `metrics?` (`[{label,value}]`), `status_text?`, `status_tone?` (`ok` \| `warn` \| `error` \| `info`).
+
+**document:** тот же Structured UI schema, что в чате (`schema_version` + `screen`), плюс узлы `metric` (`label` + `text`/`value`) и `table` (`columns: [{id,label}]`, `rows: [[string]]`).
+
+iOS: при **404** на list/detail (API ещё не задеплоен) показывает встроенный demo-каталог.
+
 ## Синхронизация (не в клиенте MVP)
 
 `POST /api/sync/trigger`, `GET /api/sync/status` — по необходимости, см. Nextcloud-док.

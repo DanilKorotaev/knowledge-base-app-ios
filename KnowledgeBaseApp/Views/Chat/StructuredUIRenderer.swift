@@ -285,6 +285,10 @@ private struct StructuredUINodeView: View {
                 StructuredUISliderNodeView(node: node, draftValues: $draftValues, isInteractive: isInteractive)
             case "stepper":
                 StructuredUIStepperNodeView(node: node, draftValues: $draftValues, isInteractive: isInteractive)
+            case "metric":
+                StructuredUIMetricNodeView(node: node)
+            case "table":
+                StructuredUITableNodeView(node: node)
             default:
                 EmptyView()
             }

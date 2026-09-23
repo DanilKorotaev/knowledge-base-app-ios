@@ -13,7 +13,7 @@ Minimal shell before Boards / Structured UI:
 - [x] `knowledgebase://record` opens the voice-default (or newest) chat instead of “tap mic below”
 - [x] Localization keys: `tab.chats`, `tab.settings`
 - [x] `bundle exec fastlane test` green (395 tests, coverage OK)
-- [ ] Overview / Boards tab — **not in this task** (after Structured UI)
+- [x] Overview / Boards tab — see `task-feature-boards-tab-renderer.md`
 
 ## Notes
 

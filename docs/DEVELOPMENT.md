@@ -54,8 +54,8 @@ Same as **Building and testing** above — `bundle exec fastlane test` is the on
 
 ## Main shell (tabs)
 
-- **Tabs:** Chats (session list + chat stack) · Settings (moved from the session-list toolbar).
-- **Overview / Boards** tab is intentionally not shipped yet (after Structured UI).
+- **Tabs:** Chats · Overview (Boards) · Settings (Health tab when sync enabled).
+- **Overview / Boards:** list from `GET /api/boards`; detail renders Structured UI (`metric` / `table` + existing nodes). Demo boards while API returns 404.
 - **No mic bar** on the session list — voice only from the chat composer or Apple Watch.
 
 ## Apple Watch companion
