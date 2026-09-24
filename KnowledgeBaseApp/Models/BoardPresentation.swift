@@ -69,4 +69,12 @@ enum StructuredUITableDisplay {
         guard index < row.count else { return "" }
         return row[index]
     }
+
+    /// Auto horizontal scroll when column count exceeds this (unless JSON overrides).
+    static let autoScrollColumnThreshold = 3
+
+    static func allowsHorizontalScroll(scrollHorizontal: Bool?, columnCount: Int) -> Bool {
+        if let scrollHorizontal { return scrollHorizontal }
+        return columnCount > autoScrollColumnThreshold
+    }
 }

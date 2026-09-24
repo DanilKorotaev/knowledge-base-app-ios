@@ -88,6 +88,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let columns: [KBStructuredUITableColumn]?
     /// Row cells for `table` (string grid).
     let rows: [[String]]?
+    /// When set on `table`, forces / disables horizontal pan. Nil = auto (scroll if >3 columns).
+    let scrollHorizontal: Bool?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -118,6 +120,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case step
         case columns
         case rows
+        case scrollHorizontal = "scroll_horizontal"
     }
 
     init(
@@ -149,7 +152,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         maximum: Double? = nil,
         step: Double? = nil,
         columns: [KBStructuredUITableColumn]? = nil,
-        rows: [[String]]? = nil
+        rows: [[String]]? = nil,
+        scrollHorizontal: Bool? = nil
     ) {
         self.type = type
         self.id = id
@@ -180,6 +184,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.step = step
         self.columns = columns
         self.rows = rows
+        self.scrollHorizontal = scrollHorizontal
     }
 
     init(from decoder: Decoder) throws {
@@ -211,6 +216,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         step = try container.decodeIfPresent(Double.self, forKey: .step)
         columns = try container.decodeIfPresent([KBStructuredUITableColumn].self, forKey: .columns)
         rows = try container.decodeIfPresent([[String]].self, forKey: .rows)
+        scrollHorizontal = try container.decodeIfPresent(Bool.self, forKey: .scrollHorizontal)
 
         if type == "progress", let fraction = try? container.decode(Double.self, forKey: .value) {
             value = nil
@@ -258,6 +264,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         try container.encodeIfPresent(step, forKey: .step)
         try container.encodeIfPresent(columns, forKey: .columns)
         try container.encodeIfPresent(rows, forKey: .rows)
+        try container.encodeIfPresent(scrollHorizontal, forKey: .scrollHorizontal)
     }
 
     var isSupported: Bool {

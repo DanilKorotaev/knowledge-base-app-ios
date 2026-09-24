@@ -12,6 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Changed
+
+- Overview boards: metric KPIs wrap in a 2-column grid; tables skip sideways scroll unless wide or `scroll_horizontal` is set.
+
 ## [1.0.61] - 2026-09-23
 
 ### Added
@@ -19,10 +23,6 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 - Overview tab with Boards list and Structured UI detail
 
 ### Changed
-
-- Overview tab (Boards): list + detail screens driven by `/api/boards`, with demo fallback when the API is not deployed yet; Structured UI `metric` and `table` nodes.
-
-### Added
 
 - Overview tab (Boards): list + detail screens driven by `/api/boards`, with demo fallback when the API is not deployed yet; Structured UI `metric` and `table` nodes.
 

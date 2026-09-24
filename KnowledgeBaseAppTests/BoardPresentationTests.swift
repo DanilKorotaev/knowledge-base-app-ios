@@ -93,6 +93,10 @@ struct BoardPresentationTests {
         #expect(StructuredUITableDisplay.cell(["x"], at: 0) == "x")
         #expect(StructuredUITableDisplay.cell(["x"], at: 3) == "")
         #expect(StructuredUITableDisplay.columnCount(columns: [], rows: []) == 0)
+        #expect(StructuredUITableDisplay.allowsHorizontalScroll(scrollHorizontal: nil, columnCount: 4))
+        #expect(!StructuredUITableDisplay.allowsHorizontalScroll(scrollHorizontal: nil, columnCount: 3))
+        #expect(!StructuredUITableDisplay.allowsHorizontalScroll(scrollHorizontal: false, columnCount: 10))
+        #expect(StructuredUITableDisplay.allowsHorizontalScroll(scrollHorizontal: true, columnCount: 1))
     }
 
     @Test("demo catalog details cover both boards")

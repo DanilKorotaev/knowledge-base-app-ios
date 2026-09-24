@@ -79,20 +79,30 @@ private struct StructuredUINodeView: View {
                     }
                 }
             case "hstack":
-                HStack(alignment: .center, spacing: CGFloat(node.spacing ?? 8)) {
-                    ForEach(Array(node.supportedChildren.enumerated()), id: \.offset) { _, child in
-                        StructuredUINodeView(
-                            node: child,
-                            isSending: isSending,
-                            isInteractive: isInteractive,
-                            attachmentLoader: attachmentLoader,
-                            onFullscreenImage: onFullscreenImage,
-                            draftValues: $draftValues,
-                            onAction: onAction
-                        )
+                let kids = node.supportedChildren
+                let metricsOnly = !kids.isEmpty && kids.allSatisfy { $0.type == "metric" }
+                if metricsOnly, kids.count >= 3 {
+                    StructuredUIMetricsGridView(spacing: CGFloat(node.spacing ?? 12)) {
+                        ForEach(Array(kids.enumerated()), id: \.offset) { _, child in
+                            StructuredUIMetricNodeView(node: child, compact: true)
+                        }
                     }
+                } else {
+                    HStack(alignment: .center, spacing: CGFloat(node.spacing ?? 8)) {
+                        ForEach(Array(kids.enumerated()), id: \.offset) { _, child in
+                            StructuredUINodeView(
+                                node: child,
+                                isSending: isSending,
+                                isInteractive: isInteractive,
+                                attachmentLoader: attachmentLoader,
+                                onFullscreenImage: onFullscreenImage,
+                                draftValues: $draftValues,
+                                onAction: onAction
+                            )
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             case "text":
                 Text(node.text ?? "")
                     .font(.body)
