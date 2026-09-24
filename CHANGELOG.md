@@ -12,6 +12,16 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.63] - 2026-09-24
+
+### Added
+
+- Board period control and Overview settings toggle
+
+### Fixed
+
+- Update FailingBoardsClient for period API
+
 ## [1.0.62] - 2026-09-24
 
 ### Changed
@@ -538,7 +548,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.62...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.63...HEAD
+[1.0.63]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.63
 [1.0.62]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.62
 [1.0.61]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.61
 [1.0.60]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.60
