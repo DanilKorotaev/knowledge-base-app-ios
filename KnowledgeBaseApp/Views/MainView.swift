@@ -40,6 +40,7 @@ struct MainView: View {
     @State private var pinnedStore = PinnedSessionsStore.shared
     @State private var debugQuickActions = DebugQuickActionsController.shared
     @AppStorage("kb.health.sync_enabled") private var healthSyncEnabled = false
+    @AppStorage("kb.boards.enabled") private var boardsOverviewEnabled = true
     private let sessionCache: SessionCacheStoreProtocol
     @Environment(\.scenePhase) private var scenePhase
 
@@ -84,11 +85,13 @@ struct MainView: View {
             }
             .tag(RootTab.sessions)
 
-            BoardsTabView()
-                .tabItem {
-                    Label("tab.overview", systemImage: "square.grid.2x2")
-                }
-                .tag(RootTab.boards)
+            if boardsOverviewEnabled {
+                BoardsTabView()
+                    .tabItem {
+                        Label("tab.overview", systemImage: "square.grid.2x2")
+                    }
+                    .tag(RootTab.boards)
+            }
 
             if healthSyncEnabled {
                 NavigationStack {
@@ -111,6 +114,9 @@ struct MainView: View {
                         case .health:
                             HealthSettingsView()
                                 .toolbar(.hidden, for: .tabBar)
+                        case .boards:
+                            BoardsSettingsView()
+                                .toolbar(.hidden, for: .tabBar)
                         }
                     }
             }
@@ -122,6 +128,11 @@ struct MainView: View {
         .environment(voiceRouting)
         .onChange(of: healthSyncEnabled) { _, enabled in
             if !enabled, selectedTab == .health {
+                selectedTab = .sessions
+            }
+        }
+        .onChange(of: boardsOverviewEnabled) { _, enabled in
+            if !enabled, selectedTab == .boards {
                 selectedTab = .sessions
             }
         }

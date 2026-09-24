@@ -27,6 +27,8 @@
 		0E2B7DFE50C54B6A35500572 /* InMemoryKBStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8CEF44EAD6C02EC094CD944 /* InMemoryKBStore.swift */; };
 		13210C8BBEB3AFEA292B080F /* SessionListSorterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DC47B07311C6648AA2521C /* SessionListSorterTests.swift */; };
 		14A1C250EE632E57BAA9EA55 /* BoardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552B48F9819B34A44BE11A58 /* BoardDetailView.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* BoardsPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5061728394A5B6C /* BoardsPreferences.swift */; };
+		C2D3E4F5061728394A5B6C7D /* BoardsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E4F5061728394A5B6C7D8E /* BoardsSettingsView.swift */; };
 		14E4AB259ADD394DD6728F3B /* SessionListSorter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48E5E3295CD00874C8FDE24A /* SessionListSorter.swift */; };
 		15D2AB205A3DECA62062F1B7 /* KBHealthSyncServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2EF4519DD724F2F559A382A7 /* KBHealthSyncServiceTests.swift */; };
 		1604232C93A3882110241CB4 /* ChatSessionFocusTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81B42CDDF1247F48EBA8635D /* ChatSessionFocusTracker.swift */; };
@@ -547,6 +549,8 @@
 		525C51AE342E067C1846E135 /* RecordingGestureLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingGestureLogic.swift; sourceTree = "<group>"; };
 		54AC2C34B58EB86752BABAB7 /* UserDefault+PropertyWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefault+PropertyWrapper.swift"; sourceTree = "<group>"; };
 		552B48F9819B34A44BE11A58 /* BoardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardDetailView.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5061728394A5B6C /* BoardsPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardsPreferences.swift; sourceTree = "<group>"; };
+		D3E4F5061728394A5B6C7D8E /* BoardsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardsSettingsView.swift; sourceTree = "<group>"; };
 		5530CA85EFB82842E33B912A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5537ED8C51E85D4C7BDA95C9 /* UserDefaultsValueEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsValueEditView.swift; sourceTree = "<group>"; };
 		55A8C47394151E80DF9B411F /* WorkoutData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutData.swift; sourceTree = "<group>"; };
@@ -1388,6 +1392,7 @@
 			children = (
 				1BB96B209CBAC400A464F47C /* AttachmentDiskCache.swift */,
 				CB43D2F0D2E27C2C0C1712DD /* BoardsAPIClient.swift */,
+				B1C2D3E4F5061728394A5B6C /* BoardsPreferences.swift */,
 				1019A6F380573724EBF5E632 /* CachingAttachmentLoader.swift */,
 				09F23EE9AB7E0B9FBE89013E /* ChatAPIClient.swift */,
 				81B42CDDF1247F48EBA8635D /* ChatSessionFocusTracker.swift */,
@@ -1492,6 +1497,7 @@
 			isa = PBXGroup;
 			children = (
 				552B48F9819B34A44BE11A58 /* BoardDetailView.swift */,
+				D3E4F5061728394A5B6C7D8E /* BoardsSettingsView.swift */,
 				B62386B89BEC46A065627979 /* BoardsTabView.swift */,
 			);
 			path = Boards;
@@ -1758,6 +1764,8 @@
 				14A1C250EE632E57BAA9EA55 /* BoardDetailView.swift in Sources */,
 				8BE3915C52E77976E6473C68 /* BoardPresentation.swift in Sources */,
 				20C73D86F80C7E8334FB3F9E /* BoardsAPIClient.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* BoardsPreferences.swift in Sources */,
+				C2D3E4F5061728394A5B6C7D /* BoardsSettingsView.swift in Sources */,
 				5D4F506765AE970D00B1C5C4 /* BoardsTabView.swift in Sources */,
 				E88E2F0AD32CB2AF45DBD647 /* BoardsViewModel.swift in Sources */,
 				193F08AD7F5967C0BEF62482 /* CachedAttachmentKind.swift in Sources */,

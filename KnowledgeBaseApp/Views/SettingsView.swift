@@ -6,6 +6,7 @@ import UIKit
 enum SettingsRoute: Hashable {
     case offlineCache
     case health
+    case boards
 }
 
 struct SettingsView: View {
@@ -77,11 +78,14 @@ struct SettingsView: View {
             }
 
             Section {
+                NavigationLink(value: SettingsRoute.boards) {
+                    Text("boards.settings.title")
+                }
                 NavigationLink(value: SettingsRoute.health) {
                     Text("health.settings.title")
                 }
             } header: {
-                Text("health.settings.section")
+                Text("settings.features_section")
             }
 
             Section {

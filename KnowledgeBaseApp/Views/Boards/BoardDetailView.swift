@@ -20,6 +20,7 @@ struct BoardDetailView: View {
             } else if let detail = viewModel.detail {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
+                        periodBar
                         if let subtitle = detail.board.subtitle, !subtitle.isEmpty {
                             Text(subtitle)
                                 .font(.subheadline)
@@ -68,6 +69,43 @@ struct BoardDetailView: View {
         .task {
             await viewModel.load()
         }
+    }
+
+    private var periodBar: some View {
+        HStack(spacing: 12) {
+            Button {
+                Task { await viewModel.setPeriod(viewModel.period.shifting(byMonths: -1)) }
+            } label: {
+                Image(systemName: "chevron.left")
+            }
+            .accessibilityLabel(Text("boards.period.previous"))
+
+            VStack(spacing: 2) {
+                Text(viewModel.period.displayLabel())
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                Button("boards.period.all") {
+                    Task { await viewModel.setPeriod(.all) }
+                }
+                .font(.caption)
+                .disabled(viewModel.period == .all)
+            }
+            .frame(maxWidth: .infinity)
+
+            Button {
+                Task {
+                    let next: BoardPeriodSelection =
+                        viewModel.period == .all
+                        ? BoardPeriodSelection.currentMonth()
+                        : viewModel.period.shifting(byMonths: 1)
+                    await viewModel.setPeriod(next)
+                }
+            } label: {
+                Image(systemName: "chevron.right")
+            }
+            .accessibilityLabel(Text("boards.period.next"))
+        }
+        .buttonStyle(.borderless)
     }
 }
 

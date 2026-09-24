@@ -2,8 +2,18 @@ import Foundation
 
 protocol BoardsAPIClientProtocol: Sendable {
     func fetchBoards() async throws -> [KBBoard]
-    func fetchBoard(id: String) async throws -> KBBoardDetail
-    func refreshBoard(id: String) async throws -> KBBoardDetail
+    func fetchBoard(id: String, period: String?) async throws -> KBBoardDetail
+    func refreshBoard(id: String, period: String?) async throws -> KBBoardDetail
+}
+
+extension BoardsAPIClientProtocol {
+    func fetchBoard(id: String) async throws -> KBBoardDetail {
+        try await fetchBoard(id: id, period: nil)
+    }
+
+    func refreshBoard(id: String) async throws -> KBBoardDetail {
+        try await refreshBoard(id: id, period: nil)
+    }
 }
 
 enum BoardsAPIError: Error, Equatable {
@@ -19,15 +29,16 @@ struct StubBoardsAPIClient: BoardsAPIClientProtocol {
         DemoBoardsCatalog.boards().sorted { $0.sortOrder < $1.sortOrder }
     }
 
-    func fetchBoard(id: String) async throws -> KBBoardDetail {
+    func fetchBoard(id: String, period: String?) async throws -> KBBoardDetail {
+        _ = period
         guard let detail = DemoBoardsCatalog.detail(id: id) else {
             throw BoardsAPIError.notFound
         }
         return detail
     }
 
-    func refreshBoard(id: String) async throws -> KBBoardDetail {
-        try await fetchBoard(id: id)
+    func refreshBoard(id: String, period: String?) async throws -> KBBoardDetail {
+        try await fetchBoard(id: id, period: period)
     }
 }
 
@@ -75,8 +86,8 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
         }
     }
 
-    func fetchBoard(id: String) async throws -> KBBoardDetail {
-        let url = baseURL.appendingPathComponent("api/boards/\(id)")
+    func fetchBoard(id: String, period: String?) async throws -> KBBoardDetail {
+        let url = boardURL(id: id, period: period, refresh: false)
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         do {
@@ -96,8 +107,8 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
         }
     }
 
-    func refreshBoard(id: String) async throws -> KBBoardDetail {
-        let url = baseURL.appendingPathComponent("api/boards/\(id)/refresh")
+    func refreshBoard(id: String, period: String?) async throws -> KBBoardDetail {
+        let url = boardURL(id: id, period: period, refresh: true)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         do {
@@ -108,11 +119,21 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
             return decoded
         } catch let error as BoardsAPIError {
             if case .invalidResponse(let code, _) = error, code == 404 {
-                // Older servers may lack refresh — reload detail instead.
-                return try await fetchBoard(id: id)
+                return try await fetchBoard(id: id, period: period)
             }
             throw error
         }
+    }
+
+    private func boardURL(id: String, period: String?, refresh: Bool) -> URL {
+        var url = baseURL.appendingPathComponent("api/boards/\(id)")
+        if refresh {
+            url = url.appendingPathComponent("refresh")
+        }
+        guard let period, !period.isEmpty, period != "all" else { return url }
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        components?.queryItems = [URLQueryItem(name: "period", value: period)]
+        return components?.url ?? url
     }
 
     private func performData(_ request: URLRequest) async throws -> Data {
