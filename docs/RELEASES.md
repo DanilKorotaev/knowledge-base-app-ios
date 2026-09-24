@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.62 | 179 | `ios/v1.0.62` | 2026-09-24 | Boards metric grid and constrained table scroll |
 | 1.0.61 | 178 | `ios/v1.0.61` | 2026-09-23 | Overview tab with Boards list and Structured UI detail |
 | 1.0.60 | 177 | `ios/v1.0.60` | 2026-09-12 | Keep draft until compose ack, fix optimistic merge |
 | 1.0.59 | 176 | `ios/v1.0.59` | 2026-09-12 | Task for send outbox and optimistic merge data loss |
