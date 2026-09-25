@@ -48,7 +48,7 @@ final class BoardsViewModel {
     }
 }
 
-enum BoardPeriodSelection: Equatable {
+enum BoardPeriodSelection: Equatable, Hashable {
     case all
     case month(year: Int, month: Int)
 
@@ -84,10 +84,11 @@ enum BoardPeriodSelection: Equatable {
         }
     }
 
-    func displayLabel(calendar: Calendar = .current, locale: Locale = .current) -> String {
+    func displayLabel(calendar: Calendar = .current) -> String {
+        let locale = AppLanguageStore.shared.resolvedLocale
         switch self {
         case .all:
-            return L10n.string("boards.period.all")
+            return L10n.string("boards.period.all", locale: locale)
         case let .month(year, month):
             var comps = DateComponents()
             comps.year = year
@@ -119,6 +120,14 @@ final class BoardDetailViewModel {
     init(boardId: String, client: BoardsAPIClientProtocol) {
         self.boardId = boardId
         self.client = client
+    }
+
+    /// Current month and the five previous months for the period menu.
+    func recentMonthOptions(calendar: Calendar = .current) -> [BoardPeriodSelection] {
+        let current = BoardPeriodSelection.currentMonth(calendar: calendar)
+        return (0 ..< 6).compactMap { offset in
+            current.shifting(byMonths: -offset, calendar: calendar)
+        }
     }
 
     func load() async {

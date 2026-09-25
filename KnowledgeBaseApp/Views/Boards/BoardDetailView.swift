@@ -2,6 +2,8 @@ import SwiftUI
 
 struct BoardDetailView: View {
     @State private var viewModel: BoardDetailViewModel
+    @State private var showMonthPicker = false
+    @State private var monthPickerDate = Date()
 
     init(boardId: String, client: BoardsAPIClientProtocol) {
         _viewModel = State(initialValue: BoardDetailViewModel(boardId: boardId, client: client))
@@ -20,7 +22,10 @@ struct BoardDetailView: View {
             } else if let detail = viewModel.detail {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        periodBar
+                        Text(viewModel.period.displayLabel())
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         if let subtitle = detail.board.subtitle, !subtitle.isEmpty {
                             Text(subtitle)
                                 .font(.subheadline)
@@ -58,6 +63,9 @@ struct BoardDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                periodMenu
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     Task { await viewModel.refresh() }
                 } label: {
@@ -66,46 +74,81 @@ struct BoardDetailView: View {
                 .disabled(viewModel.isLoading || viewModel.isRefreshing)
             }
         }
+        .sheet(isPresented: $showMonthPicker) {
+            NavigationStack {
+                DatePicker(
+                    "boards.period.pick_month",
+                    selection: $monthPickerDate,
+                    displayedComponents: [.yearAndMonth]
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                .padding()
+                .navigationTitle("boards.period.pick_month")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("common.cancel") { showMonthPicker = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("common.done") {
+                            showMonthPicker = false
+                            Task {
+                                await viewModel.setPeriod(
+                                    BoardPeriodSelection.currentMonth(from: monthPickerDate)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
         .task {
             await viewModel.load()
         }
     }
 
-    private var periodBar: some View {
-        HStack(spacing: 12) {
+    private var periodMenu: some View {
+        Menu {
             Button {
-                Task { await viewModel.setPeriod(viewModel.period.shifting(byMonths: -1)) }
+                Task { await viewModel.setPeriod(.all) }
             } label: {
-                Image(systemName: "chevron.left")
-            }
-            .accessibilityLabel(Text("boards.period.previous"))
-
-            VStack(spacing: 2) {
-                Text(viewModel.period.displayLabel())
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                Button("boards.period.all") {
-                    Task { await viewModel.setPeriod(.all) }
+                if viewModel.period == .all {
+                    Label("boards.period.all", systemImage: "checkmark")
+                } else {
+                    Text("boards.period.all")
                 }
-                .font(.caption)
-                .disabled(viewModel.period == .all)
             }
-            .frame(maxWidth: .infinity)
-
-            Button {
-                Task {
-                    let next: BoardPeriodSelection =
-                        viewModel.period == .all
-                        ? BoardPeriodSelection.currentMonth()
-                        : viewModel.period.shifting(byMonths: 1)
-                    await viewModel.setPeriod(next)
+            Divider()
+            ForEach(viewModel.recentMonthOptions(), id: \.self) { option in
+                Button {
+                    Task { await viewModel.setPeriod(option) }
+                } label: {
+                    if viewModel.period == option {
+                        Label(option.displayLabel(), systemImage: "checkmark")
+                    } else {
+                        Text(option.displayLabel())
+                    }
                 }
-            } label: {
-                Image(systemName: "chevron.right")
             }
-            .accessibilityLabel(Text("boards.period.next"))
+            Divider()
+            Button("boards.period.pick_month") {
+                if case let .month(year, month) = viewModel.period {
+                    var comps = DateComponents()
+                    comps.year = year
+                    comps.month = month
+                    comps.day = 1
+                    monthPickerDate = Calendar.current.date(from: comps) ?? Date()
+                } else {
+                    monthPickerDate = Date()
+                }
+                showMonthPicker = true
+            }
+        } label: {
+            Label("boards.period.menu", systemImage: "calendar")
         }
-        .buttonStyle(.borderless)
+        .accessibilityLabel(Text("boards.period.menu"))
     }
 }
 
