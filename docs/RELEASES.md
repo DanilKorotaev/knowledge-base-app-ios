@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.64 | 183 | `ios/v1.0.64` | 2026-09-25 | Use .date components for board month picker |
 | 1.0.63 | 181 | `ios/v1.0.63` | 2026-09-24 | Update FailingBoardsClient for period API |
 | 1.0.62 | 179 | `ios/v1.0.62` | 2026-09-24 | Boards metric grid and constrained table scroll |
 | 1.0.61 | 178 | `ios/v1.0.61` | 2026-09-23 | Overview tab with Boards list and Structured UI detail |
