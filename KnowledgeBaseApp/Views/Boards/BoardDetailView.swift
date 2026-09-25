@@ -79,7 +79,7 @@ struct BoardDetailView: View {
                 DatePicker(
                     "boards.period.pick_month",
                     selection: $monthPickerDate,
-                    displayedComponents: [.yearAndMonth]
+                    displayedComponents: [.date]
                 )
                 .datePickerStyle(.wheel)
                 .labelsHidden()
