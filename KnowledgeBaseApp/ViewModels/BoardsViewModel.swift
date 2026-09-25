@@ -103,7 +103,7 @@ enum BoardPeriodSelection: Equatable, Hashable {
         case let (.month(ly, lm), .month(ry, rm)):
             return ly == ry && lm == rm
         case let (.range(lf, lt), .range(rf, rt)):
-            return isoDay(lf) == isoDay(rf) && isoDay(lt) == isoDay(rt)
+            return Self.isoDay(lf) == Self.isoDay(rf) && Self.isoDay(lt) == Self.isoDay(rt)
         default:
             return false
         }
@@ -119,8 +119,8 @@ enum BoardPeriodSelection: Equatable, Hashable {
             hasher.combine(month)
         case let .range(from, to):
             hasher.combine(2)
-            hasher.combine(isoDay(from))
-            hasher.combine(isoDay(to))
+            hasher.combine(Self.isoDay(from))
+            hasher.combine(Self.isoDay(to))
         }
     }
 
