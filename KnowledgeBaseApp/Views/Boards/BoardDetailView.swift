@@ -3,7 +3,12 @@ import SwiftUI
 struct BoardDetailView: View {
     @State private var viewModel: BoardDetailViewModel
     @State private var showMonthPicker = false
-    @State private var monthPickerDate = Date()
+    @State private var showRangePicker = false
+    @State private var pickerYear = Calendar.current.component(.year, from: Date())
+    @State private var pickerMonth = Calendar.current.component(.month, from: Date())
+    @State private var rangeStart = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+    @State private var rangeEnd = Date()
+    @State private var selectedRangeDays: Set<DateComponents> = []
 
     init(boardId: String, client: BoardsAPIClientProtocol) {
         _viewModel = State(initialValue: BoardDetailViewModel(boardId: boardId, client: client))
@@ -22,10 +27,12 @@ struct BoardDetailView: View {
             } else if let detail = viewModel.detail {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text(viewModel.period.displayLabel())
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if viewModel.periodUi != .none {
+                            Text(viewModel.period.displayLabel())
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                         if let subtitle = detail.board.subtitle, !subtitle.isEmpty {
                             Text(subtitle)
                                 .font(.subheadline)
@@ -62,8 +69,10 @@ struct BoardDetailView: View {
         .navigationTitle(viewModel.detail?.board.title ?? "boards.title")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                periodMenu
+            if viewModel.periodUi != .none {
+                ToolbarItem(placement: .topBarTrailing) {
+                    periodMenu
+                }
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -75,83 +84,220 @@ struct BoardDetailView: View {
             }
         }
         .sheet(isPresented: $showMonthPicker) {
-            NavigationStack {
-                DatePicker(
-                    "boards.period.pick_month",
-                    selection: $monthPickerDate,
-                    displayedComponents: [.date]
-                )
-                .datePickerStyle(.wheel)
-                .labelsHidden()
-                .padding()
-                .navigationTitle("boards.period.pick_month")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("common.cancel") { showMonthPicker = false }
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("common.done") {
-                            showMonthPicker = false
-                            Task {
-                                await viewModel.setPeriod(
-                                    BoardPeriodSelection.currentMonth(from: monthPickerDate)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            .presentationDetents([.medium])
+            monthPickerSheet
+        }
+        .sheet(isPresented: $showRangePicker) {
+            rangePickerSheet
         }
         .task {
             await viewModel.load()
         }
     }
 
+    @ViewBuilder
     private var periodMenu: some View {
         Menu {
             Button {
                 Task { await viewModel.setPeriod(.all) }
             } label: {
                 if viewModel.period == .all {
-                    Label("boards.period.all", systemImage: "checkmark")
+                    Label(L10n.string("boards.period.all"), systemImage: "checkmark")
                 } else {
-                    Text("boards.period.all")
+                    Text(L10n.string("boards.period.all"))
                 }
             }
-            Divider()
-            ForEach(viewModel.recentMonthOptions(), id: \.self) { option in
-                Button {
-                    Task { await viewModel.setPeriod(option) }
-                } label: {
-                    if viewModel.period == option {
-                        Label(option.displayLabel(), systemImage: "checkmark")
-                    } else {
-                        Text(option.displayLabel())
+
+            switch viewModel.periodUi {
+            case .month:
+                Divider()
+                ForEach(viewModel.recentMonthOptions(), id: \.self) { option in
+                    Button {
+                        Task { await viewModel.setPeriod(option) }
+                    } label: {
+                        if viewModel.period == option {
+                            Label(option.displayLabel(), systemImage: "checkmark")
+                        } else {
+                            Text(option.displayLabel())
+                        }
+                    }
+                }
+                Divider()
+                Button(L10n.string("boards.period.pick_month")) {
+                    seedMonthPicker()
+                    showMonthPicker = true
+                }
+            case .range:
+                Divider()
+                Button(L10n.string("boards.period.pick_range")) {
+                    seedRangePicker()
+                    showRangePicker = true
+                }
+            case .none:
+                EmptyView()
+            }
+        } label: {
+            Label(L10n.string("boards.period.menu"), systemImage: "calendar")
+        }
+        .accessibilityLabel(Text(L10n.string("boards.period.menu")))
+    }
+
+    private var monthPickerSheet: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    Picker("boards.period.month", selection: $pickerMonth) {
+                        ForEach(1 ... 12, id: \.self) { month in
+                            Text(monthName(month)).tag(month)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity)
+
+                    Picker("boards.period.year", selection: $pickerYear) {
+                        ForEach(yearOptions, id: \.self) { year in
+                            Text(String(year)).tag(year)
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal)
+            }
+            .navigationTitle(L10n.string("boards.period.pick_month"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") { showMonthPicker = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("common.done") {
+                        showMonthPicker = false
+                        Task {
+                            await viewModel.setPeriod(.month(year: pickerYear, month: pickerMonth))
+                        }
                     }
                 }
             }
-            Divider()
-            Button("boards.period.pick_month") {
-                if case let .month(year, month) = viewModel.period {
-                    var comps = DateComponents()
-                    comps.year = year
-                    comps.month = month
-                    comps.day = 1
-                    monthPickerDate = Calendar.current.date(from: comps) ?? Date()
-                } else {
-                    monthPickerDate = Date()
-                }
-                showMonthPicker = true
-            }
-        } label: {
-            Label("boards.period.menu", systemImage: "calendar")
         }
-        .accessibilityLabel(Text("boards.period.menu"))
+        .presentationDetents([.medium])
+    }
+
+    private var rangePickerSheet: some View {
+        NavigationStack {
+            VStack(spacing: 12) {
+                MultiDatePicker(
+                    L10n.string("boards.period.pick_range"),
+                    selection: $selectedRangeDays
+                )
+                .padding(.horizontal)
+                if let summary = selectedRangeSummary {
+                    Text(summary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+            }
+            .navigationTitle(L10n.string("boards.period.pick_range"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") { showRangePicker = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("common.done") {
+                        guard let bounds = selectedRangeBounds() else { return }
+                        showRangePicker = false
+                        Task {
+                            await viewModel.setPeriod(
+                                BoardPeriodSelection.normalizeRange(from: bounds.from, to: bounds.to)
+                            )
+                        }
+                    }
+                    .disabled(selectedRangeBounds() == nil)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private var selectedRangeSummary: String? {
+        guard let bounds = selectedRangeBounds() else { return nil }
+        return BoardPeriodSelection.normalizeRange(from: bounds.from, to: bounds.to).displayLabel()
+    }
+
+    private func selectedRangeBounds(calendar: Calendar = .current) -> (from: Date, to: Date)? {
+        let dates: [Date] = selectedRangeDays.compactMap { comps in
+            var day = DateComponents()
+            day.year = comps.year
+            day.month = comps.month
+            day.day = comps.day
+            return calendar.date(from: day)
+        }
+        guard let minDate = dates.min(), let maxDate = dates.max() else { return nil }
+        return (minDate, maxDate)
+    }
+
+    private var yearOptions: [Int] {
+        let current = Calendar.current.component(.year, from: Date())
+        return Array((current - 15) ... (current + 1)).reversed()
+    }
+
+    private func monthName(_ month: Int) -> String {
+        var comps = DateComponents()
+        comps.year = 2000
+        comps.month = month
+        comps.day = 1
+        guard let date = Calendar.current.date(from: comps) else { return String(month) }
+        let formatter = DateFormatter()
+        formatter.locale = AppLanguageStore.shared.resolvedLocale
+        formatter.setLocalizedDateFormatFromTemplate("MMMM")
+        return formatter.string(from: date)
+    }
+
+    private func seedMonthPicker() {
+        if case let .month(year, month) = viewModel.period {
+            pickerYear = year
+            pickerMonth = month
+        } else {
+            let now = Date()
+            pickerYear = Calendar.current.component(.year, from: now)
+            pickerMonth = Calendar.current.component(.month, from: now)
+        }
+    }
+
+    private func seedRangePicker() {
+        let cal = Calendar.current
+        let from: Date
+        let to: Date
+        if case let .range(rangeFrom, rangeTo) = viewModel.period {
+            from = rangeFrom
+            to = rangeTo
+        } else if case let .month(year, month) = viewModel.period {
+            var comps = DateComponents()
+            comps.year = year
+            comps.month = month
+            comps.day = 1
+            if let start = cal.date(from: comps),
+               let end = cal.date(byAdding: DateComponents(month: 1, day: -1), to: start)
+            {
+                from = start
+                to = end
+            } else {
+                to = Date()
+                from = cal.date(byAdding: .day, value: -30, to: to) ?? to
+            }
+        } else {
+            to = Date()
+            from = cal.date(byAdding: .day, value: -30, to: to) ?? to
+        }
+        rangeStart = from
+        rangeEnd = to
+        selectedRangeDays = [
+            cal.dateComponents([.calendar, .era, .year, .month, .day], from: from),
+            cal.dateComponents([.calendar, .era, .year, .month, .day], from: to),
+        ]
     }
 }
-
 #Preview {
     NavigationStack {
         BoardDetailView(boardId: DemoBoardsCatalog.demoKPIId, client: StubBoardsAPIClient())

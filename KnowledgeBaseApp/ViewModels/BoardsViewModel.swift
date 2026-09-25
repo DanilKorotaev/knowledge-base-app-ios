@@ -51,14 +51,38 @@ final class BoardsViewModel {
 enum BoardPeriodSelection: Equatable, Hashable {
     case all
     case month(year: Int, month: Int)
+    case range(from: Date, to: Date)
 
-    var queryValue: String? {
+    var query: BoardPeriodQuery {
         switch self {
         case .all:
-            return nil
+            return .all
         case let .month(year, month):
-            return String(format: "%04d-%02d", year, month)
+            return BoardPeriodQuery(
+                period: String(format: "%04d-%02d", year, month),
+                dateFrom: nil,
+                dateTo: nil
+            )
+        case let .range(from, to):
+            return BoardPeriodQuery(
+                period: nil,
+                dateFrom: Self.isoDay(from),
+                dateTo: Self.isoDay(to)
+            )
         }
+    }
+
+    /// Legacy accessor used by older call sites.
+    var queryValue: String? { query.period }
+
+    private static func isoDay(_ date: Date, calendar: Calendar = .current) -> String {
+        let comps = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(
+            format: "%04d-%02d-%02d",
+            comps.year ?? 1970,
+            comps.month ?? 1,
+            comps.day ?? 1
+        )
     }
 
     static func currentMonth(from date: Date = Date(), calendar: Calendar = .current) -> BoardPeriodSelection {
@@ -66,9 +90,43 @@ enum BoardPeriodSelection: Equatable, Hashable {
         return .month(year: comps.year ?? 2026, month: comps.month ?? 1)
     }
 
-    func shifting(byMonths delta: Int, calendar: Calendar = .current) -> BoardPeriodSelection {
+    static func normalizeRange(from: Date, to: Date, calendar: Calendar = .current) -> BoardPeriodSelection {
+        let start = calendar.startOfDay(for: min(from, to))
+        let end = calendar.startOfDay(for: max(from, to))
+        return .range(from: start, to: end)
+    }
+
+    static func == (lhs: BoardPeriodSelection, rhs: BoardPeriodSelection) -> Bool {
+        switch (lhs, rhs) {
+        case (.all, .all):
+            return true
+        case let (.month(ly, lm), .month(ry, rm)):
+            return ly == ry && lm == rm
+        case let (.range(lf, lt), .range(rf, rt)):
+            return isoDay(lf) == isoDay(rf) && isoDay(lt) == isoDay(rt)
+        default:
+            return false
+        }
+    }
+
+    func hash(into hasher: inout Hasher) {
         switch self {
         case .all:
+            hasher.combine(0)
+        case let .month(year, month):
+            hasher.combine(1)
+            hasher.combine(year)
+            hasher.combine(month)
+        case let .range(from, to):
+            hasher.combine(2)
+            hasher.combine(isoDay(from))
+            hasher.combine(isoDay(to))
+        }
+    }
+
+    func shifting(byMonths delta: Int, calendar: Calendar = .current) -> BoardPeriodSelection {
+        switch self {
+        case .all, .range:
             return Self.currentMonth(calendar: calendar).shifting(byMonths: delta, calendar: calendar)
         case let .month(year, month):
             var comps = DateComponents()
@@ -101,6 +159,16 @@ enum BoardPeriodSelection: Equatable, Hashable {
             formatter.locale = locale
             formatter.setLocalizedDateFormatFromTemplate("MMMM yyyy")
             return formatter.string(from: date)
+        case let .range(from, to):
+            let formatter = DateFormatter()
+            formatter.locale = locale
+            formatter.setLocalizedDateFormatFromTemplate("d MMM yyyy")
+            let start = formatter.string(from: from)
+            let end = formatter.string(from: to)
+            if start == end {
+                return start
+            }
+            return "\(start) – \(end)"
         }
     }
 }
@@ -122,6 +190,10 @@ final class BoardDetailViewModel {
         self.client = client
     }
 
+    var periodUi: BoardPeriodUIMode {
+        detail?.board.resolvedPeriodUi ?? .month
+    }
+
     /// Current month and the five previous months for the period menu.
     func recentMonthOptions(calendar: Calendar = .current) -> [BoardPeriodSelection] {
         let current = BoardPeriodSelection.currentMonth(calendar: calendar)
@@ -136,7 +208,7 @@ final class BoardDetailViewModel {
         defer { isLoading = false }
 
         do {
-            detail = try await client.fetchBoard(id: boardId, period: period.queryValue)
+            detail = try await client.fetchBoard(id: boardId, query: period.query)
         } catch {
             if detail == nil {
                 loadError = error.localizedDescription
@@ -150,7 +222,7 @@ final class BoardDetailViewModel {
         defer { isRefreshing = false }
 
         do {
-            detail = try await client.refreshBoard(id: boardId, period: period.queryValue)
+            detail = try await client.refreshBoard(id: boardId, query: period.query)
         } catch {
             if detail == nil {
                 loadError = error.localizedDescription

@@ -13,6 +13,8 @@ struct KBBoard: Identifiable, Codable, Equatable, Hashable, Sendable {
     let enabled: Bool
     let listCell: KBBoardListCell?
     let renderedAt: String?
+    /// `none` | `month` | `range` — how the client should present the period control.
+    let periodUi: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -24,6 +26,7 @@ struct KBBoard: Identifiable, Codable, Equatable, Hashable, Sendable {
         case enabled
         case listCell = "list_cell"
         case renderedAt = "rendered_at"
+        case periodUi = "period_ui"
     }
 
     init(
@@ -35,7 +38,8 @@ struct KBBoard: Identifiable, Codable, Equatable, Hashable, Sendable {
         sortOrder: Int = 0,
         enabled: Bool = true,
         listCell: KBBoardListCell? = nil,
-        renderedAt: String? = nil
+        renderedAt: String? = nil,
+        periodUi: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -46,6 +50,7 @@ struct KBBoard: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.enabled = enabled
         self.listCell = listCell
         self.renderedAt = renderedAt
+        self.periodUi = periodUi
     }
 
     var systemImageName: String {
@@ -59,6 +64,16 @@ struct KBBoard: Identifiable, Codable, Equatable, Hashable, Sendable {
             return "square.grid.2x2"
         }
     }
+
+    var resolvedPeriodUi: BoardPeriodUIMode {
+        BoardPeriodUIMode(rawValue: (periodUi ?? "month").lowercased()) ?? .month
+    }
+}
+
+enum BoardPeriodUIMode: String, Sendable {
+    case none
+    case month
+    case range
 }
 
 struct KBBoardListMetric: Codable, Equatable, Hashable, Sendable {

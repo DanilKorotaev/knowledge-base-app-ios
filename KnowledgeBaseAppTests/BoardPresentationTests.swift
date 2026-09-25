@@ -145,15 +145,15 @@ private final class FailingBoardsClient: BoardsAPIClientProtocol, @unchecked Sen
         throw BoardsAPIError.invalidResponse(statusCode: 500)
     }
 
-    func fetchBoard(id: String, period: String?) async throws -> KBBoardDetail {
+    func fetchBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
         _ = id
-        _ = period
+        _ = query
         throw BoardsAPIError.notFound
     }
 
-    func refreshBoard(id: String, period: String?) async throws -> KBBoardDetail {
+    func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
         _ = id
-        _ = period
+        _ = query
         throw BoardsAPIError.invalidResponse(statusCode: 503)
     }
 }

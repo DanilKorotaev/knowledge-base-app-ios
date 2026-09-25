@@ -1,18 +1,33 @@
 import Foundation
 
+struct BoardPeriodQuery: Equatable, Sendable {
+    var period: String?
+    var dateFrom: String?
+    var dateTo: String?
+
+    static let all = BoardPeriodQuery(period: nil, dateFrom: nil, dateTo: nil)
+
+    var hasFilter: Bool {
+        if let period, !period.isEmpty, period != "all" { return true }
+        if let dateFrom, !dateFrom.isEmpty { return true }
+        if let dateTo, !dateTo.isEmpty { return true }
+        return false
+    }
+}
+
 protocol BoardsAPIClientProtocol: Sendable {
     func fetchBoards() async throws -> [KBBoard]
-    func fetchBoard(id: String, period: String?) async throws -> KBBoardDetail
-    func refreshBoard(id: String, period: String?) async throws -> KBBoardDetail
+    func fetchBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail
+    func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail
 }
 
 extension BoardsAPIClientProtocol {
-    func fetchBoard(id: String) async throws -> KBBoardDetail {
-        try await fetchBoard(id: id, period: nil)
+    func fetchBoard(id: String, period: String? = nil) async throws -> KBBoardDetail {
+        try await fetchBoard(id: id, query: BoardPeriodQuery(period: period, dateFrom: nil, dateTo: nil))
     }
 
-    func refreshBoard(id: String) async throws -> KBBoardDetail {
-        try await refreshBoard(id: id, period: nil)
+    func refreshBoard(id: String, period: String? = nil) async throws -> KBBoardDetail {
+        try await refreshBoard(id: id, query: BoardPeriodQuery(period: period, dateFrom: nil, dateTo: nil))
     }
 }
 
@@ -29,16 +44,16 @@ struct StubBoardsAPIClient: BoardsAPIClientProtocol {
         DemoBoardsCatalog.boards().sorted { $0.sortOrder < $1.sortOrder }
     }
 
-    func fetchBoard(id: String, period: String?) async throws -> KBBoardDetail {
-        _ = period
+    func fetchBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
+        _ = query
         guard let detail = DemoBoardsCatalog.detail(id: id) else {
             throw BoardsAPIError.notFound
         }
         return detail
     }
 
-    func refreshBoard(id: String, period: String?) async throws -> KBBoardDetail {
-        try await fetchBoard(id: id, period: period)
+    func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
+        try await fetchBoard(id: id, query: query)
     }
 }
 
@@ -86,8 +101,8 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
         }
     }
 
-    func fetchBoard(id: String, period: String?) async throws -> KBBoardDetail {
-        let url = boardURL(id: id, period: period, refresh: false)
+    func fetchBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
+        let url = boardURL(id: id, query: query, refresh: false)
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         do {
@@ -107,8 +122,8 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
         }
     }
 
-    func refreshBoard(id: String, period: String?) async throws -> KBBoardDetail {
-        let url = boardURL(id: id, period: period, refresh: true)
+    func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
+        let url = boardURL(id: id, query: query, refresh: true)
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         do {
@@ -119,20 +134,30 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
             return decoded
         } catch let error as BoardsAPIError {
             if case .invalidResponse(let code, _) = error, code == 404 {
-                return try await fetchBoard(id: id, period: period)
+                return try await fetchBoard(id: id, query: query)
             }
             throw error
         }
     }
 
-    private func boardURL(id: String, period: String?, refresh: Bool) -> URL {
+    private func boardURL(id: String, query: BoardPeriodQuery, refresh: Bool) -> URL {
         var url = baseURL.appendingPathComponent("api/boards/\(id)")
         if refresh {
             url = url.appendingPathComponent("refresh")
         }
-        guard let period, !period.isEmpty, period != "all" else { return url }
+        guard query.hasFilter else { return url }
         var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        components?.queryItems = [URLQueryItem(name: "period", value: period)]
+        var items: [URLQueryItem] = []
+        if let period = query.period, !period.isEmpty, period != "all" {
+            items.append(URLQueryItem(name: "period", value: period))
+        }
+        if let dateFrom = query.dateFrom, !dateFrom.isEmpty {
+            items.append(URLQueryItem(name: "from", value: dateFrom))
+        }
+        if let dateTo = query.dateTo, !dateTo.isEmpty {
+            items.append(URLQueryItem(name: "to", value: dateTo))
+        }
+        components?.queryItems = items.isEmpty ? nil : items
         return components?.url ?? url
     }
 

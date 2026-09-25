@@ -12,6 +12,15 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Added
+
+- Board period UI modes (`none` / `month` / `range`) driven by `period_ui`
+- Calendar multi-day range filter (`from` / `to`) for Overview boards
+
+### Changed
+
+- Month picker uses year/month wheels only (no day drum)
+
 ## [1.0.64] - 2026-09-25
 
 ### Fixed
