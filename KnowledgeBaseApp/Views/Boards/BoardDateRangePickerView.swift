@@ -8,10 +8,14 @@ struct BoardDateRangePickerView: View {
     private let calendar: Calendar
     private let locale: Locale
     private let today: Date
+    private let baseMonth: Date
 
-    @State private var visibleMonth: Date
+    /// Month page relative to `baseMonth` (0 = initial month when opened).
+    @State private var monthOffset: Int = 0
     /// When non-nil, waiting for the end tap after choosing a new start.
     @State private var pendingStart: Date?
+
+    private let monthWindow = -36 ... 36
 
     init(
         rangeStart: Binding<Date>,
@@ -26,50 +30,75 @@ struct BoardDateRangePickerView: View {
         self.locale = locale
         self.today = calendar.startOfDay(for: today)
         let initial = calendar.startOfDay(for: rangeStart.wrappedValue)
-        _visibleMonth = State(initialValue: Self.monthStart(for: initial, calendar: calendar))
+        self.baseMonth = Self.monthStart(for: initial, calendar: calendar)
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             monthHeader
             weekdayHeader
-            dayGrid
+            TabView(selection: $monthOffset) {
+                ForEach(Array(monthWindow), id: \.self) { offset in
+                    dayGrid(for: month(for: offset))
+                        .tag(offset)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: dayGridHeight)
             footer
         }
-        .padding(.horizontal)
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
     }
 
+    // MARK: - Header (chevrons next to title — not under Cancel/Done)
+
     private var monthHeader: some View {
-        HStack {
+        HStack(spacing: 12) {
+            Spacer(minLength: 0)
             Button {
-                shiftMonth(by: -1)
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    monthOffset -= 1
+                }
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .disabled(!monthWindow.contains(monthOffset - 1))
             .accessibilityLabel(Text(L10n.string("boards.period.previous_month")))
 
-            Text(monthTitle)
+            Text(monthTitle(for: month(for: monthOffset)))
                 .font(.headline)
-                .frame(maxWidth: .infinity)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .frame(minWidth: 140)
 
             Button {
-                shiftMonth(by: 1)
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    monthOffset += 1
+                }
             } label: {
                 Image(systemName: "chevron.right")
                     .font(.body.weight(.semibold))
-                    .frame(width: 44, height: 44)
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .disabled(!monthWindow.contains(monthOffset + 1))
             .accessibilityLabel(Text(L10n.string("boards.period.next_month")))
+            Spacer(minLength: 0)
         }
     }
 
     private var weekdayHeader: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 0) {
-            ForEach(weekdaySymbols, id: \.self) { symbol in
+        // Index-based ForEach: short symbols collide ("T"/"T", "S"/"S") and must not share `id: \.self`.
+        HStack(spacing: 0) {
+            ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                 Text(symbol)
-                    .font(.caption2.weight(.medium))
+                    .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
                     .frame(height: 28)
@@ -77,8 +106,8 @@ struct BoardDateRangePickerView: View {
         }
     }
 
-    private var dayGrid: some View {
-        let days = daysInVisibleMonth()
+    private func dayGrid(for visibleMonth: Date) -> some View {
+        let days = daysInMonth(visibleMonth)
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 4) {
             ForEach(Array(days.enumerated()), id: \.offset) { _, day in
                 if let day {
@@ -88,6 +117,11 @@ struct BoardDateRangePickerView: View {
                 }
             }
         }
+    }
+
+    private var dayGridHeight: CGFloat {
+        // 6 rows × 40 + spacing — keeps TabView height stable across months.
+        6 * 40 + 5 * 4
     }
 
     private var footer: some View {
@@ -102,6 +136,7 @@ struct BoardDateRangePickerView: View {
                 .multilineTextAlignment(.center)
         }
         .padding(.top, 4)
+        .padding(.bottom, 8)
     }
 
     private func dayCell(_ day: Date) -> some View {
@@ -154,8 +189,8 @@ struct BoardDateRangePickerView: View {
     }
 
     private var effectiveEnd: Date {
-        if pendingStart != nil {
-            return pendingStart!
+        if let pendingStart {
+            return pendingStart
         }
         return calendar.startOfDay(for: rangeEnd)
     }
@@ -170,7 +205,6 @@ struct BoardDateRangePickerView: View {
             pendingStart = nil
             return
         }
-        // Start a new range; keep single-day selection until the second tap.
         pendingStart = tapped
         rangeStart = tapped
         rangeEnd = tapped
@@ -183,23 +217,28 @@ struct BoardDateRangePickerView: View {
 
     // MARK: - Calendar helpers
 
-    private var monthTitle: String {
+    private func month(for offset: Int) -> Date {
+        calendar.date(byAdding: .month, value: offset, to: baseMonth) ?? baseMonth
+    }
+
+    private func monthTitle(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.locale = locale
         formatter.setLocalizedDateFormatFromTemplate("MMMM yyyy")
-        return formatter.string(from: visibleMonth)
+        return formatter.string(from: date)
     }
 
     private var weekdaySymbols: [String] {
         let formatter = DateFormatter()
         formatter.locale = locale
-        let symbols = formatter.veryShortWeekdaySymbols ?? formatter.shortWeekdaySymbols ?? []
+        // Prefer short (Пн/Вт…) — veryShort collapses to identical letters and looked "missing".
+        let symbols = formatter.shortWeekdaySymbols ?? formatter.veryShortWeekdaySymbols ?? []
         let first = calendar.firstWeekday - 1
-        guard symbols.count == 7, first >= 0 else { return symbols }
+        guard symbols.count == 7, (0 ..< 7).contains(first) else { return symbols }
         return Array(symbols[first...]) + Array(symbols[..<first])
     }
 
-    private func daysInVisibleMonth() -> [Date?] {
+    private func daysInMonth(_ visibleMonth: Date) -> [Date?] {
         guard let monthInterval = calendar.dateInterval(of: .month, for: visibleMonth),
               let firstWeekday = calendar.dateComponents([.weekday], from: monthInterval.start).weekday
         else {
@@ -217,11 +256,6 @@ struct BoardDateRangePickerView: View {
             days.append(nil)
         }
         return days
-    }
-
-    private func shiftMonth(by delta: Int) {
-        guard let next = calendar.date(byAdding: .month, value: delta, to: visibleMonth) else { return }
-        visibleMonth = Self.monthStart(for: next, calendar: calendar)
     }
 
     private static func monthStart(for date: Date, calendar: Calendar) -> Date {

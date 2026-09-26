@@ -4,6 +4,7 @@ struct BoardDetailView: View {
     @State private var viewModel: BoardDetailViewModel
     @State private var showMonthPicker = false
     @State private var showRangePicker = false
+    @State private var rangeSheetDetent: PresentationDetent = .large
     @State private var pickerYear = Calendar.current.component(.year, from: Date())
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
     @State private var rangeStart = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
@@ -129,6 +130,7 @@ struct BoardDetailView: View {
                 Divider()
                 Button(L10n.string("boards.period.pick_range")) {
                     seedRangePicker()
+                    rangeSheetDetent = .large
                     showRangePicker = true
                 }
             case .none:
@@ -183,30 +185,28 @@ struct BoardDetailView: View {
 
     private var rangePickerSheet: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                BoardDateRangePickerView(rangeStart: $rangeStart, rangeEnd: $rangeEnd)
-                    .padding(.top, 8)
-                Spacer(minLength: 0)
-            }
-            .navigationTitle(L10n.string("boards.period.pick_range"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("common.cancel") { showRangePicker = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("common.done") {
-                        showRangePicker = false
-                        Task {
-                            await viewModel.setPeriod(
-                                BoardPeriodSelection.normalizeRange(from: rangeStart, to: rangeEnd)
-                            )
+            BoardDateRangePickerView(rangeStart: $rangeStart, rangeEnd: $rangeEnd)
+                .navigationTitle(L10n.string("boards.period.pick_range"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("common.cancel") { showRangePicker = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("common.done") {
+                            showRangePicker = false
+                            Task {
+                                await viewModel.setPeriod(
+                                    BoardPeriodSelection.normalizeRange(from: rangeStart, to: rangeEnd)
+                                )
+                            }
                         }
                     }
                 }
-            }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium, .large], selection: $rangeSheetDetent)
+        .presentationDragIndicator(.visible)
+        .presentationContentInteraction(.scrolls)
     }
 
     private var yearOptions: [Int] {
