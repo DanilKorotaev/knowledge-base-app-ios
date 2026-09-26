@@ -1,22 +1,25 @@
 import SwiftUI
 
 /// Inclusive date-range calendar: first tap = start, second = end.
-/// Optional draft — when both bindings are nil, nothing is selected (today ring only).
+/// Month page offset is owned by the parent so TabView survives selection updates.
 struct BoardDateRangePickerView: View {
     @Binding var rangeStart: Date?
     @Binding var rangeEnd: Date?
+    @Binding var monthOffset: Int
 
     private let calendar: Calendar
     private let locale: Locale
     private let today: Date
     private let baseMonth: Date
+    private let pageOffsets: [Int]
 
-    /// Month page relative to `baseMonth`.
-    @State private var monthOffset: Int = 0
-    /// First tap of a new range (cleared after the second tap).
+    /// Draft selection kept locally so the first tap after open does not rely on
+    /// parent re-render timing (which was resetting TabView to the base month).
+    @State private var draftStart: Date?
+    @State private var draftEnd: Date?
     @State private var pendingStart: Date?
+    @State private var didSeedDraft = false
 
-    private let monthWindow = -36 ... 36
     private let rowHeight: CGFloat = 40
     private let rowSpacing: CGFloat = 4
 
@@ -33,6 +36,7 @@ struct BoardDateRangePickerView: View {
     init(
         rangeStart: Binding<Date?>,
         rangeEnd: Binding<Date?>,
+        monthOffset: Binding<Int>,
         initialMonth: Date = Date(),
         calendar: Calendar = .current,
         locale: Locale = AppLanguageStore.shared.resolvedLocale,
@@ -40,29 +44,37 @@ struct BoardDateRangePickerView: View {
     ) {
         _rangeStart = rangeStart
         _rangeEnd = rangeEnd
+        _monthOffset = monthOffset
         self.calendar = calendar
         self.locale = locale
         self.today = calendar.startOfDay(for: today)
         self.baseMonth = Self.monthStart(for: initialMonth, calendar: calendar)
+        self.pageOffsets = Array(-36 ... 36)
     }
 
     var body: some View {
         VStack(spacing: 12) {
             monthHeader
             weekdayHeader
-            TabView(selection: $monthOffset) {
-                ForEach(Array(monthWindow), id: \.self) { offset in
-                    dayGrid(for: month(for: offset))
-                        .tag(offset)
-                }
+            BoardMonthTabPager(
+                monthOffset: $monthOffset,
+                pageOffsets: pageOffsets,
+                height: dayGridHeight
+            ) { offset in
+                dayGrid(for: month(for: offset))
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: dayGridHeight)
             footer
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
         .padding(.bottom, 4)
+        .onAppear {
+            guard !didSeedDraft else { return }
+            draftStart = rangeStart
+            draftEnd = rangeEnd
+            pendingStart = nil
+            didSeedDraft = true
+        }
     }
 
     private var dayGridHeight: CGFloat {
@@ -75,7 +87,7 @@ struct BoardDateRangePickerView: View {
         HStack(spacing: 12) {
             Spacer(minLength: 0)
             Button {
-                guard monthWindow.contains(monthOffset - 1) else { return }
+                guard pageOffsets.contains(monthOffset - 1) else { return }
                 withAnimation(.easeInOut(duration: 0.25)) {
                     monthOffset -= 1
                 }
@@ -86,7 +98,7 @@ struct BoardDateRangePickerView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .disabled(!monthWindow.contains(monthOffset - 1))
+            .disabled(!pageOffsets.contains(monthOffset - 1))
             .accessibilityLabel(Text(L10n.string("boards.period.previous_month")))
 
             Text(monthTitle(for: month(for: monthOffset)))
@@ -96,7 +108,7 @@ struct BoardDateRangePickerView: View {
                 .frame(minWidth: 140)
 
             Button {
-                guard monthWindow.contains(monthOffset + 1) else { return }
+                guard pageOffsets.contains(monthOffset + 1) else { return }
                 withAnimation(.easeInOut(duration: 0.25)) {
                     monthOffset += 1
                 }
@@ -107,7 +119,7 @@ struct BoardDateRangePickerView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .disabled(!monthWindow.contains(monthOffset + 1))
+            .disabled(!pageOffsets.contains(monthOffset + 1))
             .accessibilityLabel(Text(L10n.string("boards.period.next_month")))
             Spacer(minLength: 0)
         }
@@ -146,7 +158,7 @@ struct BoardDateRangePickerView: View {
         VStack(spacing: 6) {
             Text(selectionSummary)
                 .font(.subheadline.weight(.medium))
-                .foregroundStyle(hasCompleteRange || pendingStart != nil ? Color.primary : Color.secondary)
+                .foregroundStyle(draftStart != nil ? Color.primary : Color.secondary)
                 .frame(maxWidth: .infinity)
             Text(hintText)
                 .font(.caption)
@@ -206,16 +218,12 @@ struct BoardDateRangePickerView: View {
 
     private var displayStart: Date? {
         if let pendingStart { return pendingStart }
-        return rangeStart.map { calendar.startOfDay(for: $0) }
+        return draftStart.map { calendar.startOfDay(for: $0) }
     }
 
     private var displayEnd: Date? {
         if pendingStart != nil { return pendingStart }
-        return rangeEnd.map { calendar.startOfDay(for: $0) }
-    }
-
-    private var hasCompleteRange: Bool {
-        pendingStart == nil && rangeStart != nil && rangeEnd != nil
+        return draftEnd.map { calendar.startOfDay(for: $0) }
     }
 
     private func dayRole(_ day: Date) -> DayRole {
@@ -232,15 +240,35 @@ struct BoardDateRangePickerView: View {
 
     private func select(_ day: Date) {
         let tapped = calendar.startOfDay(for: day)
+        let keptOffset = monthOffset
+
         if let start = pendingStart {
-            rangeStart = min(start, tapped)
-            rangeEnd = max(start, tapped)
+            draftStart = min(start, tapped)
+            draftEnd = max(start, tapped)
             pendingStart = nil
-            return
+        } else {
+            pendingStart = tapped
+            draftStart = tapped
+            draftEnd = tapped
         }
-        pendingStart = tapped
-        rangeStart = tapped
-        rangeEnd = tapped
+
+        // Push to parent for Done enablement — then pin month page (TabView can snap on first update).
+        rangeStart = draftStart
+        rangeEnd = draftEnd
+        pinMonthOffset(keptOffset)
+    }
+
+    private func pinMonthOffset(_ offset: Int) {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            monthOffset = offset
+        }
+        DispatchQueue.main.async {
+            withTransaction(transaction) {
+                monthOffset = offset
+            }
+        }
     }
 
     // MARK: - Helpers
@@ -310,5 +338,25 @@ struct BoardDateRangePickerView: View {
         formatter.locale = locale
         formatter.setLocalizedDateFormatFromTemplate("d MMMM yyyy")
         return formatter.string(from: day)
+    }
+}
+
+// MARK: - Isolated pager (keeps TabView selection binding stable)
+
+private struct BoardMonthTabPager<Page: View>: View {
+    @Binding var monthOffset: Int
+    let pageOffsets: [Int]
+    let height: CGFloat
+    @ViewBuilder let page: (Int) -> Page
+
+    var body: some View {
+        TabView(selection: $monthOffset) {
+            ForEach(pageOffsets, id: \.self) { offset in
+                page(offset)
+                    .tag(offset)
+            }
+        }
+        .tabViewStyle(.page(indexDisplayMode: .never))
+        .frame(height: height)
     }
 }

@@ -9,6 +9,7 @@ struct BoardDetailView: View {
     @State private var rangeStart: Date?
     @State private var rangeEnd: Date?
     @State private var rangeInitialMonth = Date()
+    @State private var rangeMonthOffset = 0
     /// Bumped only when opening the sheet so the picker is not recreated on each day tap.
     @State private var rangePickerSession = UUID()
 
@@ -198,6 +199,7 @@ struct BoardDetailView: View {
             BoardDateRangePickerView(
                 rangeStart: $rangeStart,
                 rangeEnd: $rangeEnd,
+                monthOffset: $rangeMonthOffset,
                 initialMonth: rangeInitialMonth
             )
             .id(rangePickerSession)
@@ -260,6 +262,7 @@ struct BoardDetailView: View {
         let cal = Calendar.current
         let now = Date()
         rangePickerSession = UUID()
+        rangeMonthOffset = 0
         switch viewModel.period {
         case let .range(from, to):
             rangeStart = from
