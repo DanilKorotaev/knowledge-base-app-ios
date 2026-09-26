@@ -6828,6 +6828,22 @@
         }
       }
     },
+    "boards.period.range_none": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No dates selected"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Даты не выбраны"
+          }
+        }
+      }
+    },
     "boards.period.range_hint_end": {
       "localizations": {
         "en": {

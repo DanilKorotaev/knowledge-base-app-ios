@@ -4,11 +4,11 @@ struct BoardDetailView: View {
     @State private var viewModel: BoardDetailViewModel
     @State private var showMonthPicker = false
     @State private var showRangePicker = false
-    @State private var rangeSheetDetent: PresentationDetent = .large
     @State private var pickerYear = Calendar.current.component(.year, from: Date())
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
-    @State private var rangeStart = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-    @State private var rangeEnd = Date()
+    @State private var rangeStart: Date?
+    @State private var rangeEnd: Date?
+    @State private var rangeInitialMonth = Date()
 
     init(boardId: String, client: BoardsAPIClientProtocol) {
         _viewModel = State(initialValue: BoardDetailViewModel(boardId: boardId, client: client))
@@ -48,7 +48,7 @@ struct BoardDetailView: View {
                             onAction: { _, _, _ in }
                         )
                         if let renderedAt = detail.renderedAt ?? detail.board.renderedAt {
-                            Text(L10n.format("boards.rendered_at_format", renderedAt))
+                            Text(L10n.format("boards.rendered_at_format", formatRenderedAt(renderedAt)))
                                 .font(.caption2)
                                 .foregroundStyle(.tertiary)
                         }
@@ -111,15 +111,7 @@ struct BoardDetailView: View {
             case .month:
                 Divider()
                 ForEach(viewModel.recentMonthOptions(), id: \.self) { option in
-                    Button {
-                        Task { await viewModel.setPeriod(option) }
-                    } label: {
-                        if viewModel.period == option {
-                            Label(option.displayLabel(), systemImage: "checkmark")
-                        } else {
-                            Text(option.displayLabel())
-                        }
-                    }
+                    monthMenuButton(option)
                 }
                 Divider()
                 Button(L10n.string("boards.period.pick_month")) {
@@ -128,9 +120,12 @@ struct BoardDetailView: View {
                 }
             case .range:
                 Divider()
+                ForEach(viewModel.recentMonthOptions(), id: \.self) { option in
+                    monthMenuButton(option)
+                }
+                Divider()
                 Button(L10n.string("boards.period.pick_range")) {
                     seedRangePicker()
-                    rangeSheetDetent = .large
                     showRangePicker = true
                 }
             case .none:
@@ -140,6 +135,19 @@ struct BoardDetailView: View {
             Label(L10n.string("boards.period.menu"), systemImage: "calendar")
         }
         .accessibilityLabel(Text(L10n.string("boards.period.menu")))
+    }
+
+    @ViewBuilder
+    private func monthMenuButton(_ option: BoardPeriodSelection) -> some View {
+        Button {
+            Task { await viewModel.setPeriod(option) }
+        } label: {
+            if viewModel.period == option {
+                Label(option.displayLabel(), systemImage: "checkmark")
+            } else {
+                Text(option.displayLabel())
+            }
+        }
     }
 
     private var monthPickerSheet: some View {
@@ -185,28 +193,44 @@ struct BoardDetailView: View {
 
     private var rangePickerSheet: some View {
         NavigationStack {
-            BoardDateRangePickerView(rangeStart: $rangeStart, rangeEnd: $rangeEnd)
-                .navigationTitle(L10n.string("boards.period.pick_range"))
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("common.cancel") { showRangePicker = false }
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("common.done") {
-                            showRangePicker = false
-                            Task {
-                                await viewModel.setPeriod(
-                                    BoardPeriodSelection.normalizeRange(from: rangeStart, to: rangeEnd)
-                                )
-                            }
+            BoardDateRangePickerView(
+                rangeStart: $rangeStart,
+                rangeEnd: $rangeEnd,
+                initialMonth: rangeInitialMonth
+            )
+            .id(rangePickerIdentity)
+            .navigationTitle(L10n.string("boards.period.pick_range"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.cancel") { showRangePicker = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("common.done") {
+                        guard let start = rangeStart, let end = rangeEnd else { return }
+                        showRangePicker = false
+                        Task {
+                            await viewModel.setPeriod(
+                                BoardPeriodSelection.normalizeRange(from: start, to: end)
+                            )
                         }
                     }
+                    .disabled(rangeStart == nil || rangeEnd == nil)
                 }
+            }
         }
-        .presentationDetents([.medium, .large], selection: $rangeSheetDetent)
+        .presentationDetents([
+            .height(BoardDateRangePickerView.fittedContentHeight + 56 + 34),
+        ])
         .presentationDragIndicator(.visible)
-        .presentationContentInteraction(.scrolls)
+        .presentationContentInteraction(.resizes)
+    }
+
+    private var rangePickerIdentity: String {
+        let start = rangeStart?.timeIntervalSince1970 ?? -1
+        let end = rangeEnd?.timeIntervalSince1970 ?? -1
+        let month = rangeInitialMonth.timeIntervalSince1970
+        return "\(month)-\(start)-\(end)"
     }
 
     private var yearOptions: [Int] {
@@ -239,12 +263,13 @@ struct BoardDetailView: View {
 
     private func seedRangePicker() {
         let cal = Calendar.current
-        let from: Date
-        let to: Date
-        if case let .range(rangeFrom, rangeTo) = viewModel.period {
-            from = rangeFrom
-            to = rangeTo
-        } else if case let .month(year, month) = viewModel.period {
+        let now = Date()
+        switch viewModel.period {
+        case let .range(from, to):
+            rangeStart = from
+            rangeEnd = to
+            rangeInitialMonth = from
+        case let .month(year, month):
             var comps = DateComponents()
             comps.year = year
             comps.month = month
@@ -252,20 +277,38 @@ struct BoardDetailView: View {
             if let start = cal.date(from: comps),
                let end = cal.date(byAdding: DateComponents(month: 1, day: -1), to: start)
             {
-                from = start
-                to = end
+                rangeStart = start
+                rangeEnd = end
+                rangeInitialMonth = start
             } else {
-                to = Date()
-                from = cal.date(byAdding: .day, value: -30, to: to) ?? to
+                rangeStart = nil
+                rangeEnd = nil
+                rangeInitialMonth = now
             }
-        } else {
-            to = Date()
-            from = cal.date(byAdding: .day, value: -30, to: to) ?? to
+        case .all:
+            // No preselection — open on the current month with today ring only.
+            rangeStart = nil
+            rangeEnd = nil
+            rangeInitialMonth = now
         }
-        rangeStart = from
-        rangeEnd = to
+    }
+
+    private func formatRenderedAt(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let isoFractional = ISO8601DateFormatter()
+        isoFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime]
+        let date = isoFractional.date(from: trimmed) ?? iso.date(from: trimmed)
+        guard let date else { return trimmed }
+        let formatter = DateFormatter()
+        formatter.locale = AppLanguageStore.shared.resolvedLocale
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
     }
 }
+
 #Preview {
     NavigationStack {
         BoardDetailView(boardId: DemoBoardsCatalog.demoKPIId, client: StubBoardsAPIClient())

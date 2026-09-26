@@ -1,25 +1,35 @@
 import SwiftUI
 
-/// Inclusive date-range calendar: first tap = start, second = end (range fills in between).
+/// Inclusive date-range calendar: first tap = start, second = end.
+/// Optional draft — when both are nil, nothing is selected (current month + today ring).
 struct BoardDateRangePickerView: View {
-    @Binding var rangeStart: Date
-    @Binding var rangeEnd: Date
+    @Binding var rangeStart: Date?
+    @Binding var rangeEnd: Date?
 
     private let calendar: Calendar
     private let locale: Locale
     private let today: Date
-    private let baseMonth: Date
 
-    /// Month page relative to `baseMonth` (0 = initial month when opened).
-    @State private var monthOffset: Int = 0
-    /// When non-nil, waiting for the end tap after choosing a new start.
+    @State private var visibleMonth: Date
     @State private var pendingStart: Date?
 
-    private let monthWindow = -36 ... 36
+    private let rowHeight: CGFloat = 40
+    private let rowSpacing: CGFloat = 4
+
+    /// Approximate content height for a fitted sheet detent (excl. nav bar).
+    static let fittedContentHeight: CGFloat = {
+        let header: CGFloat = 36
+        let weekdays: CGFloat = 28
+        let grid: CGFloat = 6 * 40 + 5 * 4
+        let footer: CGFloat = 56
+        let padding: CGFloat = 12 + 16 + 12
+        return header + 12 + weekdays + 12 + grid + 8 + footer + padding
+    }()
 
     init(
-        rangeStart: Binding<Date>,
-        rangeEnd: Binding<Date>,
+        rangeStart: Binding<Date?>,
+        rangeEnd: Binding<Date?>,
+        initialMonth: Date = Date(),
         calendar: Calendar = .current,
         locale: Locale = AppLanguageStore.shared.resolvedLocale,
         today: Date = Date()
@@ -29,37 +39,29 @@ struct BoardDateRangePickerView: View {
         self.calendar = calendar
         self.locale = locale
         self.today = calendar.startOfDay(for: today)
-        let initial = calendar.startOfDay(for: rangeStart.wrappedValue)
-        self.baseMonth = Self.monthStart(for: initial, calendar: calendar)
+        _visibleMonth = State(initialValue: Self.monthStart(for: initialMonth, calendar: calendar))
     }
 
     var body: some View {
         VStack(spacing: 12) {
             monthHeader
             weekdayHeader
-            TabView(selection: $monthOffset) {
-                ForEach(Array(monthWindow), id: \.self) { offset in
-                    dayGrid(for: month(for: offset))
-                        .tag(offset)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: dayGridHeight)
+            dayGrid(for: visibleMonth)
+                .gesture(monthSwipeGesture)
             footer
         }
         .padding(.horizontal, 16)
-        .padding(.top, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
     }
 
-    // MARK: - Header (chevrons next to title — not under Cancel/Done)
+    // MARK: - Header
 
     private var monthHeader: some View {
         HStack(spacing: 12) {
             Spacer(minLength: 0)
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    monthOffset -= 1
-                }
+                shiftMonth(by: -1)
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
@@ -67,19 +69,16 @@ struct BoardDateRangePickerView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .disabled(!monthWindow.contains(monthOffset - 1))
             .accessibilityLabel(Text(L10n.string("boards.period.previous_month")))
 
-            Text(monthTitle(for: month(for: monthOffset)))
+            Text(monthTitle(for: visibleMonth))
                 .font(.headline)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
                 .frame(minWidth: 140)
 
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    monthOffset += 1
-                }
+                shiftMonth(by: 1)
             } label: {
                 Image(systemName: "chevron.right")
                     .font(.body.weight(.semibold))
@@ -87,14 +86,12 @@ struct BoardDateRangePickerView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .disabled(!monthWindow.contains(monthOffset + 1))
             .accessibilityLabel(Text(L10n.string("boards.period.next_month")))
             Spacer(minLength: 0)
         }
     }
 
     private var weekdayHeader: some View {
-        // Index-based ForEach: short symbols collide ("T"/"T", "S"/"S") and must not share `id: \.self`.
         HStack(spacing: 0) {
             ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                 Text(symbol)
@@ -106,28 +103,42 @@ struct BoardDateRangePickerView: View {
         }
     }
 
-    private func dayGrid(for visibleMonth: Date) -> some View {
-        let days = daysInMonth(visibleMonth)
-        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 4) {
+    private func dayGrid(for month: Date) -> some View {
+        let days = daysInMonth(month)
+        return LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7),
+            spacing: rowSpacing
+        ) {
             ForEach(Array(days.enumerated()), id: \.offset) { _, day in
                 if let day {
                     dayCell(day)
                 } else {
-                    Color.clear.frame(height: 40)
+                    Color.clear.frame(height: rowHeight)
                 }
             }
         }
+        .frame(height: 6 * rowHeight + 5 * rowSpacing, alignment: .top)
     }
 
-    private var dayGridHeight: CGFloat {
-        // 6 rows × 40 + spacing — keeps TabView height stable across months.
-        6 * 40 + 5 * 4
+    private var monthSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 40, coordinateSpace: .local)
+            .onEnded { value in
+                let dx = value.translation.width
+                let dy = value.translation.height
+                guard abs(dx) > abs(dy), abs(dx) > 50 else { return }
+                if dx < 0 {
+                    shiftMonth(by: 1)
+                } else {
+                    shiftMonth(by: -1)
+                }
+            }
     }
 
     private var footer: some View {
         VStack(spacing: 6) {
             Text(selectionSummary)
                 .font(.subheadline.weight(.medium))
+                .foregroundStyle(hasCompleteRange ? Color.primary : Color.secondary)
                 .frame(maxWidth: .infinity)
             Text(hintText)
                 .font(.caption)
@@ -135,44 +146,34 @@ struct BoardDateRangePickerView: View {
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
         }
-        .padding(.top, 4)
-        .padding(.bottom, 8)
     }
 
     private func dayCell(_ day: Date) -> some View {
-        let inRange = isInSelectedRange(day)
-        let isStart = calendar.isDate(day, inSameDayAs: effectiveStart)
-        let isEnd = calendar.isDate(day, inSameDayAs: effectiveEnd)
+        let role = dayRole(day)
         let isToday = calendar.isDate(day, inSameDayAs: today)
-        let isEndpoint = isStart || isEnd
-        let multiDay = !calendar.isDate(effectiveStart, inSameDayAs: effectiveEnd)
 
         return Button {
             select(day)
         } label: {
             Text("\(calendar.component(.day, from: day))")
-                .font(.body.weight(isEndpoint ? .semibold : .regular))
-                .foregroundStyle(isEndpoint ? Color.white : Color.primary)
+                .font(.body.weight(role.isEndpoint ? .semibold : .regular))
+                .foregroundStyle(role.isEndpoint ? Color.white : Color.primary)
                 .frame(maxWidth: .infinity)
-                .frame(height: 40)
+                .frame(height: rowHeight)
                 .background {
                     ZStack {
-                        if inRange, multiDay {
-                            UnevenRoundedRectangle(
-                                topLeadingRadius: isStart ? 20 : 0,
-                                bottomLeadingRadius: isStart ? 20 : 0,
-                                bottomTrailingRadius: isEnd ? 20 : 0,
-                                topTrailingRadius: isEnd ? 20 : 0
-                            )
-                            .fill(Color.accentColor.opacity(isEndpoint ? 0.35 : 0.18))
+                        // Range fill only on middle days — never behind endpoint circles (no “tail”).
+                        if role == .middle {
+                            Rectangle()
+                                .fill(Color.accentColor.opacity(0.22))
                         }
-                        if isEndpoint {
+                        if role.isEndpoint {
                             Circle()
                                 .fill(Color.accentColor)
                                 .padding(4)
                         } else if isToday {
                             Circle()
-                                .strokeBorder(Color.accentColor.opacity(0.45), lineWidth: 1)
+                                .strokeBorder(Color.accentColor.opacity(0.55), lineWidth: 1.5)
                                 .padding(4)
                         }
                     }
@@ -184,15 +185,45 @@ struct BoardDateRangePickerView: View {
 
     // MARK: - Selection
 
-    private var effectiveStart: Date {
-        pendingStart ?? calendar.startOfDay(for: rangeStart)
+    private enum DayRole: Equatable {
+        case none
+        case start
+        case end
+        case single
+        case middle
+
+        var isEndpoint: Bool {
+            switch self {
+            case .start, .end, .single: return true
+            case .none, .middle: return false
+            }
+        }
     }
 
-    private var effectiveEnd: Date {
-        if let pendingStart {
-            return pendingStart
+    private var displayStart: Date? {
+        if let pendingStart { return pendingStart }
+        return rangeStart.map { calendar.startOfDay(for: $0) }
+    }
+
+    private var displayEnd: Date? {
+        if pendingStart != nil { return pendingStart }
+        return rangeEnd.map { calendar.startOfDay(for: $0) }
+    }
+
+    private var hasCompleteRange: Bool {
+        pendingStart == nil && rangeStart != nil && rangeEnd != nil
+    }
+
+    private func dayRole(_ day: Date) -> DayRole {
+        guard let start = displayStart, let end = displayEnd else { return .none }
+        let d = calendar.startOfDay(for: day)
+        if d < start || d > end { return .none }
+        if calendar.isDate(start, inSameDayAs: end) {
+            return calendar.isDate(d, inSameDayAs: start) ? .single : .none
         }
-        return calendar.startOfDay(for: rangeEnd)
+        if calendar.isDate(d, inSameDayAs: start) { return .start }
+        if calendar.isDate(d, inSameDayAs: end) { return .end }
+        return .middle
     }
 
     private func select(_ day: Date) {
@@ -205,20 +236,19 @@ struct BoardDateRangePickerView: View {
             pendingStart = nil
             return
         }
+        // New selection — clear any previous range highlight.
         pendingStart = tapped
         rangeStart = tapped
         rangeEnd = tapped
     }
 
-    private func isInSelectedRange(_ day: Date) -> Bool {
-        let d = calendar.startOfDay(for: day)
-        return d >= effectiveStart && d <= effectiveEnd
-    }
+    // MARK: - Helpers
 
-    // MARK: - Calendar helpers
-
-    private func month(for offset: Int) -> Date {
-        calendar.date(byAdding: .month, value: offset, to: baseMonth) ?? baseMonth
+    private func shiftMonth(by delta: Int) {
+        guard let next = calendar.date(byAdding: .month, value: delta, to: visibleMonth) else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            visibleMonth = Self.monthStart(for: next, calendar: calendar)
+        }
     }
 
     private func monthTitle(for date: Date) -> String {
@@ -231,7 +261,6 @@ struct BoardDateRangePickerView: View {
     private var weekdaySymbols: [String] {
         let formatter = DateFormatter()
         formatter.locale = locale
-        // Prefer short (Пн/Вт…) — veryShort collapses to identical letters and looked "missing".
         let symbols = formatter.shortWeekdaySymbols ?? formatter.veryShortWeekdaySymbols ?? []
         let first = calendar.firstWeekday - 1
         guard symbols.count == 7, (0 ..< 7).contains(first) else { return symbols }
@@ -264,13 +293,19 @@ struct BoardDateRangePickerView: View {
     }
 
     private var selectionSummary: String {
-        BoardPeriodSelection.normalizeRange(from: effectiveStart, to: effectiveEnd, calendar: calendar)
+        guard let start = displayStart, let end = displayEnd else {
+            return L10n.string("boards.period.range_none")
+        }
+        return BoardPeriodSelection.normalizeRange(from: start, to: end, calendar: calendar)
             .displayLabel(calendar: calendar)
     }
 
     private var hintText: String {
         if pendingStart != nil {
             return L10n.string("boards.period.range_hint_end")
+        }
+        if rangeStart == nil {
+            return L10n.string("boards.period.range_hint_start")
         }
         return L10n.string("boards.period.range_hint_start")
     }
