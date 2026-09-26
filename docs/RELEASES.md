@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.66 | 186 | `ios/v1.0.66` | 2026-09-26 | Proper board date-range calendar UX |
 | 1.0.65 | 185 | `ios/v1.0.65` | 2026-09-25 | Qualify BoardPeriodSelection.isoDay in hash |
 | 1.0.64 | 183 | `ios/v1.0.64` | 2026-09-25 | Use .date components for board month picker |
 | 1.0.63 | 181 | `ios/v1.0.63` | 2026-09-24 | Update FailingBoardsClient for period API |
