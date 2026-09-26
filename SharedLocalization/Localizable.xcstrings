@@ -6812,6 +6812,70 @@
         }
       }
     },
+    "boards.period.range_hint_start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap the start date, then the end date"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите дату начала, затем дату конца"
+          }
+        }
+      }
+    },
+    "boards.period.range_hint_end": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Now tap the end date"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Теперь нажмите дату конца"
+          }
+        }
+      }
+    },
+    "boards.period.previous_month": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Previous month"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предыдущий месяц"
+          }
+        }
+      }
+    },
+    "boards.period.next_month": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next month"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующий месяц"
+          }
+        }
+      }
+    },
     "boards.period.from": {
       "localizations": {
         "en": {

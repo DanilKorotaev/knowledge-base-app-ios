@@ -8,7 +8,6 @@ struct BoardDetailView: View {
     @State private var pickerMonth = Calendar.current.component(.month, from: Date())
     @State private var rangeStart = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date()
     @State private var rangeEnd = Date()
-    @State private var selectedRangeDays: Set<DateComponents> = []
 
     init(boardId: String, client: BoardsAPIClientProtocol) {
         _viewModel = State(initialValue: BoardDetailViewModel(boardId: boardId, client: client))
@@ -184,17 +183,9 @@ struct BoardDetailView: View {
 
     private var rangePickerSheet: some View {
         NavigationStack {
-            VStack(spacing: 12) {
-                MultiDatePicker(
-                    L10n.string("boards.period.pick_range"),
-                    selection: $selectedRangeDays
-                )
-                .padding(.horizontal)
-                if let summary = selectedRangeSummary {
-                    Text(summary)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+            VStack(spacing: 0) {
+                BoardDateRangePickerView(rangeStart: $rangeStart, rangeEnd: $rangeEnd)
+                    .padding(.top, 8)
                 Spacer(minLength: 0)
             }
             .navigationTitle(L10n.string("boards.period.pick_range"))
@@ -205,36 +196,17 @@ struct BoardDetailView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.done") {
-                        guard let bounds = selectedRangeBounds() else { return }
                         showRangePicker = false
                         Task {
                             await viewModel.setPeriod(
-                                BoardPeriodSelection.normalizeRange(from: bounds.from, to: bounds.to)
+                                BoardPeriodSelection.normalizeRange(from: rangeStart, to: rangeEnd)
                             )
                         }
                     }
-                    .disabled(selectedRangeBounds() == nil)
                 }
             }
         }
         .presentationDetents([.medium, .large])
-    }
-
-    private var selectedRangeSummary: String? {
-        guard let bounds = selectedRangeBounds() else { return nil }
-        return BoardPeriodSelection.normalizeRange(from: bounds.from, to: bounds.to).displayLabel()
-    }
-
-    private func selectedRangeBounds(calendar: Calendar = .current) -> (from: Date, to: Date)? {
-        let dates: [Date] = selectedRangeDays.compactMap { comps in
-            var day = DateComponents()
-            day.year = comps.year
-            day.month = comps.month
-            day.day = comps.day
-            return calendar.date(from: day)
-        }
-        guard let minDate = dates.min(), let maxDate = dates.max() else { return nil }
-        return (minDate, maxDate)
     }
 
     private var yearOptions: [Int] {
@@ -292,10 +264,6 @@ struct BoardDetailView: View {
         }
         rangeStart = from
         rangeEnd = to
-        selectedRangeDays = [
-            cal.dateComponents([.calendar, .era, .year, .month, .day], from: from),
-            cal.dateComponents([.calendar, .era, .year, .month, .day], from: to),
-        ]
     }
 }
 #Preview {

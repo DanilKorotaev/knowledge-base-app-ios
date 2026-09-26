@@ -36,6 +36,7 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 ### Changed
 
 - Month picker uses year/month wheels only (no day drum)
+- Range period picker: tap start/end with filled highlight and month chevrons
 
 ## [1.0.64] - 2026-09-25
 
