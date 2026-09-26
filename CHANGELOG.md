@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.69] - 2026-09-26
+
+### Fixed
+
+- Keep range selection and TabView month paging
+
 ## [1.0.68] - 2026-09-26
 
 ### Fixed
@@ -601,7 +607,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.68...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.69...HEAD
+[1.0.69]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.69
 [1.0.68]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.68
 [1.0.67]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.67
 [1.0.66]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.66
