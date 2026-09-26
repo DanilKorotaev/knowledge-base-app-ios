@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.67] - 2026-09-26
+
+### Fixed
+
+- Range calendar layout, weekdays, swipe months
+
 ## [1.0.66] - 2026-09-26
 
 ### Fixed
@@ -588,7 +594,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.66...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.67...HEAD
+[1.0.67]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.67
 [1.0.66]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.66
 [1.0.65]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.65
 [1.0.64]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.64
