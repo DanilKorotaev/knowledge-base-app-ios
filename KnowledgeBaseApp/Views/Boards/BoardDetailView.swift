@@ -9,6 +9,8 @@ struct BoardDetailView: View {
     @State private var rangeStart: Date?
     @State private var rangeEnd: Date?
     @State private var rangeInitialMonth = Date()
+    /// Bumped only when opening the sheet so the picker is not recreated on each day tap.
+    @State private var rangePickerSession = UUID()
 
     init(boardId: String, client: BoardsAPIClientProtocol) {
         _viewModel = State(initialValue: BoardDetailViewModel(boardId: boardId, client: client))
@@ -198,7 +200,7 @@ struct BoardDetailView: View {
                 rangeEnd: $rangeEnd,
                 initialMonth: rangeInitialMonth
             )
-            .id(rangePickerIdentity)
+            .id(rangePickerSession)
             .navigationTitle(L10n.string("boards.period.pick_range"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -224,13 +226,6 @@ struct BoardDetailView: View {
         ])
         .presentationDragIndicator(.visible)
         .presentationContentInteraction(.resizes)
-    }
-
-    private var rangePickerIdentity: String {
-        let start = rangeStart?.timeIntervalSince1970 ?? -1
-        let end = rangeEnd?.timeIntervalSince1970 ?? -1
-        let month = rangeInitialMonth.timeIntervalSince1970
-        return "\(month)-\(start)-\(end)"
     }
 
     private var yearOptions: [Int] {
@@ -264,6 +259,7 @@ struct BoardDetailView: View {
     private func seedRangePicker() {
         let cal = Calendar.current
         let now = Date()
+        rangePickerSession = UUID()
         switch viewModel.period {
         case let .range(from, to):
             rangeStart = from
