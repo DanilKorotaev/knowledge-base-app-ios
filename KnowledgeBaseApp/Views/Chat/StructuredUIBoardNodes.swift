@@ -117,7 +117,8 @@ struct StructuredUITableNodeView: View {
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
                 GridRow {
                     ForEach(0..<count, id: \.self) { index in
-                        Text(StructuredUITableDisplay.cell(row, at: index))
+                        let column = index < columns.count ? columns[index] : nil
+                        Text(StructuredUITableDisplay.cell(row, at: index, column: column))
                             .font(.subheadline)
                             .lineLimit(2)
                             .minimumScaleFactor(0.8)

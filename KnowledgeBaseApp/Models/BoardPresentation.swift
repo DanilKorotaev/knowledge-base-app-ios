@@ -65,9 +65,17 @@ enum StructuredUITableDisplay {
         max(columns.count, rows.map(\.count).max() ?? 0)
     }
 
-    static func cell(_ row: [String], at index: Int) -> String {
+    static func cell(
+        _ row: [String],
+        at index: Int,
+        column: KBStructuredUITableColumn? = nil
+    ) -> String {
         guard index < row.count else { return "" }
-        return row[index]
+        let raw = row[index]
+        if shouldFormatAsDate(raw, column: column) {
+            return formatISODate(raw) ?? raw
+        }
+        return raw
     }
 
     /// Auto horizontal scroll when column count exceeds this (unless JSON overrides).
@@ -76,5 +84,29 @@ enum StructuredUITableDisplay {
     static func allowsHorizontalScroll(scrollHorizontal: Bool?, columnCount: Int) -> Bool {
         if let scrollHorizontal { return scrollHorizontal }
         return columnCount > autoScrollColumnThreshold
+    }
+
+    private static func shouldFormatAsDate(_ raw: String, column: KBStructuredUITableColumn?) -> Bool {
+        if column?.id == "date" { return true }
+        return isoDayRegex.firstMatch(in: raw, range: NSRange(raw.startIndex..., in: raw)) != nil
+            && raw.count == 10
+    }
+
+    private static let isoDayRegex = try! NSRegularExpression(pattern: #"^\d{4}-\d{2}-\d{2}$"#)
+
+    private static func formatISODate(_ raw: String) -> String? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 10 else { return nil }
+        let day = String(trimmed.prefix(10))
+        let parser = DateFormatter()
+        parser.calendar = Calendar(identifier: .gregorian)
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.timeZone = TimeZone(secondsFromGMT: 0)
+        parser.dateFormat = "yyyy-MM-dd"
+        guard let date = parser.date(from: day) else { return nil }
+        let display = DateFormatter()
+        display.locale = AppLanguageStore.shared.resolvedLocale
+        display.setLocalizedDateFormatFromTemplate("d MMM yyyy")
+        return display.string(from: date)
     }
 }

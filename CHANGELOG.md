@@ -69,6 +69,7 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 - Range period picker: tap start/end with filled highlight and month chevrons
 - Range picker: swipe months, fix weekday headers, keep chevrons off nav buttons
 - Fitted range sheet height; empty draft from «all time»; clean range fill; formatted rendered_at; quick months in range menu
+- Localize ISO dates in Structured UI board tables
 
 ## [1.0.64] - 2026-09-25
 
