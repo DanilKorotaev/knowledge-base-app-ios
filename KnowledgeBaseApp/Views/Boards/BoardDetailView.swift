@@ -44,11 +44,14 @@ struct BoardDetailView: View {
                         }
                         StructuredUIPanelView(
                             document: detail.document,
-                            isSending: false,
-                            isInteractive: false,
+                            isSending: viewModel.isCancellingJob,
+                            isInteractive: detail.document.hasInteractiveControls,
                             attachmentLoader: nil,
                             onFullscreenImage: nil,
-                            onAction: { _, _, _ in }
+                            onAction: { actionId, componentId, _ in
+                                guard actionId == "cancel_job" else { return }
+                                Task { await viewModel.cancelJob(id: componentId) }
+                            }
                         )
                         if let renderedAt = detail.renderedAt ?? detail.board.renderedAt {
                             Text(L10n.format("boards.rendered_at_format", formatRenderedAt(renderedAt)))

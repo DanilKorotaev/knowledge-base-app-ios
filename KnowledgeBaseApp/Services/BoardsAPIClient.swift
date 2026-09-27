@@ -19,6 +19,7 @@ protocol BoardsAPIClientProtocol: Sendable {
     func fetchBoards() async throws -> [KBBoard]
     func fetchBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail
     func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail
+    func cancelQueryJob(id: String) async throws
 }
 
 extension BoardsAPIClientProtocol {
@@ -28,6 +29,10 @@ extension BoardsAPIClientProtocol {
 
     func refreshBoard(id: String, period: String? = nil) async throws -> KBBoardDetail {
         try await refreshBoard(id: id, query: BoardPeriodQuery(period: period, dateFrom: nil, dateTo: nil))
+    }
+
+    func cancelQueryJob(id: String) async throws {
+        throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "cancel not supported")
     }
 }
 
@@ -54,6 +59,10 @@ struct StubBoardsAPIClient: BoardsAPIClientProtocol {
 
     func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
         try await fetchBoard(id: id, query: query)
+    }
+
+    func cancelQueryJob(id: String) async throws {
+        _ = id
     }
 }
 
@@ -138,6 +147,13 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
             }
             throw error
         }
+    }
+
+    func cancelQueryJob(id: String) async throws {
+        let url = baseURL.appendingPathComponent("api/jobs/\(id)")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        _ = try await performData(request)
     }
 
     private func boardURL(id: String, query: BoardPeriodQuery, refresh: Bool) -> URL {

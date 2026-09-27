@@ -142,6 +142,24 @@ enum DemoBoardsCatalog {
                         ["Training plan", "running", "2m 14s"],
                     ]
                 ),
+                KBStructuredUINode(
+                    type: "button",
+                    id: "demo-job-1",
+                    label: "Cancel demo job",
+                    actionId: "cancel_job"
+                ),
+                KBStructuredUINode(
+                    type: "chart",
+                    id: "demo_chart",
+                    label: "Demo series",
+                    series: [
+                        KBStructuredUISeriesPoint(x: "Mon", y: 3),
+                        KBStructuredUISeriesPoint(x: "Tue", y: 5),
+                        KBStructuredUISeriesPoint(x: "Wed", y: 4),
+                        KBStructuredUISeriesPoint(x: "Thu", y: 7),
+                        KBStructuredUISeriesPoint(x: "Fri", y: 6),
+                    ]
+                ),
             ]
         )
     )

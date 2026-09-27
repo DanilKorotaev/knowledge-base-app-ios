@@ -182,6 +182,7 @@ final class BoardDetailViewModel {
     var detail: KBBoardDetail?
     var isLoading = false
     var isRefreshing = false
+    var isCancellingJob = false
     var loadError: String?
     var period: BoardPeriodSelection = .all
 
@@ -227,6 +228,17 @@ final class BoardDetailViewModel {
             if detail == nil {
                 loadError = error.localizedDescription
             }
+        }
+    }
+
+    func cancelJob(id: String) async {
+        isCancellingJob = true
+        defer { isCancellingJob = false }
+        do {
+            try await client.cancelQueryJob(id: id)
+            detail = try await client.refreshBoard(id: boardId, query: period.query)
+        } catch {
+            loadError = error.localizedDescription
         }
     }
 

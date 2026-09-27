@@ -299,6 +299,8 @@ private struct StructuredUINodeView: View {
                 StructuredUIMetricNodeView(node: node)
             case "table":
                 StructuredUITableNodeView(node: node)
+            case "chart":
+                StructuredUIChartNodeView(node: node)
             default:
                 EmptyView()
             }

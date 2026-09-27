@@ -41,6 +41,44 @@ struct KBStructuredUITableColumn: Codable, Equatable, Sendable {
     let label: String
 }
 
+struct KBStructuredUISeriesPoint: Codable, Equatable, Sendable {
+    let x: String?
+    let y: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case x
+        case y
+        case t
+        case v
+    }
+
+    init(x: String? = nil, y: Double? = nil) {
+        self.x = x
+        self.y = y
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        x = try c.decodeIfPresent(String.self, forKey: .x)
+            ?? c.decodeIfPresent(String.self, forKey: .t)
+        if let number = try c.decodeIfPresent(Double.self, forKey: .y)
+            ?? c.decodeIfPresent(Double.self, forKey: .v) {
+            y = number
+        } else if let intY = try c.decodeIfPresent(Int.self, forKey: .y)
+            ?? c.decodeIfPresent(Int.self, forKey: .v) {
+            y = Double(intY)
+        } else {
+            y = nil
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encodeIfPresent(x, forKey: .x)
+        try c.encodeIfPresent(y, forKey: .y)
+    }
+}
+
 struct KBStructuredUINode: Codable, Equatable, Sendable {
     let type: String
     let id: String
@@ -90,6 +128,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let rows: [[String]]?
     /// When set on `table`, forces / disables horizontal pan. Nil = auto (scroll if >3 columns).
     let scrollHorizontal: Bool?
+    /// Points for `chart` nodes (`x` label + `y` value).
+    let series: [KBStructuredUISeriesPoint]?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -121,6 +161,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case columns
         case rows
         case scrollHorizontal = "scroll_horizontal"
+        case series
     }
 
     init(
@@ -153,7 +194,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         step: Double? = nil,
         columns: [KBStructuredUITableColumn]? = nil,
         rows: [[String]]? = nil,
-        scrollHorizontal: Bool? = nil
+        scrollHorizontal: Bool? = nil,
+        series: [KBStructuredUISeriesPoint]? = nil
     ) {
         self.type = type
         self.id = id
@@ -185,6 +227,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.columns = columns
         self.rows = rows
         self.scrollHorizontal = scrollHorizontal
+        self.series = series
     }
 
     init(from decoder: Decoder) throws {
@@ -217,6 +260,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         columns = try container.decodeIfPresent([KBStructuredUITableColumn].self, forKey: .columns)
         rows = try container.decodeIfPresent([[String]].self, forKey: .rows)
         scrollHorizontal = try container.decodeIfPresent(Bool.self, forKey: .scrollHorizontal)
+        series = try container.decodeIfPresent([KBStructuredUISeriesPoint].self, forKey: .series)
 
         if type == "progress", let fraction = try? container.decode(Double.self, forKey: .value) {
             value = nil
@@ -265,13 +309,14 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         try container.encodeIfPresent(columns, forKey: .columns)
         try container.encodeIfPresent(rows, forKey: .rows)
         try container.encodeIfPresent(scrollHorizontal, forKey: .scrollHorizontal)
+        try container.encodeIfPresent(series, forKey: .series)
     }
 
     var isSupported: Bool {
         switch type {
         case "vstack", "hstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
              "image", "link", "file", "divider", "callout", "spacer", "progress", "date", "time",
-             "slider", "stepper", "confirm", "markdown", "metric", "table":
+             "slider", "stepper", "confirm", "markdown", "metric", "table", "chart":
             return true
         default:
             return false
@@ -462,7 +507,11 @@ enum StructuredUIFormDraft {
             progressFraction: node.progressFraction,
             minimum: node.minimum,
             maximum: node.maximum,
-            step: node.step
+            step: node.step,
+            columns: node.columns,
+            rows: node.rows,
+            scrollHorizontal: node.scrollHorizontal,
+            series: node.series
         )
     }
 

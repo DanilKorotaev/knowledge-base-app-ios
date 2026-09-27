@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 struct StructuredUIMetricNodeView: View {
@@ -135,5 +136,61 @@ struct StructuredUITableNodeView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.secondary.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+struct StructuredUIChartNodeView: View {
+    let node: KBStructuredUINode
+
+    private var points: [(id: Int, label: String, value: Double)] {
+        (node.series ?? []).enumerated().compactMap { index, point in
+            guard let value = point.y else { return nil }
+            let label = point.x?.isEmpty == false ? (point.x ?? "") : "\(index + 1)"
+            return (index, label, value)
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let label = node.label, !label.isEmpty {
+                Text(label)
+                    .font(.subheadline.weight(.semibold))
+            }
+            if points.isEmpty {
+                Text("—")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .background(Color.secondary.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                Chart(points, id: \.id) { point in
+                    LineMark(
+                        x: .value("X", point.label),
+                        y: .value("Y", point.value)
+                    )
+                    .interpolationMethod(.catmullRom)
+                    AreaMark(
+                        x: .value("X", point.label),
+                        y: .value("Y", point.value)
+                    )
+                    .foregroundStyle(Color.accentColor.opacity(0.12))
+                    .interpolationMethod(.catmullRom)
+                }
+                .chartXAxis {
+                    AxisMarks(values: .automatic(desiredCount: min(6, points.count))) { _ in
+                        AxisGridLine()
+                        AxisValueLabel(collisionResolution: .greedy)
+                    }
+                }
+                .frame(height: 160)
+                .padding(10)
+                .background(Color.secondary.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(node.label ?? "Chart")
     }
 }
