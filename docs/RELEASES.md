@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.72 | 192 | `ios/v1.0.72` | 2026-09-27 | Board charts and cancel query jobs |
 | 1.0.71 | 191 | `ios/v1.0.71` | 2026-09-27 | Localize ISO dates in board tables |
 | 1.0.70 | 190 | `ios/v1.0.70` | 2026-09-26 | Pin calendar month on first date tap |
 | 1.0.69 | 189 | `ios/v1.0.69` | 2026-09-26 | Keep range selection and TabView month paging |
