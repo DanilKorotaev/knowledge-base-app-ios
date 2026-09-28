@@ -46,6 +46,18 @@ final class BoardsViewModel {
             }
         }
     }
+
+    /// Native list reorder — optimistic local move, then persist `sort_order` on the API.
+    func moveBoards(from source: IndexSet, to destination: Int) async {
+        var updated = boards
+        updated.move(fromOffsets: source, toOffset: destination)
+        boards = updated
+        do {
+            boards = try await client.reorderBoards(orderedIds: updated.map(\.id))
+        } catch {
+            await reload()
+        }
+    }
 }
 
 enum BoardPeriodSelection: Equatable, Hashable {

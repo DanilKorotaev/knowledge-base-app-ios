@@ -20,6 +20,7 @@ protocol BoardsAPIClientProtocol: Sendable {
     func fetchBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail
     func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail
     func cancelQueryJob(id: String) async throws
+    func reorderBoards(orderedIds: [String]) async throws -> [KBBoard]
 }
 
 extension BoardsAPIClientProtocol {
@@ -33,6 +34,11 @@ extension BoardsAPIClientProtocol {
 
     func cancelQueryJob(id: String) async throws {
         throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "cancel not supported")
+    }
+
+    func reorderBoards(orderedIds: [String]) async throws -> [KBBoard] {
+        _ = orderedIds
+        throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "reorder not supported")
     }
 }
 
@@ -63,6 +69,11 @@ struct StubBoardsAPIClient: BoardsAPIClientProtocol {
 
     func cancelQueryJob(id: String) async throws {
         _ = id
+    }
+
+    func reorderBoards(orderedIds: [String]) async throws -> [KBBoard] {
+        let byId = Dictionary(uniqueKeysWithValues: DemoBoardsCatalog.boards().map { ($0.id, $0) })
+        return orderedIds.compactMap { byId[$0] }
     }
 }
 
@@ -154,6 +165,22 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         _ = try await performData(request)
+    }
+
+    func reorderBoards(orderedIds: [String]) async throws -> [KBBoard] {
+        let url = baseURL.appendingPathComponent("api/boards/order")
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["ordered_ids": orderedIds]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let data = try await performData(request)
+        guard let decoded = try? JSONDecoder().decode(KBBoardsListResponse.self, from: data) else {
+            throw BoardsAPIError.decodingFailed
+        }
+        return decoded.boards
+            .filter(\.enabled)
+            .sorted { $0.sortOrder < $1.sortOrder }
     }
 
     private func boardURL(id: String, query: BoardPeriodQuery, refresh: Bool) -> URL {

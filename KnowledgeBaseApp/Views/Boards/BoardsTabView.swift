@@ -4,6 +4,7 @@ struct BoardsTabView: View {
     private let client: BoardsAPIClientProtocol
     @State private var viewModel: BoardsViewModel
     @State private var path = NavigationPath()
+    @State private var editMode: EditMode = .inactive
 
     init(client: BoardsAPIClientProtocol = BoardsTabView.makeClient()) {
         self.client = client
@@ -16,6 +17,10 @@ struct BoardsTabView: View {
                 .navigationTitle("boards.title")
                 .toolbar(path.isEmpty ? .automatic : .hidden, for: .tabBar)
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        EditButton()
+                            .disabled(viewModel.boards.count < 2)
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             Task { await viewModel.reload() }
@@ -25,6 +30,7 @@ struct BoardsTabView: View {
                         .disabled(viewModel.isLoading || viewModel.isRefreshing)
                     }
                 }
+                .environment(\.editMode, $editMode)
                 .navigationDestination(for: KBBoard.self) { board in
                     BoardDetailView(boardId: board.id, client: client)
                         .toolbar(.hidden, for: .tabBar)
@@ -53,9 +59,15 @@ struct BoardsTabView: View {
                 description: Text("boards.empty_hint")
             )
         } else {
-            List(viewModel.boards) { board in
-                NavigationLink(value: board) {
-                    BoardListCellView(board: board)
+            List {
+                ForEach(viewModel.boards) { board in
+                    NavigationLink(value: board) {
+                        BoardListCellView(board: board)
+                    }
+                    .disabled(editMode.isEditing)
+                }
+                .onMove { source, destination in
+                    Task { await viewModel.moveBoards(from: source, to: destination) }
                 }
             }
             .refreshable {
