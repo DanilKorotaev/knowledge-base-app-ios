@@ -5,6 +5,7 @@ struct BoardsTabView: View {
     @State private var viewModel: BoardsViewModel
     @State private var path = NavigationPath()
     @State private var editMode: EditMode = .inactive
+    @State private var showArchive = false
 
     init(client: BoardsAPIClientProtocol = BoardsTabView.makeClient()) {
         self.client = client
@@ -15,13 +16,18 @@ struct BoardsTabView: View {
         NavigationStack(path: $path) {
             listContent
                 .navigationTitle("boards.title")
-                .toolbar(path.isEmpty ? .automatic : .hidden, for: .tabBar)
+                .toolbar(path.isEmpty && !showArchive ? .automatic : .hidden, for: .tabBar)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         EditButton()
                             .disabled(viewModel.boards.count < 2)
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        Button {
+                            showArchive = true
+                        } label: {
+                            Label("boards.archive.title", systemImage: "archivebox")
+                        }
                         Button {
                             Task { await viewModel.reload() }
                         } label: {
@@ -34,6 +40,13 @@ struct BoardsTabView: View {
                 .navigationDestination(for: KBBoard.self) { board in
                     BoardDetailView(boardId: board.id, client: client)
                         .toolbar(.hidden, for: .tabBar)
+                }
+                .navigationDestination(isPresented: $showArchive) {
+                    BoardsArchiveView(client: client)
+                        .toolbar(.hidden, for: .tabBar)
+                        .onDisappear {
+                            Task { await viewModel.reload() }
+                        }
                 }
                 .task {
                     await viewModel.loadIfNeeded()
@@ -65,6 +78,20 @@ struct BoardsTabView: View {
                         BoardListCellView(board: board)
                     }
                     .disabled(editMode.isEditing)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            Task { await viewModel.archiveBoard(board) }
+                        } label: {
+                            Label("boards.archive.action", systemImage: "archivebox")
+                        }
+                    }
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            Task { await viewModel.archiveBoard(board) }
+                        } label: {
+                            Label("boards.archive.action", systemImage: "archivebox")
+                        }
+                    }
                 }
                 .onMove { source, destination in
                     Task { await viewModel.moveBoards(from: source, to: destination) }

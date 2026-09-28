@@ -21,6 +21,9 @@ protocol BoardsAPIClientProtocol: Sendable {
     func refreshBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail
     func cancelQueryJob(id: String) async throws
     func reorderBoards(orderedIds: [String]) async throws -> [KBBoard]
+    func fetchArchivedBoards() async throws -> [KBBoard]
+    func archiveBoard(id: String) async throws -> KBBoard
+    func restoreBoard(id: String) async throws -> KBBoard
 }
 
 extension BoardsAPIClientProtocol {
@@ -40,6 +43,20 @@ extension BoardsAPIClientProtocol {
         _ = orderedIds
         throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "reorder not supported")
     }
+
+    func fetchArchivedBoards() async throws -> [KBBoard] {
+        throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "archive not supported")
+    }
+
+    func archiveBoard(id: String) async throws -> KBBoard {
+        _ = id
+        throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "archive not supported")
+    }
+
+    func restoreBoard(id: String) async throws -> KBBoard {
+        _ = id
+        throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "archive not supported")
+    }
 }
 
 enum BoardsAPIError: Error, Equatable {
@@ -50,13 +67,22 @@ enum BoardsAPIError: Error, Equatable {
 }
 
 /// Demo boards when no API base URL is configured.
-struct StubBoardsAPIClient: BoardsAPIClientProtocol {
+final class StubBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Sendable {
+    private let lock = NSLock()
+    private var archivedIds: Set<String> = []
+
     func fetchBoards() async throws -> [KBBoard] {
-        DemoBoardsCatalog.boards().sorted { $0.sortOrder < $1.sortOrder }
+        let archived = lockedArchivedIds()
+        return DemoBoardsCatalog.boards()
+            .filter { !archived.contains($0.id) }
+            .sorted { $0.sortOrder < $1.sortOrder }
     }
 
     func fetchBoard(id: String, query: BoardPeriodQuery) async throws -> KBBoardDetail {
         _ = query
+        if lockedArchivedIds().contains(id) {
+            throw BoardsAPIError.notFound
+        }
         guard let detail = DemoBoardsCatalog.detail(id: id) else {
             throw BoardsAPIError.notFound
         }
@@ -72,8 +98,70 @@ struct StubBoardsAPIClient: BoardsAPIClientProtocol {
     }
 
     func reorderBoards(orderedIds: [String]) async throws -> [KBBoard] {
+        let archived = lockedArchivedIds()
         let byId = Dictionary(uniqueKeysWithValues: DemoBoardsCatalog.boards().map { ($0.id, $0) })
-        return orderedIds.compactMap { byId[$0] }
+        return orderedIds.compactMap { id in
+            guard !archived.contains(id) else { return nil }
+            return byId[id]
+        }
+    }
+
+    func fetchArchivedBoards() async throws -> [KBBoard] {
+        let archived = lockedArchivedIds()
+        return DemoBoardsCatalog.boards()
+            .filter { archived.contains($0.id) }
+            .map { board in
+                KBBoard(
+                    id: board.id,
+                    title: board.title,
+                    subtitle: board.subtitle,
+                    icon: board.icon,
+                    kind: board.kind,
+                    sortOrder: board.sortOrder,
+                    enabled: false,
+                    listCell: board.listCell,
+                    renderedAt: board.renderedAt,
+                    periodUi: board.periodUi
+                )
+            }
+            .sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+    }
+
+    func archiveBoard(id: String) async throws -> KBBoard {
+        guard let board = DemoBoardsCatalog.boards().first(where: { $0.id == id }) else {
+            throw BoardsAPIError.notFound
+        }
+        lock.lock()
+        archivedIds.insert(id)
+        lock.unlock()
+        return KBBoard(
+            id: board.id,
+            title: board.title,
+            subtitle: board.subtitle,
+            icon: board.icon,
+            kind: board.kind,
+            sortOrder: board.sortOrder,
+            enabled: false,
+            listCell: board.listCell,
+            renderedAt: board.renderedAt,
+            periodUi: board.periodUi
+        )
+    }
+
+    func restoreBoard(id: String) async throws -> KBBoard {
+        guard let board = DemoBoardsCatalog.boards().first(where: { $0.id == id }) else {
+            throw BoardsAPIError.notFound
+        }
+        lock.lock()
+        archivedIds.remove(id)
+        lock.unlock()
+        return board
+    }
+
+    private func lockedArchivedIds() -> Set<String> {
+        lock.lock()
+        defer { lock.unlock() }
+        return archivedIds
     }
 }
 
@@ -181,6 +269,44 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
         return decoded.boards
             .filter(\.enabled)
             .sorted { $0.sortOrder < $1.sortOrder }
+    }
+
+    func fetchArchivedBoards() async throws -> [KBBoard] {
+        let url = baseURL.appendingPathComponent("api/boards/archived")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let data = try await performData(request)
+        guard let decoded = try? JSONDecoder().decode(KBBoardsListResponse.self, from: data) else {
+            throw BoardsAPIError.decodingFailed
+        }
+        return decoded.boards.sorted {
+            $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+        }
+    }
+
+    func archiveBoard(id: String) async throws -> KBBoard {
+        try await postBoardLifecycle(id: id, action: "archive")
+    }
+
+    func restoreBoard(id: String) async throws -> KBBoard {
+        try await postBoardLifecycle(id: id, action: "restore")
+    }
+
+    private func postBoardLifecycle(id: String, action: String) async throws -> KBBoard {
+        let url = baseURL
+            .appendingPathComponent("api/boards")
+            .appendingPathComponent(id)
+            .appendingPathComponent(action)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let data = try await performData(request)
+        struct Envelope: Decodable {
+            let board: KBBoard
+        }
+        guard let decoded = try? JSONDecoder().decode(Envelope.self, from: data) else {
+            throw BoardsAPIError.decodingFailed
+        }
+        return decoded.board
     }
 
     private func boardURL(id: String, query: BoardPeriodQuery, refresh: Bool) -> URL {

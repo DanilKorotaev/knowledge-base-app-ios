@@ -58,6 +58,52 @@ final class BoardsViewModel {
             await reload()
         }
     }
+
+    /// Hide board from Overview (soft archive). Optimistic remove, then API.
+    func archiveBoard(_ board: KBBoard) async {
+        boards.removeAll { $0.id == board.id }
+        do {
+            _ = try await client.archiveBoard(id: board.id)
+        } catch {
+            await reload()
+        }
+    }
+}
+
+@MainActor
+@Observable
+final class BoardsArchiveViewModel {
+    private let client: BoardsAPIClientProtocol
+
+    var boards: [KBBoard] = []
+    var isLoading = false
+    var loadError: String?
+
+    init(client: BoardsAPIClientProtocol) {
+        self.client = client
+    }
+
+    func load() async {
+        isLoading = true
+        loadError = nil
+        defer { isLoading = false }
+        do {
+            boards = try await client.fetchArchivedBoards()
+        } catch {
+            if boards.isEmpty {
+                loadError = error.localizedDescription
+            }
+        }
+    }
+
+    func restore(_ board: KBBoard) async {
+        boards.removeAll { $0.id == board.id }
+        do {
+            _ = try await client.restoreBoard(id: board.id)
+        } catch {
+            await load()
+        }
+    }
 }
 
 enum BoardPeriodSelection: Equatable, Hashable {
