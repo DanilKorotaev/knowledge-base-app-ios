@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.74 | 194 | `ios/v1.0.74` | 2026-09-28 | Archive and restore Overview boards |
 | 1.0.73 | 193 | `ios/v1.0.73` | 2026-09-28 | Native drag-reorder for Overview boards |
 | 1.0.72 | 192 | `ios/v1.0.72` | 2026-09-27 | Board charts and cancel query jobs |
 | 1.0.71 | 191 | `ios/v1.0.71` | 2026-09-27 | Localize ISO dates in board tables |
