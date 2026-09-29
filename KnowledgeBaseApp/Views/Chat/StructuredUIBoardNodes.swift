@@ -221,30 +221,46 @@ struct StructuredUIChartNodeView: View {
     }
 
     private var chartBody: some View {
-        Chart(points, id: \.id) { point in
-            LineMark(
-                x: .value("X", point.label),
-                y: .value("Y", point.value)
-            )
-            .interpolationMethod(.catmullRom)
-            AreaMark(
-                x: .value("X", point.label),
-                y: .value("Y", point.value)
-            )
-            .foregroundStyle(Color.accentColor.opacity(0.12))
-            .interpolationMethod(.catmullRom)
-        }
-        .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: min(5, points.count))) { value in
-                AxisGridLine()
-                AxisValueLabel {
-                    if let raw = value.as(String.self) {
-                        Text(StructuredUIChartDisplay.axisLabel(from: raw))
-                    }
-                }
+        let footer = StructuredUIChartDisplay.sparseAxisValues(
+            from: points.map(\.label),
+            count: 3
+        ).map(StructuredUIChartDisplay.compactAxisLabel(from:))
+        return VStack(alignment: .leading, spacing: 6) {
+            Chart(points, id: \.id) { point in
+                LineMark(
+                    x: .value("X", point.label),
+                    y: .value("Y", point.value)
+                )
+                .interpolationMethod(.catmullRom)
+                AreaMark(
+                    x: .value("X", point.label),
+                    y: .value("Y", point.value)
+                )
+                .foregroundStyle(Color.accentColor.opacity(0.12))
+                .interpolationMethod(.catmullRom)
             }
+            .chartXAxis(.hidden)
+            .chartYAxis {
+                AxisMarks(position: .leading, values: .automatic(desiredCount: 3))
+            }
+            .frame(height: 148)
+
+            // Manual left / mid / right labels — Chart AxisMarks overlap on dense series.
+            HStack(alignment: .firstTextBaseline) {
+                Text(footer.first ?? "")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if footer.count >= 3 {
+                    Text(footer[1])
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                Text(footer.last ?? "")
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
         }
-        .frame(height: 160)
         .padding(10)
         .background(Color.secondary.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))

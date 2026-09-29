@@ -48,4 +48,12 @@ final class KBAppActionTests: XCTestCase {
         XCTAssertFalse(label.contains("2026-03-15"))
         XCTAssertFalse(label.isEmpty)
     }
+
+    func testSparseAxisKeepsEnds() {
+        let labels = (0..<90).map { String(format: "2026-01-%02d", ($0 % 28) + 1) }
+        let ticks = StructuredUIChartDisplay.sparseAxisValues(from: labels, count: 3)
+        XCTAssertEqual(ticks.count, 3)
+        XCTAssertEqual(ticks.first, labels.first)
+        XCTAssertEqual(ticks.last, labels.last)
+    }
 }

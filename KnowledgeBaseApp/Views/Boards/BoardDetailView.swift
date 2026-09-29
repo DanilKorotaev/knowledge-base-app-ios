@@ -104,7 +104,7 @@ struct BoardDetailView: View {
         .sheet(isPresented: $showRangePicker) {
             rangePickerSheet
         }
-        .sheet(item: $chartDetail) { detail in
+        .fullScreenCover(item: $chartDetail) { detail in
             NavigationStack {
                 StructuredUIChartDetailView(title: detail.title, points: detail.points)
             }

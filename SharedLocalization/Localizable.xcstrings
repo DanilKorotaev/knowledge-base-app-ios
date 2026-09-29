@@ -7051,6 +7051,22 @@
           }
         }
       }
+    },
+    "boards.chart.zoom_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pinch to zoom · drag to scroll"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Щепотка — зум · пальцем — прокрутка"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
