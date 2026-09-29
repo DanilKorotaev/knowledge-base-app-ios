@@ -126,6 +126,32 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
         return id
     }
 
+    /// Remove Notification Center banners for a chat once the user opens that session.
+    /// Relies on APNs ``thread-id`` (= session id) and/or ``session_id`` in the payload.
+    func clearDeliveredNotifications(forSessionId sessionId: String) {
+        let trimmed = sessionId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
+            let identifiers = notifications.compactMap { notification -> String? in
+                let content = notification.request.content
+                if content.threadIdentifier == trimmed {
+                    return notification.request.identifier
+                }
+                if Self.sessionId(from: content.userInfo) == trimmed {
+                    return notification.request.identifier
+                }
+                return nil
+            }
+            guard !identifiers.isEmpty else { return }
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: identifiers)
+            Task { @MainActor in
+                self.logger.debugInfo(
+                    "[push] cleared \(identifiers.count) delivered notification(s) for session=\(trimmed)"
+                )
+            }
+        }
+    }
+
     private func openSession(_ sessionId: String, source: String) {
         PushNotificationLogger.navigatingToSession(sessionId: sessionId, source: source)
         pendingSessionId = sessionId

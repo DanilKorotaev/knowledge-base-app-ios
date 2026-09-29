@@ -11,5 +11,8 @@ final class ChatSessionFocusTracker {
 
     func setFocusedSessionId(_ sessionId: String?) {
         focusedSessionId = sessionId
+        if let sessionId {
+            PushNotificationService.shared.clearDeliveredNotifications(forSessionId: sessionId)
+        }
     }
 }
