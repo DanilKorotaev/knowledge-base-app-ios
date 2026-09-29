@@ -35,6 +35,8 @@ struct DailyHealthData: Codable, Equatable {
     var sleep: SleepSummary?
     /// Move / Exercise / Stand rings from `HKActivitySummary` (actual + goals for that day).
     var activityRings: ActivityRingsSummary?
+    /// Body mass in kilograms when measured that calendar day.
+    var weightKg: Double?
     var syncedAt: String?
 
     enum CodingKeys: String, CodingKey {
@@ -52,6 +54,7 @@ struct DailyHealthData: Codable, Equatable {
         case heartRate = "heart_rate"
         case sleep
         case activityRings = "activity_rings"
+        case weightKg = "weight_kg"
         case syncedAt = "synced_at"
     }
 }

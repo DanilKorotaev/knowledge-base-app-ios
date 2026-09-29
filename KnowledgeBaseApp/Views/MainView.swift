@@ -39,6 +39,7 @@ struct MainView: View {
     @State private var settingsPath = NavigationPath()
     @State private var pinnedStore = PinnedSessionsStore.shared
     @State private var debugQuickActions = DebugQuickActionsController.shared
+    @State private var appActions = KBAppActionCenter.shared
     @AppStorage("kb.health.sync_enabled") private var healthSyncEnabled = false
     @AppStorage("kb.boards.enabled") private var boardsOverviewEnabled = true
     private let sessionCache: SessionCacheStoreProtocol
@@ -139,6 +140,49 @@ struct MainView: View {
         .environment(voiceViewModel)
         .onAppear {
             updateMainScreenDebugGesture(isOnMainList: selectedTab == .sessions && navigationPath.isEmpty)
+        }
+        .onChange(of: appActions.pendingTab) { _, tab in
+            guard let tab else { return }
+            switch tab {
+            case .sessions: selectedTab = .sessions
+            case .boards:
+                if boardsOverviewEnabled { selectedTab = .boards }
+            case .health:
+                if healthSyncEnabled { selectedTab = .health }
+            case .settings: selectedTab = .settings
+            }
+            appActions.pendingTab = nil
+        }
+        .onChange(of: appActions.pendingSessionId, initial: true) { _, sessionId in
+            guard let sessionId else { return }
+            selectedTab = .sessions
+            Task { @MainActor in
+                await openSessionFromDeepLink(sessionId: sessionId)
+                appActions.clearPendingSession()
+            }
+        }
+        .onChange(of: appActions.pendingOpenDebugMenu) { _, open in
+            guard open else { return }
+            appActions.pendingOpenDebugMenu = false
+            debugQuickActions.presentDebugMenuFromMainGesture()
+        }
+        .onChange(of: appActions.pendingShareLogs) { _, share in
+            guard share else { return }
+            appActions.pendingShareLogs = false
+            debugQuickActions.showSendLogsConfirm = true
+        }
+        .alert(
+            appActions.pendingAlert?.title ?? "",
+            isPresented: Binding(
+                get: { appActions.pendingAlert != nil },
+                set: { if !$0 { appActions.clearPendingAlert() } }
+            )
+        ) {
+            Button("common.ok", role: .cancel) {
+                appActions.clearPendingAlert()
+            }
+        } message: {
+            Text(appActions.pendingAlert?.message ?? "")
         }
     }
 

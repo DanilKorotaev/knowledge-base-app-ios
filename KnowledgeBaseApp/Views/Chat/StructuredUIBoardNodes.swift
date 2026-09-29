@@ -5,25 +5,55 @@ struct StructuredUIMetricNodeView: View {
     let node: KBStructuredUINode
     /// When true, use a more compact type scale (metric grids).
     var compact: Bool = false
+    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)? = nil
+
+    private var isTappable: Bool {
+        node.action != nil && onAppAction != nil
+    }
 
     var body: some View {
+        Group {
+            if let action = node.action, let onAppAction {
+                Button {
+                    onAppAction(action, node)
+                } label: {
+                    metricContent
+                }
+                .buttonStyle(.plain)
+            } else {
+                metricContent
+            }
+        }
+        .accessibilityAddTraits(isTappable ? .isButton : [])
+    }
+
+    private var metricContent: some View {
         VStack(alignment: .leading, spacing: 4) {
-            if let label = node.label, !label.isEmpty {
-                Text(label)
-                    .font(compact ? .caption2 : .caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.85)
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                if let label = node.label, !label.isEmpty {
+                    Text(label)
+                        .font(compact ? .caption2 : .caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                }
+                if isTappable {
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
             }
             Text(StructuredUIMetricDisplay.value(from: node))
                 .font((compact ? Font.title3 : Font.title2).weight(.semibold).monospacedDigit())
+                .foregroundStyle(isTappable ? Color.accentColor : Color.primary)
                 .lineLimit(2)
                 .minimumScaleFactor(0.55)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(compact ? 10 : 12)
-        .background(Color.secondary.opacity(0.12))
+        .background(Color.secondary.opacity(isTappable ? 0.16 : 0.12))
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel(StructuredUIMetricDisplay.accessibilityLabel(from: node))
@@ -141,20 +171,33 @@ struct StructuredUITableNodeView: View {
 
 struct StructuredUIChartNodeView: View {
     let node: KBStructuredUINode
+    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)? = nil
 
-    private var points: [(id: Int, label: String, value: Double)] {
+    private var points: [(id: Int, label: String, display: String, value: Double)] {
         (node.series ?? []).enumerated().compactMap { index, point in
             guard let value = point.y else { return nil }
-            let label = point.x?.isEmpty == false ? (point.x ?? "") : "\(index + 1)"
-            return (index, label, value)
+            let raw = point.x?.isEmpty == false ? (point.x ?? "") : "\(index + 1)"
+            return (index, raw, StructuredUIChartDisplay.axisLabel(from: raw), value)
         }
+    }
+
+    private var tapAction: KBAppAction {
+        node.action ?? .openChartDetail(chartId: node.id)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if let label = node.label, !label.isEmpty {
-                Text(label)
-                    .font(.subheadline.weight(.semibold))
+            HStack(alignment: .firstTextBaseline) {
+                if let label = node.label, !label.isEmpty {
+                    Text(label)
+                        .font(.subheadline.weight(.semibold))
+                }
+                Spacer(minLength: 0)
+                if onAppAction != nil, !points.isEmpty {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
             }
             if points.isEmpty {
                 Text("—")
@@ -164,34 +207,47 @@ struct StructuredUIChartNodeView: View {
                     .background(Color.secondary.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             } else {
-                Chart(points, id: \.id) { point in
-                    LineMark(
-                        x: .value("X", point.label),
-                        y: .value("Y", point.value)
-                    )
-                    .interpolationMethod(.catmullRom)
-                    AreaMark(
-                        x: .value("X", point.label),
-                        y: .value("Y", point.value)
-                    )
-                    .foregroundStyle(Color.accentColor.opacity(0.12))
-                    .interpolationMethod(.catmullRom)
-                }
-                .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: min(6, points.count))) { _ in
-                        AxisGridLine()
-                        AxisValueLabel(collisionResolution: .greedy)
+                chartBody
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        onAppAction?(tapAction, node)
                     }
-                }
-                .frame(height: 160)
-                .padding(10)
-                .background(Color.secondary.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(node.label ?? "Chart")
+        .accessibilityAddTraits(onAppAction != nil && !points.isEmpty ? .isButton : [])
+    }
+
+    private var chartBody: some View {
+        Chart(points, id: \.id) { point in
+            LineMark(
+                x: .value("X", point.label),
+                y: .value("Y", point.value)
+            )
+            .interpolationMethod(.catmullRom)
+            AreaMark(
+                x: .value("X", point.label),
+                y: .value("Y", point.value)
+            )
+            .foregroundStyle(Color.accentColor.opacity(0.12))
+            .interpolationMethod(.catmullRom)
+        }
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: min(5, points.count))) { value in
+                AxisGridLine()
+                AxisValueLabel {
+                    if let raw = value.as(String.self) {
+                        Text(StructuredUIChartDisplay.axisLabel(from: raw))
+                    }
+                }
+            }
+        }
+        .frame(height: 160)
+        .padding(10)
+        .background(Color.secondary.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
 

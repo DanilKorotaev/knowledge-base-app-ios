@@ -25,6 +25,7 @@ struct KBHealthSyncServiceTests {
             heartRateSummary: nil,
             sleep: nil,
             activityRings: nil,
+            weightKg: nil,
             syncedAt: nil
         )
 
@@ -117,6 +118,7 @@ struct KBHealthSyncServiceTests {
             heartRateSummary: nil,
             sleep: nil,
             activityRings: nil,
+            weightKg: nil,
             syncedAt: nil
         )
 
@@ -222,7 +224,8 @@ private final class MockHealthKitService: HealthKitServiceProtocol {
         heartRateSummary: nil,
         sleep: nil,
         activityRings: nil,
-        syncedAt: nil
+        weightKg: nil,
+            syncedAt: nil
     )
     var workoutBatches: [(workouts: [WorkoutAggregationInput], newAnchor: Data?)] = []
 

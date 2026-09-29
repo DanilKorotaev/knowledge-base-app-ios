@@ -43,7 +43,7 @@
 	<key>KBAppAuthToken</key>
 	<string>$(INFOPLIST_KEY_KBAppAuthToken)</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>The app reads Apple Health data (steps, sleep, workouts) to save it in your knowledge base via the server.</string>
+	<string>The app reads Apple Health data (steps, sleep, workouts, weight) to save it in your knowledge base via the server.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>The app does not write data to Apple Health.</string>
 	<key>NSMicrophoneUsageDescription</key>

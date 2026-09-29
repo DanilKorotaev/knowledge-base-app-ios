@@ -115,6 +115,7 @@ private final class ViewModelHealthKitMock: HealthKitServiceProtocol {
             heartRateSummary: nil,
             sleep: nil,
             activityRings: nil,
+            weightKg: nil,
             syncedAt: nil
         )
     }

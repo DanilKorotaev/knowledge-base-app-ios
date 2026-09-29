@@ -7,6 +7,8 @@ struct StructuredUIPanelView: View {
     var attachmentLoader: KBAttachmentLoaderProtocol?
     var onFullscreenImage: ((UIImage) -> Void)?
     var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
+    /// Client-side actions from node `action` (navigation, alerts, chart detail).
+    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)? = nil
 
     @State private var draftValues: [String: StructuredUIFormValue] = [:]
 
@@ -27,7 +29,8 @@ struct StructuredUIPanelView: View {
                     attachmentLoader: attachmentLoader,
                     onFullscreenImage: onFullscreenImage,
                     draftValues: $draftValues,
-                    onAction: onAction
+                    onAction: onAction,
+                    onAppAction: onAppAction
                 )
                 .opacity(isSending ? 0.72 : (isInteractive ? 1 : 0.85))
                 .allowsHitTesting(isInteractive && !isSending)
@@ -57,6 +60,7 @@ private struct StructuredUINodeView: View {
     var onFullscreenImage: ((UIImage) -> Void)?
     @Binding var draftValues: [String: StructuredUIFormValue]
     var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
+    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)?
 
     @ViewBuilder
     var body: some View {
@@ -74,7 +78,8 @@ private struct StructuredUINodeView: View {
                             attachmentLoader: attachmentLoader,
                             onFullscreenImage: onFullscreenImage,
                             draftValues: $draftValues,
-                            onAction: onAction
+                            onAction: onAction,
+                            onAppAction: onAppAction
                         )
                     }
                 }
@@ -88,7 +93,11 @@ private struct StructuredUINodeView: View {
                             if child.type == "timer" {
                                 StructuredUITimerNodeView(node: child, compact: true)
                             } else {
-                                StructuredUIMetricNodeView(node: child, compact: true)
+                                StructuredUIMetricNodeView(
+                                    node: child,
+                                    compact: true,
+                                    onAppAction: onAppAction
+                                )
                             }
                         }
                     }
@@ -102,7 +111,8 @@ private struct StructuredUINodeView: View {
                                 attachmentLoader: attachmentLoader,
                                 onFullscreenImage: onFullscreenImage,
                                 draftValues: $draftValues,
-                                onAction: onAction
+                                onAction: onAction,
+                                onAppAction: onAppAction
                             )
                         }
                     }
@@ -122,6 +132,10 @@ private struct StructuredUINodeView: View {
                     .padding(.vertical, 2)
             case "button":
                 Button {
+                    if let appAction = node.action, onAppAction != nil {
+                        onAppAction?(appAction, node)
+                        return
+                    }
                     guard let actionId = node.actionId, !isSending else { return }
                     if node.isSubmitButton {
                         onAction(actionId, node.id, draftValues)
@@ -303,11 +317,11 @@ private struct StructuredUINodeView: View {
             case "stepper":
                 StructuredUIStepperNodeView(node: node, draftValues: $draftValues, isInteractive: isInteractive)
             case "metric":
-                StructuredUIMetricNodeView(node: node)
+                StructuredUIMetricNodeView(node: node, onAppAction: onAppAction)
             case "table":
                 StructuredUITableNodeView(node: node)
             case "chart":
-                StructuredUIChartNodeView(node: node)
+                StructuredUIChartNodeView(node: node, onAppAction: onAppAction)
             case "timer":
                 StructuredUITimerNodeView(node: node)
             default:

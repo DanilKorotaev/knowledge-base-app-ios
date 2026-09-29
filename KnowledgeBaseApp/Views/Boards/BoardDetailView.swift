@@ -12,6 +12,13 @@ struct BoardDetailView: View {
     @State private var rangeMonthOffset = 0
     /// Bumped only when opening the sheet so the picker is not recreated on each day tap.
     @State private var rangePickerSession = UUID()
+    @State private var chartDetail: ChartDetailPresentation?
+
+    private struct ChartDetailPresentation: Identifiable {
+        let id: String
+        let title: String
+        let points: [StructuredUIChartDetailPoint]
+    }
 
     init(boardId: String, client: BoardsAPIClientProtocol) {
         _viewModel = State(initialValue: BoardDetailViewModel(boardId: boardId, client: client))
@@ -45,13 +52,15 @@ struct BoardDetailView: View {
                         StructuredUIPanelView(
                             document: detail.document,
                             isSending: viewModel.isCancellingJob,
-                            isInteractive: detail.document.hasInteractiveControls,
+                            isInteractive: detail.document.hasInteractiveControls
+                                || detail.document.hasAppActions,
                             attachmentLoader: nil,
                             onFullscreenImage: nil,
                             onAction: { actionId, componentId, _ in
                                 guard actionId == "cancel_job" else { return }
                                 Task { await viewModel.cancelJob(id: componentId) }
-                            }
+                            },
+                            onAppAction: handleAppAction
                         )
                         if let renderedAt = detail.renderedAt ?? detail.board.renderedAt {
                             Text(L10n.format("boards.rendered_at_format", formatRenderedAt(renderedAt)))
@@ -95,9 +104,32 @@ struct BoardDetailView: View {
         .sheet(isPresented: $showRangePicker) {
             rangePickerSheet
         }
+        .sheet(item: $chartDetail) { detail in
+            NavigationStack {
+                StructuredUIChartDetailView(title: detail.title, points: detail.points)
+            }
+        }
         .task {
             await viewModel.load()
         }
+    }
+
+    private func handleAppAction(_ action: KBAppAction, node: KBStructuredUINode) {
+        if action.type == "open_chart_detail" {
+            presentChartDetail(from: node)
+            return
+        }
+        KBAppActionCenter.shared.perform(action)
+    }
+
+    private func presentChartDetail(from node: KBStructuredUINode) {
+        let points = StructuredUIChartDetailView.points(from: node)
+        guard !points.isEmpty else { return }
+        chartDetail = ChartDetailPresentation(
+            id: node.id,
+            title: node.label?.isEmpty == false ? (node.label ?? node.id) : node.id,
+            points: points
+        )
     }
 
     @ViewBuilder

@@ -6,6 +6,7 @@ struct BoardsTabView: View {
     @State private var path = NavigationPath()
     @State private var editMode: EditMode = .inactive
     @State private var showArchive = false
+    @State private var appActions = KBAppActionCenter.shared
 
     init(client: BoardsAPIClientProtocol = BoardsTabView.makeClient()) {
         self.client = client
@@ -51,7 +52,23 @@ struct BoardsTabView: View {
                 .task {
                     await viewModel.loadIfNeeded()
                 }
+                .onChange(of: appActions.pendingBoardId, initial: true) { _, boardId in
+                    guard let boardId else { return }
+                    Task { await openBoardFromAction(boardId) }
+                }
         }
+    }
+
+    @MainActor
+    private func openBoardFromAction(_ boardId: String) async {
+        if viewModel.boards.isEmpty {
+            await viewModel.loadIfNeeded()
+        }
+        if let board = viewModel.boards.first(where: { $0.id == boardId }) {
+            path = NavigationPath()
+            path.append(board)
+        }
+        appActions.clearPendingBoard()
     }
 
     @ViewBuilder

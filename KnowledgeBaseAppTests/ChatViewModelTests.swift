@@ -466,14 +466,32 @@ final class ChatViewModelTests: XCTestCase {
         viewModel.draft = "run tests"
 
         let sendTask = Task { await viewModel.send() }
-        try await Task.sleep(nanoseconds: 50_000_000)
-        XCTAssertEqual(viewModel.cursorActivityLabel, "Запускаю тесты…")
+        await waitUntil { viewModel.cursorActivityLabel == "Запускаю тесты…" }
         XCTAssertEqual(viewModel.assistantReplyPhase, .waiting)
 
+        await client.releaseHeldFirstStreamDelta()
         await sendTask.value
 
         XCTAssertNil(viewModel.cursorActivityLabel)
         XCTAssertEqual(viewModel.assistantReplyPhase, .idle)
+    }
+
+    /// Yields the main actor until `predicate` is true or `timeout` elapses.
+    private func waitUntil(
+        timeout: Duration = .seconds(2),
+        file: StaticString = #filePath,
+        line: UInt = #line,
+        _ predicate: @MainActor () -> Bool
+    ) async {
+        let clock = ContinuousClock()
+        let deadline = clock.now + timeout
+        while !predicate() {
+            if clock.now >= deadline {
+                XCTFail("Timed out waiting for condition", file: file, line: line)
+                return
+            }
+            await Task.yield()
+        }
     }
 
     func testReloadLatestWindow_capsFetchLimitTo100() async throws {
@@ -591,9 +609,32 @@ private final class ChatViewModelTestsMemoryInFlightStore: InFlightReplyStorePro
     func clear(sessionId: String) { map.removeValue(forKey: sessionId) }
 }
 
+/// Blocks the stub stream after the first activity event until the test releases it.
+private actor StreamDeltaGate {
+    private var releaseWaiter: CheckedContinuation<Void, Never>?
+
+    func waitForRelease() async {
+        await withCheckedContinuation { releaseWaiter = $0 }
+    }
+
+    func release() {
+        releaseWaiter?.resume()
+        releaseWaiter = nil
+    }
+}
+
 /// Emits activity SSE events before text deltas.
-private struct ActivityStreamChatAPIClient: ChatAPIClientProtocol {
+private final class ActivityStreamChatAPIClient: ChatAPIClientProtocol {
     let store: InMemoryKBStore
+    private let deltaGate = StreamDeltaGate()
+
+    init(store: InMemoryKBStore) {
+        self.store = store
+    }
+
+    func releaseHeldFirstStreamDelta() async {
+        await deltaGate.release()
+    }
 
     func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
         try await StubChatAPIClient(store: store).fetchMessagesPage(
@@ -655,10 +696,11 @@ private struct ActivityStreamChatAPIClient: ChatAPIClientProtocol {
             text: text,
             useKnowledgeBase: useKnowledgeBase
         )
+        let gate = deltaGate
         return AsyncThrowingStream { continuation in
+            continuation.yield(.activity(label: "Запускаю тесты…"))
             Task {
-                continuation.yield(.activity(label: "Запускаю тесты…"))
-                try? await Task.sleep(nanoseconds: 100_000_000)
+                await gate.waitForRelease()
                 continuation.yield(.delta("Done"))
                 continuation.finish()
             }

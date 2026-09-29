@@ -37,6 +37,8 @@ struct DailyAggregationInput: Equatable {
     var heartRateSummary: HeartRateStats?
     var sleep: SleepSummary?
     var activityRings: ActivityRingsSummary?
+    /// Body mass in kilograms when measured that day.
+    var weightKg: Double?
     var syncedAt: String?
 }
 
@@ -212,6 +214,7 @@ final class HealthKitService: HealthKitServiceProtocol {
             HKObjectType.quantityType(forIdentifier: .oxygenSaturation),
             HKObjectType.quantityType(forIdentifier: .appleExerciseTime),
             HKObjectType.quantityType(forIdentifier: .appleStandTime),
+            HKObjectType.quantityType(forIdentifier: .bodyMass),
             HKObjectType.categoryType(forIdentifier: .sleepAnalysis)
         ]
         .compactMap { $0 }
@@ -323,6 +326,7 @@ final class HealthKitService: HealthKitServiceProtocol {
         }
 
         let activityRings = try await activityRingsSummary(for: dayStart)
+        let weightKg = try await bodyMassKg(from: dayStart, to: dayEnd)
 
         return DailyAggregationInput(
             date: dayKey,
@@ -339,8 +343,17 @@ final class HealthKitService: HealthKitServiceProtocol {
             heartRateSummary: heartRateSummary,
             sleep: sleep,
             activityRings: activityRings,
+            weightKg: weightKg,
             syncedAt: syncedAt
         )
+    }
+
+    private func bodyMassKg(from start: Date, to end: Date) async throws -> Double? {
+        guard let type = HKQuantityType.quantityType(forIdentifier: .bodyMass) else { return nil }
+        let samples = try await queryStore.quantitySamples(for: type, from: start, to: end)
+        guard let last = samples.last else { return nil }
+        let kg = last.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+        return kg > 0 ? kg : nil
     }
 
     private func activityRingsSummary(for dayStart: Date) async throws -> ActivityRingsSummary? {
@@ -451,6 +464,7 @@ final class HealthKitService: HealthKitServiceProtocol {
             heartRate: heartRateStats,
             sleep: input.sleep,
             activityRings: input.activityRings,
+            weightKg: input.weightKg,
             syncedAt: input.syncedAt
         )
     }

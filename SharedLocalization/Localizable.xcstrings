@@ -7035,6 +7035,22 @@
           }
         }
       }
+    },
+    "boards.chart.scrub_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drag to inspect a day"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проведите, чтобы выбрать день"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

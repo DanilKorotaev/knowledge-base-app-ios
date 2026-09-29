@@ -53,6 +53,7 @@ struct HealthKitServiceTests {
             heartRateSummary: HeartRateStats(min: 60, max: 120, average: 90),
             sleep: SleepSummary(totalMinutes: 420, deepMinutes: 90, remMinutes: 100, lightMinutes: 180, awakeMinutes: 50),
             activityRings: nil,
+            weightKg: nil,
             syncedAt: "2026-03-30T10:00:00Z"
         )
         let result = sut.makeDailyHealthData(from: input)
@@ -87,6 +88,7 @@ struct HealthKitServiceTests {
             heartRateSummary: nil,
             sleep: nil,
             activityRings: rings,
+            weightKg: nil,
             syncedAt: nil
         )
         let result = sut.makeDailyHealthData(from: input)
@@ -109,6 +111,7 @@ struct HealthKitServiceTests {
             heartRateSummary: nil,
             sleep: SleepSummary(totalMinutes: 420, deepMinutes: 90, remMinutes: 100, lightMinutes: 180, awakeMinutes: 50),
             activityRings: nil,
+            weightKg: nil,
             syncedAt: "2026-03-30T10:00:00Z"
         )
         let result = sut.makeDailyHealthData(from: input)

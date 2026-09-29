@@ -21,6 +21,11 @@ struct KBStructuredUIDocument: Codable, Equatable, Sendable {
         Self.nodeHasInteractiveControls(screen)
     }
 
+    /// Nodes with client `action` or charts (default tap → chart detail).
+    var hasAppActions: Bool {
+        Self.nodeHasAppActions(screen)
+    }
+
     private static func nodeHasInteractiveControls(_ node: KBStructuredUINode) -> Bool {
         switch node.type {
         case "button", "checkbox", "radio_group", "select", "text_field", "date", "time", "slider", "stepper", "confirm":
@@ -28,6 +33,12 @@ struct KBStructuredUIDocument: Codable, Equatable, Sendable {
         default:
             return node.supportedChildren.contains(where: nodeHasInteractiveControls)
         }
+    }
+
+    private static func nodeHasAppActions(_ node: KBStructuredUINode) -> Bool {
+        if node.action != nil { return true }
+        if node.type == "chart", !(node.series ?? []).isEmpty { return true }
+        return node.supportedChildren.contains(where: nodeHasAppActions)
     }
 }
 
@@ -85,6 +96,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let text: String?
     let label: String?
     let actionId: String?
+    /// Client navigation / system action (boards taps, future pushes). Independent of `action_id` form events.
+    let action: KBAppAction?
     let children: [KBStructuredUINode]?
     /// Initial / server-provided value (`bool`, `string`, or string array for multi-select).
     let value: StructuredUIFormValue?
@@ -137,6 +150,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case text
         case label
         case actionId = "action_id"
+        case action
         case children
         case value
         case placeholder
@@ -170,6 +184,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         text: String? = nil,
         label: String? = nil,
         actionId: String? = nil,
+        action: KBAppAction? = nil,
         children: [KBStructuredUINode]? = nil,
         value: StructuredUIFormValue? = nil,
         placeholder: String? = nil,
@@ -202,6 +217,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.text = text
         self.label = label
         self.actionId = actionId
+        self.action = action
         self.children = children
         self.value = value
         self.placeholder = placeholder
@@ -237,6 +253,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         text = try container.decodeIfPresent(String.self, forKey: .text)
         label = try container.decodeIfPresent(String.self, forKey: .label)
         actionId = try container.decodeIfPresent(String.self, forKey: .actionId)
+        action = try container.decodeIfPresent(KBAppAction.self, forKey: .action)
         children = try container.decodeIfPresent([KBStructuredUINode].self, forKey: .children)
         placeholder = try container.decodeIfPresent(String.self, forKey: .placeholder)
         maxLength = try container.decodeIfPresent(Int.self, forKey: .maxLength)
@@ -281,6 +298,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         try container.encodeIfPresent(text, forKey: .text)
         try container.encodeIfPresent(label, forKey: .label)
         try container.encodeIfPresent(actionId, forKey: .actionId)
+        try container.encodeIfPresent(action, forKey: .action)
         try container.encodeIfPresent(children, forKey: .children)
         if let value {
             try container.encode(value, forKey: .value)
@@ -486,6 +504,7 @@ enum StructuredUIFormDraft {
             text: node.text,
             label: node.label,
             actionId: node.actionId,
+            action: node.action,
             children: children,
             value: value,
             placeholder: node.placeholder,
