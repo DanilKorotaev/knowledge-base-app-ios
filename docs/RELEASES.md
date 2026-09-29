@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.77 | 198 | `ios/v1.0.77` | 2026-09-29 | Unified AppAction routing for boards and chart detail |
 | 1.0.76 | 197 | `ios/v1.0.76` | 2026-09-29 | Compact voice lock controls and clear chat pushes on open |
 | 1.0.75 | 195 | `ios/v1.0.75` | 2026-09-29 | Structured UI timer node for live job elapsed time |
 | 1.0.74 | 194 | `ios/v1.0.74` | 2026-09-28 | Archive and restore Overview boards |
