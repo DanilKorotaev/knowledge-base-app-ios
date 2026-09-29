@@ -132,6 +132,8 @@ private struct StructuredUINodeView: View {
                     StructuredUIButtonLabel(title: node.label ?? "")
                 }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .frame(maxWidth: .infinity)
                 .accessibilityLabel(node.label ?? "Button")
             case "confirm":
                 StructuredUIConfirmNodeView(
