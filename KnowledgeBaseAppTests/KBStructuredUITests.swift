@@ -349,4 +349,29 @@ final class KBStructuredUITests: XCTestCase {
             L10n.string("structured_ui.media_load_failed")
         )
     }
+
+    func testTimerNodeIsSupportedAndParsesISOStart() throws {
+        let json = """
+        {
+          "schema_version": 1,
+          "screen": {
+            "type": "timer",
+            "id": "t1",
+            "label": "В работе",
+            "value": "2026-09-29T12:00:00Z",
+            "text": "0:05"
+          }
+        }
+        """
+        let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: Data(json.utf8))
+        XCTAssertTrue(document.screen.isSupported)
+        XCTAssertEqual(document.screen.type, "timer")
+        let start = StructuredUITimerDisplay.startDate(from: document.screen)
+        XCTAssertNotNil(start)
+        let text = StructuredUITimerDisplay.elapsedText(
+            since: start!,
+            now: start!.addingTimeInterval(65)
+        )
+        XCTAssertEqual(text, "1:05")
+    }
 }

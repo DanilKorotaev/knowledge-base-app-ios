@@ -80,11 +80,16 @@ private struct StructuredUINodeView: View {
                 }
             case "hstack":
                 let kids = node.supportedChildren
-                let metricsOnly = !kids.isEmpty && kids.allSatisfy { $0.type == "metric" }
-                if metricsOnly, kids.count >= 3 {
+                let metricLike: Set<String> = ["metric", "timer"]
+                let metricsOnly = !kids.isEmpty && kids.allSatisfy { metricLike.contains($0.type) }
+                if metricsOnly, kids.count >= 2 {
                     StructuredUIMetricsGridView(spacing: CGFloat(node.spacing ?? 12)) {
                         ForEach(Array(kids.enumerated()), id: \.offset) { _, child in
-                            StructuredUIMetricNodeView(node: child, compact: true)
+                            if child.type == "timer" {
+                                StructuredUITimerNodeView(node: child, compact: true)
+                            } else {
+                                StructuredUIMetricNodeView(node: child, compact: true)
+                            }
                         }
                     }
                 } else {
@@ -301,6 +306,8 @@ private struct StructuredUINodeView: View {
                 StructuredUITableNodeView(node: node)
             case "chart":
                 StructuredUIChartNodeView(node: node)
+            case "timer":
+                StructuredUITimerNodeView(node: node)
             default:
                 EmptyView()
             }

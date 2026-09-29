@@ -194,3 +194,98 @@ struct StructuredUIChartNodeView: View {
         .accessibilityLabel(node.label ?? "Chart")
     }
 }
+
+/// Live elapsed stopwatch from an ISO-8601 ``value`` (or ``text`` snapshot fallback).
+struct StructuredUITimerNodeView: View {
+    let node: KBStructuredUINode
+    var compact: Bool = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if let label = node.label, !label.isEmpty {
+                Text(label)
+                    .font(compact ? .caption2 : .caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+            if let start = StructuredUITimerDisplay.startDate(from: node) {
+                TimelineView(.periodic(from: start, by: 1)) { context in
+                    Text(StructuredUITimerDisplay.elapsedText(since: start, now: context.date))
+                        .font((compact ? Font.title3 : Font.title2).weight(.semibold).monospacedDigit())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            } else {
+                Text(node.text?.isEmpty == false ? (node.text ?? "—") : "—")
+                    .font((compact ? Font.title3 : Font.title2).weight(.semibold).monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(compact ? 10 : 12)
+        .background(Color.secondary.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(StructuredUITimerDisplay.accessibilityLabel(from: node))
+    }
+}
+
+enum StructuredUITimerDisplay {
+    static func startDate(from node: KBStructuredUINode) -> Date? {
+        if let raw = node.value?.stringValue, let date = parseISO8601(raw) {
+            return date
+        }
+        if let raw = node.text, let date = parseISO8601(raw) {
+            return date
+        }
+        return nil
+    }
+
+    static func elapsedText(since start: Date, now: Date) -> String {
+        let seconds = max(0, Int(now.timeIntervalSince(start)))
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+        let secs = seconds % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, secs)
+        }
+        return String(format: "%d:%02d", minutes, secs)
+    }
+
+    static func accessibilityLabel(from node: KBStructuredUINode) -> String {
+        let label = node.label?.isEmpty == false ? (node.label ?? "") : "Timer"
+        if let start = startDate(from: node) {
+            return "\(label), \(elapsedText(since: start, now: Date()))"
+        }
+        if let text = node.text, !text.isEmpty {
+            return "\(label), \(text)"
+        }
+        return label
+    }
+
+    static func parseISO8601(_ raw: String) -> Date? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let withFractional = ISO8601DateFormatter()
+        withFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = withFractional.date(from: trimmed) {
+            return date
+        }
+        let plain = ISO8601DateFormatter()
+        plain.formatOptions = [.withInternetDateTime]
+        if let date = plain.date(from: trimmed) {
+            return date
+        }
+        // Postgres sometimes yields "2026-09-29 15:00:00+00" without T.
+        let normalized = trimmed
+            .replacingOccurrences(of: " ", with: "T")
+            .replacingOccurrences(of: "+00", with: "+00:00")
+        if let date = plain.date(from: normalized) {
+            return date
+        }
+        if let date = withFractional.date(from: normalized) {
+            return date
+        }
+        return nil
+    }
+}

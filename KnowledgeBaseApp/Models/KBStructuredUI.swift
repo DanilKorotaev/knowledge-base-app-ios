@@ -316,7 +316,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         switch type {
         case "vstack", "hstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
              "image", "link", "file", "divider", "callout", "spacer", "progress", "date", "time",
-             "slider", "stepper", "confirm", "markdown", "metric", "table", "chart":
+             "slider", "stepper", "confirm", "markdown", "metric", "table", "chart", "timer":
             return true
         default:
             return false
