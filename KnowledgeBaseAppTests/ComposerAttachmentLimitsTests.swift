@@ -46,16 +46,16 @@ final class ComposerAttachmentLimitsTests: XCTestCase {
         XCTAssertEqual(ComposerAttachmentLimits.remainingFileSlots(currentCount: 11), 0)
     }
 
-    func testValidationErrorMessagesAreEnglish() {
-        XCTAssertTrue(
-            ComposerAttachmentLimits.ValidationError.tooManyFiles(max: 10).message.contains("10")
-        )
-        XCTAssertTrue(
-            ComposerAttachmentLimits.ValidationError.fileTooLarge(
-                filename: "doc.pdf",
-                maxBytes: 1024
-            ).message.contains("doc.pdf")
-        )
+    func testValidationErrorMessagesAreLocalized() {
+        let tooMany = ComposerAttachmentLimits.ValidationError.tooManyFiles(max: 10).message
+        XCTAssertFalse(tooMany.isEmpty)
+        XCTAssertTrue(tooMany.contains("10"))
+
+        let tooLarge = ComposerAttachmentLimits.ValidationError.fileTooLarge(
+            filename: "doc.pdf",
+            maxBytes: 1024
+        ).message
+        XCTAssertTrue(tooLarge.contains("doc.pdf"))
     }
 }
 

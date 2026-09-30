@@ -1052,7 +1052,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "OK"
+            "value": "ОК"
           }
         }
       }
@@ -2616,13 +2616,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Could not import the selected media."
+            "value": "Could not import the selected photo or video."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Не удалось импортировать выбранный медиафайл."
+            "value": "Не удалось импортировать фото или видео."
           }
         }
       }
@@ -7064,6 +7064,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Щепотка — зум · пальцем — прокрутка"
+          }
+        }
+      }
+    },
+    "composer.attachment_limit_files": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to %lld file attachments per message."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не больше %lld вложений в одном сообщении."
+          }
+        }
+      }
+    },
+    "composer.attachment_limit_size": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ exceeds the %@ limit."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ больше лимита %@."
           }
         }
       }

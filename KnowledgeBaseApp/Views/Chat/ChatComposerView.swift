@@ -73,10 +73,10 @@ struct ChatComposerView: View {
             .onChange(of: photoPickerItems) { _, items in
                 guard !items.isEmpty else { return }
                 Task {
-                    var skippedLimit = false
+                    var hitFileLimit = false
                     for item in items {
                         if viewModel.remainingComposerAttachmentSlots == 0 {
-                            skippedLimit = true
+                            hitFileLimit = true
                             break
                         }
                         do {
@@ -90,13 +90,17 @@ struct ChatComposerView: View {
                                     fileSize: media.fileSize
                                 )
                             ) {
-                                skippedLimit = true
+                                // Size / other validation already reported inside addPendingAttachment.
+                                // Only treat as "too many files" when slots are actually exhausted.
+                                if viewModel.remainingComposerAttachmentSlots == 0 {
+                                    hitFileLimit = true
+                                }
                             }
                         } catch {
                             viewModel.reportError(L10n.string("composer.gallery_import_failed"))
                         }
                     }
-                    if skippedLimit {
+                    if hitFileLimit {
                         viewModel.reportAttachmentLimitReached()
                     }
                     photoPickerItems = []

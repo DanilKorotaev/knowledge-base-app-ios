@@ -1,9 +1,10 @@
 import Foundation
 
-/// Client-side limits aligned with KB App API (`MAX_ATTACHMENTS_PER_MESSAGE`, 25 MB per file).
+/// Client-side limits aligned with KB App API (`MAX_ATTACHMENTS_PER_MESSAGE`).
 enum ComposerAttachmentLimits {
     static let maxFileAttachments = 10
-    static let maxBytesPerAttachment: Int64 = 25 * 1024 * 1024
+    /// Raised for short screen recordings / gallery videos (was 25 MB).
+    static let maxBytesPerAttachment: Int64 = 100 * 1024 * 1024
 
     enum ValidationError: Equatable {
         case tooManyFiles(max: Int)
@@ -12,10 +13,10 @@ enum ComposerAttachmentLimits {
         var message: String {
             switch self {
             case .tooManyFiles(let max):
-                return "Up to \(max) file attachments per message."
+                return L10n.format("composer.attachment_limit_files", max)
             case .fileTooLarge(let filename, let maxBytes):
                 let limit = ByteCountFormatter.string(fromByteCount: maxBytes, countStyle: .file)
-                return "\(filename) exceeds the \(limit) limit."
+                return L10n.format("composer.attachment_limit_size", filename, limit)
             }
         }
     }
