@@ -231,13 +231,13 @@ struct StructuredUIChartNodeView: View {
                     x: .value("X", point.label),
                     y: .value("Y", point.value)
                 )
-                .interpolationMethod(.catmullRom)
+                .interpolationMethod(.linear)
                 AreaMark(
                     x: .value("X", point.label),
                     y: .value("Y", point.value)
                 )
                 .foregroundStyle(Color.accentColor.opacity(0.12))
-                .interpolationMethod(.catmullRom)
+                .interpolationMethod(.linear)
             }
             .chartXAxis(.hidden)
             .chartYAxis {

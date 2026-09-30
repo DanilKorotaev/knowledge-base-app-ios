@@ -75,8 +75,11 @@ struct StructuredUIChartDetailView: View {
         }
         .onAppear {
             if let domain = fullXDomain {
-                let spanDays = domain.upperBound.timeIntervalSince(domain.lowerBound) / 86_400
-                visibleDays = min(45, max(14, spanDays / 3))
+                // Start near the end at ~month zoom so daily points are visible.
+                visibleDays = min(31, max(14, fullSpanDays()))
+                if fullSpanDays() > 60 {
+                    visibleDays = 28
+                }
                 let leading = domain.upperBound.addingTimeInterval(-visibleDuration)
                 scrollPosition = max(leading, domain.lowerBound)
             }
@@ -110,19 +113,28 @@ struct StructuredUIChartDetailView: View {
 
     private func datedChart(height: CGFloat) -> some View {
         let yDomain = visibleYDomain(for: datedVisibleValues())
+        let showDayDots = visibleDays <= 45
         return Chart {
             ForEach(datedPoints, id: \.date) { point in
                 LineMark(
                     x: .value("Date", point.date),
                     y: .value("Y", point.value)
                 )
-                .interpolationMethod(.catmullRom)
+                .interpolationMethod(.linear)
                 AreaMark(
                     x: .value("Date", point.date),
                     y: .value("Y", point.value)
                 )
                 .foregroundStyle(Color.accentColor.opacity(0.12))
-                .interpolationMethod(.catmullRom)
+                .interpolationMethod(.linear)
+                if showDayDots {
+                    PointMark(
+                        x: .value("Date", point.date),
+                        y: .value("Y", point.value)
+                    )
+                    .symbolSize(18)
+                    .foregroundStyle(Color.accentColor.opacity(0.85))
+                }
             }
             if let selectedDate,
                let match = datedPoints.min(by: {
@@ -159,6 +171,16 @@ struct StructuredUIChartDetailView: View {
         .chartXVisibleDomain(length: visibleDuration)
         .chartScrollPosition(x: $scrollPosition)
         .simultaneousGesture(zoomGesture)
+        .onChange(of: selectedDate) { _, newValue in
+            guard let newValue,
+                  let nearest = datedPoints.min(by: {
+                      abs($0.date.timeIntervalSince(newValue)) < abs($1.date.timeIntervalSince(newValue))
+                  })
+            else { return }
+            if abs(nearest.date.timeIntervalSince(newValue)) > 1 {
+                selectedDate = nearest.date
+            }
+        }
         .frame(maxWidth: .infinity)
         .frame(height: height)
     }
@@ -187,13 +209,13 @@ struct StructuredUIChartDetailView: View {
                 x: .value("X", point.rawLabel),
                 y: .value("Y", point.value)
             )
-            .interpolationMethod(.catmullRom)
+            .interpolationMethod(.linear)
             AreaMark(
                 x: .value("X", point.rawLabel),
                 y: .value("Y", point.value)
             )
             .foregroundStyle(Color.accentColor.opacity(0.12))
-            .interpolationMethod(.catmullRom)
+            .interpolationMethod(.linear)
         }
         .chartYScale(domain: yDomain)
         .chartXAxis {
