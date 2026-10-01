@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.81 | 203 | `ios/v1.0.81` | 2026-10-01 | Archive sessions and open archive list |
 | 1.0.80 | 202 | `ios/v1.0.80` | 2026-09-30 | TestFlight release |
 | 1.0.79 | 201 | `ios/v1.0.79` | 2026-09-30 | Daily chart density with linear marks and month zoom |
 | 1.0.78 | 200 | `ios/v1.0.78` | 2026-09-30 | Localize attachment limit alerts and raise video size cap |
