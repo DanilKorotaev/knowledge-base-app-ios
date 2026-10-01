@@ -4,6 +4,7 @@ import Foundation
 final class InMemoryKBStore: @unchecked Sendable {
     private let lock = NSLock()
     private var _sessions: [KBSession]
+    private var _archived: [KBSession] = []
     private var _messages: [String: [KBMessage]]
 
     init(demoSession: Bool = true) {
@@ -33,6 +34,12 @@ final class InMemoryKBStore: @unchecked Sendable {
         }
     }
 
+    func archivedSessionsSnapshot() -> [KBSession] {
+        lock.lock()
+        defer { lock.unlock() }
+        return _archived
+    }
+
     func messages(for sessionId: String) -> [KBMessage] {
         lock.lock()
         defer { lock.unlock() }
@@ -49,7 +56,32 @@ final class InMemoryKBStore: @unchecked Sendable {
         lock.lock()
         defer { lock.unlock() }
         _sessions.removeAll { $0.id == id }
+        _archived.removeAll { $0.id == id }
         _messages.removeValue(forKey: id)
+    }
+
+    @discardableResult
+    func archiveSession(id: String) -> KBSession {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let index = _sessions.firstIndex(where: { $0.id == id }) else {
+            return KBSession(id: id, title: "Missing", messageCount: 0, updatedAt: Date())
+        }
+        let session = _sessions.remove(at: index)
+        _archived.insert(session, at: 0)
+        return session
+    }
+
+    @discardableResult
+    func restoreSession(id: String) -> KBSession {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let index = _archived.firstIndex(where: { $0.id == id }) else {
+            return KBSession(id: id, title: "Missing", messageCount: 0, updatedAt: Date())
+        }
+        let session = _archived.remove(at: index)
+        _sessions.insert(session, at: 0)
+        return session
     }
 
     func updateSessionTitle(id: String, title: String) {

@@ -312,6 +312,13 @@ struct MainView: View {
                     .disabled(isLoading)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        SessionsArchiveView(client: apiClient)
+                    } label: {
+                        Label("sessions.archive.title", systemImage: "archivebox")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         newSessionTitle = ""
                         showNewSession = true
@@ -502,6 +509,12 @@ struct MainView: View {
                 }
                 .tint(.indigo)
             }
+            Button {
+                Task { await archiveSession(session) }
+            } label: {
+                Label("sessions.archive.action", systemImage: "archivebox")
+            }
+            .tint(.gray)
             Button(role: .destructive) {
                 sessionPendingDelete = session
             } label: {
@@ -539,6 +552,11 @@ struct MainView: View {
                 beginRename(session)
             } label: {
                 Label("common.rename", systemImage: "pencil")
+            }
+            Button {
+                Task { await archiveSession(session) }
+            } label: {
+                Label("sessions.archive.action", systemImage: "archivebox")
             }
             Button(role: .destructive) {
                 sessionPendingDelete = session
@@ -757,6 +775,34 @@ struct MainView: View {
                 await loadSessions(showFullScreenLoading: false)
             }
         } catch {
+            sessionActionError = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func archiveSession(_ session: KBSession) async {
+        voiceRouting.handleDeletedSession(session.id)
+        pinnedStore.remove(sessionId: session.id)
+
+        let previousSessions = sessions
+        let previousSearch = searchResults
+
+        if isSearchActive {
+            searchResults?.removeAll { $0.id == session.id }
+        } else {
+            sessions.removeAll { $0.id == session.id }
+        }
+
+        do {
+            _ = try await apiClient.archiveSession(id: session.id)
+            if isSearchActive {
+                await runSearch(query: searchText)
+            } else {
+                await loadSessions(showFullScreenLoading: false)
+            }
+        } catch {
+            sessions = previousSessions
+            searchResults = previousSearch
             sessionActionError = error.localizedDescription
         }
     }

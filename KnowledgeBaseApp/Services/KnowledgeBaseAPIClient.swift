@@ -3,9 +3,12 @@ import Foundation
 /// HTTP client for the future **KB App API** (FastAPI). Telegram bot and this app share the same services on the server.
 protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func fetchSessions() async throws -> [KBSession]
+    func fetchArchivedSessions() async throws -> [KBSession]
     func searchSessions(query: String) async throws -> [KBSession]
     func createSession(title: String, useKnowledgeBase: Bool) async throws -> KBSession
     func deleteSession(id: String) async throws
+    func archiveSession(id: String) async throws -> KBSession
+    func restoreSession(id: String) async throws -> KBSession
     func updateSession(id: String, title: String) async throws -> KBSession
     func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws
     func unregisterDevice(token: String) async throws
@@ -29,6 +32,10 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
         store.sessionsSnapshot()
     }
 
+    func fetchArchivedSessions() async throws -> [KBSession] {
+        store.archivedSessionsSnapshot()
+    }
+
     func searchSessions(query: String) async throws -> [KBSession] {
         let q = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !q.isEmpty else { return store.sessionsSnapshot() }
@@ -43,6 +50,14 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
 
     func deleteSession(id: String) async throws {
         store.deleteSession(id: id)
+    }
+
+    func archiveSession(id: String) async throws -> KBSession {
+        store.archiveSession(id: id)
+    }
+
+    func restoreSession(id: String) async throws -> KBSession {
+        store.restoreSession(id: id)
     }
 
     func updateSession(id: String, title: String) async throws -> KBSession {
@@ -214,6 +229,64 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         var request = URLRequest(url: url)
         request.httpMethod = "DELETE"
         _ = try await performData(request)
+    }
+
+    func fetchArchivedSessions() async throws -> [KBSession] {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent("archived")
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "page", value: "1"),
+            URLQueryItem(name: "per_page", value: "100"),
+        ]
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "GET"
+        let data = try await performData(request)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        struct Page: Codable {
+            let sessions: [KBSession]
+        }
+        if let page = try? decoder.decode(Page.self, from: data) {
+            return page.sessions
+        }
+        if let sessions = try? decoder.decode([KBSession].self, from: data) {
+            return sessions
+        }
+        throw KnowledgeBaseAPIError.decodingFailed
+    }
+
+    func archiveSession(id: String) async throws -> KBSession {
+        try await postSessionAction(id: id, action: "archive")
+    }
+
+    func restoreSession(id: String) async throws -> KBSession {
+        try await postSessionAction(id: id, action: "restore")
+    }
+
+    private func postSessionAction(id: String, action: String) async throws -> KBSession {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(id)
+            .appendingPathComponent(action)
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let data = try await performData(request)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        struct Envelope: Codable {
+            let session: KBSession?
+        }
+        if let env = try? decoder.decode(Envelope.self, from: data), let session = env.session {
+            return session
+        }
+        if let session = try? decoder.decode(KBSession.self, from: data) {
+            return session
+        }
+        throw KnowledgeBaseAPIError.decodingFailed
     }
 
     func updateSession(id: String, title: String) async throws -> KBSession {

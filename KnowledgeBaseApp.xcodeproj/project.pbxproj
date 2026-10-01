@@ -125,6 +125,7 @@
 		4F0AAAE926031FE35134F6EC /* UserDefaultsInspectorLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4ED8182EE976DA1B0EFF6133 /* UserDefaultsInspectorLogger.swift */; };
 		4F3B22BF69BF7FB53E0F702E /* LoggingUtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8E1A68E164507C86BF6F76 /* LoggingUtilityTests.swift */; };
 		4F573D9E7AF42D21F3EC5AAD /* AssistantReplyPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F177E2C6F97AA880529F5F /* AssistantReplyPhase.swift */; };
+		D9F5B2E30C8E5162B4F7A913 /* SessionsArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8E4A1F29B7D4051A3E6F802 /* SessionsArchiveView.swift */; };
 		50149FF33D425943F179B84E /* BoardsArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6A7BBFC8839700CBB7B0B /* BoardsArchiveView.swift */; };
 		53073E94FA8A2789C2A88DAE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 09E3BBC29E5C1D378BF4C8B8 /* InfoPlist.strings */; };
 		5374DA950655D9CDC1F7C21F /* PendingVoiceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE439ABCFABF62A1AFF2C11 /* PendingVoiceCapture.swift */; };
@@ -635,6 +636,7 @@
 		8C7EAB19024EC217C87C30B3 /* VideoMessageBubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMessageBubble.swift; sourceTree = "<group>"; };
 		8C8E1A68E164507C86BF6F76 /* LoggingUtilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingUtilityTests.swift; sourceTree = "<group>"; };
 		8CE439ABCFABF62A1AFF2C11 /* PendingVoiceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingVoiceCapture.swift; sourceTree = "<group>"; };
+		C8E4A1F29B7D4051A3E6F802 /* SessionsArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsArchiveView.swift; sourceTree = "<group>"; };
 		8EC6A7BBFC8839700CBB7B0B /* BoardsArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardsArchiveView.swift; sourceTree = "<group>"; };
 		905A0A0C1BC5E8DF3DE1F685 /* VoiceRecordingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingViewModel.swift; sourceTree = "<group>"; };
 		916CB4865EF5D7C9534296F3 /* SearchTextFieldConfigurator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTextFieldConfigurator.swift; sourceTree = "<group>"; };
@@ -1504,6 +1506,7 @@
 			children = (
 				EB8AE7FD6B7E7A644A425D13 /* NewSessionSheet.swift */,
 				97AD15C24F6049D4694DC603 /* RenameSessionSheet.swift */,
+				C8E4A1F29B7D4051A3E6F802 /* SessionsArchiveView.swift */,
 			);
 			path = Session;
 			sourceTree = "<group>";
@@ -1783,6 +1786,7 @@
 				14A1C250EE632E57BAA9EA55 /* BoardDetailView.swift in Sources */,
 				8BE3915C52E77976E6473C68 /* BoardPresentation.swift in Sources */,
 				20C73D86F80C7E8334FB3F9E /* BoardsAPIClient.swift in Sources */,
+				D9F5B2E30C8E5162B4F7A913 /* SessionsArchiveView.swift in Sources */,
 				50149FF33D425943F179B84E /* BoardsArchiveView.swift in Sources */,
 				2FA9167001FE9E2654831C68 /* BoardsPreferences.swift in Sources */,
 				1C53F4F06C33B1901C23E5CB /* BoardsSettingsView.swift in Sources */,
