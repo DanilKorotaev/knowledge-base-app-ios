@@ -11,6 +11,9 @@ struct ChatView: View {
     @State private var suppressPaginationUntil: Date = .distantPast
     @State private var latestScrollSample: ScrollPaginationSample?
     @State private var bottomScrollID = "kb-chat-bottom"
+    @State private var showRenameSheet = false
+    @State private var renameTitle = ""
+    @State private var renameError: String?
     private let attachmentLoader: KBAttachmentLoaderProtocol?
 
     /// Pause auto-load after prepend while layout settles (prevents cascade from geometry/onAppear).
@@ -75,39 +78,64 @@ struct ChatView: View {
         .background(Color(.systemBackground))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    viewModel.toggleStructuredUIPreference()
-                } label: {
-                    // Keep `rectangle.3.group` always — there is no
-                    // `rectangle.3.group.slash` SF Symbol (Off previously rendered blank).
-                    Image(systemName: "rectangle.3.group")
-                        .overlay {
-                            if !viewModel.structuredUIPreferenceEnabled {
-                                Capsule()
-                                    .frame(width: 1.6, height: 18)
-                                    .rotationEffect(.degrees(-45))
-                            }
-                        }
-                        .opacity(viewModel.structuredUIPreferenceEnabled ? 1 : 0.55)
-                }
-                .accessibilityLabel(
-                    Text(
-                        viewModel.structuredUIPreferenceEnabled
-                            ? "structured_ui.toolbar_on"
-                            : "structured_ui.toolbar_off"
-                    )
-                )
-                .contextMenu {
+                Menu {
+                    Button {
+                        renameTitle = viewModel.session.title
+                        showRenameSheet = true
+                    } label: {
+                        Label("common.rename", systemImage: "pencil")
+                    }
+
+                    Toggle(isOn: useKnowledgeBaseBinding) {
+                        Label("session.use_kb", systemImage: "books.vertical")
+                    }
+
+                    Divider()
+
+                    Button {
+                        viewModel.toggleStructuredUIPreference()
+                    } label: {
+                        Label(
+                            viewModel.structuredUIPreferenceEnabled
+                                ? "structured_ui.toolbar_on"
+                                : "structured_ui.toolbar_off",
+                            systemImage: "rectangle.3.group"
+                        )
+                    }
+
                     if viewModel.structuredUIPreferenceEnabled {
                         Button("structured_ui.toolbar_start") {
                             Task { await viewModel.startStructuredUIFlow() }
                         }
                         .disabled(viewModel.isSendingUIEvent)
                     }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel(Text("chat.overflow_menu"))
                 .disabled(viewModel.isSendingUIEvent)
                 .opacity(viewModel.isSendingUIEvent ? 0.55 : 1)
             }
+        }
+        .sheet(isPresented: $showRenameSheet) {
+            RenameSessionSheet(
+                title: $renameTitle,
+                sessionName: viewModel.session.title.isEmpty
+                    ? L10n.string("session.new_title")
+                    : viewModel.session.title,
+                onCancel: { showRenameSheet = false },
+                onSave: {
+                    Task { await saveRenameFromChat() }
+                }
+            )
+        }
+        .alert("chat.alert_title", isPresented: Binding(
+            get: { renameError != nil },
+            set: { if !$0 { renameError = nil } }
+        )) {
+            Button("common.ok", role: .cancel) { renameError = nil }
+        } message: {
+            Text(renameError ?? "")
         }
         .task(id: viewModel.session.id) {
             ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
@@ -423,6 +451,16 @@ struct ChatView: View {
         viewModel.acknowledgeScrollIntent()
     }
 
+    private var useKnowledgeBaseBinding: Binding<Bool> {
+        Binding(
+            get: { viewModel.useKnowledgeBase },
+            set: { enabled in
+                viewModel.setUseKnowledgeBase(enabled)
+                voiceRouting.useKnowledgeBase = enabled
+            }
+        )
+    }
+
     private func bindVoiceRoutingToCurrentSession() {
         ChatOpenLogger.viewAppeared(sessionId: viewModel.session.id)
         voiceRouting.activeSessionId = viewModel.session.id
@@ -433,6 +471,16 @@ struct ChatView: View {
             Task { await viewModel.enqueueVoiceRecording(audioURL: url) }
         }
         ChatSessionFocusTracker.shared.setFocusedSessionId(viewModel.session.id)
+    }
+
+    @MainActor
+    private func saveRenameFromChat() async {
+        do {
+            try await viewModel.renameSession(to: renameTitle)
+            showRenameSheet = false
+        } catch {
+            renameError = error.localizedDescription
+        }
     }
 
     private func dismissKeyboard() {

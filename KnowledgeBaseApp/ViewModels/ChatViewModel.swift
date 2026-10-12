@@ -34,6 +34,60 @@ final class ChatViewModel {
         structuredUIPreferenceEnabled.toggle()
         StructuredUIPreference.isEnabled = structuredUIPreferenceEnabled
     }
+
+    /// Persist KB mode for this chat (draft stays local until first send).
+    func setUseKnowledgeBase(_ enabled: Bool) {
+        guard useKnowledgeBase != enabled else { return }
+        useKnowledgeBase = enabled
+        session = KBSession(
+            id: session.id,
+            title: session.title,
+            messageCount: session.messageCount,
+            updatedAt: session.updatedAt,
+            useKnowledgeBase: enabled
+        )
+        if !session.isLocalDraft {
+            sessionKBModeStore.save(sessionId: session.id, useKnowledgeBase: enabled)
+        }
+    }
+
+    /// Rename via API (or local-only for drafts). Updates `session` title on success.
+    func renameSession(to title: String) async throws {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: 400,
+                apiMessage: "Title cannot be empty"
+            )
+        }
+        if session.isLocalDraft {
+            applySessionTitle(trimmed)
+            return
+        }
+        guard let sessionCreator else {
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: 400,
+                apiMessage: "Cannot rename session: missing session client"
+            )
+        }
+        let updated = try await sessionCreator.updateSession(id: session.id, title: trimmed)
+        session = updated
+        NotificationCenter.default.post(
+            name: .kbSessionThreadDidChange,
+            object: nil,
+            userInfo: [KBNotificationUserInfoKey.sessionId: updated.id]
+        )
+    }
+
+    func applySessionTitle(_ title: String) {
+        session = KBSession(
+            id: session.id,
+            title: title,
+            messageCount: session.messageCount,
+            updatedAt: session.updatedAt,
+            useKnowledgeBase: useKnowledgeBase
+        )
+    }
     var isTranscribingVoice = false
     var pendingVoiceCaptures: [PendingVoiceCapture] = []
     var errorMessage: String?

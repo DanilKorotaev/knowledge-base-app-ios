@@ -1,6 +1,6 @@
 # UX: Chat overflow menu (kebab)
 
-**Status:** Backlog  
+**Status:** Code done on `feature/chat-overflow-menu` (manual QA pending)  
 **Priority:** Medium  
 **Depends on:** lazy new chat (KB toggle needs a home after sheet removal)
 
@@ -10,9 +10,10 @@ Toolbar **Menu** on chat screen for session actions currently only on the list c
 
 ## v1
 
-- Rename (reuse `updateSession` + rename sheet)
-- Use Knowledge Base toggle (mutable for draft + existing)
-- Keep Structured UI preference inside the same menu (or as submenu)
+- [x] Rename (reuse `RenameSessionSheet` + `updateSession`; local title for drafts)
+- [x] Use Knowledge Base toggle (mutable for draft + existing)
+- [x] Structured UI preference + start flow in the same overflow menu
+- [x] Unit tests: `ChatViewModelOverflowMenuTests`
 
 ## Later
 
