@@ -14,10 +14,10 @@ final class ChatViewModel {
     static let pageSize = 5
     static let maxMessagePageLimit = 100
 
-    let session: KBSession
+    private(set) var session: KBSession
     var messages: [KBMessage] = []
     var composerDraft = ChatComposerDraft()
-    let useKnowledgeBase: Bool
+    private(set) var useKnowledgeBase: Bool
     var isLoading = false
     var isLoadingOlder = false
     var isSending = false
@@ -59,11 +59,15 @@ final class ChatViewModel {
     private var userMessageAckedForCurrentSend = false
 
     private let client: ChatAPIClientProtocol
+    /// Required to promote a local draft on first send (`POST /api/sessions`).
+    private let sessionCreator: KnowledgeBaseAPIClientProtocol?
     private let messageCache: MessageCacheStoreProtocol
     private let composerDraftStore: ComposerDraftStoreProtocol
     private let sessionKBModeStore: SessionKBModeStoreProtocol
     private let inFlightReplyStore: InFlightReplyStoreProtocol
     private var composerDraftSaveTask: Task<Void, Never>?
+    /// Serializes draft → server promotion so concurrent sends create one session.
+    private var sessionPromotionTask: Task<KBSession, Error>?
 
     /// Backward-compatible alias for tests and legacy call sites.
     var draft: String {
@@ -90,6 +94,7 @@ final class ChatViewModel {
     init(
         session: KBSession,
         client: ChatAPIClientProtocol,
+        sessionCreator: KnowledgeBaseAPIClientProtocol? = nil,
         messageCache: MessageCacheStoreProtocol = FileOfflineCacheStore.shared,
         composerDraftStore: ComposerDraftStoreProtocol = ComposerDraftStore.shared,
         sessionKBModeStore: SessionKBModeStoreProtocol = SessionKBModeStore.shared,
@@ -97,6 +102,7 @@ final class ChatViewModel {
     ) {
         self.session = session
         self.client = client
+        self.sessionCreator = sessionCreator
         self.messageCache = messageCache
         self.composerDraftStore = composerDraftStore
         self.sessionKBModeStore = sessionKBModeStore
@@ -107,6 +113,15 @@ final class ChatViewModel {
     }
 
     func load() async {
+        if session.isLocalDraft {
+            isLoading = false
+            syncStatus = .idle
+            messages = []
+            totalCount = 0
+            hasMoreOlder = false
+            return
+        }
+
         let loadStarted = CFAbsoluteTimeGetCurrent()
         if messages.isEmpty {
             isLoading = true
@@ -144,6 +159,7 @@ final class ChatViewModel {
 
     /// Background refresh (pull-to-refresh, app became active).
     func refresh() async {
+        guard !session.isLocalDraft else { return }
         let hadLocalData = !messages.isEmpty
         if hadLocalData {
             syncStatus = .refreshing
@@ -685,6 +701,13 @@ final class ChatViewModel {
         // Snapshot before detach — needed for Retry without stuffing the composer.
         let sendSnapshot = composerDraft
 
+        do {
+            try await ensureServerSessionIfNeeded(using: sendSnapshot)
+        } catch {
+            errorMessage = error.localizedDescription
+            return
+        }
+
         // Clear composer immediately so voice/photo chips do not linger while the
         // assistant reply streams (including after backgrounding the app).
         detachComposerForSend()
@@ -713,6 +736,89 @@ final class ChatViewModel {
         }
     }
 
+    /// Creates the server session on first send for local drafts; no-op otherwise.
+    func ensureServerSessionIfNeeded(using draft: ChatComposerDraft? = nil) async throws {
+        guard session.isLocalDraft else { return }
+
+        if let existing = sessionPromotionTask {
+            _ = try await existing.value
+            return
+        }
+
+        let snapshot = draft ?? composerDraft
+        let creator = sessionCreator
+        let useKB = useKnowledgeBase
+        let oldId = session.id
+        let title = Self.suggestedTitle(from: snapshot)
+
+        let task = Task<KBSession, Error> { @MainActor in
+            guard let creator else {
+                throw KnowledgeBaseAPIError.invalidResponse(
+                    statusCode: 400,
+                    apiMessage: "Cannot create session: missing session client"
+                )
+            }
+            let created = try await creator.createSession(title: title, useKnowledgeBase: useKB)
+            self.promoteLocalDraft(from: oldId, to: created)
+            return created
+        }
+        sessionPromotionTask = task
+
+        do {
+            _ = try await task.value
+            sessionPromotionTask = nil
+        } catch {
+            sessionPromotionTask = nil
+            throw error
+        }
+    }
+
+    private func promoteLocalDraft(from oldId: String, to created: KBSession) {
+        session = created
+        useKnowledgeBase = created.useKnowledgeBase
+        sessionKBModeStore.remove(sessionId: oldId)
+        sessionKBModeStore.save(sessionId: created.id, useKnowledgeBase: useKnowledgeBase)
+
+        if let loaded = composerDraftStore.load(sessionId: oldId) {
+            _ = composerDraftStore.save(
+                sessionId: created.id,
+                draft: loaded.draft,
+                pendingVoiceCaptures: loaded.pendingVoiceCaptures
+            )
+            composerDraftStore.clear(sessionId: oldId)
+        }
+
+        if let inFlight = inFlightReplyStore.load(sessionId: oldId) {
+            inFlightReplyStore.save(
+                InFlightReplyState(
+                    sessionId: created.id,
+                    startedAt: inFlight.startedAt,
+                    partialText: inFlight.partialText
+                )
+            )
+            inFlightReplyStore.clear(sessionId: oldId)
+        }
+
+        NotificationCenter.default.post(
+            name: .kbSessionThreadDidChange,
+            object: nil,
+            userInfo: [KBNotificationUserInfoKey.sessionId: created.id]
+        )
+    }
+
+    private static func suggestedTitle(from draft: ChatComposerDraft) -> String {
+        let text = draft.trimmedText
+        if !text.isEmpty {
+            let firstLine = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? text
+            if firstLine.count <= 60 { return firstLine }
+            return String(firstLine.prefix(57)) + "…"
+        }
+        if !draft.voiceClips.isEmpty || !draft.attachments.isEmpty {
+            return ""
+        }
+        return ""
+    }
+
     func shouldShowSendRetry(for message: KBMessage) -> Bool {
         pendingSendRetry?.anchorMessageId == message.id
     }
@@ -730,6 +836,12 @@ final class ChatViewModel {
             guard !trimmed.isEmpty else { return }
             isSending = true
             defer { isSending = false }
+            do {
+                try await ensureServerSessionIfNeeded(using: ChatComposerDraft(text: trimmed))
+            } catch {
+                errorMessage = error.localizedDescription
+                return
+            }
             let ok = await sendStreamingText(
                 trimmed,
                 optimisticContent: trimmed,
@@ -786,6 +898,12 @@ final class ChatViewModel {
     }
 
     private func resendFailedDraft(_ draft: ChatComposerDraft) async {
+        do {
+            try await ensureServerSessionIfNeeded(using: draft)
+        } catch {
+            errorMessage = error.localizedDescription
+            return
+        }
         let route = ChatComposerSendPlanner.route(for: draft)
         if case .unsupported(let message) = route {
             errorMessage = message
@@ -1176,6 +1294,7 @@ final class ChatViewModel {
     /// - Parameter allowWhileSending: call from stream `catch` while `isSending` is still true.
     @discardableResult
     func resumeAwaitingReplyIfNeeded(allowWhileSending: Bool = false) async -> Bool {
+        guard !session.isLocalDraft else { return false }
         if isPollingForReply { return false }
         if isSending, !allowWhileSending { return false }
         let hasMarker = inFlightReplyStore.load(sessionId: session.id) != nil

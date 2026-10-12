@@ -2,11 +2,19 @@ import Foundation
 
 /// Mirrors a knowledge-base chat session from the shared PostgreSQL store (future: KB App API).
 struct KBSession: Identifiable, Codable, Equatable, Hashable, Sendable {
+    /// Client-only draft until the first successful `POST /api/sessions` on send.
+    static let localDraftIDPrefix = "draft:"
+
     let id: String
     let title: String
     let messageCount: Int
     let updatedAt: Date?
     let useKnowledgeBase: Bool
+
+    /// True when the session exists only on device and must be created before any chat API call.
+    var isLocalDraft: Bool {
+        id.hasPrefix(Self.localDraftIDPrefix)
+    }
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -28,6 +36,20 @@ struct KBSession: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.messageCount = messageCount
         self.updatedAt = updatedAt
         self.useKnowledgeBase = useKnowledgeBase
+    }
+
+    /// Empty chat shell for toolbar **+** — not listed until promoted on first send.
+    static func makeLocalDraft(
+        useKnowledgeBase: Bool = true,
+        title: String = ""
+    ) -> KBSession {
+        KBSession(
+            id: localDraftIDPrefix + UUID().uuidString,
+            title: title,
+            messageCount: 0,
+            updatedAt: nil,
+            useKnowledgeBase: useKnowledgeBase
+        )
     }
 
     init(from decoder: Decoder) throws {

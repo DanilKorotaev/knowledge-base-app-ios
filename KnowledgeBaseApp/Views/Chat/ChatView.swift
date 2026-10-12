@@ -19,10 +19,15 @@ struct ChatView: View {
     init(
         session: KBSession,
         chatClient: ChatAPIClientProtocol,
+        sessionCreator: KnowledgeBaseAPIClientProtocol? = nil,
         attachmentLoader: KBAttachmentLoaderProtocol? = nil
     ) {
         _viewModel = State(
-            initialValue: ChatViewModel(session: session, client: chatClient)
+            initialValue: ChatViewModel(
+                session: session,
+                client: chatClient,
+                sessionCreator: sessionCreator
+            )
         )
         self.attachmentLoader = attachmentLoader
     }
@@ -61,7 +66,11 @@ struct ChatView: View {
                     .background(Color(.systemBackground))
             }
         }
-        .navigationTitle(viewModel.session.title)
+        .navigationTitle(
+            viewModel.session.title.isEmpty
+                ? Text("session.new_title")
+                : Text(viewModel.session.title)
+        )
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemBackground))
         .toolbar {
@@ -121,14 +130,7 @@ struct ChatView: View {
             viewModel.applyExternalAssistantPhase(parsed.phase, activityLabel: parsed.activityLabel)
         }
         .onAppear {
-            ChatOpenLogger.viewAppeared(sessionId: viewModel.session.id)
-            voiceRouting.activeSessionId = viewModel.session.id
-            voiceRouting.useKnowledgeBase = viewModel.useKnowledgeBase
-            voiceRouting.usesComposerDraft = true
-            voiceViewModel.deferToComposer = true
-            voiceViewModel.onComposerRecordingFinished = { url in
-                Task { await viewModel.enqueueVoiceRecording(audioURL: url) }
-            }
+            bindVoiceRoutingToCurrentSession()
             DebugQuickActionsController.shared.registerChatLogAttachHandler { url in
                 viewModel.attachDebugLogFile(from: url)
             }
@@ -137,6 +139,9 @@ struct ChatView: View {
                 voiceRouting.pendingComposerVoice = nil
                 Task { await viewModel.enqueueVoiceRecording(audioURL: pending.audioURL) }
             }
+        }
+        .onChange(of: viewModel.session.id) { _, _ in
+            bindVoiceRoutingToCurrentSession()
         }
         .onDisappear {
             voiceRouting.activeSessionId = nil
@@ -416,6 +421,18 @@ struct ChatView: View {
         }
         ChatPaginationLogger.scrollIntent(intent)
         viewModel.acknowledgeScrollIntent()
+    }
+
+    private func bindVoiceRoutingToCurrentSession() {
+        ChatOpenLogger.viewAppeared(sessionId: viewModel.session.id)
+        voiceRouting.activeSessionId = viewModel.session.id
+        voiceRouting.useKnowledgeBase = viewModel.useKnowledgeBase
+        voiceRouting.usesComposerDraft = true
+        voiceViewModel.deferToComposer = true
+        voiceViewModel.onComposerRecordingFinished = { url in
+            Task { await viewModel.enqueueVoiceRecording(audioURL: url) }
+        }
+        ChatSessionFocusTracker.shared.setFocusedSessionId(viewModel.session.id)
     }
 
     private func dismissKeyboard() {
