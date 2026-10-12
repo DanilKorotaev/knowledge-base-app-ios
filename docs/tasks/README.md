@@ -62,7 +62,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 | `task-feature-structured-ui-mvp.md` | Structured UI MVP | бэклог |
 | `task-ux-main-tab-shell-sessions-settings.md` | Tab shell: Chats + Settings, remove mic bar | code+tests done |
 | `task-ux-lazy-new-chat.md` | + opens draft chat; POST session on first send | 📋 in progress |
-| `task-ux-chat-overflow-menu.md` | Chat toolbar menu: rename, KB toggle, share later | бэклог |
+| `task-ux-chat-overflow-menu.md` | Chat toolbar menu: rename, KB toggle, share later | code done (`feature/chat-overflow-menu`) |
 | `task-feature-actions-tab.md` | Actions tab (SUI widgets / jobs / presets) | бэклог epic |
 | `task-feature-share-extension-compose.md` | Share Extension → compose | бэклог |
 | `task-ux-composer-paste-clipboard-attachments.md` | Paste/drop clipboard images | бэклог |
