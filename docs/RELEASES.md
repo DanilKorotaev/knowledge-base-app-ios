@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.83 | 205 | `ios/v1.0.83` | 2026-10-13 | Keep draft media files through lazy-session promote |
 | 1.0.82 | 204 | `ios/v1.0.82` | 2026-10-13 | Mark chat overflow menu task as code done |
 | 1.0.81 | 203 | `ios/v1.0.81` | 2026-10-01 | Archive sessions and open archive list |
 | 1.0.80 | 202 | `ios/v1.0.80` | 2026-09-30 | TestFlight release |
