@@ -122,6 +122,9 @@ final class ChatViewModel {
     private var composerDraftSaveTask: Task<Void, Never>?
     /// Serializes draft → server promotion so concurrent sends create one session.
     private var sessionPromotionTask: Task<KBSession, Error>?
+    /// Draft-store session folders kept alive until send finishes (promote copies media
+    /// under the new id but in-flight upload URLs may still point at the old folder).
+    private var deferredComposerDraftCleanupIds: [String] = []
 
     /// Backward-compatible alias for tests and legacy call sites.
     var draft: String {
@@ -173,6 +176,11 @@ final class ChatViewModel {
             messages = []
             totalCount = 0
             hasMoreOlder = false
+            return
+        }
+        // Promote mid-send flips `session.id` and re-triggers `.task(id:)`. Skip the
+        // empty-server refresh so we do not race the in-flight first message upload.
+        if isSending {
             return
         }
 
@@ -740,8 +748,8 @@ final class ChatViewModel {
     }
 
     func sendComposed() async {
-        let route = ChatComposerSendPlanner.route(for: composerDraft)
-        if case .unsupported(let message) = route {
+        let preliminaryRoute = ChatComposerSendPlanner.route(for: composerDraft)
+        if case .unsupported(let message) = preliminaryRoute {
             errorMessage = message
             return
         }
@@ -762,6 +770,15 @@ final class ChatViewModel {
             return
         }
 
+        // After draft→server promote, media may live under the new session draft folder.
+        // Rebuild the route from remapped URLs so upload does not read deleted `draft:` paths.
+        let resolvedSnapshot = remappedComposerDraftForCurrentSession(sendSnapshot)
+        let route = ChatComposerSendPlanner.route(for: resolvedSnapshot)
+        if case .unsupported(let message) = route {
+            errorMessage = message
+            return
+        }
+
         // Clear composer immediately so voice/photo chips do not linger while the
         // assistant reply streams (including after backgrounding the app).
         detachComposerForSend()
@@ -777,9 +794,9 @@ final class ChatViewModel {
                 retryDraft: ChatComposerDraft(text: text)
             )
         case .singleAttachment(let attachment):
-            succeeded = await sendSingleAttachment(attachment, retryDraft: sendSnapshot)
+            succeeded = await sendSingleAttachment(attachment, retryDraft: resolvedSnapshot)
         case .singleVoice(let clip, let text):
-            succeeded = await sendSingleVoice(clip: clip, text: text, retryDraft: sendSnapshot)
+            succeeded = await sendSingleVoice(clip: clip, text: text, retryDraft: resolvedSnapshot)
         case .compose(let draft):
             succeeded = await sendComposedMessage(draft)
         }
@@ -839,7 +856,17 @@ final class ChatViewModel {
                 draft: loaded.draft,
                 pendingVoiceCaptures: loaded.pendingVoiceCaptures
             )
-            composerDraftStore.clear(sessionId: oldId)
+            // Keep the old folder until send succeeds/fails cleanup — in-memory URLs
+            // from before promote still point into `oldId/files/`.
+            if !deferredComposerDraftCleanupIds.contains(oldId) {
+                deferredComposerDraftCleanupIds.append(oldId)
+            }
+        }
+
+        if let remapped = composerDraftStore.load(sessionId: created.id) {
+            composerDraft = remapped.draft
+            pendingVoiceCaptures = remapped.pendingVoiceCaptures
+            syncTranscribingVoiceFlag()
         }
 
         if let inFlight = inFlightReplyStore.load(sessionId: oldId) {
@@ -858,6 +885,19 @@ final class ChatViewModel {
             object: nil,
             userInfo: [KBNotificationUserInfoKey.sessionId: created.id]
         )
+    }
+
+    /// Prefer media paths already copied into the current session's draft store.
+    private func remappedComposerDraftForCurrentSession(_ snapshot: ChatComposerDraft) -> ChatComposerDraft {
+        guard let stored = composerDraftStore.load(sessionId: session.id)?.draft else {
+            return snapshot
+        }
+        var result = snapshot
+        let voiceById = Dictionary(uniqueKeysWithValues: stored.voiceClips.map { ($0.id, $0) })
+        result.voiceClips = snapshot.voiceClips.map { voiceById[$0.id] ?? $0 }
+        let attachmentById = Dictionary(uniqueKeysWithValues: stored.attachments.map { ($0.id, $0) })
+        result.attachments = snapshot.attachments.map { attachmentById[$0.id] ?? $0 }
+        return result
     }
 
     private static func suggestedTitle(from draft: ChatComposerDraft) -> String {
@@ -958,7 +998,8 @@ final class ChatViewModel {
             errorMessage = error.localizedDescription
             return
         }
-        let route = ChatComposerSendPlanner.route(for: draft)
+        let resolved = remappedComposerDraftForCurrentSession(draft)
+        let route = ChatComposerSendPlanner.route(for: resolved)
         if case .unsupported(let message) = route {
             errorMessage = message
             return
@@ -982,9 +1023,9 @@ final class ChatViewModel {
                 retryDraft: ChatComposerDraft(text: text)
             )
         case .singleAttachment(let attachment):
-            succeeded = await sendSingleAttachment(attachment, retryDraft: draft)
+            succeeded = await sendSingleAttachment(attachment, retryDraft: resolved)
         case .singleVoice(let clip, let text):
-            succeeded = await sendSingleVoice(clip: clip, text: text, retryDraft: draft)
+            succeeded = await sendSingleVoice(clip: clip, text: text, retryDraft: resolved)
         case .compose(let composed):
             succeeded = await sendComposedMessage(composed)
         }
@@ -1581,6 +1622,10 @@ final class ChatViewModel {
         composerDraft.clear()
         pendingVoiceCaptures = []
         syncTranscribingVoiceFlag()
+        for deferredId in deferredComposerDraftCleanupIds {
+            composerDraftStore.clear(sessionId: deferredId)
+        }
+        deferredComposerDraftCleanupIds.removeAll()
         composerDraftStore.clear(sessionId: session.id)
     }
 

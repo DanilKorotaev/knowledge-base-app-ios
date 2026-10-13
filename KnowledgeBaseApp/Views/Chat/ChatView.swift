@@ -146,7 +146,8 @@ struct ChatView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { notification in
             guard let sid = notification.userInfo?[KBNotificationUserInfoKey.sessionId] as? String,
-                  sid == viewModel.session.id else { return }
+                  sid == viewModel.session.id,
+                  !viewModel.isSending else { return }
             Task {
                 await viewModel.waitForStreamRevealAnimation()
                 await viewModel.reloadLatestWindow()
