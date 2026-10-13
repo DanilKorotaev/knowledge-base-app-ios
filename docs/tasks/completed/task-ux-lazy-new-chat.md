@@ -1,12 +1,12 @@
 # UX: Lazy new chat (no create sheet)
 
-**Status:** Code done on `feature/lazy-new-chat` (manual QA pending)  
+**Status:** Done (manual QA passed: + → voice → send; draft list on swipe-back)  
 **Priority:** High  
 **Related:** overflow menu (`task-ux-chat-overflow-menu.md`), session display title (bot)
 
 ## Goal
 
-Toolbar **+** opens an empty chat immediately. No `POST /api/sessions` until the first send (text / voice / attachments). Back without send leaves no session in the list.
+Toolbar **+** opens an empty chat immediately. No `POST /api/sessions` until the first send (text / voice / attachments). Empty back leaves no row; non-empty composer persists as a local draft in the list.
 
 ## Behavior
 
