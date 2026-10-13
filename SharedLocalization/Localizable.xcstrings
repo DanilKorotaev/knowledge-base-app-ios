@@ -2804,6 +2804,22 @@
         }
       }
     },
+    "chat.share": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share chat"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поделиться чатом"
+          }
+        }
+      }
+    },
     "chat.loading_messages": {
       "localizations": {
         "en": {

@@ -14,6 +14,8 @@ struct ChatView: View {
     @State private var showRenameSheet = false
     @State private var renameTitle = ""
     @State private var renameError: String?
+    @State private var isCreatingShareLink = false
+    @State private var shareSheetURL: URL?
     private let attachmentLoader: KBAttachmentLoaderProtocol?
 
     /// Pause auto-load after prepend while layout settles (prevents cascade from geometry/onAppear).
@@ -90,6 +92,13 @@ struct ChatView: View {
                         Label("session.use_kb", systemImage: "books.vertical")
                     }
 
+                    Button {
+                        Task { await createAndPresentShareLink() }
+                    } label: {
+                        Label("chat.share", systemImage: "square.and.arrow.up")
+                    }
+                    .disabled(viewModel.session.isLocalDraft || isCreatingShareLink)
+
                     Divider()
 
                     Button {
@@ -136,6 +145,14 @@ struct ChatView: View {
             Button("common.ok", role: .cancel) { renameError = nil }
         } message: {
             Text(renameError ?? "")
+        }
+        .sheet(isPresented: Binding(
+            get: { shareSheetURL != nil },
+            set: { if !$0 { shareSheetURL = nil } }
+        )) {
+            if let shareSheetURL {
+                ShareSheet(items: [shareSheetURL])
+            }
         }
         .task(id: viewModel.session.id) {
             ChatPaginationLogger.sessionTaskStarted(sessionId: viewModel.session.id)
@@ -479,6 +496,18 @@ struct ChatView: View {
         do {
             try await viewModel.renameSession(to: renameTitle)
             showRenameSheet = false
+        } catch {
+            renameError = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func createAndPresentShareLink() async {
+        isCreatingShareLink = true
+        defer { isCreatingShareLink = false }
+        do {
+            let link = try await viewModel.createShareLink()
+            shareSheetURL = link.shareURL
         } catch {
             renameError = error.localizedDescription
         }

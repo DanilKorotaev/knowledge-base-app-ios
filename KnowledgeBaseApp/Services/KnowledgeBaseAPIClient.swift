@@ -1,6 +1,13 @@
 import Foundation
 
 /// HTTP client for the future **KB App API** (FastAPI). Telegram bot and this app share the same services on the server.
+/// Read-only public link for a chat session (`POST /api/sessions/{id}/share`).
+struct SessionShareLink: Equatable, Sendable {
+    let shareURL: URL
+    let apiURL: URL?
+    let expiresAt: Date?
+}
+
 protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func fetchSessions() async throws -> [KBSession]
     func fetchArchivedSessions() async throws -> [KBSession]
@@ -10,6 +17,8 @@ protocol KnowledgeBaseAPIClientProtocol: Sendable {
     func archiveSession(id: String) async throws -> KBSession
     func restoreSession(id: String) async throws -> KBSession
     func updateSession(id: String, title: String) async throws -> KBSession
+    func createSessionShare(sessionId: String, ttlDays: Int?) async throws -> SessionShareLink
+    func revokeSessionShare(sessionId: String) async throws
     func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws
     func unregisterDevice(token: String) async throws
 }
@@ -70,6 +79,24 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
             throw KnowledgeBaseAPIError.invalidResponse(statusCode: 404, apiMessage: "Session not found")
         }
         return session
+    }
+
+    func createSessionShare(sessionId: String, ttlDays: Int? = nil) async throws -> SessionShareLink {
+        _ = ttlDays
+        guard store.sessionsSnapshot().contains(where: { $0.id == sessionId }) else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: 404, apiMessage: "Session not found")
+        }
+        let token = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        guard let url = URL(string: "https://example.invalid/share/\(token)") else {
+            throw KnowledgeBaseAPIError.decodingFailed
+        }
+        return SessionShareLink(shareURL: url, apiURL: nil, expiresAt: Date().addingTimeInterval(30 * 24 * 3600))
+    }
+
+    func revokeSessionShare(sessionId: String) async throws {
+        guard store.sessionsSnapshot().contains(where: { $0.id == sessionId }) else {
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: 404, apiMessage: "Session not found")
+        }
     }
 
     func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws {}
@@ -320,6 +347,55 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
             return session
         }
         throw KnowledgeBaseAPIError.decodingFailed
+    }
+
+    func createSessionShare(sessionId: String, ttlDays: Int? = nil) async throws -> SessionShareLink {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(sessionId)
+            .appendingPathComponent("share")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        struct Body: Encodable {
+            let ttlDays: Int?
+            enum CodingKeys: String, CodingKey {
+                case ttlDays = "ttl_days"
+            }
+        }
+        request.httpBody = try JSONEncoder().encode(Body(ttlDays: ttlDays))
+
+        let data = try await performData(request)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        struct Payload: Decodable {
+            let shareURL: String
+            let apiURL: String?
+            let expiresAt: Date?
+            enum CodingKeys: String, CodingKey {
+                case shareURL = "share_url"
+                case apiURL = "api_url"
+                case expiresAt = "expires_at"
+            }
+        }
+        let payload = try decoder.decode(Payload.self, from: data)
+        guard let shareURL = URL(string: payload.shareURL) else {
+            throw KnowledgeBaseAPIError.decodingFailed
+        }
+        let apiURL = payload.apiURL.flatMap(URL.init(string:))
+        return SessionShareLink(shareURL: shareURL, apiURL: apiURL, expiresAt: payload.expiresAt)
+    }
+
+    func revokeSessionShare(sessionId: String) async throws {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("sessions")
+            .appendingPathComponent(sessionId)
+            .appendingPathComponent("share")
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        _ = try await performData(request)
     }
 
     func registerDevice(token: String, apnsEnvironment: String, appVersion: String?) async throws {

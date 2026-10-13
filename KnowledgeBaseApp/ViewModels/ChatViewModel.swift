@@ -86,6 +86,23 @@ final class ChatViewModel {
             useKnowledgeBase: useKnowledgeBase
         )
     }
+
+    /// Creates a read-only public URL for the current (server) session.
+    func createShareLink() async throws -> SessionShareLink {
+        guard !session.isLocalDraft else {
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: 400,
+                apiMessage: "Send a message before sharing this chat"
+            )
+        }
+        guard let sessionCreator else {
+            throw KnowledgeBaseAPIError.invalidResponse(
+                statusCode: 400,
+                apiMessage: "Cannot share session: missing session client"
+            )
+        }
+        return try await sessionCreator.createSessionShare(sessionId: session.id, ttlDays: nil)
+    }
     var isTranscribingVoice = false
     var pendingVoiceCaptures: [PendingVoiceCapture] = []
     var errorMessage: String?
