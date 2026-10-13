@@ -12,6 +12,17 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.82] - 2026-10-13
+
+### Added
+
+- Lazy new chat — create session only on first send
+- Chat overflow menu for rename, KB mode, Structured UI
+
+### Changed
+
+- Mark chat overflow menu task as code done
+
 ## [1.0.81] - 2026-10-01
 
 ### Added
@@ -681,7 +692,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.81...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.82...HEAD
+[1.0.82]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.82
 [1.0.81]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.81
 [1.0.80]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.80
 [1.0.79]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.79
