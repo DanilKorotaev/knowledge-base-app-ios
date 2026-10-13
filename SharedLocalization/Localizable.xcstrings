@@ -2788,6 +2788,22 @@
         }
       }
     },
+    "chat.overflow_menu": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat actions"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Действия чата"
+          }
+        }
+      }
+    },
     "chat.loading_messages": {
       "localizations": {
         "en": {

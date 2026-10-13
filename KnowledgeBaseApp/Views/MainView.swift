@@ -25,9 +25,6 @@ struct MainView: View {
     @State private var didLoadSessionsOnce = false
     @State private var voiceViewModel: VoiceRecordingViewModel
     @State private var voiceRouting = VoiceRoutingContext()
-    @State private var showNewSession = false
-    @State private var newSessionTitle = ""
-    @State private var newSessionUseKnowledgeBase = true
     @State private var sessionPendingDelete: KBSession?
     @State private var sessionPendingRename: KBSession?
     @State private var renameTitle = ""
@@ -75,6 +72,7 @@ struct MainView: View {
                         ChatView(
                             session: session,
                             chatClient: chatClient,
+                            sessionCreator: apiClient,
                             attachmentLoader: attachmentLoader
                         )
                         // Safety net if root toolbar hasn't applied yet.
@@ -245,14 +243,6 @@ struct MainView: View {
 
     private var mainListWithSessionChrome: some View {
         mainListBase
-            .sheet(isPresented: $showNewSession) {
-                NewSessionSheet(
-                    title: $newSessionTitle,
-                    useKnowledgeBase: $newSessionUseKnowledgeBase,
-                    onCancel: { showNewSession = false },
-                    onCreate: { Task { await createSessionAndDismiss() } }
-                )
-            }
             .sheet(isPresented: $showRenameSheet) {
                 RenameSessionSheet(
                     title: $renameTitle,
@@ -320,8 +310,7 @@ struct MainView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        newSessionTitle = ""
-                        showNewSession = true
+                        openLocalDraftChat()
                     } label: {
                         Label("main.new_session", systemImage: "plus.circle.fill")
                     }
@@ -692,22 +681,9 @@ struct MainView: View {
         sessions = applyPinnedOrder(to: sessions)
     }
 
-    @MainActor
-    private func createSessionAndDismiss() async {
-        do {
-            let useKB = newSessionUseKnowledgeBase
-            let created = try await apiClient.createSession(
-                title: newSessionTitle,
-                useKnowledgeBase: useKB
-            )
-            SessionKBModeStore.shared.save(sessionId: created.id, useKnowledgeBase: useKB)
-            newSessionTitle = ""
-            newSessionUseKnowledgeBase = true
-            showNewSession = false
-            await loadSessions(showFullScreenLoading: false)
-        } catch {
-            loadError = error.localizedDescription
-        }
+    /// Push an empty draft chat; server session is created on first send.
+    private func openLocalDraftChat() {
+        navigationPath.append(KBSession.makeLocalDraft(useKnowledgeBase: true))
     }
 
     @MainActor
