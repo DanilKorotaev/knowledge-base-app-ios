@@ -39,7 +39,8 @@ final class BoardsViewModel {
         }
 
         do {
-            boards = try await client.fetchBoards()
+            // Jobs live on the Actions tab — keep Overview for vault/KPI boards only.
+            boards = try await client.fetchBoards().filter { !ActionsBoardIDs.isHiddenFromOverview($0.id) }
         } catch {
             if boards.isEmpty {
                 loadError = error.localizedDescription

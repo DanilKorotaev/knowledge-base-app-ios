@@ -4,6 +4,7 @@ struct MainView: View {
     private enum RootTab: Hashable {
         case sessions
         case boards
+        case actions
         case health
         case settings
     }
@@ -92,6 +93,12 @@ struct MainView: View {
                     .tag(RootTab.boards)
             }
 
+            ActionsTabView()
+                .tabItem {
+                    Label("tab.actions", systemImage: "bolt.horizontal.circle")
+                }
+                .tag(RootTab.actions)
+
             if healthSyncEnabled {
                 NavigationStack {
                     HealthTabView()
@@ -145,6 +152,7 @@ struct MainView: View {
             case .sessions: selectedTab = .sessions
             case .boards:
                 if boardsOverviewEnabled { selectedTab = .boards }
+            case .actions: selectedTab = .actions
             case .health:
                 if healthSyncEnabled { selectedTab = .health }
             case .settings: selectedTab = .settings

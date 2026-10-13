@@ -1,6 +1,6 @@
 # Feature: Actions tab (Structured UI widgets / presets)
 
-**Status:** Backlog (epic)  
+**Status:** In progress (v1 shell + jobs)  
 **Priority:** Medium  
 **Related:** boards `system_query_jobs`, Structured UI `action_id`, bot boards MCP
 
@@ -16,8 +16,10 @@ Separate shell tab (not Overview boards): presets with info + buttons that run *
 
 ## v1
 
-- Tab shell + jobs document
-- 1–2 config-driven actions (e.g. “photo → fuel chat”)
+- [x] Tab shell (`tab.actions` / Действия)
+- [x] Jobs document via existing `BoardDetailView` + `active-jobs` / `demo-active-jobs`
+- [x] Hide jobs board from Overview list (client filter)
+- [ ] 1–2 config-driven actions (e.g. “photo → fuel chat”) — next slice
 
 ## Later
 

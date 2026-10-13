@@ -74,6 +74,7 @@ extension KBAppAction {
     enum Tab: String, CaseIterable {
         case sessions
         case boards
+        case actions
         case health
         case settings
     }
