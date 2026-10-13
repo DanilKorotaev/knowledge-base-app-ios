@@ -3156,6 +3156,38 @@
         }
       }
     },
+    "main.local_draft_fallback_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Черновик"
+          }
+        }
+      }
+    },
+    "main.local_draft_subtitle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft · not sent yet · %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Черновик · ещё не отправлено · %@"
+          }
+        }
+      }
+    },
     "main.changed_files": {
       "localizations": {
         "en": {

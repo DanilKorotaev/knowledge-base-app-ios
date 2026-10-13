@@ -53,6 +53,25 @@ final class ComposerDraftStoreTests: XCTestCase {
         XCTAssertNil(store.load(sessionId: sessionId))
     }
 
+    func testListNonEmptyLocalDrafts_includesDraftPrefixOnly() throws {
+        let localId = KBSession.localDraftIDPrefix + UUID().uuidString
+        var local = ChatComposerDraft()
+        local.text = "Свайп назад сохраняет"
+        _ = store.save(sessionId: localId, draft: local, pendingVoiceCaptures: [])
+
+        var server = ChatComposerDraft()
+        server.text = "обычная сессия"
+        _ = store.save(sessionId: "42", draft: server, pendingVoiceCaptures: [])
+
+        let emptyLocal = KBSession.localDraftIDPrefix + UUID().uuidString
+        // Empty save clears — should not appear
+        _ = store.save(sessionId: emptyLocal, draft: ChatComposerDraft(), pendingVoiceCaptures: [])
+
+        let listed = store.listNonEmptyLocalDrafts()
+        XCTAssertEqual(listed.map(\.sessionId), [localId])
+        XCTAssertEqual(listed.first?.draft.text, "Свайп назад сохраняет")
+    }
+
     func testEmptyDraftClearsStore() {
         let sessionId = "session-empty"
         var draft = ChatComposerDraft()

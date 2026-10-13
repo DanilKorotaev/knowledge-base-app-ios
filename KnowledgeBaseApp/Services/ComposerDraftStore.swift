@@ -5,6 +5,13 @@ struct LoadedComposerDraft: Equatable {
     var pendingVoiceCaptures: [PendingVoiceCapture]
 }
 
+/// Non-empty composer content under a `draft:<uuid>` folder (survives swipe-back).
+struct LocalComposerDraftSummary: Equatable {
+    let sessionId: String
+    let draft: ChatComposerDraft
+    let updatedAt: Date
+}
+
 protocol ComposerDraftStoreProtocol: Sendable {
     func load(sessionId: String) -> LoadedComposerDraft?
     @discardableResult
@@ -21,6 +28,8 @@ protocol ComposerDraftStoreProtocol: Sendable {
         attachments: [PendingAttachment]
     ) -> LoadedComposerDraft?
     func clear(sessionId: String)
+    /// Local-only chats that still have unsent composer content.
+    func listNonEmptyLocalDrafts() -> [LocalComposerDraftSummary]
 }
 
 /// Persists unsent composer content per chat session until a message is sent successfully.
@@ -242,6 +251,43 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         lock.lock()
         defer { lock.unlock() }
         removeSessionDirectory(sessionId: sessionId)
+    }
+
+    func listNonEmptyLocalDrafts() -> [LocalComposerDraftSummary] {
+        lock.lock()
+        defer { lock.unlock() }
+
+        guard let entries = try? fileManager.contentsOfDirectory(
+            at: baseURL,
+            includingPropertiesForKeys: [.contentModificationDateKey, .isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return []
+        }
+
+        var summaries: [LocalComposerDraftSummary] = []
+        for entry in entries {
+            let values = try? entry.resourceValues(forKeys: [.isDirectoryKey, .contentModificationDateKey])
+            guard values?.isDirectory == true else { continue }
+
+            let folderName = entry.lastPathComponent
+            let sessionId = folderName.removingPercentEncoding ?? folderName
+            guard sessionId.hasPrefix(KBSession.localDraftIDPrefix) else { continue }
+
+            // NSRecursiveLock — safe to call load() while already holding the lock.
+            guard let loaded = load(sessionId: sessionId), !isEffectivelyEmpty(loaded) else { continue }
+
+            let updatedAt = values?.contentModificationDate ?? Date()
+            summaries.append(
+                LocalComposerDraftSummary(
+                    sessionId: sessionId,
+                    draft: loaded.draft,
+                    updatedAt: updatedAt
+                )
+            )
+        }
+
+        return summaries.sorted { $0.updatedAt > $1.updatedAt }
     }
 
     // MARK: - Private

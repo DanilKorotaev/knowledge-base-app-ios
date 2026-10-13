@@ -286,6 +286,13 @@ struct MainView: View {
             .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { _ in
                 Task { await loadSessions(showFullScreenLoading: false) }
             }
+            .onChange(of: navigationPath.count) { oldCount, newCount in
+                // Swipe-back from a draft chat: composer is persisted on disappear;
+                // refresh local-draft rows so non-empty drafts appear in the list.
+                if newCount < oldCount {
+                    refreshLocalDraftRows()
+                }
+            }
     }
 
     private var mainListBase: some View {
@@ -466,44 +473,48 @@ struct MainView: View {
         }
         .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
-            if voiceRouting.isDefaultVoiceSession(session.id) {
-                Button {
-                    voiceRouting.clearDefaultVoiceSession()
-                } label: {
-                    Label("main.clear_default", systemImage: "mic.slash")
+            if !session.isLocalDraft {
+                if voiceRouting.isDefaultVoiceSession(session.id) {
+                    Button {
+                        voiceRouting.clearDefaultVoiceSession()
+                    } label: {
+                        Label("main.clear_default", systemImage: "mic.slash")
+                    }
+                    .tint(.gray)
+                } else {
+                    Button {
+                        beginSetVoiceDefault(session)
+                    } label: {
+                        Label("main.voice_default", systemImage: "mic")
+                    }
+                    .tint(.blue)
                 }
-                .tint(.gray)
-            } else {
-                Button {
-                    beginSetVoiceDefault(session)
-                } label: {
-                    Label("main.voice_default", systemImage: "mic")
-                }
-                .tint(.blue)
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            if pinnedStore.isPinned(session.id) {
-                Button {
-                    unpinSession(session)
-                } label: {
-                    Label("common.unpin", systemImage: "pin.slash")
+            if !session.isLocalDraft {
+                if pinnedStore.isPinned(session.id) {
+                    Button {
+                        unpinSession(session)
+                    } label: {
+                        Label("common.unpin", systemImage: "pin.slash")
+                    }
+                    .tint(.orange)
+                } else {
+                    Button {
+                        pinSession(session)
+                    } label: {
+                        Label("common.pin", systemImage: "pin")
+                    }
+                    .tint(.indigo)
                 }
-                .tint(.orange)
-            } else {
                 Button {
-                    pinSession(session)
+                    Task { await archiveSession(session) }
                 } label: {
-                    Label("common.pin", systemImage: "pin")
+                    Label("sessions.archive.action", systemImage: "archivebox")
                 }
-                .tint(.indigo)
+                .tint(.gray)
             }
-            Button {
-                Task { await archiveSession(session) }
-            } label: {
-                Label("sessions.archive.action", systemImage: "archivebox")
-            }
-            .tint(.gray)
             Button(role: .destructive) {
                 sessionPendingDelete = session
             } label: {
@@ -511,41 +522,43 @@ struct MainView: View {
             }
         }
         .contextMenu {
-            if pinnedStore.isPinned(session.id) {
-                Button {
-                    unpinSession(session)
-                } label: {
-                    Label("common.unpin", systemImage: "pin.slash")
+            if !session.isLocalDraft {
+                if pinnedStore.isPinned(session.id) {
+                    Button {
+                        unpinSession(session)
+                    } label: {
+                        Label("common.unpin", systemImage: "pin.slash")
+                    }
+                } else {
+                    Button {
+                        pinSession(session)
+                    } label: {
+                        Label("common.pin", systemImage: "pin")
+                    }
                 }
-            } else {
-                Button {
-                    pinSession(session)
-                } label: {
-                    Label("common.pin", systemImage: "pin")
+                if voiceRouting.isDefaultVoiceSession(session.id) {
+                    Button {
+                        voiceRouting.clearDefaultVoiceSession()
+                    } label: {
+                        Label("main.clear_voice_default", systemImage: "mic.slash")
+                    }
+                } else {
+                    Button {
+                        beginSetVoiceDefault(session)
+                    } label: {
+                        Label("main.set_voice_default", systemImage: "mic")
+                    }
                 }
-            }
-            if voiceRouting.isDefaultVoiceSession(session.id) {
                 Button {
-                    voiceRouting.clearDefaultVoiceSession()
+                    beginRename(session)
                 } label: {
-                    Label("main.clear_voice_default", systemImage: "mic.slash")
+                    Label("common.rename", systemImage: "pencil")
                 }
-            } else {
                 Button {
-                    beginSetVoiceDefault(session)
+                    Task { await archiveSession(session) }
                 } label: {
-                    Label("main.set_voice_default", systemImage: "mic")
+                    Label("sessions.archive.action", systemImage: "archivebox")
                 }
-            }
-            Button {
-                beginRename(session)
-            } label: {
-                Label("common.rename", systemImage: "pencil")
-            }
-            Button {
-                Task { await archiveSession(session) }
-            } label: {
-                Label("sessions.archive.action", systemImage: "archivebox")
             }
             Button(role: .destructive) {
                 sessionPendingDelete = session
@@ -560,6 +573,12 @@ struct MainView: View {
             HStack(spacing: 6) {
                 Text(session.title)
                     .font(.headline)
+                if session.isLocalDraft {
+                    Image(systemName: "pencil.and.outline")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(Text("main.local_draft_fallback_title"))
+                }
                 if pinnedStore.isPinned(session.id) {
                     Image(systemName: "pin.fill")
                         .font(.caption)
@@ -573,17 +592,63 @@ struct MainView: View {
                         .accessibilityLabel(Text("main.default_for_voice_a11y"))
                 }
             }
-            Text(L10n.format("main.messages_count_format", session.messageCount, session.kbModeSubtitle()))
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            if session.isLocalDraft {
+                Text(L10n.format("main.local_draft_subtitle", session.kbModeSubtitle()))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(L10n.format("main.messages_count_format", session.messageCount, session.kbModeSubtitle()))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
     private var displayedSessions: [KBSession] {
         if isSearchActive {
-            return searchResults ?? []
+            let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let localMatches = buildLocalDraftSessions().filter { session in
+                query.isEmpty || session.title.localizedCaseInsensitiveContains(query)
+            }
+            return localMatches + (searchResults ?? [])
         }
         return sessions
+    }
+
+    private func buildLocalDraftSessions() -> [KBSession] {
+        ComposerDraftStore.shared.listNonEmptyLocalDrafts().map { summary in
+            let preview = summary.draft.suggestedSessionTitle
+            let title = preview.isEmpty
+                ? L10n.string("main.local_draft_fallback_title")
+                : preview
+            let modeSession = KBSession(
+                id: summary.sessionId,
+                title: title,
+                messageCount: 0,
+                updatedAt: summary.updatedAt,
+                useKnowledgeBase: true
+            )
+            return KBSession(
+                id: summary.sessionId,
+                title: title,
+                messageCount: 0,
+                updatedAt: summary.updatedAt,
+                useKnowledgeBase: SessionKBModeStore.shared.useKnowledgeBase(for: modeSession)
+            )
+        }
+    }
+
+    /// Prepend non-empty local drafts above server sessions (empty + → back stays invisible).
+    @MainActor
+    private func sessionsWithLocalDrafts(_ serverSessions: [KBSession]) -> [KBSession] {
+        let locals = buildLocalDraftSessions()
+        let servers = serverSessions.filter { !$0.isLocalDraft }
+        return locals + applyPinnedOrder(to: servers)
+    }
+
+    @MainActor
+    private func refreshLocalDraftRows() {
+        sessions = sessionsWithLocalDrafts(sessions)
     }
 
     @MainActor
@@ -606,7 +671,9 @@ struct MainView: View {
     @MainActor
     private func loadSessions(showFullScreenLoading: Bool) async {
         if sessions.isEmpty, let cached = sessionCache.loadSessions(), !cached.isEmpty {
-            sessions = applyPinnedOrder(to: cached)
+            sessions = sessionsWithLocalDrafts(cached)
+        } else {
+            refreshLocalDraftRows()
         }
 
         let hasLocalData = !sessions.isEmpty
@@ -625,6 +692,7 @@ struct MainView: View {
         }
 
         guard NetworkPathMonitor.shared.isOnline else {
+            refreshLocalDraftRows()
             if hasLocalData {
                 sessionsSyncStatus = .offline(lastSyncedAt: sessionCache.lastSessionsSyncAt())
             } else {
@@ -636,13 +704,15 @@ struct MainView: View {
 
         do {
             let fetched = try await apiClient.fetchSessions()
-            pinnedStore.prune(validSessionIds: Set(fetched.map(\.id)))
-            SessionKBModeStore.shared.prune(validSessionIds: Set(fetched.map(\.id)))
-            sessions = applyPinnedOrder(to: fetched)
+            let localDraftIds = Set(buildLocalDraftSessions().map(\.id))
+            pinnedStore.prune(validSessionIds: Set(fetched.map(\.id)).union(localDraftIds))
+            SessionKBModeStore.shared.prune(validSessionIds: Set(fetched.map(\.id)).union(localDraftIds))
+            sessions = sessionsWithLocalDrafts(fetched)
             sessionCache.saveSessions(fetched)
             voiceRouting.refreshExpiryIfNeeded()
             sessionsSyncStatus = .upToDate(lastSyncedAt: Date())
         } catch {
+            refreshLocalDraftRows()
             let lastSynced = sessionCache.lastSessionsSyncAt()
             if hasLocalData {
                 sessionsSyncStatus = SyncNetworkError.failureStatus(
@@ -664,21 +734,23 @@ struct MainView: View {
     @MainActor
     private func applyPinnedOrder(to fetched: [KBSession]) -> [KBSession] {
         SessionListSorter.displayOrder(
-            sessions: fetched,
+            sessions: fetched.filter { !$0.isLocalDraft },
             pinnedIds: pinnedStore.loadOrderedIds()
         )
     }
 
     @MainActor
     private func pinSession(_ session: KBSession) {
+        guard !session.isLocalDraft else { return }
         pinnedStore.pin(sessionId: session.id)
-        sessions = applyPinnedOrder(to: sessions)
+        sessions = sessionsWithLocalDrafts(sessions)
     }
 
     @MainActor
     private func unpinSession(_ session: KBSession) {
+        guard !session.isLocalDraft else { return }
         pinnedStore.unpin(sessionId: session.id)
-        sessions = applyPinnedOrder(to: sessions)
+        sessions = sessionsWithLocalDrafts(sessions)
     }
 
     /// Push an empty draft chat; server session is created on first send.
@@ -786,6 +858,13 @@ struct MainView: View {
     @MainActor
     private func deleteSessionConfirmed(_ session: KBSession) async {
         sessionPendingDelete = nil
+
+        if session.isLocalDraft {
+            ComposerDraftStore.shared.clear(sessionId: session.id)
+            SessionKBModeStore.shared.remove(sessionId: session.id)
+            sessions.removeAll { $0.id == session.id }
+            return
+        }
 
         voiceRouting.handleDeletedSession(session.id)
         pinnedStore.remove(sessionId: session.id)

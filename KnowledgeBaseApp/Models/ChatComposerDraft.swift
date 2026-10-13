@@ -106,6 +106,17 @@ struct ChatComposerDraft: Equatable {
         voiceClips = []
         clientMessageId = nil
     }
+
+    /// First-line preview used as session title for drafts / first-send promote.
+    var suggestedSessionTitle: String {
+        let text = trimmedText
+        if !text.isEmpty {
+            let firstLine = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? text
+            if firstLine.count <= 60 { return firstLine }
+            return String(firstLine.prefix(57)) + "…"
+        }
+        return ""
+    }
 }
 
 enum ChatComposerSendPlanner {

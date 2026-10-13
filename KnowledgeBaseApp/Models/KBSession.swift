@@ -38,7 +38,7 @@ struct KBSession: Identifiable, Codable, Equatable, Hashable, Sendable {
         self.useKnowledgeBase = useKnowledgeBase
     }
 
-    /// Empty chat shell for toolbar **+** — not listed until promoted on first send.
+    /// Empty chat shell for toolbar **+**. Listed only once composer has unsent content.
     static func makeLocalDraft(
         useKnowledgeBase: Bool = true,
         title: String = ""

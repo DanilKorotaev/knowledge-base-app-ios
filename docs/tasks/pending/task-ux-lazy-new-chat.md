@@ -10,7 +10,9 @@ Toolbar **+** opens an empty chat immediately. No `POST /api/sessions` until the
 
 ## Behavior
 
-- Draft session id: `draft:<uuid>` (client-only, not listed).
+- Draft session id: `draft:<uuid>` (client-only).
+- Empty draft (open + → back with no content): not listed.
+- Non-empty draft (text / voice / attachments after swipe-back): listed at top as «Черновик» until send or delete.
 - Default `use_knowledge_base=true` (toggle later in chat overflow menu).
 - Title on create: truncated first message text, or empty → server fallback.
 - On promote: migrate composer draft / KB mode / in-flight stores; notify session list refresh.

@@ -46,9 +46,7 @@ final class ChatViewModel {
             updatedAt: session.updatedAt,
             useKnowledgeBase: enabled
         )
-        if !session.isLocalDraft {
-            sessionKBModeStore.save(sessionId: session.id, useKnowledgeBase: enabled)
-        }
+        sessionKBModeStore.save(sessionId: session.id, useKnowledgeBase: enabled)
     }
 
     /// Rename via API (or local-only for drafts). Updates `session` title on success.
@@ -901,16 +899,7 @@ final class ChatViewModel {
     }
 
     private static func suggestedTitle(from draft: ChatComposerDraft) -> String {
-        let text = draft.trimmedText
-        if !text.isEmpty {
-            let firstLine = text.split(whereSeparator: \.isNewline).first.map(String.init) ?? text
-            if firstLine.count <= 60 { return firstLine }
-            return String(firstLine.prefix(57)) + "…"
-        }
-        if !draft.voiceClips.isEmpty || !draft.attachments.isEmpty {
-            return ""
-        }
-        return ""
+        draft.suggestedSessionTitle
     }
 
     func shouldShowSendRetry(for message: KBMessage) -> Bool {
