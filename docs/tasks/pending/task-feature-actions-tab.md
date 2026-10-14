@@ -19,9 +19,10 @@ Separate shell tab (not Overview boards): presets with info + buttons that run *
 - [x] Tab shell (`tab.actions` / Действия)
 - [x] Jobs document via existing `BoardDetailView` + `active-jobs` / `demo-active-jobs`
 - [x] Hide jobs board from Overview list (client filter)
-- [ ] 1–2 config-driven actions (e.g. “photo → fuel chat”) — next slice
+- [x] Config-driven smoke presets via `definition.quick_actions` on `active-jobs` (`KBAppAction` buttons; MCP upsert, no domain hardcode)
+- [ ] photo → fuel chat / camera pipelines — later
 
 ## Later
 
-- Action builder / vault definitions (zero-deploy like boards)
+- Action builder / vault definitions (more presets without touching jobs provider)
 - Alerts, geo, camera pipelines as first-class action results
