@@ -302,10 +302,12 @@ struct BoardsViewModelTests {
     func load() async {
         let vm = BoardsViewModel(client: StubBoardsAPIClient())
         await vm.loadIfNeeded()
-        #expect(vm.boards.count == 2)
+        // Stub returns KPI + jobs; Overview hides jobs (Actions tab).
+        #expect(vm.boards.count == 1)
+        #expect(vm.boards.first?.id == DemoBoardsCatalog.demoKPIId)
         #expect(vm.loadError == nil)
         await vm.loadIfNeeded()
-        #expect(vm.boards.count == 2)
+        #expect(vm.boards.count == 1)
     }
 
     @Test("detail load and refresh")
