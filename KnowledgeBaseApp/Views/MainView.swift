@@ -177,6 +177,19 @@ struct MainView: View {
             appActions.pendingShareLogs = false
             debugQuickActions.showSendLogsConfirm = true
         }
+        .onChange(of: appActions.pendingComposeCamera) { _, request in
+            guard let request else { return }
+            selectedTab = .sessions
+            Task { @MainActor in
+                if let sessionId = request.sessionId {
+                    await openSessionFromDeepLink(sessionId: sessionId)
+                } else {
+                    navigationPath = NavigationPath()
+                    openLocalDraftChat()
+                }
+                // `pendingComposeCamera` stays until ChatComposer opens the camera.
+            }
+        }
         .alert(
             appActions.pendingAlert?.title ?? "",
             isPresented: Binding(

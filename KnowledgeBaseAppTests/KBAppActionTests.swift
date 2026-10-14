@@ -23,6 +23,18 @@ final class KBAppActionTests: XCTestCase {
         XCTAssertEqual(tab.resolvedTab, .settings)
     }
 
+    func testDecodeComposeCamera() throws {
+        let action = try JSONDecoder().decode(
+            KBAppAction.self,
+            from: Data(
+                #"{"type":"compose_camera","message":"запиши питание по фото"}"#.utf8
+            )
+        )
+        XCTAssertEqual(action.type, "compose_camera")
+        XCTAssertEqual(action.message, "запиши питание по фото")
+        XCTAssertNil(action.sessionId)
+    }
+
     func testMetricNodeKeepsTextWithAction() throws {
         let json = Data("""
         {

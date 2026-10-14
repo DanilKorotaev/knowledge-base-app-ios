@@ -13,6 +13,11 @@ final class KBAppActionCenter {
         let message: String
     }
 
+    struct ComposeCameraRequest: Equatable {
+        let sessionId: String?
+        let message: String?
+    }
+
     /// Open chat for this session id (same path as push / deep link).
     var pendingSessionId: String?
     /// Switch to Overview and open this board.
@@ -22,6 +27,8 @@ final class KBAppActionCenter {
     var pendingAlert: AlertRequest?
     var pendingOpenDebugMenu = false
     var pendingShareLogs = false
+    /// After navigation to a chat, composer opens camera (Actions preset / deep link).
+    var pendingComposeCamera: ComposeCameraRequest?
 
     private init() {}
 
@@ -41,6 +48,14 @@ final class KBAppActionCenter {
             pendingBoardId = boardId
         case "open_tab":
             pendingTab = action.resolvedTab
+        case "compose_camera":
+            let sessionId = action.sessionId?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let message = action.message?.trimmingCharacters(in: .whitespacesAndNewlines)
+            pendingComposeCamera = ComposeCameraRequest(
+                sessionId: (sessionId?.isEmpty == false) ? sessionId : nil,
+                message: (message?.isEmpty == false) ? message : nil
+            )
+            pendingTab = .sessions
         case "open_debug_menu":
             pendingOpenDebugMenu = true
         case "share_logs":
@@ -72,5 +87,9 @@ final class KBAppActionCenter {
 
     func clearPendingAlert() {
         pendingAlert = nil
+    }
+
+    func clearPendingComposeCamera() {
+        pendingComposeCamera = nil
     }
 }

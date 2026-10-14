@@ -1,31 +1,48 @@
 import SwiftUI
 
-/// Shell tab for actionable Structured UI (jobs cancel today; presets later).
+/// Actions tab: config-driven presets (Structured UI) + active Cursor jobs — separate sections.
 struct ActionsTabView: View {
-    private let client: BoardsAPIClientProtocol
-    @State private var jobsBoardId: String?
-    @State private var isLoading = true
-    @State private var loadError: String?
+    @State private var viewModel: ActionsTabViewModel
 
     init(client: BoardsAPIClientProtocol = ActionsTabView.makeClient()) {
-        self.client = client
+        _viewModel = State(initialValue: ActionsTabViewModel(client: client))
     }
 
     var body: some View {
         NavigationStack {
             Group {
-                if isLoading, jobsBoardId == nil {
+                if viewModel.isLoading, !viewModel.hasContent {
                     ProgressView("actions.loading")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let loadError, jobsBoardId == nil {
+                } else if let loadError = viewModel.loadError, !viewModel.hasContent {
                     ContentUnavailableView(
                         "actions.could_not_load",
                         systemImage: "exclamationmark.triangle",
                         description: Text(loadError)
                     )
-                } else if let jobsBoardId {
-                    BoardDetailView(boardId: jobsBoardId, client: client)
-                        .id(jobsBoardId)
+                } else if viewModel.hasContent {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            if let presets = viewModel.presetsDetail {
+                                actionsSection(
+                                    title: presets.board.title,
+                                    detail: presets,
+                                    cancelsJobs: false
+                                )
+                            }
+                            if let jobs = viewModel.jobsDetail {
+                                actionsSection(
+                                    title: jobs.board.title,
+                                    detail: jobs,
+                                    cancelsJobs: true
+                                )
+                            }
+                        }
+                        .padding()
+                    }
+                    .refreshable {
+                        await viewModel.reload()
+                    }
                 } else {
                     ContentUnavailableView(
                         "actions.empty_title",
@@ -34,36 +51,49 @@ struct ActionsTabView: View {
                     )
                 }
             }
+            .navigationTitle("tab.actions")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        Task { await viewModel.reload() }
+                    } label: {
+                        Label("common.refresh", systemImage: "arrow.clockwise")
+                    }
+                    .disabled(viewModel.isLoading || viewModel.isRefreshing)
+                }
+            }
         }
         .task {
-            await resolveJobsBoard()
+            await viewModel.loadIfNeeded()
         }
     }
 
-    @MainActor
-    private func resolveJobsBoard() async {
-        isLoading = true
-        loadError = nil
-        defer { isLoading = false }
-        do {
-            let boards = try await client.fetchBoards()
-            if let match = boards.first(where: { ActionsBoardIDs.isJobsBoard($0.id) }) {
-                jobsBoardId = match.id
-                return
-            }
-            // Prefer production id; fall back to demo catalog id if fetch works.
-            for candidate in [ActionsBoardIDs.preferredJobsBoardId, DemoBoardsCatalog.demoJobsId] {
-                do {
-                    _ = try await client.fetchBoard(id: candidate, query: .all)
-                    jobsBoardId = candidate
-                    return
-                } catch {
-                    continue
+    @ViewBuilder
+    private func actionsSection(
+        title: String,
+        detail: KBBoardDetail,
+        cancelsJobs: Bool
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            StructuredUIPanelView(
+                document: detail.document,
+                isSending: cancelsJobs && viewModel.isCancellingJob,
+                isInteractive: detail.document.hasInteractiveControls
+                    || detail.document.hasAppActions,
+                attachmentLoader: nil,
+                onFullscreenImage: nil,
+                onAction: { actionId, componentId, _ in
+                    guard cancelsJobs, actionId == "cancel_job" else { return }
+                    Task { await viewModel.cancelJob(id: componentId) }
+                },
+                onAppAction: { action, _ in
+                    KBAppActionCenter.shared.perform(action)
                 }
-            }
-            jobsBoardId = ActionsBoardIDs.preferredJobsBoardId
-        } catch {
-            loadError = error.localizedDescription
+            )
         }
     }
 
@@ -75,17 +105,109 @@ struct ActionsTabView: View {
     }
 }
 
+@MainActor
+@Observable
+final class ActionsTabViewModel {
+    private let client: BoardsAPIClientProtocol
+
+    var presetsDetail: KBBoardDetail?
+    var jobsDetail: KBBoardDetail?
+    var isLoading = false
+    var isRefreshing = false
+    var isCancellingJob = false
+    var loadError: String?
+    private var didLoadOnce = false
+
+    var hasContent: Bool {
+        presetsDetail != nil || jobsDetail != nil
+    }
+
+    init(client: BoardsAPIClientProtocol) {
+        self.client = client
+    }
+
+    func loadIfNeeded() async {
+        guard !didLoadOnce else { return }
+        didLoadOnce = true
+        await load(showFullScreenLoading: true)
+    }
+
+    func reload() async {
+        await load(showFullScreenLoading: !hasContent)
+    }
+
+    func cancelJob(id: String) async {
+        isCancellingJob = true
+        defer { isCancellingJob = false }
+        do {
+            try await client.cancelQueryJob(id: id)
+            if let jobsId = jobsDetail?.board.id {
+                jobsDetail = try await client.refreshBoard(id: jobsId, query: .all)
+            }
+        } catch {
+            loadError = error.localizedDescription
+        }
+    }
+
+    private func load(showFullScreenLoading: Bool) async {
+        if showFullScreenLoading {
+            isLoading = true
+        } else {
+            isRefreshing = true
+        }
+        loadError = nil
+        defer {
+            isLoading = false
+            isRefreshing = false
+        }
+
+        do {
+            let boards = try await client.fetchBoards()
+            let presetsId = boards.first(where: { ActionsBoardIDs.isPresetsBoard($0.id) })?.id
+                ?? ActionsBoardIDs.preferredPresetsBoardId
+            let jobsId = boards.first(where: { ActionsBoardIDs.isJobsBoard($0.id) })?.id
+                ?? ActionsBoardIDs.preferredJobsBoardId
+
+            async let presets = fetchDetailOptional(id: presetsId)
+            async let jobs = fetchDetailOptional(id: jobsId)
+            let (presetsResult, jobsResult) = try await (presets, jobs)
+            presetsDetail = presetsResult
+            jobsDetail = jobsResult
+            if presetsDetail == nil, jobsDetail == nil {
+                loadError = L10n.string("actions.could_not_load")
+            }
+        } catch {
+            if !hasContent {
+                loadError = error.localizedDescription
+            }
+        }
+    }
+
+    private func fetchDetailOptional(id: String) async throws -> KBBoardDetail? {
+        do {
+            return try await client.fetchBoard(id: id, query: .all)
+        } catch {
+            // Preferential ids may be missing until MCP upsert; keep the other section.
+            return nil
+        }
+    }
+}
+
 enum ActionsBoardIDs {
-    /// Production system board, then demo catalog fallback.
     static let preferredJobsBoardId = "active-jobs"
+    static let preferredPresetsBoardId = "actions-presets"
     static let jobsBoardIds: Set<String> = ["active-jobs", "demo-active-jobs"]
 
     static func isJobsBoard(_ id: String) -> Bool {
         jobsBoardIds.contains(id)
     }
 
-    /// Overview should not duplicate jobs once Actions tab owns them.
+    static func isPresetsBoard(_ id: String) -> Bool {
+        id == preferredPresetsBoardId || id.hasPrefix("actions-")
+    }
+
+    /// Overview should not list Actions-owned boards (jobs + presets).
     static func isHiddenFromOverview(_ id: String) -> Bool {
-        isJobsBoard(id)
+        isJobsBoard(id) || isPresetsBoard(id)
     }
 }

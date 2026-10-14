@@ -4,7 +4,7 @@ import Foundation
 /// Wire shape mirrors Youla screen/target style: `{ "type": "…", …params }`.
 struct KBAppAction: Codable, Equatable, Sendable, Hashable {
     /// Action kind, e.g. `open_session`, `open_board`, `open_tab`, `open_chart_detail`,
-    /// `open_debug_menu`, `alert`, `share_logs`.
+    /// `compose_camera`, `open_debug_menu`, `alert`, `share_logs`.
     let type: String
     let sessionId: String?
     let boardId: String?
@@ -63,6 +63,11 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
 
     static func alert(title: String, message: String) -> KBAppAction {
         KBAppAction(type: "alert", title: title, message: message)
+    }
+
+    /// Open chat (optional `session_id`, else new draft), seed composer `message`, present camera.
+    static func composeCamera(sessionId: String? = nil, message: String? = nil) -> KBAppAction {
+        KBAppAction(type: "compose_camera", sessionId: sessionId, message: message)
     }
 
     static let openDebugMenu = KBAppAction(type: "open_debug_menu")

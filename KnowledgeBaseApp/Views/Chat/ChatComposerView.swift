@@ -12,6 +12,7 @@ struct ChatComposerView: View {
     @Bindable var viewModel: ChatViewModel
     @Bindable var voiceViewModel: VoiceRecordingViewModel
 
+    @State private var appActions = KBAppActionCenter.shared
     @State private var showFileImporter = false
     @State private var showCamera = false
     @State private var showGalleryPicker = false
@@ -132,6 +133,18 @@ struct ChatComposerView: View {
                 ImagePreviewSheet(imageURL: item.url)
             }
             .quickLookPreview($quickLookFileURL)
+            .onChange(of: appActions.pendingComposeCamera, initial: true) { _, request in
+                guard let request else { return }
+                if let message = request.message, !message.isEmpty {
+                    if viewModel.composerDraft.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        viewModel.composerDraft.text = message
+                    }
+                }
+                appActions.clearPendingComposeCamera()
+                if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                    showCamera = true
+                }
+            }
     }
 
     private var composerPanelShape: some Shape {
