@@ -12,6 +12,16 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.87] - 2026-10-14
+
+### Added
+
+- Actions tab with active jobs document
+
+### Fixed
+
+- Expect Overview to hide jobs boards in BoardsViewModelTests
+
 ## [1.0.86] - 2026-10-13
 
 ### Changed
@@ -716,7 +726,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.86...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.87...HEAD
+[1.0.87]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.87
 [1.0.86]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.86
 [1.0.85]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.85
 [1.0.84]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.84
