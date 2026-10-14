@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.88 | 211 | `ios/v1.0.88` | 2026-10-14 | Mark Actions smoke presets via quick_actions done |
 | 1.0.87 | 210 | `ios/v1.0.87` | 2026-10-14 | Expect Overview to hide jobs boards in BoardsViewModelTests |
 | 1.0.86 | 208 | `ios/v1.0.86` | 2026-10-13 | TestFlight release |
 | 1.0.85 | 207 | `ios/v1.0.85` | 2026-10-13 | Share chat via public read-only URL |
