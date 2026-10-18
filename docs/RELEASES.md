@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.91 | 214 | `ios/v1.0.91` | 2026-10-18 | Proxy remote_ui absolute URLs via /api/remote-ui?url= |
 | 1.0.90 | 213 | `ios/v1.0.90` | 2026-10-18 | Remote_ui AppAction and Share destinations |
 | 1.0.89 | 212 | `ios/v1.0.89` | 2026-10-14 | Actions presets section + compose_camera for photo→nutrition |
 | 1.0.88 | 211 | `ios/v1.0.88` | 2026-10-14 | Mark Actions smoke presets via quick_actions done |
