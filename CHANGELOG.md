@@ -33,6 +33,7 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 - Generic `remote_ui` AppAction (fetch Structured UI by URL, Actions sheet stack)
 - Share Extension destinations from Actions presets (`share: true` on `remote_ui`)
+- Share → «Открыть в приложении» deep link (`knowledgebase://remote-ui?url=…`) for interactive lyrics UI
 
 ## [1.0.89] - 2026-10-14
 

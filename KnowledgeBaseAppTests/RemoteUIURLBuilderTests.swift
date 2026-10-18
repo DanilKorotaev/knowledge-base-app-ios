@@ -19,3 +19,19 @@ final class RemoteUIURLBuilderTests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "https://kbapp.example/api/remote-ui/lyrics/v1/ui/home")
     }
 }
+
+final class RemoteUIDeepLinkTests: XCTestCase {
+    func testRoundTrip() throws {
+        let url = try XCTUnwrap(
+            RemoteUIDeepLink.makeURL(
+                targetURL: "http://127.0.0.1:8095/v1/ui/from-share?url=https%3A%2F%2Fmusic.yandex.ru%2Ftrack%2F1",
+                title: "Текст песни"
+            )
+        )
+        XCTAssertEqual(url.scheme, "knowledgebase")
+        XCTAssertEqual(url.host, "remote-ui")
+        let parsed = try XCTUnwrap(RemoteUIDeepLink.parse(url))
+        XCTAssertTrue(parsed.url.contains("127.0.0.1:8095"))
+        XCTAssertEqual(parsed.title, "Текст песни")
+    }
+}

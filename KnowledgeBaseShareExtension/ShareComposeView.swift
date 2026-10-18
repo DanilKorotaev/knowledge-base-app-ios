@@ -4,6 +4,8 @@ struct ShareComposeView: View {
     @Bindable var viewModel: ShareComposeViewModel
     let onCancel: () -> Void
     let onFinished: () -> Void
+    /// Open a URL in the host app (Share Extension cannot use `openURL` Environment reliably).
+    var onOpenHostURL: ((URL) -> Void)? = nil
 
     var body: some View {
         NavigationStack {
@@ -131,11 +133,32 @@ struct ShareComposeView: View {
         }
         .sheet(isPresented: $viewModel.showRemoteResult) {
             NavigationStack {
-                ScrollView {
-                    Text(viewModel.remoteResultText ?? "")
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(spacing: 0) {
+                    ScrollView {
+                        Text(viewModel.remoteResultText ?? "")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding()
+                            .textSelection(.enabled)
+                    }
+                    if viewModel.hostAppDeepLink() != nil {
+                        VStack(spacing: 10) {
+                            Text(L10n.string("share.remote_open_hint"))
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Button {
+                                if let url = viewModel.hostAppDeepLink() {
+                                    onOpenHostURL?(url)
+                                }
+                            } label: {
+                                Text(L10n.string("share.open_in_app"))
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
                         .padding()
-                        .textSelection(.enabled)
+                        .background(.bar)
+                    }
                 }
                 .navigationTitle(L10n.string("share.remote_result_title"))
                 .navigationBarTitleDisplayMode(.inline)

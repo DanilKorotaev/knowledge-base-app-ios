@@ -7451,6 +7451,38 @@
           }
         }
       }
+    },
+    "share.open_in_app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open in app"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть в приложении"
+          }
+        }
+      }
+    },
+    "share.remote_open_hint": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buttons and full lyrics UI work in the main app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Кнопки выбора трека и полный экран текста — в основном приложении."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

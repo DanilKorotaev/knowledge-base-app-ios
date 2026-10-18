@@ -13,7 +13,10 @@ final class ShareViewController: UIViewController {
         let root = ShareComposeView(
             viewModel: viewModel,
             onCancel: { [weak self] in self?.cancel() },
-            onFinished: { [weak self] in self?.complete() }
+            onFinished: { [weak self] in self?.complete() },
+            onOpenHostURL: { [weak self] url in
+                self?.openHostApp(url)
+            }
         )
         let host = UIHostingController(rootView: root)
         hostingController = host
@@ -44,5 +47,24 @@ final class ShareViewController: UIViewController {
             userInfo: nil
         )
         extensionContext?.cancelRequest(withError: error)
+    }
+
+    /// Open custom URL scheme in the host app, then dismiss the share sheet.
+    private func openHostApp(_ url: URL) {
+        ShareFileLogger.info("openHostApp \(url.absoluteString.prefix(120))")
+        var responder: UIResponder? = self
+        while let current = responder {
+            if let application = current as? UIApplication {
+                application.open(url, options: [:]) { [weak self] accepted in
+                    ShareFileLogger.info("openHostApp accepted=\(accepted)")
+                    self?.complete()
+                }
+                return
+            }
+            responder = current.next
+        }
+        // Fallback: still try to finish the extension if UIApplication was not found.
+        ShareFileLogger.error("openHostApp: UIApplication not in responder chain")
+        complete()
     }
 }

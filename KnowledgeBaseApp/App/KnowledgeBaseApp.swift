@@ -71,6 +71,10 @@ struct KnowledgeBaseApp: App {
                 guard url.scheme == "knowledgebase" else { return }
                 if url.host == "record" {
                     deepLinkVoiceRecording = true
+                } else if let remote = RemoteUIDeepLink.parse(url) {
+                    KBAppActionCenter.shared.perform(
+                        .remoteUI(url: remote.url, title: remote.title)
+                    )
                 } else if let sessionId = PushNotificationService.parseSessionId(from: url) {
                     deepLinkSessionId = sessionId
                 }

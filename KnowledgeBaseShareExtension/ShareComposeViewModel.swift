@@ -23,6 +23,9 @@ final class ShareComposeViewModel {
     var newSessionUseKnowledgeBase = true
     private(set) var remoteDestinations: [ShareRemoteDestination] = []
     var remoteResultText: String?
+    /// Resolved remote_ui URL to reopen interactively in the host app.
+    private(set) var remoteResultTargetURL: String?
+    private(set) var remoteResultTitle: String?
     var showRemoteResult = false
 
     private let draftStore: ComposerDraftStoreProtocol
@@ -114,12 +117,20 @@ final class ShareComposeViewModel {
         do {
             let data = try await apiClient.fetchRemoteUIJSON(urlString: resolved)
             remoteResultText = ShareRemoteDestinations.plainText(fromDocumentJSON: data)
+            remoteResultTargetURL = resolved
+            remoteResultTitle = destination.title ?? destination.label
             showRemoteResult = true
             phase = .ready
         } catch {
             ShareFileLogger.error("remoteDestination failed: \(error)")
             phase = .failed(L10n.string("share.error_remote_ui"))
         }
+    }
+
+    /// Deep link into the host app so the full interactive Structured UI (buttons) can run.
+    func hostAppDeepLink() -> URL? {
+        guard let target = remoteResultTargetURL, !target.isEmpty else { return nil }
+        return RemoteUIDeepLink.makeURL(targetURL: target, title: remoteResultTitle)
     }
 
     private static func firstURL(in text: String) -> String? {
