@@ -7,17 +7,20 @@ enum RemoteUIFetcherError: Error, Equatable {
     case emptyDocument
 }
 
-/// Fetches a Structured UI document from a remote_ui URL (absolute or API-relative).
+/// Fetches a Structured UI document for `remote_ui`.
+/// Absolute URLs to other hosts go through ``GET /api/remote-ui?url=…`` (host allowlist on API).
+/// Same-origin / relative API paths are requested directly.
 struct RemoteUIFetcher: Sendable {
     var apiBaseURL: URL?
     var authToken: String?
     var urlSession: URLSession = .shared
 
     func fetchDocument(from urlString: String) async throws -> KBStructuredUIDocument {
-        guard let url = RemoteUIURLBuilder.absoluteURL(from: urlString, apiBaseURL: apiBaseURL) else {
+        guard let target = RemoteUIURLBuilder.absoluteURL(from: urlString, apiBaseURL: apiBaseURL) else {
             throw RemoteUIFetcherError.invalidURL
         }
-        var request = URLRequest(url: url)
+        let requestURL = try proxyURLIfNeeded(for: target)
+        var request = URLRequest(url: requestURL)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if let authToken, !authToken.isEmpty {
@@ -29,6 +32,29 @@ struct RemoteUIFetcher: Sendable {
             throw RemoteUIFetcherError.httpStatus(status)
         }
         return try Self.decodeDocument(from: data)
+    }
+
+    /// When the target is not on the KB API host, wrap as ``/api/remote-ui?url=``.
+    private func proxyURLIfNeeded(for target: URL) throws -> URL {
+        guard let apiBaseURL else { return target }
+        let apiHost = apiBaseURL.host?.lowercased()
+        let targetHost = target.host?.lowercased()
+        let sameHost = apiHost != nil && apiHost == targetHost
+        let isApiPath = target.path.hasPrefix("/api/")
+        if sameHost || (targetHost == nil && isApiPath) {
+            return target
+        }
+        // Relative /api/... already absolute against apiBase — handled above.
+        // External absolute URL → proxy.
+        var components = URLComponents(
+            url: apiBaseURL.appendingPathComponent("api/remote-ui"),
+            resolvingAgainstBaseURL: false
+        )
+        components?.queryItems = [URLQueryItem(name: "url", value: target.absoluteString)]
+        guard let proxied = components?.url else {
+            throw RemoteUIFetcherError.invalidURL
+        }
+        return proxied
     }
 
     static func decodeDocument(from data: Data) throws -> KBStructuredUIDocument {

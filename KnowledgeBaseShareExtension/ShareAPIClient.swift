@@ -81,7 +81,7 @@ final class ShareAPIClient: @unchecked Sendable {
         return try await perform(request)
     }
 
-    /// GET absolute or API-relative URL (for `remote_ui` share destinations).
+    /// GET Structured UI for a `remote_ui` destination (external hosts via API proxy).
     func fetchRemoteUIJSON(urlString: String) async throws -> Data {
         let absolute: URL
         if let url = URL(string: urlString), url.scheme != nil {
@@ -93,7 +93,25 @@ final class ShareAPIClient: @unchecked Sendable {
         } else {
             absolute = baseURL.appendingPathComponent(urlString)
         }
-        var request = URLRequest(url: absolute)
+
+        let requestURL: URL
+        let apiHost = baseURL.host?.lowercased()
+        let targetHost = absolute.host?.lowercased()
+        if apiHost != nil, apiHost == targetHost {
+            requestURL = absolute
+        } else if absolute.scheme == nil || absolute.host == nil {
+            requestURL = absolute
+        } else {
+            var components = URLComponents(
+                url: baseURL.appendingPathComponent("api/remote-ui"),
+                resolvingAgainstBaseURL: false
+            )
+            components?.queryItems = [URLQueryItem(name: "url", value: absolute.absoluteString)]
+            guard let proxied = components?.url else { throw ShareAPIError.missingConfiguration }
+            requestURL = proxied
+        }
+
+        var request = URLRequest(url: requestURL)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         applyAuth(to: &request)
