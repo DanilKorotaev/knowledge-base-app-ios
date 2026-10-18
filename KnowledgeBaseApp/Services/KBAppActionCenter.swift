@@ -30,6 +30,15 @@ final class KBAppActionCenter {
     /// After navigation to a chat, composer opens camera (Actions preset / deep link).
     var pendingComposeCamera: ComposeCameraRequest?
 
+    struct RemoteUIRequest: Equatable, Identifiable {
+        let id = UUID()
+        let url: String
+        let title: String?
+    }
+
+    /// Present remote Structured UI sheet (`remote_ui` action).
+    var pendingRemoteUI: RemoteUIRequest?
+
     private init() {}
 
     func perform(_ action: KBAppAction) {
@@ -71,6 +80,16 @@ final class KBAppActionCenter {
         case "open_chart_detail":
             // Handled locally by the board / structured UI host (needs series from the node).
             break
+        case "remote_ui":
+            guard let url = action.url?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !url.isEmpty
+            else { return }
+            let title = action.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+            pendingRemoteUI = RemoteUIRequest(
+                url: url,
+                title: (title?.isEmpty == false) ? title : nil
+            )
+            pendingTab = .actions
         default:
             // Forward-compatible: unknown types are ignored until a client build supports them.
             break
@@ -91,5 +110,9 @@ final class KBAppActionCenter {
 
     func clearPendingComposeCamera() {
         pendingComposeCamera = nil
+    }
+
+    func clearPendingRemoteUI() {
+        pendingRemoteUI = nil
     }
 }

@@ -12,6 +12,11 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Added
+
+- Generic `remote_ui` AppAction (fetch Structured UI by URL, Actions sheet stack)
+- Share Extension destinations from Actions presets (`share: true` on `remote_ui`)
+
 ## [1.0.89] - 2026-10-14
 
 ### Added

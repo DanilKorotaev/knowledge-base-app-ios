@@ -4,7 +4,7 @@ import Foundation
 /// Wire shape mirrors Youla screen/target style: `{ "type": "…", …params }`.
 struct KBAppAction: Codable, Equatable, Sendable, Hashable {
     /// Action kind, e.g. `open_session`, `open_board`, `open_tab`, `open_chart_detail`,
-    /// `compose_camera`, `open_debug_menu`, `alert`, `share_logs`.
+    /// `compose_camera`, `remote_ui`, `open_debug_menu`, `alert`, `share_logs`.
     let type: String
     let sessionId: String?
     let boardId: String?
@@ -13,6 +13,12 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
     let title: String?
     let message: String?
     let url: String?
+    /// HTTP method for `remote_ui` (default GET). Reserved for future POST bodies.
+    let method: String?
+    /// When true, Share Extension may offer this action as a share destination.
+    let share: Bool?
+    /// Label in the Share Extension destinations list.
+    let shareLabel: String?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -23,6 +29,9 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
         case title
         case message
         case url
+        case method
+        case share
+        case shareLabel = "share_label"
     }
 
     init(
@@ -33,7 +42,10 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
         tab: String? = nil,
         title: String? = nil,
         message: String? = nil,
-        url: String? = nil
+        url: String? = nil,
+        method: String? = nil,
+        share: Bool? = nil,
+        shareLabel: String? = nil
     ) {
         self.type = type
         self.sessionId = sessionId
@@ -43,6 +55,29 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
         self.title = title
         self.message = message
         self.url = url
+        self.method = method
+        self.share = share
+        self.shareLabel = shareLabel
+    }
+
+    func withURL(_ url: String) -> KBAppAction {
+        KBAppAction(
+            type: type,
+            sessionId: sessionId,
+            boardId: boardId,
+            chartId: chartId,
+            tab: tab,
+            title: title,
+            message: message,
+            url: url,
+            method: method,
+            share: share,
+            shareLabel: shareLabel
+        )
+    }
+
+    var isShareDestination: Bool {
+        share == true && type == "remote_ui"
     }
 
     static func openSession(id: String) -> KBAppAction {
@@ -68,6 +103,16 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
     /// Open chat (optional `session_id`, else new draft), seed composer `message`, present camera.
     static func composeCamera(sessionId: String? = nil, message: String? = nil) -> KBAppAction {
         KBAppAction(type: "compose_camera", sessionId: sessionId, message: message)
+    }
+
+    static func remoteUI(url: String, title: String? = nil, share: Bool = false, shareLabel: String? = nil) -> KBAppAction {
+        KBAppAction(
+            type: "remote_ui",
+            title: title,
+            url: url,
+            share: share ? true : nil,
+            shareLabel: shareLabel
+        )
     }
 
     static let openDebugMenu = KBAppAction(type: "open_debug_menu")

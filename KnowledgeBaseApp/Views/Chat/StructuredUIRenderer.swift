@@ -133,7 +133,12 @@ private struct StructuredUINodeView: View {
             case "button":
                 Button {
                     if let appAction = node.action, onAppAction != nil {
-                        onAppAction?(appAction, node)
+                        let resolved = Self.resolveAppAction(
+                            appAction,
+                            isSubmit: node.isSubmitButton,
+                            draftValues: draftValues
+                        )
+                        onAppAction?(resolved, node)
                         return
                     }
                     guard let actionId = node.actionId, !isSending else { return }
@@ -328,6 +333,18 @@ private struct StructuredUINodeView: View {
                 EmptyView()
             }
         }
+    }
+
+    private static func resolveAppAction(
+        _ action: KBAppAction,
+        isSubmit: Bool,
+        draftValues: [String: StructuredUIFormValue]
+    ) -> KBAppAction {
+        guard action.type == "remote_ui", isSubmit else { return action }
+        guard let resolved = RemoteUIURLBuilder.resolveTemplate(action.url, formValues: draftValues) else {
+            return action
+        }
+        return action.withURL(resolved)
     }
 
     private func radioSelected(_ groupId: String, _ optionId: String) -> Bool {

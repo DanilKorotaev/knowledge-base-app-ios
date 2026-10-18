@@ -35,6 +35,34 @@ final class KBAppActionTests: XCTestCase {
         XCTAssertNil(action.sessionId)
     }
 
+    func testDecodeRemoteUIShareDestination() throws {
+        let action = try JSONDecoder().decode(
+            KBAppAction.self,
+            from: Data(
+                #"""
+                {
+                  "type": "remote_ui",
+                  "url": "/api/remote-ui/lyrics/v1/ui/from-share?url={{shared_url}}&text={{shared_text}}",
+                  "title": "Текст песни",
+                  "share": true,
+                  "share_label": "Текст песни"
+                }
+                """#.utf8
+            )
+        )
+        XCTAssertEqual(action.type, "remote_ui")
+        XCTAssertEqual(action.share, true)
+        XCTAssertTrue(action.isShareDestination)
+        XCTAssertEqual(action.shareLabel, "Текст песни")
+        let resolved = RemoteUIURLBuilder.resolveTemplate(
+            action.url,
+            sharedURL: "https://music.yandex.ru/track/1",
+            sharedText: "Artist - Song"
+        )
+        XCTAssertTrue(resolved?.contains("music.yandex.ru") == true)
+        XCTAssertTrue(resolved?.contains("Artist") == true)
+    }
+
     func testMetricNodeKeepsTextWithAction() throws {
         let json = Data("""
         {

@@ -21,11 +21,15 @@ final class ShareComposeViewModel {
     var showCreateSession = false
     var newSessionTitle = ""
     var newSessionUseKnowledgeBase = true
+    private(set) var remoteDestinations: [ShareRemoteDestination] = []
+    var remoteResultText: String?
+    var showRemoteResult = false
 
     private let draftStore: ComposerDraftStoreProtocol
     private let apiClient: ShareAPIClient?
     private var pinnedIds: [String] = []
     private var kbModeBySession: [String: Bool] = [:]
+    private var sharedURLHint: String?
 
     init(
         draftStore: ComposerDraftStoreProtocol = ComposerDraftStore.shared,
@@ -58,15 +62,25 @@ final class ShareComposeViewModel {
             guard let apiClient else { return [] }
             return (try? await apiClient.fetchSessions()) ?? []
         }()
+        async let destinationsTask: [ShareRemoteDestination] = {
+            guard let apiClient else { return [] }
+            guard let data = try? await apiClient.fetchBoardDetailJSON(boardId: "actions-presets") else {
+                return []
+            }
+            return ShareRemoteDestinations.extract(fromBoardDetailJSON: data)
+        }()
 
         let payload = await payloadTask
         let fetched = await sessionsTask
+        let destinations = await destinationsTask
 
         composerText = payload.text
         attachments = payload.attachments
+        sharedURLHint = Self.firstURL(in: payload.text)
         sessions = SessionListSorter.displayOrder(sessions: fetched, pinnedIds: pinnedIds)
+        remoteDestinations = destinations
         ShareFileLogger.info(
-            "bootstrap payload textLen=\(payload.text.count) attachments=\(payload.attachments.count) sessions=\(sessions.count)"
+            "bootstrap payload textLen=\(payload.text.count) attachments=\(payload.attachments.count) sessions=\(sessions.count) remoteDest=\(destinations.count)"
         )
 
         if apiClient == nil {
@@ -83,6 +97,37 @@ final class ShareComposeViewModel {
         ShareFileLogger.info(
             "selectSession id=\(session.id) existingDraftAttachments=\(existingDraftAttachmentCount)"
         )
+    }
+
+    func runRemoteDestination(_ destination: ShareRemoteDestination) async {
+        guard let apiClient else {
+            phase = .failed(L10n.string("share.error_missing_config"))
+            return
+        }
+        phase = .working
+        let resolved = ShareRemoteDestinations.resolveURL(
+            template: destination.urlTemplate,
+            sharedURL: sharedURLHint,
+            sharedText: composerText
+        )
+        ShareFileLogger.info("remoteDestination id=\(destination.id) urlLen=\(resolved.count)")
+        do {
+            let data = try await apiClient.fetchRemoteUIJSON(urlString: resolved)
+            remoteResultText = ShareRemoteDestinations.plainText(fromDocumentJSON: data)
+            showRemoteResult = true
+            phase = .ready
+        } catch {
+            ShareFileLogger.error("remoteDestination failed: \(error)")
+            phase = .failed(L10n.string("share.error_remote_ui"))
+        }
+    }
+
+    private static func firstURL(in text: String) -> String? {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
+            return nil
+        }
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return detector.firstMatch(in: text, options: [], range: range)?.url?.absoluteString
     }
 
     func createSession() async {

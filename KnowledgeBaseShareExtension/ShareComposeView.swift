@@ -87,6 +87,22 @@ struct ShareComposeView: View {
                 Text(L10n.string("share.payload_section"))
             }
 
+            if !viewModel.remoteDestinations.isEmpty {
+                Section {
+                    ForEach(viewModel.remoteDestinations) { destination in
+                        Button {
+                            Task { await viewModel.runRemoteDestination(destination) }
+                        } label: {
+                            Label(destination.label, systemImage: "text.quote")
+                                .font(.body.weight(.semibold))
+                        }
+                        .disabled(viewModel.phase == .working || viewModel.phase == .loadingPayload)
+                    }
+                } header: {
+                    Text(L10n.string("share.actions_section"))
+                }
+            }
+
             Section {
                 Button {
                     viewModel.showCreateSession = true
@@ -111,6 +127,25 @@ struct ShareComposeView: View {
                 }
             } header: {
                 Text(L10n.string("share.session_section"))
+            }
+        }
+        .sheet(isPresented: $viewModel.showRemoteResult) {
+            NavigationStack {
+                ScrollView {
+                    Text(viewModel.remoteResultText ?? "")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .textSelection(.enabled)
+                }
+                .navigationTitle(L10n.string("share.remote_result_title"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(L10n.string("common.done")) {
+                            viewModel.showRemoteResult = false
+                        }
+                    }
+                }
             }
         }
     }

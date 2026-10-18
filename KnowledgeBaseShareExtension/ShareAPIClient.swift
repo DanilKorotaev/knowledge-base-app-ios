@@ -70,6 +70,36 @@ final class ShareAPIClient: @unchecked Sendable {
         throw ShareAPIError.decodingFailed
     }
 
+    func fetchBoardDetailJSON(boardId: String) async throws -> Data {
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("boards")
+            .appendingPathComponent(boardId)
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        applyAuth(to: &request)
+        return try await perform(request)
+    }
+
+    /// GET absolute or API-relative URL (for `remote_ui` share destinations).
+    func fetchRemoteUIJSON(urlString: String) async throws -> Data {
+        let absolute: URL
+        if let url = URL(string: urlString), url.scheme != nil {
+            absolute = url
+        } else if urlString.hasPrefix("/"),
+                  let url = URL(string: urlString, relativeTo: baseURL)?.absoluteURL
+        {
+            absolute = url
+        } else {
+            absolute = baseURL.appendingPathComponent(urlString)
+        }
+        var request = URLRequest(url: absolute)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        applyAuth(to: &request)
+        return try await perform(request)
+    }
+
     /// Uploads compose payload and returns as soon as the server accepts the request (SSE headers).
     /// Does **not** wait for the assistant reply stream — disconnect is intentional; API keeps processing.
     func sendComposed(sessionId: String, draft: ChatComposerDraft, useKnowledgeBase: Bool) async throws {

@@ -203,6 +203,14 @@ struct MainView: View {
         } message: {
             Text(appActions.pendingAlert?.message ?? "")
         }
+        .sheet(
+            item: Binding(
+                get: { appActions.pendingRemoteUI },
+                set: { if $0 == nil { appActions.clearPendingRemoteUI() } }
+            )
+        ) { request in
+            RemoteUIHostView(initialURL: request.url, title: request.title)
+        }
     }
 
     /// Split modifiers across helpers so the Swift type checker stays fast.
