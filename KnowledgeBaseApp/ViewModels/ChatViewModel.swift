@@ -1225,6 +1225,7 @@ final class ChatViewModel {
             for clip in draft.voiceClips {
                 PendingVoiceStore.deleteRecording(at: clip.audioURL)
             }
+            ShareConversationIntentDonator.donate(sessionId: session.id, title: session.title)
             return true
         } catch {
             let partial = assistantReplyPhase.displayText

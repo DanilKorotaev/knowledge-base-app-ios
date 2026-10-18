@@ -1,4 +1,5 @@
 import Foundation
+import Intents
 import Observation
 
 @MainActor
@@ -82,6 +83,14 @@ final class ShareComposeViewModel {
         sharedURLHint = Self.firstURL(in: payload.text)
         sessions = SessionListSorter.displayOrder(sessions: fetched, pinnedIds: pinnedIds)
         remoteDestinations = destinations
+
+        if let intentSessionId = Self.conversationId(from: extensionContext),
+           sessions.contains(where: { $0.id == intentSessionId }) {
+            selectedSessionId = intentSessionId
+            refreshExistingDraftSummary(for: intentSessionId)
+            ShareFileLogger.info("bootstrap preselected from INSendMessageIntent id=\(intentSessionId)")
+        }
+
         ShareFileLogger.info(
             "bootstrap payload textLen=\(payload.text.count) attachments=\(payload.attachments.count) sessions=\(sessions.count) remoteDest=\(destinations.count)"
         )
@@ -92,6 +101,12 @@ final class ShareComposeViewModel {
         } else {
             phase = .ready
         }
+    }
+
+    private static func conversationId(from extensionContext: NSExtensionContext?) -> String? {
+        guard let intent = extensionContext?.intent as? INSendMessageIntent else { return nil }
+        let id = intent.conversationIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return (id?.isEmpty == false) ? id : nil
     }
 
     func selectSession(_ session: KBSession) {
@@ -224,6 +239,10 @@ final class ShareComposeViewModel {
             )
             draftStore.clear(sessionId: sessionId)
             existingDraftAttachmentCount = 0
+            ShareConversationIntentDonator.donate(
+                sessionId: sessionId,
+                title: selectedSessionTitle
+            )
             ShareFileLogger.info("send accepted and draft cleared session=\(sessionId)")
             return true
         } catch {

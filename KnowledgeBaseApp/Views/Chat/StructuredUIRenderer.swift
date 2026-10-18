@@ -154,6 +154,20 @@ private struct StructuredUINodeView: View {
                 .controlSize(.large)
                 .frame(maxWidth: .infinity)
                 .accessibilityLabel(node.label ?? "Button")
+            case "list_row":
+                StructuredUIListRowNodeView(
+                    node: node,
+                    isSending: isSending,
+                    onAction: onAction,
+                    onAppAction: { action, source in
+                        let resolved = Self.resolveAppAction(
+                            action,
+                            isSubmit: false,
+                            draftValues: draftValues
+                        )
+                        onAppAction?(resolved, source)
+                    }
+                )
             case "confirm":
                 StructuredUIConfirmNodeView(
                     node: node,

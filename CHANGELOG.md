@@ -12,6 +12,11 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Added
+
+- Structured UI `list_row` (title, subtitle, SF Symbol / remote image, chevron action)
+- Share sheet conversation suggestions via `INSendMessageIntent` donation (no ASC Messaging App Service)
+
 ## [1.0.92] - 2026-10-18
 
 ### Added

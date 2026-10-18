@@ -28,7 +28,7 @@ struct KBStructuredUIDocument: Codable, Equatable, Sendable {
 
     private static func nodeHasInteractiveControls(_ node: KBStructuredUINode) -> Bool {
         switch node.type {
-        case "button", "checkbox", "radio_group", "select", "text_field", "date", "time", "slider", "stepper", "confirm":
+        case "button", "list_row", "checkbox", "radio_group", "select", "text_field", "date", "time", "slider", "stepper", "confirm":
             return true
         default:
             return node.supportedChildren.contains(where: nodeHasInteractiveControls)
@@ -143,6 +143,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let scrollHorizontal: Bool?
     /// Points for `chart` nodes (`x` label + `y` value).
     let series: [KBStructuredUISeriesPoint]?
+    /// SF Symbol name for `list_row` leading icon (optional).
+    let systemImage: String?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -176,6 +178,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case rows
         case scrollHorizontal = "scroll_horizontal"
         case series
+        case systemImage = "system_image"
     }
 
     init(
@@ -210,7 +213,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         columns: [KBStructuredUITableColumn]? = nil,
         rows: [[String]]? = nil,
         scrollHorizontal: Bool? = nil,
-        series: [KBStructuredUISeriesPoint]? = nil
+        series: [KBStructuredUISeriesPoint]? = nil,
+        systemImage: String? = nil
     ) {
         self.type = type
         self.id = id
@@ -244,6 +248,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.rows = rows
         self.scrollHorizontal = scrollHorizontal
         self.series = series
+        self.systemImage = systemImage
     }
 
     init(from decoder: Decoder) throws {
@@ -278,6 +283,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         rows = try container.decodeIfPresent([[String]].self, forKey: .rows)
         scrollHorizontal = try container.decodeIfPresent(Bool.self, forKey: .scrollHorizontal)
         series = try container.decodeIfPresent([KBStructuredUISeriesPoint].self, forKey: .series)
+        systemImage = try container.decodeIfPresent(String.self, forKey: .systemImage)
 
         if type == "progress", let fraction = try? container.decode(Double.self, forKey: .value) {
             value = nil
@@ -328,11 +334,12 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         try container.encodeIfPresent(rows, forKey: .rows)
         try container.encodeIfPresent(scrollHorizontal, forKey: .scrollHorizontal)
         try container.encodeIfPresent(series, forKey: .series)
+        try container.encodeIfPresent(systemImage, forKey: .systemImage)
     }
 
     var isSupported: Bool {
         switch type {
-        case "vstack", "hstack", "text", "button", "checkbox", "radio_group", "select", "text_field",
+        case "vstack", "hstack", "text", "button", "list_row", "checkbox", "radio_group", "select", "text_field",
              "image", "link", "file", "divider", "callout", "spacer", "progress", "date", "time",
              "slider", "stepper", "confirm", "markdown", "metric", "table", "chart", "timer":
             return true
@@ -530,7 +537,8 @@ enum StructuredUIFormDraft {
             columns: node.columns,
             rows: node.rows,
             scrollHorizontal: node.scrollHorizontal,
-            series: node.series
+            series: node.series,
+            systemImage: node.systemImage
         )
     }
 

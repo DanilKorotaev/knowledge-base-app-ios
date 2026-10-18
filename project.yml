@@ -84,6 +84,8 @@ targets:
         KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
         NSHealthShareUsageDescription: The app reads Apple Health data (steps, sleep, workouts, weight) to save it in your knowledge base via the server.
         NSHealthUpdateUsageDescription: The app does not write data to Apple Health.
+        NSUserActivityTypes:
+          - INSendMessageIntent
         BGTaskSchedulerPermittedIdentifiers:
           - com.coredan.KnowledgeBaseApp.health-sync.refresh
           - com.coredan.KnowledgeBaseApp.health-sync.processing

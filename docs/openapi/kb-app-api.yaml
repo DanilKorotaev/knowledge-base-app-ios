@@ -543,7 +543,10 @@ components:
       properties:
         type:
           type: string
-          enum: [vstack, text, button, checkbox, radio_group, select, text_field, image, link, file, divider]
+          enum: [vstack, text, button, list_row, checkbox, radio_group, select, text_field, image, link, file, divider]
+        system_image:
+          type: string
+          description: "SF Symbol name for list_row leading icon"
         id: { type: string }
         text: { type: string }
         label: { type: string }
