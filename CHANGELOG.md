@@ -12,6 +12,17 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.90] - 2026-10-18
+
+### Added
+
+- Remote_ui AppAction and Share destinations
+
+### Changed
+
+- Generic `remote_ui` AppAction (fetch Structured UI by URL, Actions sheet stack)
+- Share Extension destinations from Actions presets (`share: true` on `remote_ui`)
+
 ### Added
 
 - Generic `remote_ui` AppAction (fetch Structured UI by URL, Actions sheet stack)
@@ -743,7 +754,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.89...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.90...HEAD
+[1.0.90]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.90
 [1.0.89]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.89
 [1.0.88]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.88
 [1.0.87]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.87
