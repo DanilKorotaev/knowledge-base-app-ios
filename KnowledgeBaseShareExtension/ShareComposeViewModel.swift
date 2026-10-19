@@ -24,6 +24,8 @@ final class ShareComposeViewModel {
     var newSessionUseKnowledgeBase = true
     private(set) var remoteDestinations: [ShareRemoteDestination] = []
     var remoteResultText: String?
+    /// True when `remoteResultText` is markdown (lyrics body), not flattened list text.
+    private(set) var remoteResultIsMarkdown = false
     /// Resolved remote_ui URL to reopen interactively in the host app.
     private(set) var remoteResultTargetURL: String?
     private(set) var remoteResultTitle: String?
@@ -131,7 +133,13 @@ final class ShareComposeViewModel {
         ShareFileLogger.info("remoteDestination id=\(destination.id) urlLen=\(resolved.count)")
         do {
             let data = try await apiClient.fetchRemoteUIJSON(urlString: resolved)
-            remoteResultText = ShareRemoteDestinations.plainText(fromDocumentJSON: data)
+            if let markdown = ShareRemoteDestinations.preferredMarkdown(fromDocumentJSON: data) {
+                remoteResultText = markdown
+                remoteResultIsMarkdown = true
+            } else {
+                remoteResultText = ShareRemoteDestinations.plainText(fromDocumentJSON: data)
+                remoteResultIsMarkdown = false
+            }
             remoteResultTargetURL = resolved
             remoteResultTitle = destination.title ?? destination.label
             showRemoteResult = true

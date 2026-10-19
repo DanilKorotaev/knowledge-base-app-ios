@@ -25,26 +25,29 @@ enum ShareRemoteDestinations {
         guard let node else { return }
         if let action = node["action"] as? [String: Any],
            (action["type"] as? String) == "remote_ui",
-           (action["share"] as? Bool) == true,
-           let url = action["url"] as? String,
-           !url.isEmpty
+           (action["share"] as? Bool) == true
         {
-            let id = (node["id"] as? String) ?? url
-            let shareLabel = action["share_label"] as? String
-            let buttonLabel = node["label"] as? String
-            let title = action["title"] as? String
-            let label = (shareLabel?.isEmpty == false ? shareLabel : nil)
-                ?? (buttonLabel?.isEmpty == false ? buttonLabel : nil)
-                ?? title
-                ?? "Action"
-            found.append(
-                ShareRemoteDestination(
-                    id: id,
-                    label: label ?? "Action",
-                    urlTemplate: url,
-                    title: title
+            let shareURL = (action["share_url"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let primaryURL = (action["url"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let url = (shareURL?.isEmpty == false ? shareURL : nil) ?? primaryURL
+            if let url, !url.isEmpty {
+                let id = (node["id"] as? String) ?? url
+                let shareLabel = action["share_label"] as? String
+                let buttonLabel = node["label"] as? String
+                let title = action["title"] as? String
+                let label = (shareLabel?.isEmpty == false ? shareLabel : nil)
+                    ?? (buttonLabel?.isEmpty == false ? buttonLabel : nil)
+                    ?? title
+                    ?? "Action"
+                found.append(
+                    ShareRemoteDestination(
+                        id: id,
+                        label: label ?? "Action",
+                        urlTemplate: url,
+                        title: title
+                    )
                 )
-            )
+            }
         }
         if let children = node["children"] as? [[String: Any]] {
             for child in children {
@@ -91,9 +94,46 @@ enum ShareRemoteDestinations {
         {
             parts.append(text)
         }
+        if type == "list_row" {
+            let title = (node["label"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let subtitle = (node["text"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if !title.isEmpty, !subtitle.isEmpty {
+                parts.append("• \(title) — \(subtitle)")
+            } else if !title.isEmpty {
+                parts.append("• \(title)")
+            }
+        }
         if let children = node["children"] as? [[String: Any]] {
             for child in children {
                 collectText(node: child, into: &parts)
+            }
+        }
+    }
+
+    /// Prefer markdown body when the remote document is a lyrics screen.
+    static func preferredMarkdown(fromDocumentJSON data: Data) -> String? {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        let document = (root["document"] as? [String: Any]) ?? root
+        let screen = document["screen"] as? [String: Any]
+        var markdownParts: [String] = []
+        collectMarkdown(node: screen, into: &markdownParts)
+        guard !markdownParts.isEmpty else { return nil }
+        return markdownParts.joined(separator: "\n\n")
+    }
+
+    private static func collectMarkdown(node: [String: Any]?, into parts: inout [String]) {
+        guard let node else { return }
+        if (node["type"] as? String) == "markdown",
+           let text = node["text"] as? String,
+           !text.isEmpty
+        {
+            parts.append(text)
+        }
+        if let children = node["children"] as? [[String: Any]] {
+            for child in children {
+                collectMarkdown(node: child, into: &parts)
             }
         }
     }

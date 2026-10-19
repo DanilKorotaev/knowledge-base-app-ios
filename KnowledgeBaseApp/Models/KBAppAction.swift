@@ -19,6 +19,9 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
     let share: Bool?
     /// Label in the Share Extension destinations list.
     let shareLabel: String?
+    /// Optional Share-only URL template (`{{shared_url}}` / `{{shared_text}}`).
+    /// When set with `share: true`, Share Extension uses this instead of `url`.
+    let shareURL: String?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -32,6 +35,7 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
         case method
         case share
         case shareLabel = "share_label"
+        case shareURL = "share_url"
     }
 
     init(
@@ -45,7 +49,8 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
         url: String? = nil,
         method: String? = nil,
         share: Bool? = nil,
-        shareLabel: String? = nil
+        shareLabel: String? = nil,
+        shareURL: String? = nil
     ) {
         self.type = type
         self.sessionId = sessionId
@@ -58,6 +63,7 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
         self.method = method
         self.share = share
         self.shareLabel = shareLabel
+        self.shareURL = shareURL
     }
 
     func withURL(_ url: String) -> KBAppAction {
@@ -72,7 +78,8 @@ struct KBAppAction: Codable, Equatable, Sendable, Hashable {
             url: url,
             method: method,
             share: share,
-            shareLabel: shareLabel
+            shareLabel: shareLabel,
+            shareURL: shareURL
         )
     }
 

@@ -44,10 +44,23 @@ struct StructuredUIPanelView: View {
         .accessibilityLabel(Text("structured_ui.panel_a11y"))
         .accessibilityAddTraits(isSending ? .updatesFrequently : [])
         .onAppear {
-            draftValues = StructuredUIFormDraft.seed(from: document)
+            // Don't wipe user input when NavigationStack re-appears after pop (search → back).
+            if draftValues.isEmpty {
+                draftValues = StructuredUIFormDraft.seed(from: document)
+            }
         }
         .onChange(of: document) { _, newDocument in
-            draftValues = StructuredUIFormDraft.seed(from: newDocument)
+            let seeded = StructuredUIFormDraft.seed(from: newDocument)
+            if draftValues.isEmpty {
+                draftValues = seeded
+                return
+            }
+            // Keep typed values; adopt new keys from a replaced document.
+            var merged = seeded
+            for (key, value) in draftValues {
+                merged[key] = value
+            }
+            draftValues = merged
         }
     }
 }

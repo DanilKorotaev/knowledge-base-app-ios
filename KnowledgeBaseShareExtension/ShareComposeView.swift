@@ -135,7 +135,7 @@ struct ShareComposeView: View {
             NavigationStack {
                 VStack(spacing: 0) {
                     ScrollView {
-                        Text(viewModel.remoteResultText ?? "")
+                        remoteResultBody
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
                             .textSelection(.enabled)
@@ -170,6 +170,21 @@ struct ShareComposeView: View {
                     }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var remoteResultBody: some View {
+        let raw = viewModel.remoteResultText ?? ""
+        if viewModel.remoteResultIsMarkdown,
+           let attributed = try? AttributedString(
+            markdown: raw,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .full)
+           )
+        {
+            Text(attributed)
+        } else {
+            Text(raw)
         }
     }
 

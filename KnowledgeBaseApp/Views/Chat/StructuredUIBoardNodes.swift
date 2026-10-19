@@ -28,28 +28,43 @@ struct StructuredUIMetricNodeView: View {
     }
 
     private var metricContent: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                if let label = node.label, !label.isEmpty {
-                    Text(label)
-                        .font(compact ? .caption2 : .caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.85)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top, spacing: 8) {
+                if let systemImage = node.systemImage, !systemImage.isEmpty {
+                    Image(systemName: systemImage)
+                        .font(compact ? .title3 : .title2)
+                        .foregroundStyle(isTappable ? Color.accentColor : Color.secondary)
+                        .frame(width: compact ? 28 : 32, alignment: .leading)
+                        .accessibilityHidden(true)
                 }
-                if isTappable {
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.tertiary)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        if let label = node.label, !label.isEmpty {
+                            Text(label)
+                                .font(compact ? .caption2 : .caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.85)
+                        }
+                        if isTappable {
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                    Text(StructuredUIMetricDisplay.value(from: node))
+                        .font(
+                            node.systemImage == nil
+                                ? (compact ? Font.title3 : Font.title2).weight(.semibold).monospacedDigit()
+                                : (compact ? Font.subheadline : Font.body).weight(.semibold)
+                        )
+                        .foregroundStyle(isTappable ? Color.accentColor : Color.primary)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.55)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            Text(StructuredUIMetricDisplay.value(from: node))
-                .font((compact ? Font.title3 : Font.title2).weight(.semibold).monospacedDigit())
-                .foregroundStyle(isTappable ? Color.accentColor : Color.primary)
-                .lineLimit(2)
-                .minimumScaleFactor(0.55)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(compact ? 10 : 12)
