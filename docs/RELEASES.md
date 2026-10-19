@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.94 | 218 | `ios/v1.0.94` | 2026-10-19 | Lyrics Actions tiles, share markdown, keep search draft |
 | 1.0.93 | 217 | `ios/v1.0.93` | 2026-10-19 | Compile ShareConversationIntentDonator without IntentsUI |
 | 1.0.92 | 215 | `ios/v1.0.92` | 2026-10-18 | Open interactive remote_ui from Share via deep link |
 | 1.0.91 | 214 | `ios/v1.0.91` | 2026-10-18 | Proxy remote_ui absolute URLs via /api/remote-ui?url= |
