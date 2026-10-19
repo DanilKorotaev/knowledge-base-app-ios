@@ -12,6 +12,17 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.96] - 2026-10-19
+
+### Added
+
+- List_row swipe_actions for history delete
+
+### Changed
+
+- `list_row.swipe_actions` — trailing swipe + long-press menu (remote_ui history delete)
+- Remote UI replaces same-path screen on refresh (history delete/clear does not stack)
+
 ### Added
 
 - `list_row.swipe_actions` — trailing swipe + long-press menu (remote_ui history delete)
@@ -797,7 +808,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.95...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.96...HEAD
+[1.0.96]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.96
 [1.0.95]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.95
 [1.0.94]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.94
 [1.0.93]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.93

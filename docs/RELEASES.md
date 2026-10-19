@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.96 | 220 | `ios/v1.0.96` | 2026-10-19 | List_row swipe_actions for history delete |
 | 1.0.95 | 219 | `ios/v1.0.95` | 2026-10-19 | Preserve lyric newlines in Share markdown preview |
 | 1.0.94 | 218 | `ios/v1.0.94` | 2026-10-19 | Lyrics Actions tiles, share markdown, keep search draft |
 | 1.0.93 | 217 | `ios/v1.0.93` | 2026-10-19 | Compile ShareConversationIntentDonator without IntentsUI |
