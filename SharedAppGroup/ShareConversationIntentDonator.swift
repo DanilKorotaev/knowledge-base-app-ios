@@ -1,21 +1,22 @@
 import Foundation
 import Intents
-import UIKit
 
 /// Donates `INSendMessageIntent` so iOS can show recent KB sessions
 /// in the share sheet conversation / contacts row (no App Store Connect
 /// Messaging App Service entitlement required).
+///
+/// Uses Intents only (no IntentsUI / UIImage) so the same file compiles in
+/// the Share Extension and the main app.
 enum ShareConversationIntentDonator {
-    static func donate(sessionId: String, title: String, image: UIImage? = nil) {
+    static func donate(sessionId: String, title: String) {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         let display = trimmedTitle.isEmpty ? "Chat" : trimmedTitle
         let handle = INPersonHandle(value: sessionId, type: .unknown)
-        let personImage = image.map { INImage(uiImage: $0) }
         let person = INPerson(
             personHandle: handle,
             nameComponents: nil,
             displayName: display,
-            image: personImage,
+            image: nil,
             contactIdentifier: nil,
             customIdentifier: sessionId
         )
@@ -29,11 +30,8 @@ enum ShareConversationIntentDonator {
             sender: nil,
             attachments: nil
         )
-        if let personImage {
-            intent.setImage(personImage, forParameterNamed: \.speakableGroupName)
-        }
         let interaction = INInteraction(intent: intent, response: nil)
-        interaction.direction = .outgoing
+        interaction.direction = INInteractionDirection.outgoing
         interaction.donate { error in
             if let error {
                 #if DEBUG
