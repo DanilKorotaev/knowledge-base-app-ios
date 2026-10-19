@@ -177,15 +177,36 @@ struct ShareComposeView: View {
     private var remoteResultBody: some View {
         let raw = viewModel.remoteResultText ?? ""
         if viewModel.remoteResultIsMarkdown,
-           let attributed = try? AttributedString(
-            markdown: raw,
-            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .full)
-           )
+           let attributed = Self.attributedMarkdownPreservingNewlines(raw)
         {
             Text(attributed)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             Text(raw)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    /// CommonMark soft-breaks turn lone `\n` into spaces — lyrics become one blob.
+    /// Prefer whitespace-preserving inline markdown; fall back to hard-break rewrite.
+    private static func attributedMarkdownPreservingNewlines(_ raw: String) -> AttributedString? {
+        let normalized = raw.replacingOccurrences(of: "\r\n", with: "\n")
+        let preserving = AttributedString.MarkdownParsingOptions(
+            interpretedSyntax: .inlineOnlyPreservingWhitespace
+        )
+        if let attributed = try? AttributedString(markdown: normalized, options: preserving) {
+            return attributed
+        }
+        // Hard line breaks: two trailing spaces before each newline (CommonMark).
+        let hardBreaks = normalized
+            .components(separatedBy: "\n")
+            .joined(separator: "  \n")
+        return try? AttributedString(
+            markdown: hardBreaks,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .full)
+        )
     }
 
     private func sessionRow(_ session: KBSession) -> some View {

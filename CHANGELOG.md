@@ -43,6 +43,7 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 ### Fixed
 
 - Remote UI text fields keep typed values after navigating back from a pushed screen
+- Share remote markdown keeps lyric line breaks (no CommonMark soft-break collapse)
 
 ## [1.0.92] - 2026-10-18
 
