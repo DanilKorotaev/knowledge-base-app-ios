@@ -90,10 +90,29 @@ struct RemoteUIHostView: View {
     private func push(url: String, title: String?) async {
         do {
             let document = try await makeFetcher().fetchDocument(from: url)
-            path.append(RemoteUIPage(url: url, title: title, document: document))
+            let page = RemoteUIPage(url: url, title: title, document: document)
+            // Replace in place when refreshing the same screen (e.g. history delete/clear).
+            if Self.sameRemotePath(path.last?.url ?? rootPage?.url, url) {
+                if path.isEmpty {
+                    rootPage = page
+                } else {
+                    path[path.count - 1] = page
+                }
+            } else {
+                path.append(page)
+            }
         } catch {
             errorText = error.localizedDescription
         }
+    }
+
+    /// Compare path without query so `…/history?delete=` replaces `…/history`.
+    private static func sameRemotePath(_ a: String?, _ b: String) -> Bool {
+        guard let a, let left = URL(string: a), let right = URL(string: b) else { return false }
+        return left.scheme == right.scheme
+            && left.host == right.host
+            && left.port == right.port
+            && left.path == right.path
     }
 
     private func makeFetcher() -> RemoteUIFetcher {

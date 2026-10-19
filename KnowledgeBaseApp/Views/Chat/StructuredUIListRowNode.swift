@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 /// Tappable list cell: optional leading SF Symbol / remote image, title, subtitle, chevron.
+/// Optional `swipe_actions` → trailing swipe (via embedded List) + long-press context menu.
 struct StructuredUIListRowNodeView: View {
     let node: KBStructuredUINode
     var isSending: Bool
@@ -16,41 +17,106 @@ struct StructuredUIListRowNodeView: View {
         return text
     }
 
+    private var rowActions: [KBStructuredUISwipeAction] {
+        node.swipeActions ?? []
+    }
+
     var body: some View {
-        Button {
-            activate()
-        } label: {
-            HStack(alignment: .center, spacing: 12) {
-                leadingIcon
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    if let subtitle, !subtitle.isEmpty {
-                        Text(subtitle)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+        Group {
+            if rowActions.isEmpty {
+                plainRow
+            } else {
+                swipeableRow
             }
-            .padding(.vertical, 10)
-            .padding(.horizontal, 4)
-            .contentShape(Rectangle())
+        }
+        .task(id: node.url ?? "") {
+            await loadRemoteImage()
+        }
+    }
+
+    private var plainRow: some View {
+        Button {
+            activatePrimary()
+        } label: {
+            rowLabel
         }
         .buttonStyle(.plain)
         .disabled(isSending && node.action == nil && node.actionId == nil)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
-        .task(id: node.url ?? "") {
-            await loadRemoteImage()
+    }
+
+    /// Nested one-row List so SwiftUI `.swipeActions` works inside remote_ui ScrollView.
+    private var swipeableRow: some View {
+        List {
+            Button {
+                activatePrimary()
+            } label: {
+                rowLabel
+            }
+            .buttonStyle(.plain)
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                ForEach(rowActions) { item in
+                    Button(role: item.role == "destructive" ? .destructive : nil) {
+                        activateSecondary(item)
+                    } label: {
+                        Label(
+                            item.label,
+                            systemImage: item.systemImage ?? (item.role == "destructive" ? "trash" : "ellipsis")
+                        )
+                    }
+                }
+            }
+            .contextMenu {
+                ForEach(rowActions) { item in
+                    Button(role: item.role == "destructive" ? .destructive : nil) {
+                        activateSecondary(item)
+                    } label: {
+                        Label(
+                            item.label,
+                            systemImage: item.systemImage ?? (item.role == "destructive" ? "trash" : "ellipsis")
+                        )
+                    }
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(accessibilityLabel)
         }
+        .listStyle(.plain)
+        .scrollDisabled(true)
+        .scrollContentBackground(.hidden)
+        .environment(\.defaultMinListRowHeight, 56)
+        .frame(minHeight: 56)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var rowLabel: some View {
+        HStack(alignment: .center, spacing: 12) {
+            leadingIcon
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if let subtitle, !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 4)
+        .contentShape(Rectangle())
     }
 
     @ViewBuilder
@@ -78,13 +144,23 @@ struct StructuredUIListRowNodeView: View {
         return title
     }
 
-    private func activate() {
+    private func activatePrimary() {
         if let appAction = node.action, onAppAction != nil {
             onAppAction?(appAction, node)
             return
         }
         guard let actionId = node.actionId, !isSending else { return }
         onAction(actionId, node.id, nil)
+    }
+
+    private func activateSecondary(_ item: KBStructuredUISwipeAction) {
+        if let appAction = item.action, onAppAction != nil {
+            onAppAction?(appAction, node)
+            return
+        }
+        if let actionId = item.actionId, !isSending {
+            onAction(actionId, node.id, nil)
+        }
     }
 
     private func loadRemoteImage() async {

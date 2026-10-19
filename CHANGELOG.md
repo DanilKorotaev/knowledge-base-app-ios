@@ -12,6 +12,14 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Added
+
+- `list_row.swipe_actions` — trailing swipe + long-press menu (remote_ui history delete)
+
+### Fixed
+
+- Remote UI replaces same-path screen on refresh (history delete/clear does not stack)
+
 ## [1.0.95] - 2026-10-19
 
 ### Fixed
@@ -30,26 +38,9 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 - List_row Structured UI + share conversation suggestions
 
-### Changed
-
-- Structured UI `list_row` (title, subtitle, SF Symbol / remote image, chevron action)
-- Share sheet conversation suggestions via `INSendMessageIntent` donation (no ASC Messaging App Service)
-
 ### Fixed
 
 - Compile ShareConversationIntentDonator without IntentsUI
-
-### Added
-
-- Structured UI `list_row` (title, subtitle, SF Symbol / remote image, chevron action)
-- Share sheet conversation suggestions via `INSendMessageIntent` donation (no ASC Messaging App Service)
-- Metric tiles can show `system_image`; `remote_ui.share_url` for Share-only templates
-- Share remote result renders markdown when the document has a lyrics body
-
-### Fixed
-
-- Remote UI text fields keep typed values after navigating back from a pushed screen
-- Share remote markdown keeps lyric line breaks (no CommonMark soft-break collapse)
 
 ## [1.0.92] - 2026-10-18
 

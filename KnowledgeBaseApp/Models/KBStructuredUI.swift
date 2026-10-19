@@ -47,6 +47,26 @@ struct KBStructuredUIOption: Codable, Equatable, Sendable {
     let label: String
 }
 
+/// Secondary action on `list_row` (swipe / long-press menu).
+struct KBStructuredUISwipeAction: Codable, Equatable, Sendable, Identifiable {
+    let id: String
+    let label: String
+    let systemImage: String?
+    /// `destructive` → red swipe / confirm styling.
+    let role: String?
+    let action: KBAppAction?
+    let actionId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case label
+        case systemImage = "system_image"
+        case role
+        case action
+        case actionId = "action_id"
+    }
+}
+
 struct KBStructuredUITableColumn: Codable, Equatable, Sendable {
     let id: String
     let label: String
@@ -145,6 +165,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
     let series: [KBStructuredUISeriesPoint]?
     /// SF Symbol name for `list_row` leading icon (optional).
     let systemImage: String?
+    /// Trailing swipe / long-press actions for `list_row`.
+    let swipeActions: [KBStructuredUISwipeAction]?
 
     enum CodingKeys: String, CodingKey {
         case type
@@ -179,6 +201,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         case scrollHorizontal = "scroll_horizontal"
         case series
         case systemImage = "system_image"
+        case swipeActions = "swipe_actions"
     }
 
     init(
@@ -214,7 +237,8 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         rows: [[String]]? = nil,
         scrollHorizontal: Bool? = nil,
         series: [KBStructuredUISeriesPoint]? = nil,
-        systemImage: String? = nil
+        systemImage: String? = nil,
+        swipeActions: [KBStructuredUISwipeAction]? = nil
     ) {
         self.type = type
         self.id = id
@@ -249,6 +273,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         self.scrollHorizontal = scrollHorizontal
         self.series = series
         self.systemImage = systemImage
+        self.swipeActions = swipeActions
     }
 
     init(from decoder: Decoder) throws {
@@ -284,6 +309,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         scrollHorizontal = try container.decodeIfPresent(Bool.self, forKey: .scrollHorizontal)
         series = try container.decodeIfPresent([KBStructuredUISeriesPoint].self, forKey: .series)
         systemImage = try container.decodeIfPresent(String.self, forKey: .systemImage)
+        swipeActions = try container.decodeIfPresent([KBStructuredUISwipeAction].self, forKey: .swipeActions)
 
         if type == "progress", let fraction = try? container.decode(Double.self, forKey: .value) {
             value = nil
@@ -335,6 +361,7 @@ struct KBStructuredUINode: Codable, Equatable, Sendable {
         try container.encodeIfPresent(scrollHorizontal, forKey: .scrollHorizontal)
         try container.encodeIfPresent(series, forKey: .series)
         try container.encodeIfPresent(systemImage, forKey: .systemImage)
+        try container.encodeIfPresent(swipeActions, forKey: .swipeActions)
     }
 
     var isSupported: Bool {
@@ -538,7 +565,8 @@ enum StructuredUIFormDraft {
             rows: node.rows,
             scrollHorizontal: node.scrollHorizontal,
             series: node.series,
-            systemImage: node.systemImage
+            systemImage: node.systemImage,
+            swipeActions: node.swipeActions
         )
     }
 
