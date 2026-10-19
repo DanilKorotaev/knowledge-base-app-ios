@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.95] - 2026-10-19
+
+### Fixed
+
+- Preserve lyric newlines in Share markdown preview
+
 ## [1.0.94] - 2026-10-19
 
 ### Added
@@ -800,7 +806,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.94...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.95...HEAD
+[1.0.95]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.95
 [1.0.94]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.94
 [1.0.93]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.93
 [1.0.92]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.92
