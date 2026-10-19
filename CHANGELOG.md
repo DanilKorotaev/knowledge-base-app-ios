@@ -12,6 +12,21 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.93] - 2026-10-19
+
+### Added
+
+- List_row Structured UI + share conversation suggestions
+
+### Changed
+
+- Structured UI `list_row` (title, subtitle, SF Symbol / remote image, chevron action)
+- Share sheet conversation suggestions via `INSendMessageIntent` donation (no ASC Messaging App Service)
+
+### Fixed
+
+- Compile ShareConversationIntentDonator without IntentsUI
+
 ### Added
 
 - Structured UI `list_row` (title, subtitle, SF Symbol / remote image, chevron action)
@@ -772,7 +787,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.92...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.93...HEAD
+[1.0.93]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.93
 [1.0.92]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.92
 [1.0.91]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.91
 [1.0.90]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.90
