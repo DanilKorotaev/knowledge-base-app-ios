@@ -25,6 +25,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_TEST_OUTPUT = REPO_ROOT / "fastlane" / "test_output"
+DEFAULT_UI_TEST_OUTPUT = REPO_ROOT / "fastlane" / "ui_test_output"
 MAX_FAILED_TESTS = 25
 
 
@@ -181,48 +182,117 @@ def load_json(path: Path) -> dict[str, Any] | None:
         return None
 
 
-def build_tests_message(outcome: str, output_dir: Path) -> str:
+def empty_counts() -> dict[str, int]:
+    return {"passed": 0, "failed": 0, "skipped": 0}
+
+
+def suite_counts(output_dir: Path) -> tuple[dict[str, int], Path | None]:
     xcresult = find_xcresult(output_dir)
-    counts = parse_test_summary(xcresult) if xcresult else {"passed": 0, "failed": 0, "skipped": 0}
+    if not xcresult:
+        return empty_counts(), None
+    return parse_test_summary(xcresult), xcresult
+
+
+def format_suite_block(
+    title: str,
+    outcome: str,
+    counts: dict[str, int],
+    xcresult: Path | None,
+    *,
+    coverage: float | None = None,
+    min_cov: str | None = None,
+    ran: bool,
+) -> list[str]:
+    """One Unit/UI block for the combined tests Telegram message."""
+    lines = [f"<b>{html_escape(title)}</b>"]
+
+    if not ran or outcome == "skipped":
+        lines.append("Статус: <code>skipped</code>")
+        return lines
+
+    suite_ok = outcome == "success" and counts["failed"] == 0
+    status = "✅ success" if suite_ok else "❌ failure"
+    if outcome == "cancelled":
+        status = "⏹ cancelled"
+    lines.extend(
+        [
+            f"Статус: <code>{html_escape(status)}</code>",
+            f"Успешно: <b>{counts['passed']}</b>",
+            f"Провалено: <b>{counts['failed']}</b>",
+            f"Пропущено: <b>{counts['skipped']}</b>",
+        ]
+    )
+
+    if coverage is not None and min_cov is not None:
+        lines.append(f"Покрытие (app): <b>{coverage}%</b> (мин. {html_escape(min_cov)}%)")
+    elif title.startswith("Unit") and not suite_ok and ran:
+        lines.append("Покрытие: не удалось прочитать из .xcresult")
+
+    if xcresult and counts["failed"] > 0:
+        failed_tests = collect_failed_tests(xcresult)
+        if failed_tests:
+            lines.append("Упавшие:")
+            for name in failed_tests[:MAX_FAILED_TESTS]:
+                lines.append(f"• <code>{html_escape(name)}</code>")
+            if len(failed_tests) > MAX_FAILED_TESTS:
+                lines.append(f"• … и ещё {len(failed_tests) - MAX_FAILED_TESTS}")
+
+    if outcome != "success" and counts["failed"] == 0 and ran:
+        lines.append(
+            "<i>Шаг завершился с ошибкой (сборка / покрытие / fastlane), "
+            "но Failed test case в отчёте нет.</i>"
+        )
+
+    return lines
+
+
+def build_tests_message(
+    outcome: str,
+    output_dir: Path,
+    *,
+    ui_outcome: str = "skipped",
+    ui_output_dir: Path | None = None,
+) -> str:
+    ui_dir = ui_output_dir or DEFAULT_UI_TEST_OUTPUT
+    unit_counts, unit_xc = suite_counts(output_dir)
+    ui_counts, ui_xc = suite_counts(ui_dir)
     coverage = parse_coverage_percent(output_dir)
     min_cov = os.environ.get("MIN_COVERAGE", "35").strip()
 
-    success = outcome == "success" and counts["failed"] == 0
+    unit_ran = outcome != "skipped"
+    ui_ran = ui_outcome not in {"skipped", ""}
+    unit_ok = outcome == "success" and unit_counts["failed"] == 0
+    ui_ok = (not ui_ran) or (ui_outcome == "success" and ui_counts["failed"] == 0)
+    success = unit_ok and ui_ok
+
     title = (
         "✅ <b>Knowledge Base iOS — тесты пройдены</b>"
         if success
         else "❌ <b>Knowledge Base iOS — тесты упали</b>"
     )
 
-    lines = [title, ""] + ci_context_lines() + [
-        "",
-        f"Успешно: <b>{counts['passed']}</b>",
-        f"Провалено: <b>{counts['failed']}</b>",
-        f"Пропущено: <b>{counts['skipped']}</b>",
-    ]
-
-    if coverage is not None:
-        lines.append(f"Покрытие (app): <b>{coverage}%</b> (мин. {html_escape(min_cov)}%)")
-    elif not success:
-        lines.append("Покрытие: не удалось прочитать из .xcresult")
-
-    if xcresult and counts["failed"] > 0:
-        failed_tests = collect_failed_tests(xcresult)
-        if failed_tests:
-            lines.append("")
-            lines.append("<b>Упавшие тесты:</b>")
-            for name in failed_tests[:MAX_FAILED_TESTS]:
-                lines.append(f"• <code>{html_escape(name)}</code>")
-            if len(failed_tests) > MAX_FAILED_TESTS:
-                lines.append(f"• … и ещё {len(failed_tests) - MAX_FAILED_TESTS}")
-
-    if outcome != "success" and counts["failed"] == 0:
-        lines.append("")
-        lines.append(
-            "<i>Шаг тестов завершился с ошибкой (сборка, покрытие или fastlane), "
-            "но отдельные test case в отчёте не помечены как Failed.</i>"
+    lines = [title, ""] + ci_context_lines() + [""]
+    lines.extend(
+        format_suite_block(
+            "Unit",
+            outcome,
+            unit_counts,
+            unit_xc,
+            coverage=coverage,
+            min_cov=min_cov,
+            ran=unit_ran,
         )
-
+    )
+    lines.append("")
+    lines.extend(
+        format_suite_block(
+            "UI",
+            ui_outcome,
+            ui_counts,
+            ui_xc,
+            ran=ui_ran,
+        )
+    )
     return "\n".join(lines)
 
 
@@ -304,7 +374,13 @@ def main() -> None:
         "--outcome",
         required=True,
         choices=["success", "failure", "cancelled", "skipped"],
-        help="GitHub Actions step outcome",
+        help="GitHub Actions step outcome (unit tests for event=tests)",
+    )
+    parser.add_argument(
+        "--ui-outcome",
+        default="skipped",
+        choices=["success", "failure", "cancelled", "skipped"],
+        help="GitHub Actions UI test step outcome (event=tests)",
     )
     parser.add_argument(
         "--release-git-outcome",
@@ -316,12 +392,23 @@ def main() -> None:
         "--output-dir",
         type=Path,
         default=DEFAULT_TEST_OUTPUT,
-        help="fastlane test_output directory (xcresult, ci_testflight.json)",
+        help="fastlane test_output directory (unit xcresult / ci_testflight.json)",
+    )
+    parser.add_argument(
+        "--ui-output-dir",
+        type=Path,
+        default=DEFAULT_UI_TEST_OUTPUT,
+        help="fastlane ui_test_output directory (UI xcresult)",
     )
     args = parser.parse_args()
 
     if args.event == "tests":
-        message = build_tests_message(args.outcome, args.output_dir)
+        message = build_tests_message(
+            args.outcome,
+            args.output_dir,
+            ui_outcome=args.ui_outcome,
+            ui_output_dir=args.ui_output_dir,
+        )
     else:
         message = build_testflight_message(
             args.outcome,

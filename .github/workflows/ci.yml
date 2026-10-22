@@ -79,7 +79,10 @@ jobs:
 
       - name: Notify Telegram (tests)
         if: always()
-        run: python3 scripts/ci/telegram_notify.py tests --outcome ${{ steps.tests.outcome }}
+        run: >
+          python3 scripts/ci/telegram_notify.py tests
+          --outcome ${{ steps.tests.outcome }}
+          --ui-outcome ${{ steps.ui_tests.outcome || 'skipped' }}
 
       - name: Fail if unit tests failed
         if: steps.tests.outcome != 'success'

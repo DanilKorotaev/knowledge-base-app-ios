@@ -121,7 +121,7 @@ After **CI** (`test`) and **Deploy TestFlight** (`beta`), the workflow sends a m
 2. Get **chat id** (your user id or a group id): e.g. message the bot, then open `https://api.telegram.org/bot<TOKEN>/getUpdates`, or use [@userinfobot](https://t.me/userinfobot).
 3. Add repository secrets (see table below).
 
-**Tests message:** branch, event, passed / failed / skipped counts, app line coverage %, link to the workflow run. On failure, lists failed test identifiers from the `.xcresult` bundle (up to 25).
+**Tests message:** branch, event, then separate **Unit** and **UI** blocks (passed / failed / skipped; Unit also has app line coverage %). Overall ✅ only if both suites ok (UI `skipped` if unit failed first). On failure, lists failed test ids from the matching `.xcresult` (up to 25).
 
 **TestFlight message:** marketing version + build number (from `fastlane/test_output/ci_testflight.json` after upload), bundle id, CHANGELOG / tag links, success or failure. On success, deploy commits `VERSION` + changelog and tags `ios/v{VERSION}` (with `[skip ci]`).
 
