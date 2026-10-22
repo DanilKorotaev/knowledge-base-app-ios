@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.98] - 2026-10-22
+
+### Changed
+
+- Include Unit and UI blocks in Telegram test notify
+
 ## [1.0.97] - 2026-10-22
 
 ### Changed
@@ -815,7 +821,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.97...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.98...HEAD
+[1.0.98]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.98
 [1.0.97]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.97
 [1.0.96]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.96
 [1.0.95]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.95
