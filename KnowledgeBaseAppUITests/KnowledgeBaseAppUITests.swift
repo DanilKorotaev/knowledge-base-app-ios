@@ -59,6 +59,62 @@ final class KnowledgeBaseAppUITests: XCTestCase {
         XCTAssertTrue(summary.waitForExistence(timeout: 8), "Demo messages should stay visible in the chat list")
     }
 
+    func testOverviewListsDemoSummaryBoard() throws {
+        openOverviewTab()
+
+        let row = app.descendants(matching: .any)["board.row.demo-kpi"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "Stub Overview should list demo-kpi")
+
+        XCTAssertTrue(app.staticTexts["Demo: summary"].waitForExistence(timeout: 3))
+        // List cell metrics from DemoBoardsCatalog.
+        XCTAssertTrue(app.staticTexts["Total"].exists || app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "12 450")).firstMatch.exists)
+        // Jobs board belongs on Actions — not Overview.
+        XCTAssertFalse(app.descendants(matching: .any)["board.row.demo-active-jobs"].exists)
+    }
+
+    func testOpenDemoSummaryBoardShowsStructuredUI() throws {
+        openOverviewTab()
+
+        let row = app.descendants(matching: .any)["board.row.demo-kpi"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.tap()
+
+        XCTAssertTrue(
+            app.navigationBars["Demo: summary"].waitForExistence(timeout: 8),
+            "Board detail should open"
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any)["board.detail.demo-kpi"].waitForExistence(timeout: 5)
+                || app.staticTexts["Demo summary"].waitForExistence(timeout: 5)
+        )
+        XCTAssertTrue(app.staticTexts["Demo summary"].waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "12 450")).firstMatch.waitForExistence(timeout: 5)
+        )
+        XCTAssertTrue(app.staticTexts["Recent rows"].waitForExistence(timeout: 5)
+            || app.staticTexts["Alpha"].waitForExistence(timeout: 5))
+    }
+
+    func testActionsTabShowsDemoJobsBoard() throws {
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 10))
+        tabBar.buttons["Actions"].tap()
+
+        XCTAssertTrue(app.navigationBars["Actions"].waitForExistence(timeout: 5))
+
+        let section = app.descendants(matching: .any)["actions.section.demo-active-jobs"]
+        XCTAssertTrue(
+            section.waitForExistence(timeout: 10)
+                || app.staticTexts["Active jobs"].waitForExistence(timeout: 10),
+            "Actions stub should render demo jobs document"
+        )
+        XCTAssertTrue(app.staticTexts["Active jobs"].waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            app.buttons["Cancel demo job"].waitForExistence(timeout: 5)
+                || app.staticTexts["Cancel demo job"].waitForExistence(timeout: 5)
+        )
+    }
+
     func testNewSessionSendTextShowsUserAndStubReply() throws {
         let newSession = app.buttons["main.newSession"]
         XCTAssertTrue(newSession.waitForExistence(timeout: 10))
@@ -88,6 +144,15 @@ final class KnowledgeBaseAppUITests: XCTestCase {
             NSPredicate(format: "label CONTAINS %@", "Stub reply")
         ).firstMatch
         XCTAssertTrue(stubReply.waitForExistence(timeout: 10), "Stub assistant reply should appear")
+    }
+
+    private func openOverviewTab() {
+        let tabBar = app.tabBars.firstMatch
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 10))
+        let overview = tabBar.buttons["Overview"]
+        XCTAssertTrue(overview.waitForExistence(timeout: 5), "Overview tab should be enabled by default")
+        overview.tap()
+        XCTAssertTrue(app.navigationBars["Overview"].waitForExistence(timeout: 5))
     }
 
     private func composerTextField() -> XCUIElement {

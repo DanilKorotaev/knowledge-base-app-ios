@@ -95,6 +95,7 @@ struct ActionsTabView: View {
                 }
             )
         }
+        .accessibilityIdentifier("actions.section.\(detail.board.id)")
     }
 
     private static func makeClient() -> BoardsAPIClientProtocol {

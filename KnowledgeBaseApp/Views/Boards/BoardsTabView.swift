@@ -94,6 +94,7 @@ struct BoardsTabView: View {
                     NavigationLink(value: board) {
                         BoardListCellView(board: board)
                     }
+                    .accessibilityIdentifier("board.row.\(board.id)")
                     .disabled(editMode.isEditing)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {

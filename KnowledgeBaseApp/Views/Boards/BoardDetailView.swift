@@ -70,6 +70,7 @@ struct BoardDetailView: View {
                     }
                     .padding()
                 }
+                .accessibilityIdentifier("board.detail.\(detail.board.id)")
                 .refreshable {
                     await viewModel.refresh()
                 }

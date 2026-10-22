@@ -15,7 +15,10 @@ SCAN_DEVICE="iPhone 16" bundle exec fastlane ui_test
 - Root tabs: Chats / Overview / Actions / Settings
 - Open seeded **Demo session** → messages visible
 - **New session** → type → send → user bubble + `Stub reply …`
+- Overview: stub **Demo: summary** row (jobs board hidden from Overview)
+- Open demo board → Structured UI metrics / table
+- Actions: stub **Active jobs** + Cancel demo job
 
 ## Accessibility IDs
 
-Stable ids used by tests: `main.newSession`, `session.row.<id>`, `composer.textField`, `composer.send`, …
+Stable ids used by tests: `main.newSession`, `session.row.<id>`, `board.row.<id>`, `board.detail.<id>`, `actions.section.<id>`, `composer.textField`, `composer.send`, …
