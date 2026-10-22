@@ -28,7 +28,7 @@ bundle exec which fastlane
 
 ## Lane: `test`
 
-Runs **scan** on the **KnowledgeBaseApp** scheme, writes results under `fastlane/test_output/`, then enforces **line coverage for the `KnowledgeBaseApp.app` target only** (SPM dependencies such as Alamofire are excluded). Default minimum **35%**, override with `MIN_COVERAGE`.
+Runs **scan** on **KnowledgeBaseAppTests** only, writes results under `fastlane/test_output/`, then enforces **line coverage for the `KnowledgeBaseApp.app` target only** (SPM dependencies such as Alamofire are excluded). Default minimum **35%**, override with `MIN_COVERAGE`.
 
 **This gate blocks CI** and therefore **auto TestFlight** on `main` when coverage is below the threshold (individual tests may still pass).
 
@@ -43,6 +43,16 @@ SCAN_DEVICE="iPhone 15" bundle exec fastlane test
 ```
 
 On GitHub Actions, `SCAN_DEVICE` is set automatically before Fastlane runs.
+
+## Lane: `ui_test`
+
+XCUITest smoke against **in-app stub clients** (`-UITesting` launch argument). No staging / network. Results under `fastlane/ui_test_output/`.
+
+```bash
+bundle exec fastlane ui_test
+```
+
+CI runs `ui_test` after unit tests succeed.
 
 ## Versioning (SemVer)
 

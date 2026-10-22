@@ -23,6 +23,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Run unit tests (KnowledgeBaseApp) with coverage; fails if line coverage < MIN_COVERAGE (default 35).
 
+### ios ui_test
+
+```sh
+[bundle exec] fastlane ios ui_test
+```
+
+Run UI smoke tests against in-app stubs (-UITesting). No network.
+
 ### ios beta
 
 ```sh

@@ -39,6 +39,8 @@ struct RichMessageBubbleView: View {
         }
         .frame(maxWidth: .infinity, alignment: message.role == .user ? .trailing : .leading)
         .contentShape(Rectangle())
+        .accessibilityIdentifier("chat.message.\(message.role.rawValue).\(message.id)")
+        .accessibilityElement(children: .contain)
         .contextMenu {
             if MessageCopyContent.text(for: message) != nil {
                 Button {

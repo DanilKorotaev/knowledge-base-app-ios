@@ -83,6 +83,7 @@ struct MainView: View {
             .tabItem {
                 Label("tab.chats", systemImage: "bubble.left.and.bubble.right")
             }
+            .accessibilityIdentifier("tab.chats")
             .tag(RootTab.sessions)
 
             if boardsOverviewEnabled {
@@ -90,6 +91,7 @@ struct MainView: View {
                     .tabItem {
                         Label("tab.overview", systemImage: "square.grid.2x2")
                     }
+                    .accessibilityIdentifier("tab.overview")
                     .tag(RootTab.boards)
             }
 
@@ -97,6 +99,7 @@ struct MainView: View {
                 .tabItem {
                     Label("tab.actions", systemImage: "bolt.horizontal.circle")
                 }
+                .accessibilityIdentifier("tab.actions")
                 .tag(RootTab.actions)
 
             if healthSyncEnabled {
@@ -106,6 +109,7 @@ struct MainView: View {
                 .tabItem {
                     Label("tab.health", systemImage: "heart.text.square")
                 }
+                .accessibilityIdentifier("tab.health")
                 .tag(RootTab.health)
             }
 
@@ -129,6 +133,7 @@ struct MainView: View {
             .tabItem {
                 Label("tab.settings", systemImage: "gearshape")
             }
+            .accessibilityIdentifier("tab.settings")
             .tag(RootTab.settings)
         }
         .environment(voiceRouting)
@@ -350,6 +355,7 @@ struct MainView: View {
                     } label: {
                         Label("main.new_session", systemImage: "plus.circle.fill")
                     }
+                    .accessibilityIdentifier("main.newSession")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
@@ -500,6 +506,7 @@ struct MainView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
         }
+        .accessibilityIdentifier("session.row.\(session.id)")
         .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
         .swipeActions(edge: .leading, allowsFullSwipe: false) {
             if !session.isLocalDraft {
@@ -927,7 +934,8 @@ struct MainView: View {
     private static let stubStore = InMemoryKBStore()
 
     private static func remoteBundle() -> URLSessionKnowledgeBaseAPIClient? {
-        URLSessionKnowledgeBaseAPIClient()
+        guard !UITestRuntime.isUITesting else { return nil }
+        return URLSessionKnowledgeBaseAPIClient()
     }
 
     private static func makeSessionClient() -> KnowledgeBaseAPIClientProtocol {

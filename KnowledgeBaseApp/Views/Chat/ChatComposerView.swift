@@ -259,6 +259,7 @@ struct ChatComposerView: View {
         }
         .disabled(!viewModel.canSendComposer || isBusy)
         .accessibilityLabel(Text("composer.send_a11y"))
+        .accessibilityIdentifier("composer.send")
     }
 
     private func enqueueDropUIImages(_ images: [UIImage], source: String) {

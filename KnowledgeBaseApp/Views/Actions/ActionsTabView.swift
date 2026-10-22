@@ -98,6 +98,9 @@ struct ActionsTabView: View {
     }
 
     private static func makeClient() -> BoardsAPIClientProtocol {
+        if UITestRuntime.isUITesting {
+            return StubBoardsAPIClient()
+        }
         if let remote = URLSessionBoardsAPIClient() {
             return remote
         }

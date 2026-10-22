@@ -42,12 +42,19 @@ struct ComposerPasteTextView: UIViewRepresentable {
         textView.onPasteImagesFailed = {
             context.coordinator.parent.onPasteImagesFailed()
         }
+        textView.isAccessibilityElement = true
+        textView.accessibilityIdentifier = "composer.textField"
+        textView.accessibilityLabel = placeholder
+        textView.accessibilityTraits.insert(.allowsDirectInteraction)
         context.coordinator.placeholderLabel = makePlaceholderLabel(in: textView)
         context.coordinator.updatePlaceholderVisibility(in: textView)
         return textView
     }
 
     func updateUIView(_ textView: PasteAwareTextView, context: Context) {
+        textView.isAccessibilityElement = true
+        textView.accessibilityIdentifier = "composer.textField"
+        textView.accessibilityLabel = placeholder
         context.coordinator.parent = self
         textView.onPasteImages = {
             await context.coordinator.parent.onPasteImages()

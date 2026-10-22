@@ -111,6 +111,22 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
         INFOPLIST_KEY_KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
+  KnowledgeBaseAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: KnowledgeBaseAppUITests
+      # Share launch-arg constant with the app target (no @testable import in UI tests).
+      - path: KnowledgeBaseApp/Configuration/UITestRuntime.swift
+    dependencies:
+      - target: KnowledgeBaseApp
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.coredan.KnowledgeBaseAppUITests
+        TEST_TARGET_NAME: KnowledgeBaseApp
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: "66C9VGAZR5"
   KnowledgeBaseShareExtension:
     type: app-extension
     platform: iOS
@@ -254,6 +270,7 @@ schemes:
       gatherCoverageData: true
       targets:
         - KnowledgeBaseAppTests
+        - KnowledgeBaseAppUITests
     profile:
       config: Release
     analyze:

@@ -93,6 +93,17 @@
                ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8F228704FCCC2D515636E76F"
+               BuildableName = "KnowledgeBaseAppUITests.xctest"
+               BlueprintName = "KnowledgeBaseAppUITests"
+               ReferencedContainer = "container:KnowledgeBaseApp.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

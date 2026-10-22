@@ -66,15 +66,25 @@ jobs:
       - name: Generate Xcode project (XcodeGen)
         run: bash scripts/ci/xcodegen_generate.sh
 
-      - name: Run tests (Fastlane scan + coverage gate)
+      - name: Run unit tests (Fastlane scan + coverage gate)
         id: tests
         continue-on-error: true
         run: bundle exec fastlane test
+
+      - name: Run UI smoke tests (stubs)
+        id: ui_tests
+        if: steps.tests.outcome == 'success'
+        continue-on-error: true
+        run: bundle exec fastlane ui_test
 
       - name: Notify Telegram (tests)
         if: always()
         run: python3 scripts/ci/telegram_notify.py tests --outcome ${{ steps.tests.outcome }}
 
-      - name: Fail if tests failed
+      - name: Fail if unit tests failed
         if: steps.tests.outcome != 'success'
+        run: exit 1
+
+      - name: Fail if UI tests failed
+        if: steps.ui_tests.outcome == 'failure'
         run: exit 1

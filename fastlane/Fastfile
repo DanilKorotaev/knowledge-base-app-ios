@@ -24,10 +24,32 @@ platform :ios do
       code_coverage: true,
       result_bundle: true,
       output_directory: output_dir,
-      buildlog_path: File.expand_path("build_logs", __dir__)
+      buildlog_path: File.expand_path("build_logs", __dir__),
+      only_testing: ["KnowledgeBaseAppTests"]
     )
 
     enforce_line_coverage_threshold(output_dir)
+  end
+
+  desc "Run UI smoke tests against in-app stubs (-UITesting). No network."
+  lane :ui_test do
+    setup_ci if ENV["CI"]
+
+    run_xcodegen!
+
+    device = ENV.fetch("SCAN_DEVICE", "iPhone 15")
+    output_dir = File.expand_path("ui_test_output", __dir__)
+
+    scan(
+      scheme: "KnowledgeBaseApp",
+      device: device,
+      clean: false,
+      code_coverage: false,
+      result_bundle: true,
+      output_directory: output_dir,
+      buildlog_path: File.expand_path("build_logs", __dir__),
+      only_testing: ["KnowledgeBaseAppUITests"]
+    )
   end
 
   desc "Build App Store IPA and upload to TestFlight. Requires Match repo, ASC API key, and real bundle ID + team."

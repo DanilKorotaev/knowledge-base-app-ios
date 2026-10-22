@@ -31,3 +31,5 @@ fastlane/build_logs
 # Ruby / Bundler
 vendor/bundle/
 .bundle/
+.derivedData-ci/
+fastlane/ui_test_output
