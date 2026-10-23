@@ -10,10 +10,10 @@ struct FileDiffView: View {
     @State private var confirmRevert = false
     @State private var isReverting = false
     @State private var errorMessage: String?
-    @State private var isOpeningCurrentVersion = false
+    @State private var isOpening = false
+    @State private var openLink: KBFileOpenLink?
     @State private var previewURL: URL?
     @State private var diffMode: DiffMode = .unified
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         ScrollView {
@@ -46,24 +46,30 @@ struct FileDiffView: View {
         .hidesTabBarWhenPushed()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    Task { await openCurrentVersion() }
-                } label: {
-                    Label("diff.current", systemImage: "eye")
-                }
-                .disabled(isOpeningCurrentVersion)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    if let previewURL {
-                        openURL(previewURL)
-                    } else {
-                        Task { await openCurrentVersion(openExternal: true) }
+                Menu {
+                    Button {
+                        Task { await open(mode: .nextcloudApp) }
+                    } label: {
+                        Label("diff.open_nextcloud", systemImage: "cloud")
+                    }
+                    Button {
+                        Task { await open(mode: .safari) }
+                    } label: {
+                        Label("diff.open_safari", systemImage: "safari")
+                    }
+                    Button {
+                        Task { await openHere() }
+                    } label: {
+                        Label("diff.open_here", systemImage: "eye")
                     }
                 } label: {
-                    Label("diff.open", systemImage: "safari")
+                    if isOpening {
+                        ProgressView()
+                    } else {
+                        Label("diff.open", systemImage: "ellipsis.circle")
+                    }
                 }
-                .disabled(isOpeningCurrentVersion)
+                .disabled(isOpening)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("diff.revert", role: .destructive) {
@@ -113,15 +119,34 @@ struct FileDiffView: View {
     }
 
     @MainActor
-    private func openCurrentVersion(openExternal: Bool = false) async {
-        isOpeningCurrentVersion = true
-        defer { isOpeningCurrentVersion = false }
+    private func resolveOpenLink() async throws -> KBFileOpenLink {
+        if let openLink {
+            return openLink
+        }
+        let link = try await filesClient.createOpenLink(fileId: file.id)
+        openLink = link
+        return link
+    }
+
+    @MainActor
+    private func open(mode: NextcloudFileOpenMode) async {
+        isOpening = true
+        defer { isOpening = false }
         do {
-            let url = try await filesClient.createShareLink(fileId: file.id)
-            previewURL = url
-            if openExternal {
-                openURL(url)
-            }
+            let link = try await resolveOpenLink()
+            NextcloudFileOpener.open(link, mode: mode)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func openHere() async {
+        isOpening = true
+        defer { isOpening = false }
+        do {
+            let link = try await resolveOpenLink()
+            previewURL = link.webURL
         } catch {
             errorMessage = error.localizedDescription
         }

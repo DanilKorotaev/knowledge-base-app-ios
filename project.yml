@@ -80,6 +80,8 @@ targets:
           - CFBundleURLName: com.coredan.KnowledgeBaseApp
             CFBundleURLSchemes:
               - knowledgebase
+        LSApplicationQueriesSchemes:
+          - nextcloud
         KBAppAPIBaseURL: $(INFOPLIST_KEY_KBAppAPIBaseURL)
         KBAppAuthToken: $(INFOPLIST_KEY_KBAppAuthToken)
         NSHealthShareUsageDescription: The app reads Apple Health data (steps, sleep, workouts, weight) to save it in your knowledge base via the server.

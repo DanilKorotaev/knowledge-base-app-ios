@@ -1,14 +1,20 @@
 import Foundation
 
 protocol FilesAPIClientProtocol: Sendable {
-    func fetchChangedFiles() async throws -> [KBChangedFile]
+    func fetchChangedFiles(sessionId: String?) async throws -> [KBChangedFile]
     func revertFile(id: String) async throws
-    func createShareLink(fileId: String) async throws -> URL
+    func createOpenLink(fileId: String) async throws -> KBFileOpenLink
 }
 
 enum FilesAPIError: Error, Equatable {
     case invalidResponse(statusCode: Int, apiMessage: String? = nil)
     case decodingFailed
+}
+
+extension FilesAPIClientProtocol {
+    func fetchChangedFiles() async throws -> [KBChangedFile] {
+        try await fetchChangedFiles(sessionId: nil)
+    }
 }
 
 /// Demo list + in-memory revert until KB App API exposes file operations.
@@ -34,7 +40,7 @@ final class StubFilesAPIClient: FilesAPIClientProtocol, @unchecked Sendable {
         ]
     }
 
-    func fetchChangedFiles() async throws -> [KBChangedFile] {
+    func fetchChangedFiles(sessionId: String?) async throws -> [KBChangedFile] {
         items
     }
 
@@ -42,11 +48,12 @@ final class StubFilesAPIClient: FilesAPIClientProtocol, @unchecked Sendable {
         items.removeAll { $0.id == id }
     }
 
-    func createShareLink(fileId: String) async throws -> URL {
-        let base = "https://nextcloud.example.com/s/"
-        guard let url = URL(string: "\(base)\(fileId)") else {
+    func createOpenLink(fileId: String) async throws -> KBFileOpenLink {
+        guard let web = URL(string: "https://nextcloud.example.com/f/\(fileId)"),
+              let deep = URL(string: "nextcloud://open-file?user=demo&link=https://nextcloud.example.com&path=KnowledgeBase/notes/meeting.md")
+        else {
             throw FilesAPIError.decodingFailed
         }
-        return url
+        return KBFileOpenLink(webURL: web, nextcloudDeepLink: deep, path: "notes/meeting.md")
     }
 }

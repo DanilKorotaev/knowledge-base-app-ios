@@ -12,6 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Changed
+
+- Changed files in chat open Nextcloud/Safari directly (no public share); Diff + Revert live under the chat overflow menu for the current session
+
 ## [1.0.98] - 2026-10-22
 
 ### Changed

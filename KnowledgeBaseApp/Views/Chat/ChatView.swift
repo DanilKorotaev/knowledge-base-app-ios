@@ -16,7 +16,9 @@ struct ChatView: View {
     @State private var renameError: String?
     @State private var isCreatingShareLink = false
     @State private var shareSheetURL: URL?
+    @State private var showChangedFiles = false
     private let attachmentLoader: KBAttachmentLoaderProtocol?
+    private let filesClient: FilesAPIClientProtocol
 
     /// Pause auto-load after prepend while layout settles (prevents cascade from geometry/onAppear).
     private static let paginationSettleDelay: TimeInterval = 0.85
@@ -35,6 +37,9 @@ struct ChatView: View {
             )
         )
         self.attachmentLoader = attachmentLoader
+        self.filesClient = (sessionCreator as? FilesAPIClientProtocol)
+            ?? URLSessionKnowledgeBaseAPIClient()
+            ?? StubFilesAPIClient()
     }
 
     var body: some View {
@@ -99,6 +104,13 @@ struct ChatView: View {
                     }
                     .disabled(viewModel.session.isLocalDraft || isCreatingShareLink)
 
+                    Button {
+                        showChangedFiles = true
+                    } label: {
+                        Label("files.changed_title", systemImage: "doc.text.magnifyingglass")
+                    }
+                    .disabled(viewModel.session.isLocalDraft)
+
                     Divider()
 
                     Button {
@@ -145,6 +157,12 @@ struct ChatView: View {
             Button("common.ok", role: .cancel) { renameError = nil }
         } message: {
             Text(renameError ?? "")
+        }
+        .navigationDestination(isPresented: $showChangedFiles) {
+            ChangedFilesView(
+                filesClient: filesClient,
+                sessionId: viewModel.session.isLocalDraft ? nil : viewModel.session.id
+            )
         }
         .sheet(isPresented: Binding(
             get: { shareSheetURL != nil },

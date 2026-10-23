@@ -129,8 +129,6 @@ struct RichMessageBubbleView: View {
                         ? "chat.recent_changed_files"
                         : "chat.changed_files_in_reply"
                 )
-            } else if message.role == .assistant {
-                OpenChangedFilesFallbackButton(filesClient: filesClient)
             }
         }
         .padding(message.role == .user ? 12 : 0)
@@ -182,6 +180,8 @@ private struct ChangedFilesListView: View {
 
     /// Collapsed by default so long lists do not steal half the chat viewport.
     @State private var isExpanded = false
+    @State private var openingFileId: String?
+    @State private var openError: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -217,12 +217,17 @@ private struct ChangedFilesListView: View {
             if isExpanded {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(files) { file in
-                        NavigationLink {
-                            FileDiffView(file: file, filesClient: filesClient, onReverted: {})
+                        Button {
+                            Task { await openFile(file) }
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: "doc.text")
-                                    .foregroundStyle(.secondary)
+                                if openingFileId == file.id {
+                                    ProgressView()
+                                        .controlSize(.mini)
+                                } else {
+                                    Image(systemName: "doc.text")
+                                        .foregroundStyle(.secondary)
+                                }
                                 Text(file.path)
                                     .font(.caption)
                                     .lineLimit(1)
@@ -238,6 +243,8 @@ private struct ChangedFilesListView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                         }
                         .buttonStyle(.plain)
+                        .disabled(openingFileId != nil)
+                        .accessibilityHint(Text("chat.open_file_in_nextcloud_a11y"))
                     }
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -245,22 +252,26 @@ private struct ChangedFilesListView: View {
         }
         .padding(.top, 4)
         .animation(.snappy(duration: 0.28), value: isExpanded)
-    }
-}
-
-private struct OpenChangedFilesFallbackButton: View {
-    let filesClient: FilesAPIClientProtocol
-
-    var body: some View {
-        NavigationLink {
-            ChangedFilesView(filesClient: filesClient)
-        } label: {
-            Label("chat.open_changed_files", systemImage: "doc.text.magnifyingglass")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.blue)
-                .padding(.top, 4)
+        .alert("chat.open_file_failed", isPresented: Binding(
+            get: { openError != nil },
+            set: { if !$0 { openError = nil } }
+        )) {
+            Button("common.ok", role: .cancel) { openError = nil }
+        } message: {
+            Text(openError ?? "")
         }
-        .buttonStyle(.plain)
+    }
+
+    @MainActor
+    private func openFile(_ file: KBChangedFile) async {
+        openingFileId = file.id
+        defer { openingFileId = nil }
+        do {
+            let link = try await filesClient.createOpenLink(fileId: file.id)
+            NextcloudFileOpener.open(link, mode: .preferred)
+        } catch {
+            openError = error.localizedDescription
+        }
     }
 }
 

@@ -2,6 +2,9 @@ import SwiftUI
 
 struct ChangedFilesView: View {
     let filesClient: FilesAPIClientProtocol
+    /// When set, only changes for this chat session are listed.
+    var sessionId: String? = nil
+
     @State private var files: [KBChangedFile] = []
     @State private var loadError: String?
     @State private var isLoading = false
@@ -58,7 +61,7 @@ struct ChangedFilesView: View {
         loadError = nil
         defer { isLoading = false }
         do {
-            files = try await filesClient.fetchChangedFiles()
+            files = try await filesClient.fetchChangedFiles(sessionId: sessionId)
         } catch {
             loadError = error.localizedDescription
         }

@@ -38,6 +38,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>nextcloud</string>
+	</array>
 	<key>KBAppAPIBaseURL</key>
 	<string>$(INFOPLIST_KEY_KBAppAPIBaseURL)</string>
 	<key>KBAppAuthToken</key>

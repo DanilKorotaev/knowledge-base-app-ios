@@ -1247,8 +1247,17 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 // MARK: - Changed files (KB App API)
 
 extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
-    func fetchChangedFiles() async throws -> [KBChangedFile] {
-        let url = baseURL.appendingPathComponent("api/files/changes")
+    func fetchChangedFiles(sessionId: String?) async throws -> [KBChangedFile] {
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("api/files/changes"),
+            resolvingAgainstBaseURL: false
+        )
+        if let sessionId, !sessionId.isEmpty {
+            components?.queryItems = [URLQueryItem(name: "session_id", value: sessionId)]
+        }
+        guard let url = components?.url else {
+            throw FilesAPIError.decodingFailed
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         let data = try await performFilesData(request)
@@ -1285,8 +1294,8 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
         _ = try await performFilesData(request)
     }
 
-    func createShareLink(fileId: String) async throws -> URL {
-        let url = baseURL.appendingPathComponent("api/files/share-link")
+    func createOpenLink(fileId: String) async throws -> KBFileOpenLink {
+        let url = baseURL.appendingPathComponent("api/files/open-link")
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -1295,17 +1304,13 @@ extension URLSessionKnowledgeBaseAPIClient: FilesAPIClientProtocol {
             let file_id: String
         }
 
-        struct ResponseBody: Decodable {
-            let url: String
-        }
-
         request.httpBody = try JSONEncoder().encode(Body(file_id: fileId))
         let data = try await performFilesData(request)
-        let decoded = try JSONDecoder().decode(ResponseBody.self, from: data)
-        guard let link = URL(string: decoded.url) else {
+        do {
+            return try JSONDecoder().decode(KBFileOpenLink.self, from: data)
+        } catch {
             throw FilesAPIError.decodingFailed
         }
-        return link
     }
 }
 
