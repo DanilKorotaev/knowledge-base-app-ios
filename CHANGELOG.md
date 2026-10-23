@@ -12,6 +12,16 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.100] - 2026-10-23
+
+### Changed
+
+- Open changed files in Safari by default (Nextcloud deeplink often only foregrounds the app during sync)
+
+### Fixed
+
+- Open changed files in Safari by default
+
 ### Fixed
 
 - Open changed files in Safari by default (Nextcloud deeplink often only foregrounds the app during sync)
@@ -835,7 +845,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.99...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.100...HEAD
+[1.0.100]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.100
 [1.0.99]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.99
 [1.0.98]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.98
 [1.0.97]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.97
