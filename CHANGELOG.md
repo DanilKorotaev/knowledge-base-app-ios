@@ -12,15 +12,15 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Fixed
+
+- Open changed files in Safari by default (Nextcloud deeplink often only foregrounds the app during sync)
+
 ## [1.0.99] - 2026-10-23
 
 ### Added
 
 - Open changed files via Nextcloud deeplink or auth web
-
-### Changed
-
-- Changed files in chat open Nextcloud/Safari directly (no public share); Diff + Revert live under the chat overflow menu for the current session
 
 ### Changed
 
