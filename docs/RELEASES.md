@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.99 | 223 | `ios/v1.0.99` | 2026-10-23 | Open changed files via Nextcloud deeplink or auth web |
 | 1.0.98 | 222 | `ios/v1.0.98` | 2026-10-22 | Include Unit and UI blocks in Telegram test notify |
 | 1.0.97 | 221 | `ios/v1.0.97` | 2026-10-22 | UI coverage for Overview boards and Actions jobs |
 | 1.0.96 | 220 | `ios/v1.0.96` | 2026-10-19 | List_row swipe_actions for history delete |
