@@ -12,6 +12,17 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.103] - 2026-10-24
+
+### Added
+
+- Login/register with Keychain session and 401 refresh
+- Push after login and per-user offline cache
+
+### Changed
+
+- Raise coverage above CI gate for JWT auth paths
+
 ## [1.0.102] - 2026-10-24
 
 ### Changed
@@ -857,7 +868,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.102...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.103...HEAD
+[1.0.103]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.103
 [1.0.102]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.102
 [1.0.101]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.101
 [1.0.100]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.100
