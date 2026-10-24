@@ -1,15 +1,61 @@
 import Foundation
 import Security
 
-/// Stores the KB App API bearer token in the Keychain (not UserDefaults).
-/// Uses a shared access group so the Share Extension can reuse the main-app token.
+/// Stores KB App API tokens in the Keychain (not UserDefaults).
+/// Uses a shared access group so the Share Extension can reuse the main-app access token.
 enum KeychainTokenStore {
     private static let service = "com.coredan.KnowledgeBaseApp.authToken"
-    private static let account = "KBAPP_AUTH_TOKEN"
+    private static let accessAccount = "KBAPP_AUTH_TOKEN"
+    private static let refreshAccount = "KBAPP_REFRESH_TOKEN"
+    /// Legacy account name — still read/cleared for migration.
+    private static let legacyAccessAccount = "KBAPP_AUTH_TOKEN"
     private static let accessGroup = AppGroupIdentifiers.keychainAccessGroup
 
+    // MARK: - Access token (Bearer)
+
     static func setToken(_ value: String?) {
-        deleteToken(includeLegacy: true)
+        setSecret(value, account: accessAccount)
+    }
+
+    static func token() -> String? {
+        if let shared = readSecret(account: accessAccount, useAccessGroup: true) {
+            return shared
+        }
+        guard let legacy = readSecret(account: legacyAccessAccount, useAccessGroup: false) else { return nil }
+        // Promote legacy (app-only) item into the shared access group.
+        setToken(legacy)
+        return legacy
+    }
+
+    // MARK: - Refresh token
+
+    static func setRefreshToken(_ value: String?) {
+        setSecret(value, account: refreshAccount)
+    }
+
+    static func refreshToken() -> String? {
+        if let shared = readSecret(account: refreshAccount, useAccessGroup: true) {
+            return shared
+        }
+        return readSecret(account: refreshAccount, useAccessGroup: false)
+    }
+
+    // MARK: - Session
+
+    static func setSession(accessToken: String, refreshToken: String) {
+        setToken(accessToken)
+        setRefreshToken(refreshToken)
+    }
+
+    static func clearSession() {
+        setToken(nil)
+        setRefreshToken(nil)
+    }
+
+    // MARK: - Internals
+
+    private static func setSecret(_ value: String?, account: String) {
+        deleteSecret(account: account, includeLegacy: true)
         guard let value, !value.isEmpty, let data = value.data(using: .utf8) else { return }
 
         var query: [String: Any] = [
@@ -27,17 +73,7 @@ enum KeychainTokenStore {
         }
     }
 
-    static func token() -> String? {
-        if let shared = readToken(useAccessGroup: true) {
-            return shared
-        }
-        guard let legacy = readToken(useAccessGroup: false) else { return nil }
-        // Promote legacy (app-only) item into the shared access group.
-        setToken(legacy)
-        return legacy
-    }
-
-    private static func readToken(useAccessGroup: Bool) -> String? {
+    private static func readSecret(account: String, useAccessGroup: Bool) -> String? {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -56,7 +92,7 @@ enum KeychainTokenStore {
         return string
     }
 
-    private static func deleteToken(includeLegacy: Bool) {
+    private static func deleteSecret(account: String, includeLegacy: Bool) {
         var sharedQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

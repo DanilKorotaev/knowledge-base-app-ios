@@ -38,6 +38,27 @@ final class KBHTTPTransport: @unchecked Sendable {
     }
 
     func data(for request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let first = try await performData(request)
+        if first.1.statusCode != 401 {
+            return first
+        }
+        // Skip refresh for auth endpoints themselves.
+        if Self.isAuthPath(request.url) {
+            return first
+        }
+        guard KeychainTokenStore.refreshToken() != nil else {
+            return first
+        }
+        do {
+            let newToken = try await AuthSessionStore.shared.refreshAccessToken()
+            updateAuth(token: newToken)
+            return try await performData(request)
+        } catch {
+            return first
+        }
+    }
+
+    private func performData(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         let id = UUID().uuidString
         let start = CACurrentMediaTime()
         let interceptor = makeInterceptor(requestId: id)
@@ -60,6 +81,11 @@ final class KBHTTPTransport: @unchecked Sendable {
             apiLogger.log(error: error, id: id, response: nil)
             throw error
         }
+    }
+
+    private static func isAuthPath(_ url: URL?) -> Bool {
+        guard let path = url?.path else { return false }
+        return path.contains("/api/auth/")
     }
 
     /// Streaming (SSE): URLSession bytes + same auth/logging as Alamofire requests.

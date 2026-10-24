@@ -182,6 +182,24 @@ final class KnowledgeBaseAppUITests: XCTestCase {
     }
 }
 
+final class AuthLoginUITests: XCTestCase {
+    func testLoginScreenShowsServerAndCredentials() throws {
+        let app = XCUIApplication()
+        app.launchArguments = [
+            UITestRuntime.launchArgument,
+            UITestRuntime.forceLoginGateArgument,
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US",
+        ]
+        app.launch()
+
+        XCTAssertTrue(app.navigationBars["Sign in"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.textFields["auth.login"].exists || app.textFields["Login"].exists)
+        XCTAssertTrue(app.secureTextFields["auth.password"].exists || app.secureTextFields["Password"].exists)
+        XCTAssertTrue(app.buttons["auth.submit"].exists || app.buttons["Sign in"].exists)
+    }
+}
+
 private extension XCUIElement {
     func wait(for keyPath: KeyPath<XCUIElement, Bool>, toEqual expected: Bool, timeout: TimeInterval) -> Bool {
         let predicate = NSPredicate { _, _ in

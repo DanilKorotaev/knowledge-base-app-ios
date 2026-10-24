@@ -7,6 +7,7 @@ struct KnowledgeBaseApp: App {
     @State private var deepLinkSessionId: String?
     @State private var debugQuickActions = DebugQuickActionsController.shared
     @Bindable private var languageStore = AppLanguageStore.shared
+    @Bindable private var authSession = AuthSessionStore.shared
 
     init() {
         UserDefaultsService.shared = UserDefaultsService(settings: UserDefaultsInspectorSettings.shared)
@@ -23,16 +24,22 @@ struct KnowledgeBaseApp: App {
         // Ensure App Group draft root exists and legacy Application Support drafts are copied once.
         _ = ComposerDraftStore.shared
         // Promote Settings token into the shared Keychain access group for Share Extension.
-        _ = KeychainTokenStore.token()
+        AuthSessionStore.shared.restoreFromKeychain()
     }
 
     var body: some Scene {
         WindowGroup {
             @Bindable var debugQuickActions = debugQuickActions
-            MainView(
-                deepLinkVoiceRecording: $deepLinkVoiceRecording,
-                deepLinkSessionId: $deepLinkSessionId
-            )
+            Group {
+                if authSession.shouldPresentLoginGate {
+                    LoginView()
+                } else {
+                    MainView(
+                        deepLinkVoiceRecording: $deepLinkVoiceRecording,
+                        deepLinkSessionId: $deepLinkSessionId
+                    )
+                }
+            }
             .environment(\.locale, languageStore.resolvedLocale)
             .environment(languageStore)
             .background {

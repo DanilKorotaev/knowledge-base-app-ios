@@ -1,6 +1,6 @@
 # Auth: Server URL → login / register → session
 
-**Статус:** 📋 Planned  
+**Статус:** 🚧 In progress  
 **Приоритет:** 🔴 Высокий  
 **Категория:** Auth  
 **Эпик:** vault `эпик-kb-app-avtorizaciya-multiuser`  
@@ -13,10 +13,11 @@
 
 ## Чеклист
 
-- [ ] Login / Register screens
-- [ ] Keychain: access + refresh (shared with Share Extension group)
-- [ ] `KBRequestInterceptor` refresh flow
-- [ ] `must_change_password` → forced change UI
-- [ ] Settings: account, no raw token paste in App Store path
+- [x] Login / Register screens
+- [x] Keychain: access + refresh (shared with Share Extension group)
+- [x] `KBHTTPTransport` 401 → refresh retry (auth paths excluded)
+- [x] `must_change_password` → forced change UI
+- [x] Settings: account + sign out; raw token behind advanced toggle
 - [ ] Point TestFlight/debug at staging during epic
-- [ ] Contract sync with backend auth endpoints
+- [x] Contract sync with backend auth endpoints (`/api/auth/*`)
+- [x] Unit tests (`AuthAPIClientTests`) + UI test (`AuthLoginUITests`)

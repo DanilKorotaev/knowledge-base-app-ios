@@ -15,7 +15,10 @@ struct SettingsView: View {
     @State private var voiceDefaultTitle: String?
     @State private var voiceDefaultExpiry: String?
     @State private var didCopyVersion = false
+    @State private var showAdvancedToken = false
+    @State private var showChangePassword = false
     @Bindable private var languageStore = AppLanguageStore.shared
+    @Bindable private var authSession = AuthSessionStore.shared
     @State private var debugQuickActions = DebugQuickActionsController.shared
 
     private var clientMeta: KBClientMetadata { KBClientMetadata.current }
@@ -33,23 +36,48 @@ struct SettingsView: View {
             }
 
             Section {
+                if let login = authSession.currentUser?.login ?? loginFromTokenFallback {
+                    LabeledContent("auth.login", value: login)
+                }
+                if let vault = authSession.currentUser?.vaultRootRelative {
+                    LabeledContent("auth.vault", value: vault)
+                }
+                Button("auth.change_password") {
+                    showChangePassword = true
+                }
+                Button("auth.sign_out", role: .destructive) {
+                    Task { await authSession.clear(logoutRemote: true) }
+                }
+                .accessibilityIdentifier("auth.sign_out")
+            } header: {
+                Text("auth.account_section")
+            }
+
+            Section {
                 TextField("settings.api_base_url", text: $apiBaseURL)
                     .textContentType(.URL)
                     .keyboardType(.URL)
                     .autocorrectionDisabled()
-                SecureField("settings.auth_token", text: $authToken)
+                Toggle("settings.show_advanced_token", isOn: $showAdvancedToken)
+                if showAdvancedToken {
+                    SecureField("settings.auth_token", text: $authToken)
+                }
             } header: {
                 Text("settings.api_section")
             } footer: {
-                Text("settings.api_footer")
+                Text("settings.api_footer_auth")
             }
 
             Section {
                 Button("common.save") {
                     let trimmedURL = apiBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                    let trimmedToken = authToken.trimmingCharacters(in: .whitespacesAndNewlines)
                     AppConfiguration.setUserString(trimmedURL.nilIfEmpty, for: AppConfiguration.Keys.apiBaseURL)
-                    AppConfiguration.setUserString(trimmedToken.nilIfEmpty, for: AppConfiguration.Keys.authToken)
+                    if showAdvancedToken {
+                        let trimmedToken = authToken.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if let token = trimmedToken.nilIfEmpty {
+                            authSession.applyAccessTokenOnly(token)
+                        }
+                    }
                 }
             }
 
@@ -142,6 +170,17 @@ struct SettingsView: View {
         .onAppear {
             reloadVoiceDefaultSummary()
         }
+        .sheet(isPresented: $showChangePassword) {
+            ChangePasswordView { showChangePassword = false }
+        }
+        .task {
+            await authSession.refreshProfile()
+        }
+    }
+
+    /// Best-effort login label when profile is not yet loaded.
+    private var loginFromTokenFallback: String? {
+        authSession.isAuthenticated ? String(localized: "auth.signed_in") : nil
     }
 
     private func copyVersionToPasteboard() {
