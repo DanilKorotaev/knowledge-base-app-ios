@@ -7,7 +7,7 @@ final class KBFileOpenLinkTests: XCTestCase {
             """
             {
               "web_url": "https://nextcloud.coredan.ru/f/42",
-              "nextcloud_deeplink": "nextcloud://open-file?user=danilpdr&link=https://nextcloud.coredan.ru&path=KnowledgeBase/a.md",
+              "nextcloud_deeplink": "nextcloud://open-file?user=danilpdr&link=https://nextcloud.coredan.ru/index.php/f/42",
               "path": "a.md",
               "change_id": "7"
             }

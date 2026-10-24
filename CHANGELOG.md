@@ -24,7 +24,7 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ### Fixed
 
-- Open changed files in Safari by default (Nextcloud deeplink often only foregrounds the app during sync)
+- Nextcloud open links use `index.php/f/{id}` and iOS `open-file?link=…/f/{id}` (path-only deeplinks are ignored by current NC iOS)
 
 ## [1.0.99] - 2026-10-23
 

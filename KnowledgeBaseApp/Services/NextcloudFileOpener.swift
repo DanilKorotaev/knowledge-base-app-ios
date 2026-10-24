@@ -14,9 +14,13 @@ enum NextcloudFileOpener {
     static func open(_ link: KBFileOpenLink, mode: NextcloudFileOpenMode = .preferred) {
         switch mode {
         case .preferred:
-            // Authenticated HTTPS is reliable for reading (esp. while NC syncs photos).
-            // Deep links often only foreground the NC app without opening the file.
-            UIApplication.shared.open(link.webURL)
+            // Prefer NC app when we have a correct open-file deeplink
+            // (link=https://…/index.php/f/{id}); otherwise Safari web URL.
+            if let deep = link.nextcloudDeepLink, UIApplication.shared.canOpenURL(deep) {
+                UIApplication.shared.open(deep)
+            } else {
+                UIApplication.shared.open(link.webURL)
+            }
         case .nextcloudApp:
             if let deep = link.nextcloudDeepLink, UIApplication.shared.canOpenURL(deep) {
                 UIApplication.shared.open(deep)
