@@ -20,10 +20,10 @@
 
 Против **staging** (`kbapp-staging.coredan.ru`), не prod.
 
-- [ ] [Login / register + Keychain session](tasks/pending/task-feature-auth-login-register.md)
-- [ ] [Logout + cache per-user](tasks/pending/task-feature-auth-logout-cache-per-user.md)
-- [ ] [Push after login](tasks/pending/task-feature-push-after-login-multiuser.md)
-- [ ] [Account switch foundation](tasks/pending/task-feature-account-switch-foundation.md)
+- [x] [Login / register + Keychain session](tasks/pending/task-feature-auth-login-register.md)
+- [x] [Logout + cache per-user](tasks/pending/task-feature-auth-logout-cache-per-user.md)
+- [x] [Push after login](tasks/pending/task-feature-push-after-login-multiuser.md)
+- [ ] [Account switch foundation](tasks/pending/task-feature-account-switch-foundation.md) — вне v1
 
 ### Product
 

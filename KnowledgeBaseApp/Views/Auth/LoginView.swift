@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LoginView: View {
     @Bindable private var session = AuthSessionStore.shared
+    /// Prefer saved URL; otherwise staging so one TestFlight build can validate multi-user without xcconfig secrets.
     @State private var serverURL: String = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL)
         ?? "https://kbapp-staging.coredan.ru"
     @State private var login = ""
