@@ -41,7 +41,8 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
 
     private let lock = NSLock()
     private let fileManager: FileManager
-    private let baseURL: URL
+    private var baseURL: URL
+    private let fixedBaseURL: Bool
     private let maxBytes: Int64
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -53,17 +54,27 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
     ) {
         self.fileManager = fileManager
         self.maxBytes = maxBytes
-        if let baseURL {
-            self.baseURL = baseURL
-        } else {
-            let root = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-                ?? fileManager.temporaryDirectory
-            self.baseURL = root
-                .appendingPathComponent("KBOfflineCache", isDirectory: true)
-                .appendingPathComponent("attachments", isDirectory: true)
-        }
+        self.fixedBaseURL = baseURL != nil
+        self.baseURL = baseURL
+            ?? OfflineCacheScope.attachmentsRoot(
+                apiBaseURL: AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL),
+                userId: nil,
+                fileManager: fileManager
+            )
         encoder.dateEncodingStrategy = .iso8601
         decoder.dateDecodingStrategy = .iso8601
+        try? fileManager.createDirectory(at: filesDirectoryURL, withIntermediateDirectories: true)
+    }
+
+    func rebindToCurrentUser(userId: Int?) {
+        guard !fixedBaseURL else { return }
+        lock.lock()
+        defer { lock.unlock() }
+        baseURL = OfflineCacheScope.attachmentsRoot(
+            apiBaseURL: AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL),
+            userId: userId,
+            fileManager: fileManager
+        )
         try? fileManager.createDirectory(at: filesDirectoryURL, withIntermediateDirectories: true)
     }
 

@@ -1,6 +1,6 @@
 # Push: register device after login (multi-user)
 
-**Статус:** 📋 Planned  
+**Статус:** ✅ Done  
 **Приоритет:** 🟡 Средний  
 **Категория:** Push  
 **Backend:** `task-api-push-devices-per-user`  
@@ -12,7 +12,7 @@ APNs device token регистрировать **после** успешного
 
 ## Чеклист
 
-- [ ] Hook: login success → `POST /api/devices`
-- [ ] Logout → `DELETE /api/devices/{token}`
-- [ ] Token refresh / re-register on APNs token rotate while logged in
+- [x] Hook: login success → `POST /api/devices`
+- [x] Logout → `DELETE /api/devices/{token}`
+- [x] Token refresh / re-register on APNs token rotate while logged in
 - [ ] Staging: verify push tied to correct account

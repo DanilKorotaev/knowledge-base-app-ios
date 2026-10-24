@@ -36,6 +36,20 @@ final class AuthSessionStore {
         accessToken = access?.nilIfEmpty
         refreshToken = refresh?.nilIfEmpty
         isAuthenticated = accessToken != nil
+        if currentUser == nil, let access, let sub = Self.jwtSubjectUserId(access) {
+            // Minimal stub so offline cache scopes before /me returns.
+            currentUser = AuthUserDTO(
+                id: sub,
+                login: UserDefaults.standard.string(forKey: Self.cachedLoginKey) ?? "user",
+                email: nil,
+                role: nil,
+                mustChangePassword: false,
+                cursorIsolation: nil,
+                vaultRootRelative: nil,
+                nextcloudUsername: nil
+            )
+        }
+        rebindCaches()
     }
 
     @MainActor
@@ -45,7 +59,10 @@ final class AuthSessionStore {
         accessToken = tokens.accessToken
         refreshToken = tokens.refreshToken
         currentUser = tokens.user
+        UserDefaults.standard.set(tokens.user.login, forKey: Self.cachedLoginKey)
         isAuthenticated = true
+        rebindCaches()
+        PushNotificationService.shared.onAuthenticated()
         NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
     }
 
@@ -57,7 +74,21 @@ final class AuthSessionStore {
         AppConfiguration.setUserString(token, for: AppConfiguration.Keys.authToken)
         accessToken = token
         refreshToken = nil
+        if let sub = Self.jwtSubjectUserId(token) {
+            currentUser = AuthUserDTO(
+                id: sub,
+                login: UserDefaults.standard.string(forKey: Self.cachedLoginKey) ?? "user",
+                email: nil,
+                role: nil,
+                mustChangePassword: false,
+                cursorIsolation: nil,
+                vaultRootRelative: nil,
+                nextcloudUsername: nil
+            )
+        }
         isAuthenticated = true
+        rebindCaches()
+        PushNotificationService.shared.onAuthenticated()
         NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
     }
 
@@ -65,16 +96,25 @@ final class AuthSessionStore {
     func clear(logoutRemote: Bool = true) async {
         let access = accessToken
         let refresh = refreshToken
+        await PushNotificationService.shared.unregisterFromServer()
         if logoutRemote, let client = URLSessionAuthAPIClient.makeFromConfiguration() {
             try? await client.logout(accessToken: access, refreshToken: refresh)
         }
         KeychainTokenStore.clearSession()
         AppConfiguration.setUserString(nil, for: AppConfiguration.Keys.authToken)
+        UserDefaults.standard.removeObject(forKey: Self.cachedLoginKey)
         accessToken = nil
         refreshToken = nil
         currentUser = nil
         isAuthenticated = false
+        rebindCaches()
         NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
+    }
+
+    private func rebindCaches() {
+        let userId = currentUser?.id
+        FileOfflineCacheStore.shared.rebindToCurrentUser(userId: userId)
+        FileAttachmentDiskCache.shared.rebindToCurrentUser(userId: userId)
     }
 
     @MainActor
@@ -127,6 +167,28 @@ final class AuthSessionStore {
 
 extension Notification.Name {
     static let kbAuthSessionDidChange = Notification.Name("kbAuthSessionDidChange")
+}
+
+extension AuthSessionStore {
+    private static let cachedLoginKey = "kb.auth.cached_login"
+
+    /// Decode JWT `sub` without verifying signature (cache scoping only).
+    static func jwtSubjectUserId(_ token: String) -> Int? {
+        let parts = token.split(separator: ".")
+        guard parts.count >= 2 else { return nil }
+        var payload = String(parts[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let pad = 4 - payload.count % 4
+        if pad < 4 { payload += String(repeating: "=", count: pad) }
+        guard let data = Data(base64Encoded: payload),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        if let sub = json["sub"] as? String { return Int(sub) }
+        if let sub = json["sub"] as? Int { return sub }
+        return nil
+    }
 }
 
 private extension String {

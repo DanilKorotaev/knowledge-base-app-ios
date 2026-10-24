@@ -52,6 +52,14 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
         }
     }
 
+    /// After login / session restore: ask for permission and (re)sync device token as this user.
+    func onAuthenticated() {
+        requestAuthorizationAndRegister()
+        if let hex = deviceTokenHex {
+            Task { await syncDeviceTokenToServer(hex) }
+        }
+    }
+
     func didRegister(deviceToken: Data) {
         let hex = deviceToken.map { String(format: "%02x", $0) }.joined()
         deviceTokenHex = hex
@@ -67,6 +75,7 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
 
     func unregisterFromServer() async {
         guard let hex = deviceTokenHex else { return }
+        guard AuthSessionStore.shared.isAuthenticated else { return }
         guard let client = URLSessionKnowledgeBaseAPIClient() else { return }
         do {
             try await client.unregisterDevice(token: hex)
@@ -77,6 +86,10 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
     }
 
     private func syncDeviceTokenToServer(_ hex: String) async {
+        guard AuthSessionStore.shared.isAuthenticated else {
+            logger.debugInfo("Skip device sync — not authenticated")
+            return
+        }
         guard let client = URLSessionKnowledgeBaseAPIClient() else { return }
         let environment = Self.currentApnsEnvironment
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String

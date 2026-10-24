@@ -37,24 +37,56 @@ final class FileOfflineCacheStore: SessionCacheStoreProtocol, MessageCacheStoreP
 
     private let lock = NSLock()
     private let fileManager: FileManager
-    private let baseURL: URL
+    private var baseURL: URL
+    private let fixedBaseURL: Bool
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
     init(fileManager: FileManager = .default, baseURL: URL? = nil) {
         self.fileManager = fileManager
-        if let baseURL {
-            self.baseURL = baseURL
-        } else {
-            let root = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-                ?? fileManager.temporaryDirectory
-            self.baseURL = root.appendingPathComponent("KBOfflineCache", isDirectory: true)
-        }
+        self.fixedBaseURL = baseURL != nil
+        // Anonymous until AuthSessionStore rebinds after login/restore.
+        self.baseURL = baseURL
+            ?? OfflineCacheScope.storeRoot(
+                apiBaseURL: AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL),
+                userId: nil,
+                fileManager: fileManager
+            )
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
         encoder.dateEncodingStrategy = .iso8601
         decoder.dateDecodingStrategy = .iso8601
-        try? fileManager.createDirectory(at: self.baseURL, withIntermediateDirectories: true)
+        ensureDirectories()
+    }
+
+    /// Rebind to the signed-in account (or anonymous) after login/logout.
+    func rebindToCurrentUser(userId: Int?) {
+        guard !fixedBaseURL else { return }
+        lock.lock()
+        defer { lock.unlock() }
+        baseURL = OfflineCacheScope.storeRoot(
+            apiBaseURL: AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL),
+            userId: userId,
+            fileManager: fileManager
+        )
+        ensureDirectoriesLocked()
+    }
+
+    func clearCurrentScope() {
+        lock.lock()
+        defer { lock.unlock() }
+        try? fileManager.removeItem(at: baseURL)
+        ensureDirectoriesLocked()
+    }
+
+    private func ensureDirectories() {
+        lock.lock()
+        defer { lock.unlock() }
+        ensureDirectoriesLocked()
+    }
+
+    private func ensureDirectoriesLocked() {
+        try? fileManager.createDirectory(at: baseURL, withIntermediateDirectories: true)
         try? fileManager.createDirectory(at: messagesDirectoryURL, withIntermediateDirectories: true)
     }
 

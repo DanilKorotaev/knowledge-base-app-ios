@@ -1,6 +1,6 @@
 # Auth: logout + offline cache scoped per user
 
-**Статус:** 📋 Planned  
+**Статус:** ✅ Done  
 **Приоритет:** 🟡 Средний  
 **Категория:** Auth / Offline  
 **Depends on:** `task-feature-auth-login-register`
@@ -11,7 +11,7 @@ Logout чистит сессию; offline cache и attachment disk cache клю�
 
 ## Чеклист
 
-- [ ] Sign out: clear Keychain tokens, revoke refresh (API), clear in-memory clients
-- [ ] Cache directory / keys include user id
-- [ ] Settings: manage cache (существующий UI) работает в per-user scope
-- [ ] Tests for cache isolation between two fake user ids
+- [x] Sign out: clear Keychain tokens, revoke refresh (API), clear in-memory clients
+- [x] Cache directory / keys include user id
+- [x] Settings: manage cache (существующий UI) работает в per-user scope
+- [x] Tests for cache isolation between two fake user ids

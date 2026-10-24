@@ -28,7 +28,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             PushNotificationService.shared.bootstrapFromLaunch(remoteNotification: remote)
         }
         Task { @MainActor in
-            PushNotificationService.shared.requestAuthorizationAndRegister()
+            // Register APNs only when a session exists; login will call onAuthenticated().
+            if AuthSessionStore.shared.isAuthenticated {
+                PushNotificationService.shared.requestAuthorizationAndRegister()
+            }
         }
         return true
     }

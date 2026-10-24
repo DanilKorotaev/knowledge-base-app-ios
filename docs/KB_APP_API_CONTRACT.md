@@ -1,7 +1,7 @@
 # KB App API — контракт (канон для iOS и бэкенда)
 
-**Версия:** 1.1  
-**Статус:** prod — реализация в `knowledge-base-bot/kb_app_api/`, клиент iOS на `https://kbapp.coredan.ru` (и staging).  
+**Версия:** 1.2  
+**Статус:** staging multi-user auth — реализация в `knowledge-base-bot/kb_app_api/`, клиент iOS на `https://kbapp-staging.coredan.ru` (prod после merge).  
 **OpenAPI subset:** [`openapi/kb-app-api.yaml`](openapi/kb-app-api.yaml) — держать в синке с этим файлом.
 
 **Связь:** дополняет заметку в Nextcloud «Архитектура и бэкенд API»; при расхождении **пути и JSON для iOS** задаются **здесь**.
@@ -14,8 +14,8 @@
 | Идентификаторы | Строки (`uuid` или строковый surrogate), в JSON — **строки**, не числа |
 | Даты | ISO 8601 в UTC, поля `*_at` |
 | JSON ключи | `snake_case` |
-| Аутентификация | `Authorization: Bearer <token>` на всех маршрутах, кроме явно публичных (`GET /health`, опционально `POST /api/auth/token`) |
-| E2E-тесты | Заголовок `X-KB-App-E2E: 1` — отдельный telegram user на сервере (см. `docs/testing/E2E.md`) |
+| Аутентификация | `Authorization: Bearer <access_token>` (JWT). Shared `KB_APP_API_TOKEN` **удалён**. Публичные: `GET /health`, `GET /api/auth/signup-status`, `POST /api/auth/login`, `POST /api/auth/register` (если open_signup), `POST /api/auth/refresh` |
+| E2E-тесты | Логин тестовым пользователем (`/api/auth/login`); заголовок `X-KB-App-E2E: 1` — legacy isolation hint |
 | Клиент (iOS, optional) | `X-KB-App-Version`, `X-KB-App-Build`, `X-KB-App-Platform` (`ios`), `X-KB-App-OS`, `X-KB-App-Log-Session` (on-device log file session UUID); также `User-Agent: KnowledgeBaseApp/<ver> (ios <os>; build <n>)`. Сервер логирует в `request.state.client_meta`, не требует для авторизации. |
 
 ## Ошибки
@@ -34,11 +34,40 @@
 
 Клиент iOS читает `message`, затем `detail`, затем `code`. Если JSON не разобран — показывается превью тела ответа.
 
-## Auth (опционально)
+## Auth (JWT + refresh)
 
-| Метод | Путь | Описание |
-|-------|------|----------|
-| POST | `/api/auth/token` | Выдача Bearer при `KB_APP_API_TOKEN_ENDPOINT_ENABLED=true`. Иначе **404**. |
+| Метод | Путь | Auth | Описание |
+|-------|------|------|----------|
+| GET | `/api/auth/signup-status` | — | `{ "open_signup": true\|false }` |
+| POST | `/api/auth/register` | — | Body `{ login, password, email? }` → tokens (403 если invite_only) |
+| POST | `/api/auth/login` | — | Body `{ login, password }` → tokens |
+| POST | `/api/auth/refresh` | — | Body `{ refresh_token }` → tokens |
+| POST | `/api/auth/logout` | optional Bearer | Body `{ refresh_token? }` — revoke refresh |
+| POST | `/api/auth/change-password` | Bearer | Body `{ current_password?, new_password }` (current optional если `must_change_password`) |
+| GET | `/api/auth/me` | Bearer | `{ "user": { id, login, email, role, must_change_password, cursor_isolation, vault_root_relative, nextcloud_username } }` |
+
+**Ответ login / register / refresh:**
+
+```json
+{
+  "access_token": "…",
+  "refresh_token": "…",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "user": {
+    "id": 4,
+    "login": "alice",
+    "email": "a@example.com",
+    "role": "user",
+    "must_change_password": false,
+    "cursor_isolation": "strict",
+    "vault_root_relative": "users/alice",
+    "nextcloud_username": "alice"
+  }
+}
+```
+
+iOS: access + refresh в Keychain (App Group); на 401 — `POST /refresh` один раз, иначе login gate.
 
 ## Сессии
 
