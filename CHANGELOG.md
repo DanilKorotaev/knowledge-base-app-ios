@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.102] - 2026-10-24
+
+### Changed
+
+- Add multi-user auth task backlog for KB App
+
 ## [1.0.101] - 2026-10-24
 
 ### Fixed
@@ -851,7 +857,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.101...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.102...HEAD
+[1.0.102]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.102
 [1.0.101]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.101
 [1.0.100]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.100
 [1.0.99]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.99
