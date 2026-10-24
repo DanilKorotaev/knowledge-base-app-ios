@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.101] - 2026-10-24
+
+### Fixed
+
+- Prefer NC open-file deeplink with /f/{id} link param
+
 ## [1.0.100] - 2026-10-23
 
 ### Changed
@@ -845,7 +851,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.100...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.101...HEAD
+[1.0.101]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.101
 [1.0.100]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.100
 [1.0.99]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.99
 [1.0.98]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.98

@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.101 | 225 | `ios/v1.0.101` | 2026-10-24 | Prefer NC open-file deeplink with /f/{id} link param |
 | 1.0.100 | 224 | `ios/v1.0.100` | 2026-10-23 | Open changed files in Safari by default |
 | 1.0.99 | 223 | `ios/v1.0.99` | 2026-10-23 | Open changed files via Nextcloud deeplink or auth web |
 | 1.0.98 | 222 | `ios/v1.0.98` | 2026-10-22 | Include Unit and UI blocks in Telegram test notify |
