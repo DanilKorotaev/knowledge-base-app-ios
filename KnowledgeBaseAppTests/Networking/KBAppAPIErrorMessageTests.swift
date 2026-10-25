@@ -28,7 +28,7 @@ final class KBAppAPIErrorMessageTests: XCTestCase {
     func testKnowledgeBaseAPIErrorDescriptions() {
         XCTAssertEqual(
             KnowledgeBaseAPIError.missingBaseURL.errorDescription,
-            "API base URL is not configured."
+            String(localized: "auth.error_missing_api_url")
         )
         XCTAssertEqual(
             KnowledgeBaseAPIError.invalidResponse(statusCode: 503, apiMessage: "down").errorDescription,
@@ -36,15 +36,22 @@ final class KBAppAPIErrorMessageTests: XCTestCase {
         )
         XCTAssertEqual(
             KnowledgeBaseAPIError.invalidResponse(statusCode: 500, apiMessage: nil).errorDescription,
-            "Request failed (HTTP 500)."
+            "\(String(localized: "network.request_failed")) (HTTP 500)"
         )
         XCTAssertEqual(
             KnowledgeBaseAPIError.invalidResponse(statusCode: -1, apiMessage: nil).errorDescription,
-            "Invalid server response."
+            String(localized: "network.invalid_response")
         )
         XCTAssertEqual(
             KnowledgeBaseAPIError.decodingFailed.errorDescription,
-            "Could not read server response."
+            String(localized: "network.decoding_failed")
+        )
+        XCTAssertEqual(
+            KnowledgeBaseAPIError.invalidResponse(
+                statusCode: 401,
+                apiMessage: "Access token истёк"
+            ).errorDescription,
+            String(localized: "auth.session_expired")
         )
     }
 
@@ -55,7 +62,22 @@ final class KBAppAPIErrorMessageTests: XCTestCase {
         )
         XCTAssertEqual(
             FilesAPIError.decodingFailed.errorDescription,
-            "Could not read server response."
+            String(localized: "network.decoding_failed")
+        )
+        XCTAssertEqual(
+            FilesAPIError.invalidResponse(statusCode: 403, apiMessage: "forbidden").errorDescription,
+            String(localized: "auth.session_expired")
+        )
+    }
+
+    func testBoardsAPIErrorDescriptions() {
+        XCTAssertEqual(
+            BoardsAPIError.notFound.errorDescription,
+            String(localized: "boards.error.not_found")
+        )
+        XCTAssertEqual(
+            BoardsAPIError.invalidResponse(statusCode: 500, apiMessage: nil).errorDescription,
+            "\(String(localized: "boards.error.generic")) (HTTP 500)"
         )
     }
 }
