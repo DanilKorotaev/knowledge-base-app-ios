@@ -44,7 +44,8 @@
 | POST | `/api/auth/refresh` | — | Body `{ refresh_token }` → tokens |
 | POST | `/api/auth/logout` | optional Bearer | Body `{ refresh_token? }` — revoke refresh |
 | POST | `/api/auth/change-password` | Bearer | Body `{ current_password?, new_password }` (current optional если `must_change_password`) |
-| GET | `/api/auth/me` | Bearer | `{ "user": { id, login, email, role, must_change_password, cursor_isolation, vault_root_relative, nextcloud_username } }` |
+| GET | `/api/auth/me` | Bearer | `{ "user": { id, login, email, role, must_change_password, cursor_isolation, vault_root_relative, nextcloud_username, kb_folder, has_nc_app_password } }` |
+| PATCH | `/api/auth/me` | Bearer | Body `{ kb_folder? }` — путь KB в NC home пользователя (по умолчанию `/`) |
 
 **Ответ login / register / refresh:**
 
