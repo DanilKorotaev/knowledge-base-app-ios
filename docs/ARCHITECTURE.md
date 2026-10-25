@@ -48,7 +48,7 @@ The app talks only to **HTTPS APIs**; it does not run Cursor or touch the databa
 
 Canonical HTTP contract for this app: **`docs/KB_APP_API_CONTRACT.md`** and **`docs/openapi/kb-app-api.yaml`**. Higher-level product notes remain in Nextcloud («Архитектура и бэкенд API»).
 
-**KB App API** is implemented in `knowledge-base-bot/kb_app_api/`. Without `KBAPP_API_BASE_URL`, the app uses the in-memory stub client. With base URL + Bearer token, it uses `URLSessionKnowledgeBaseAPIClient`. Keep paths and JSON aligned with the repo contract in the same change as server updates. Deploy checklist: Nextcloud `Документация/Задачи/KB App API — бэкенд для iOS/Чеклист — деплой и интеграция.md`.
+**KB App API** is implemented in `knowledge-base-bot/kb_app_api/`. Until the user sets a server URL (onboarding) and signs in (JWT in Keychain), the app uses in-memory stubs. With URL + token it uses `URLSessionKnowledgeBaseAPIClient`. Keep paths and JSON aligned with the repo contract in the same change as server updates.
 
 Open choice for the repo layout (documented in Nextcloud tasks folder): separate `kb-app-api` service importing bot services vs. later merge into a gateway.
 

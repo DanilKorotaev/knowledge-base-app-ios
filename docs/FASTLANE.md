@@ -136,8 +136,6 @@ TELEGRAM_NOTIFY_DISABLED=1 python3 scripts/ci/telegram_notify.py tests --outcome
 
 | Secret                          | Used by                                                          |
 | ------------------------------- | ---------------------------------------------------------------- |
-| `KBAPP_API_BASE_URL`            | **TestFlight build** — KB App API HTTPS base (no trailing slash); written to `Config/Secrets.xcconfig` in CI |
-| `KBAPP_AUTH_TOKEN`              | **TestFlight build** — Bearer token for the API (same as local `.env`) |
 | `MATCH_PASSWORD`                | Match decrypt                                                    |
 | `MATCH_GIT_URL`                 | Match clone                                                      |
 | `MATCH_GIT_BASIC_AUTHORIZATION` | Private Match repo over HTTPS (`base64` of `x-access-token:PAT`) |
@@ -153,7 +151,7 @@ TELEGRAM_NOTIFY_DISABLED=1 python3 scripts/ci/telegram_notify.py tests --outcome
 | `TELEGRAM_BOT_TOKEN`            | **CI / TestFlight** — Telegram Bot API token (from @BotFather)   |
 | `TELEGRAM_CHAT_ID`              | **CI / TestFlight** — chat id to receive notifications           |
 
-KB App API values for TestFlight: [API_CONFIGURATION.md](API_CONFIGURATION.md). **Do not** put real URLs or tokens in the repository — only in GitHub Secrets and local `.env`.
+API URL/token are **not** embedded in TestFlight builds — the user chooses the server at login. See [API_CONFIGURATION.md](API_CONFIGURATION.md).
 
 
 ## Shared Apple Developer account with HealthSync

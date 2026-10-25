@@ -11,11 +11,9 @@ enum SettingsRoute: Hashable {
 
 struct SettingsView: View {
     @State private var apiBaseURL: String = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL) ?? ""
-    @State private var authToken: String = AppConfiguration.string(for: AppConfiguration.Keys.authToken) ?? ""
     @State private var voiceDefaultTitle: String?
     @State private var voiceDefaultExpiry: String?
     @State private var didCopyVersion = false
-    @State private var showAdvancedToken = false
     @State private var showChangePassword = false
     @Bindable private var languageStore = AppLanguageStore.shared
     @Bindable private var authSession = AuthSessionStore.shared
@@ -58,27 +56,14 @@ struct SettingsView: View {
                     .textContentType(.URL)
                     .keyboardType(.URL)
                     .autocorrectionDisabled()
-                Toggle("settings.show_advanced_token", isOn: $showAdvancedToken)
-                if showAdvancedToken {
-                    SecureField("settings.auth_token", text: $authToken)
+                Button("common.save") {
+                    let trimmedURL = apiBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                    AppConfiguration.setUserString(trimmedURL.nilIfEmpty, for: AppConfiguration.Keys.apiBaseURL)
                 }
             } header: {
                 Text("settings.api_section")
             } footer: {
                 Text("settings.api_footer_auth")
-            }
-
-            Section {
-                Button("common.save") {
-                    let trimmedURL = apiBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                    AppConfiguration.setUserString(trimmedURL.nilIfEmpty, for: AppConfiguration.Keys.apiBaseURL)
-                    if showAdvancedToken {
-                        let trimmedToken = authToken.trimmingCharacters(in: .whitespacesAndNewlines)
-                        if let token = trimmedToken.nilIfEmpty {
-                            authSession.applyAccessTokenOnly(token)
-                        }
-                    }
-                }
             }
 
             Section {

@@ -1,10 +1,9 @@
 import Foundation
 
-/// Runtime API configuration: scheme env → in-app storage → Info.plist (build-time default).
+/// Runtime API configuration: optional scheme env → onboarding/Settings URL + Keychain JWT.
 ///
-/// UserDefaults / Keychain must win over the baked Info.plist values: TestFlight CI still
-/// injects `KBAPP_API_BASE_URL` / `KBAPP_AUTH_TOKEN` into the bundle, but onboarding and
-/// Settings write the live server URL and session token at runtime.
+/// Build-time Info.plist / Secrets.xcconfig values are intentionally ignored so TestFlight
+/// never silently overrides a server chosen at login.
 enum AppConfiguration {
     static let environmentPrefix = "KBAPP_"
 
@@ -20,20 +19,9 @@ enum AppConfiguration {
             return value
         }
         if key == Keys.authToken {
-            if let kc = KeychainTokenStore.token()?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty {
-                return kc
-            }
-            if let legacy = legacyUserDefaultsString(for: key) {
-                KeychainTokenStore.setToken(legacy)
-                UserDefaults.standard.removeObject(forKey: "kbapp.config.auth_token")
-                return legacy
-            }
-            return bundleString(for: key)
+            return KeychainTokenStore.token()?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty
         }
-        if let stored = userDefaultsString(for: key) {
-            return stored
-        }
-        return bundleString(for: key)
+        return userDefaultsString(for: key)
     }
 
     static func url(for key: String) -> URL? {
@@ -48,7 +36,6 @@ enum AppConfiguration {
             UserDefaults.standard.removeObject(forKey: "kbapp.config.auth_token")
             return
         }
-        let storageKey = userDefaultsStorageKey(for: key)
         if key == Keys.apiBaseURL {
             let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines)
             if let trimmed, !trimmed.isEmpty {
@@ -60,6 +47,7 @@ enum AppConfiguration {
             }
             return
         }
+        let storageKey = userDefaultsStorageKey(for: key)
         if let value {
             let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
             UserDefaultsService.shared.set(trimmed.nilIfEmpty, forKey: storageKey)
@@ -91,28 +79,6 @@ enum AppConfiguration {
 
     private static func userDefaultsStorageKey(for key: String) -> String {
         "kbapp.config.\(key.lowercased())"
-    }
-
-    private static func legacyUserDefaultsString(for key: String) -> String? {
-        UserDefaults.standard.string(forKey: "kbapp.config.\(key.lowercased())")?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .nilIfEmpty
-    }
-
-    /// Values from Info.plist (filled via `Config/Secrets.xcconfig` → `INFOPLIST_KEY_*` at build time).
-    private static func bundleString(for key: String) -> String? {
-        let plistKey: String
-        switch key {
-        case Keys.apiBaseURL:
-            plistKey = "KBAppAPIBaseURL"
-        case Keys.authToken:
-            plistKey = "KBAppAuthToken"
-        default:
-            return nil
-        }
-        guard let raw = Bundle.main.object(forInfoDictionaryKey: plistKey) as? String else { return nil }
-        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? nil : trimmed
     }
 }
 

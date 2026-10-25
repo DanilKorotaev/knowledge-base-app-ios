@@ -2921,13 +2921,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Matches env vars KBAPP_API_BASE_URL and KBAPP_AUTH_TOKEN. The bearer token is stored in the Keychain when you tap Save."
+            "value": "API base URL is stored on device (UserDefaults / App Group). Session JWT is in Keychain after sign-in."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Соответствует переменным KBAPP_API_BASE_URL и KBAPP_AUTH_TOKEN. Токен сохраняется в Keychain после «Сохранить»."
+            "value": "Базовый URL API хранится на устройстве (UserDefaults / App Group). JWT сессии — в Keychain после входа."
           }
         }
       }
@@ -7900,34 +7900,18 @@
         }
       }
     },
-    "settings.show_advanced_token": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Show legacy token field"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Показать поле legacy-токена"
-          }
-        }
-      }
-    },
     "settings.api_footer_auth": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Prefer Sign in above. The token field is for debugging only."
+            "value": "Server URL from login. Change only if you intentionally switch environments."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Предпочтительнее вход выше. Поле токена — только для отладки."
+            "value": "URL сервера задаётся при входе. Меняйте только если специально переключаете окружение."
           }
         }
       }
@@ -8024,6 +8008,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Это не похоже на сервер KB App API."
+          }
+        }
+      }
+    },
+    "auth.generate_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Generate password"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сгенерировать пароль"
+          }
+        }
+      }
+    },
+    "auth.copy_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Копировать"
+          }
+        }
+      }
+    },
+    "auth.password_copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировано"
+          }
+        }
+      }
+    },
+    "auth.show_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show password"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать пароль"
+          }
+        }
+      }
+    },
+    "auth.hide_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide password"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скрыть пароль"
+          }
+        }
+      }
+    },
+    "auth.register_password_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A strong password is generated for you. iOS may offer to save it in Passwords after you create the account. You can also copy it."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пароль можно сгенерировать. После создания аккаунта iOS может предложить сохранить его в «Паролях». Можно и скопировать."
           }
         }
       }

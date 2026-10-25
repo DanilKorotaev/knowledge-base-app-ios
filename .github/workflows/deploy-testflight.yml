@@ -63,24 +63,16 @@ jobs:
         with:
           xcode-version: latest-stable
 
-      - name: Write API secrets (xcconfig)
-        env:
-          KBAPP_API_BASE_URL: ${{ secrets.KBAPP_API_BASE_URL }}
-          KBAPP_AUTH_TOKEN: ${{ secrets.KBAPP_AUTH_TOKEN }}
+      - name: Write empty API xcconfig (server chosen at runtime)
         run: |
-          if [ -z "$KBAPP_API_BASE_URL" ] || [ -z "$KBAPP_AUTH_TOKEN" ]; then
-            echo "::error::Add GitHub secrets KBAPP_API_BASE_URL and KBAPP_AUTH_TOKEN (see docs/API_CONFIGURATION.md)"
-            exit 1
-          fi
-          # xcconfig: "//" starts a comment — encode URL slashes (see scripts/sync-secrets-xcconfig.sh).
-          BASE_XC=$(echo "$KBAPP_API_BASE_URL" | sed 's|://|:$(SLASH)$(SLASH)|')
-          cat > Config/Secrets.xcconfig <<EOF
-          // Generated in CI — do not commit
+          # App ignores Info.plist bake-in; keep empty keys so INFOPLIST_KEY_* resolve.
+          cat > Config/Secrets.xcconfig <<'EOF'
+          // Generated in CI — empty on purpose (login sets URL; JWT lives in Keychain)
           SLASH = /
-          KBAPP_API_BASE_URL = ${BASE_XC}
-          KBAPP_AUTH_TOKEN = ${KBAPP_AUTH_TOKEN}
-          INFOPLIST_KEY_KBAppAPIBaseURL = \$(KBAPP_API_BASE_URL)
-          INFOPLIST_KEY_KBAppAuthToken = \$(KBAPP_AUTH_TOKEN)
+          KBAPP_API_BASE_URL =
+          KBAPP_AUTH_TOKEN =
+          INFOPLIST_KEY_KBAppAPIBaseURL = $(KBAPP_API_BASE_URL)
+          INFOPLIST_KEY_KBAppAuthToken = $(KBAPP_AUTH_TOKEN)
           EOF
 
       - name: Set up Ruby

@@ -28,8 +28,7 @@ Native SwiftUI client for the personal knowledge base stack: same PostgreSQL ses
 
 ## Configuration
 
-- **Runtime:** KB App API via `Config/Secrets.xcconfig` (local, gitignored), Xcode scheme env, or **Settings** — see [docs/API_CONFIGURATION.md](docs/API_CONFIGURATION.md). No real URLs/tokens in git.
-- **Tooling:** see `env.example` for variable names.
+- **Runtime:** server URL from onboarding / Settings; JWT in Keychain — see [docs/API_CONFIGURATION.md](docs/API_CONFIGURATION.md). No real URLs/tokens in git.
 - **Never commit** real URLs with embedded credentials, tokens, or API keys.
 
 Details: [docs/SETUP.md](docs/SETUP.md).

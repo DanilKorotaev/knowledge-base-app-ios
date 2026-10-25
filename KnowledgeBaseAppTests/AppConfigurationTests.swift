@@ -21,9 +21,7 @@ final class AppConfigurationTests: XCTestCase {
         XCTAssertNil(AppConfiguration.url(for: "UNKNOWN_KEY_\(UUID().uuidString)"))
     }
 
-    /// Runtime URL from onboarding/Settings must win over any baked Info.plist default
-    /// (TestFlight CI still injects `KBAPP_API_BASE_URL` into the bundle).
-    func testApiBaseURL_userDefaultsWinsOverBundleFallback() {
+    func testApiBaseURL_userDefaultsRoundTrip() {
         let previous = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL)
         defer {
             AppConfiguration.setUserString(previous, for: AppConfiguration.Keys.apiBaseURL)
@@ -36,7 +34,7 @@ final class AppConfigurationTests: XCTestCase {
         XCTAssertEqual(AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL)?.absoluteString, staging)
     }
 
-    func testAuthToken_keychainWinsOverBundleFallback() {
+    func testAuthToken_readsKeychainOnly() {
         let previous = KeychainTokenStore.token()
         defer {
             KeychainTokenStore.setToken(previous)
@@ -46,5 +44,16 @@ final class AppConfigurationTests: XCTestCase {
         AppConfiguration.setUserString(sessionToken, for: AppConfiguration.Keys.authToken)
 
         XCTAssertEqual(AppConfiguration.string(for: AppConfiguration.Keys.authToken), sessionToken)
+    }
+}
+
+final class PasswordGeneratorTests: XCTestCase {
+    func testMake_meetsLengthAndCharacterClasses() {
+        let password = PasswordGenerator.make(length: 20)
+        XCTAssertEqual(password.count, 20)
+        XCTAssertTrue(password.contains { $0.isLowercase })
+        XCTAssertTrue(password.contains { $0.isUppercase })
+        XCTAssertTrue(password.contains { $0.isNumber })
+        XCTAssertTrue(password.contains { "!@#$%^&*-_=+".contains($0) })
     }
 }

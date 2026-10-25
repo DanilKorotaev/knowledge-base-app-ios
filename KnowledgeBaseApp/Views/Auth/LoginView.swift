@@ -1,10 +1,20 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Nextcloud-inspired onboarding: server address first → probe → credentials.
 struct LoginView: View {
     private enum Step: Equatable {
         case server
         case credentials
+    }
+
+    private enum Field: Hashable {
+        case serverURL
+        case login
+        case password
+        case email
     }
 
     @Bindable private var session = AuthSessionStore.shared
@@ -19,6 +29,9 @@ struct LoginView: View {
     @State private var errorMessage: String?
     @State private var showChangePassword = false
     @State private var confirmedBaseURL: URL?
+    @State private var isPasswordVisible = false
+    @State private var didCopyPassword = false
+    @FocusState private var focusedField: Field?
 
     private enum Mode: String, CaseIterable {
         case signIn
@@ -37,6 +50,8 @@ struct LoginView: View {
             }
             .navigationTitle(step == .server ? "auth.server_title" : "auth.title")
             .navigationBarTitleDisplayMode(.large)
+            .scrollDismissesKeyboard(.interactively)
+            .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
             .sheet(isPresented: $showChangePassword) {
                 ChangePasswordView {
                     showChangePassword = false
@@ -55,6 +70,7 @@ struct LoginView: View {
                     .keyboardType(.URL)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
+                    .focused($focusedField, equals: .serverURL)
                     .accessibilityIdentifier("auth.server_url")
                     .submitLabel(.continue)
                     .onSubmit { Task { await continueFromServer() } }
@@ -75,6 +91,7 @@ struct LoginView: View {
 
             Section {
                 Button {
+                    dismissKeyboard()
                     Task { await continueFromServer() }
                 } label: {
                     if isBusy {
@@ -100,6 +117,7 @@ struct LoginView: View {
                     Button("auth.change_server") {
                         step = .server
                         errorMessage = nil
+                        dismissKeyboard()
                     }
                     .accessibilityIdentifier("auth.change_server")
                 }
@@ -113,6 +131,11 @@ struct LoginView: View {
                     }
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("auth.mode")
+                    .onChange(of: mode) { _, newMode in
+                        if newMode == .signIn {
+                            isPasswordVisible = false
+                        }
+                    }
                 }
             }
 
@@ -121,20 +144,45 @@ struct LoginView: View {
                     .textContentType(.username)
                     .autocorrectionDisabled()
                     .textInputAutocapitalization(.never)
+                    .focused($focusedField, equals: .login)
                     .accessibilityIdentifier("auth.login")
-                SecureField("auth.password", text: $password)
-                    .textContentType(mode == .register ? .newPassword : .password)
-                    .accessibilityIdentifier("auth.password")
+
+                passwordField
+
                 if mode == .register {
+                    HStack {
+                        Button("auth.generate_password") {
+                            password = PasswordGenerator.make()
+                            isPasswordVisible = true
+                            didCopyPassword = false
+                        }
+                        .accessibilityIdentifier("auth.generate_password")
+
+                        Spacer()
+
+                        if !password.isEmpty {
+                            Button(didCopyPassword ? "auth.password_copied" : "auth.copy_password") {
+                                copyPassword()
+                            }
+                            .accessibilityIdentifier("auth.copy_password")
+                        }
+                    }
+                    .font(.subheadline)
+
                     TextField("auth.email_optional", text: $email)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
+                        .focused($focusedField, equals: .email)
                         .accessibilityIdentifier("auth.email")
                 }
             } header: {
                 Text(mode == .register ? "auth.register" : "auth.sign_in")
+            } footer: {
+                if mode == .register {
+                    Text("auth.register_password_footer")
+                }
             }
 
             if let errorMessage {
@@ -148,6 +196,7 @@ struct LoginView: View {
 
             Section {
                 Button {
+                    dismissKeyboard()
                     Task { await submitCredentials() }
                 } label: {
                     if isBusy {
@@ -160,6 +209,35 @@ struct LoginView: View {
                 .disabled(isBusy || !canSubmitCredentials)
                 .accessibilityIdentifier("auth.submit")
             }
+        }
+    }
+
+    @ViewBuilder
+    private var passwordField: some View {
+        HStack(alignment: .center) {
+            Group {
+                if isPasswordVisible {
+                    TextField("auth.password", text: $password)
+                        .textContentType(mode == .register ? .newPassword : .password)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+                } else {
+                    SecureField("auth.password", text: $password)
+                        .textContentType(mode == .register ? .newPassword : .password)
+                }
+            }
+            .focused($focusedField, equals: .password)
+            .accessibilityIdentifier("auth.password")
+
+            Button {
+                isPasswordVisible.toggle()
+            } label: {
+                Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(Text(isPasswordVisible ? "auth.hide_password" : "auth.show_password"))
+            .accessibilityIdentifier("auth.toggle_password_visibility")
         }
     }
 
@@ -187,6 +265,7 @@ struct LoginView: View {
                 mode = .signIn
             }
             step = .credentials
+            focusedField = .login
         } catch let error as ServerProbeError {
             errorMessage = error.localizedDescription
         } catch {
@@ -224,6 +303,24 @@ struct LoginView: View {
             errorMessage = error.localizedDescription
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    private func dismissKeyboard() {
+        focusedField = nil
+        #if canImport(UIKit)
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        #endif
+    }
+
+    private func copyPassword() {
+        #if canImport(UIKit)
+        UIPasteboard.general.string = password
+        #endif
+        didCopyPassword = true
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            didCopyPassword = false
         }
     }
 }
