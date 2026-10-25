@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.109 | 237 | `ios/v1.0.109` | 2026-10-25 | Pick or create Nextcloud kb_folder |
 | 1.0.108 | 236 | `ios/v1.0.108` | 2026-10-25 | Kb_folder and has_nc_app_password on /auth/me |
 | 1.0.107 | 235 | `ios/v1.0.107` | 2026-10-25 | TestFlight release |
 | 1.0.106 | 234 | `ios/v1.0.106` | 2026-10-25 | Keyboard dismiss, Actions empty state, friendlier stubs |

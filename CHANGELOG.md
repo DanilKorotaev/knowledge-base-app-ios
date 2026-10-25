@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.109] - 2026-10-25
+
+### Added
+
+- Pick or create Nextcloud kb_folder
+
 ## [1.0.108] - 2026-10-25
 
 ### Changed
@@ -903,7 +909,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.108...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.109...HEAD
+[1.0.109]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.109
 [1.0.108]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.108
 [1.0.107]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.107
 [1.0.106]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.106
