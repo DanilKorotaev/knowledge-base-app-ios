@@ -1,6 +1,10 @@
 import Foundation
 
-/// Runtime API configuration: scheme env → Info.plist (build-time Secrets.xcconfig) → Settings/Keychain.
+/// Runtime API configuration: scheme env → in-app storage → Info.plist (build-time default).
+///
+/// UserDefaults / Keychain must win over the baked Info.plist values: TestFlight CI still
+/// injects `KBAPP_API_BASE_URL` / `KBAPP_AUTH_TOKEN` into the bundle, but onboarding and
+/// Settings write the live server URL and session token at runtime.
 enum AppConfiguration {
     static let environmentPrefix = "KBAPP_"
 
@@ -15,9 +19,6 @@ enum AppConfiguration {
         if let value, !value.isEmpty {
             return value
         }
-        if let builtIn = bundleString(for: key) {
-            return builtIn
-        }
         if key == Keys.authToken {
             if let kc = KeychainTokenStore.token()?.trimmingCharacters(in: .whitespacesAndNewlines).nilIfEmpty {
                 return kc
@@ -27,9 +28,12 @@ enum AppConfiguration {
                 UserDefaults.standard.removeObject(forKey: "kbapp.config.auth_token")
                 return legacy
             }
-            return nil
+            return bundleString(for: key)
         }
-        return userDefaultsString(for: key)
+        if let stored = userDefaultsString(for: key) {
+            return stored
+        }
+        return bundleString(for: key)
     }
 
     static func url(for key: String) -> URL? {

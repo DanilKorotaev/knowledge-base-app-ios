@@ -7,8 +7,8 @@ The app talks to your deployed **KB App API** when a base URL and Bearer token a
 For each value, the first non-empty source wins:
 
 1. **Xcode scheme** environment (`KBAPP_API_BASE_URL`, `KBAPP_AUTH_TOKEN`) — overrides for a single Run session
-2. **Info.plist** (`KBAppAPIBaseURL`, `KBAppAuthToken`) — baked in at **build** time from `Config/Secrets.xcconfig`
-3. **In-app Settings** — base URL in UserDefaults; token in **Keychain**
+2. **In-app storage** — base URL in UserDefaults / App Group (onboarding + Settings); session token in **Keychain**
+3. **Info.plist** (`KBAppAPIBaseURL`, `KBAppAuthToken`) — baked at **build** time from `Config/Secrets.xcconfig` (fallback default only)
 
 Without URL + token the app uses **in-memory stubs** (offline demo).
 
