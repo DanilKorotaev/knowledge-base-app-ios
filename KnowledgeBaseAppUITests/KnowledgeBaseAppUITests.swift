@@ -183,6 +183,7 @@ final class KnowledgeBaseAppUITests: XCTestCase {
 }
 
 final class AuthLoginUITests: XCTestCase {
+    /// Nextcloud-style onboarding: server address first; credentials only after continue.
     func testLoginScreenShowsServerAndCredentials() throws {
         let app = XCUIApplication()
         app.launchArguments = [
@@ -193,10 +194,24 @@ final class AuthLoginUITests: XCTestCase {
         ]
         app.launch()
 
-        XCTAssertTrue(app.navigationBars["Sign in"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.textFields["auth.login"].exists || app.textFields["Login"].exists)
-        XCTAssertTrue(app.secureTextFields["auth.password"].exists || app.secureTextFields["Password"].exists)
-        XCTAssertTrue(app.buttons["auth.submit"].exists || app.buttons["Sign in"].exists)
+        let serverNav = app.navigationBars["Server address"].waitForExistence(timeout: 10)
+            || app.navigationBars["Sign in"].waitForExistence(timeout: 2)
+        XCTAssertTrue(serverNav, "Expected server-first login nav title")
+
+        XCTAssertTrue(
+            app.textFields["auth.server_url"].exists
+                || app.textFields["Server URL"].exists
+                || app.textFields["cloud.example.com"].exists
+        )
+        XCTAssertTrue(
+            app.buttons["auth.server_continue"].exists
+                || app.buttons["Continue"].exists
+        )
+
+        // Credentials are on step 2 — not visible until the server is confirmed.
+        XCTAssertFalse(app.textFields["auth.login"].exists)
+        XCTAssertFalse(app.secureTextFields["auth.password"].exists)
+        XCTAssertFalse(app.buttons["auth.submit"].exists)
     }
 }
 
