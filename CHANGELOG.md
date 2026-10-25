@@ -12,6 +12,16 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.104] - 2026-10-25
+
+### Added
+
+- Nextcloud-style server-first login and scrub personal URLs
+
+### Fixed
+
+- Align AuthLoginUITests with server-first onboarding
+
 ## [1.0.103] - 2026-10-24
 
 ### Added
@@ -868,7 +878,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.103...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.104...HEAD
+[1.0.104]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.104
 [1.0.103]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.103
 [1.0.102]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.102
 [1.0.101]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.101
