@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.107 | 235 | `ios/v1.0.107` | 2026-10-25 | TestFlight release |
 | 1.0.106 | 234 | `ios/v1.0.106` | 2026-10-25 | Keyboard dismiss, Actions empty state, friendlier stubs |
 | 1.0.105 | 233 | `ios/v1.0.105` | 2026-10-25 | Drop baked secrets; generate passwords on register |
 | 1.0.104 | 231 | `ios/v1.0.104` | 2026-10-25 | Align AuthLoginUITests with server-first onboarding |
