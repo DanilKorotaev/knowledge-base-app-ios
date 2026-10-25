@@ -76,8 +76,55 @@ final class KBAppAPIErrorMessageTests: XCTestCase {
             String(localized: "boards.error.not_found")
         )
         XCTAssertEqual(
+            BoardsAPIError.missingBaseURL.errorDescription,
+            String(localized: "auth.error_missing_api_url")
+        )
+        XCTAssertEqual(
+            BoardsAPIError.decodingFailed.errorDescription,
+            String(localized: "network.decoding_failed")
+        )
+        XCTAssertEqual(
             BoardsAPIError.invalidResponse(statusCode: 500, apiMessage: nil).errorDescription,
             "\(String(localized: "boards.error.generic")) (HTTP 500)"
+        )
+        XCTAssertEqual(
+            BoardsAPIError.invalidResponse(statusCode: 502, apiMessage: "upstream").errorDescription,
+            "upstream"
+        )
+    }
+
+    func testUserFacingHidesTechnicalAuthMessages() {
+        XCTAssertEqual(
+            KBAppAPIErrorMessage.userFacing(
+                statusCode: 500,
+                apiMessage: "Access token истёк",
+                fallback: "fallback"
+            ),
+            "fallback (HTTP 500)"
+        )
+        XCTAssertEqual(
+            KBAppAPIErrorMessage.userFacing(
+                statusCode: 502,
+                apiMessage: "Refresh истёк",
+                fallback: "fallback"
+            ),
+            "fallback (HTTP 502)"
+        )
+        XCTAssertEqual(
+            KBAppAPIErrorMessage.userFacing(
+                statusCode: 400,
+                apiMessage: "Need Authorization: Bearer",
+                fallback: "fallback"
+            ),
+            "fallback (HTTP 400)"
+        )
+        XCTAssertEqual(
+            KBAppAPIErrorMessage.userFacing(
+                statusCode: 0,
+                apiMessage: nil,
+                fallback: "plain-fallback"
+            ),
+            "plain-fallback"
         )
     }
 }
