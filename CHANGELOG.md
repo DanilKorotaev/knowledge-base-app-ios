@@ -12,6 +12,13 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.105] - 2026-10-25
+
+### Fixed
+
+- Prefer runtime URL/token over baked Info.plist
+- Drop baked secrets; generate passwords on register
+
 ## [1.0.104] - 2026-10-25
 
 ### Added
@@ -878,7 +885,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.104...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.105...HEAD
+[1.0.105]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.105
 [1.0.104]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.104
 [1.0.103]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.103
 [1.0.102]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.102
