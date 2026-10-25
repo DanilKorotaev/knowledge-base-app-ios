@@ -36,19 +36,22 @@ final class AuthAPIClientTests: XCTestCase {
     func testDecodeNcFoldersResponse() throws {
         let json = """
         {
-          "current": "/",
+          "current": "/kb",
+          "browse_path": "/kb",
+          "parent_path": "/",
           "has_nc_app_password": true,
           "folders": [
-            {"path": "/", "name": "/"},
-            {"path": "/Documents", "name": "Documents"}
+            {"path": "/kb/notes", "name": "notes"}
           ]
         }
         """.data(using: .utf8)!
         let decoded = try JSONDecoder().decode(AuthNcFoldersResponse.self, from: json)
-        XCTAssertEqual(decoded.current, "/")
+        XCTAssertEqual(decoded.current, "/kb")
+        XCTAssertEqual(decoded.browsePath, "/kb")
+        XCTAssertEqual(decoded.parentPath, "/")
         XCTAssertTrue(decoded.hasNcAppPassword)
-        XCTAssertEqual(decoded.folders.count, 2)
-        XCTAssertEqual(decoded.folders[1].path, "/Documents")
+        XCTAssertEqual(decoded.folders.count, 1)
+        XCTAssertEqual(decoded.folders[0].path, "/kb/notes")
     }
 
     func testDecodeSignupStatus() throws {

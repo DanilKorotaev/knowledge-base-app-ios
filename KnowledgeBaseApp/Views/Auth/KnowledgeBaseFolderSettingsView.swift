@@ -1,11 +1,13 @@
 import SwiftUI
 
-/// Settings: pick or create the Nextcloud folder used as the knowledge-base root (`kb_folder`).
+/// Settings: browse Nextcloud folders (drill-down) and pick `kb_folder`.
 struct KnowledgeBaseFolderSettingsView: View {
     @Bindable private var authSession = AuthSessionStore.shared
 
     @State private var folders: [AuthNcFolderDTO] = []
     @State private var current: String = "/"
+    @State private var browsePath: String = "/"
+    @State private var parentPath: String?
     @State private var hasAppPassword = false
     @State private var isLoading = false
     @State private var isSaving = false
@@ -16,33 +18,35 @@ struct KnowledgeBaseFolderSettingsView: View {
     var body: some View {
         List {
             Section {
-                if isLoading && folders.isEmpty {
-                    ProgressView()
-                } else {
-                    ForEach(folders) { folder in
-                        Button {
-                            Task { await selectFolder(folder.path) }
-                        } label: {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(folderDisplayName(folder))
-                                        .foregroundStyle(.primary)
-                                    if folder.path != folder.name {
-                                        Text(folder.path)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                                Spacer()
-                                if folder.path == current {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.tint)
-                                }
-                            }
+                HStack(spacing: 10) {
+                    Image(systemName: "folder.fill")
+                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(browseDisplayName)
+                            .foregroundStyle(.primary)
+                        if browsePath != "/" {
+                            Text(browsePath)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                        .disabled(isSaving)
-                        .accessibilityIdentifier("settings.kb_folder.row.\(folder.path)")
                     }
+                    Spacer()
+                    if browsePath == current {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.tint)
+                    }
+                }
+                .accessibilityIdentifier("settings.kb_folder.browse")
+
+                if let parentPath {
+                    Button {
+                        Task { await reload(path: parentPath) }
+                    } label: {
+                        Label("settings.kb_folder.up", systemImage: "chevron.left")
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(isLoading || isSaving)
+                    .accessibilityIdentifier("settings.kb_folder.up")
                 }
             } header: {
                 Text("settings.kb_folder.section")
@@ -51,6 +55,47 @@ struct KnowledgeBaseFolderSettingsView: View {
             }
 
             Section {
+                if isLoading && folders.isEmpty {
+                    ProgressView()
+                } else if folders.isEmpty {
+                    Text("settings.kb_folder.empty")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(folders) { folder in
+                        Button {
+                            Task { await reload(path: folder.path) }
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: "folder")
+                                    .foregroundStyle(.secondary)
+                                Text(folder.name)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if folder.path == current {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.tint)
+                                }
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isLoading || isSaving)
+                        .accessibilityIdentifier("settings.kb_folder.row.\(folder.path)")
+                    }
+                }
+            }
+
+            Section {
+                Button {
+                    Task { await selectFolder(browsePath) }
+                } label: {
+                    Text(useThisFolderTitle)
+                }
+                .disabled(!hasAppPassword || isSaving || browsePath == current)
+                .accessibilityIdentifier("settings.kb_folder.use")
+
                 Button("settings.kb_folder.create") {
                     newFolderName = ""
                     showCreateSheet = true
@@ -68,8 +113,11 @@ struct KnowledgeBaseFolderSettingsView: View {
         }
         .navigationTitle("settings.kb_folder.title")
         .navigationBarTitleDisplayMode(.inline)
-        .refreshable { await reload() }
-        .task { await reload() }
+        .refreshable { await reload(path: browsePath) }
+        .task {
+            let start = authSession.currentUser?.kbFolder ?? "/"
+            await reload(path: start)
+        }
         .sheet(isPresented: $showCreateSheet) {
             NavigationStack {
                 Form {
@@ -102,6 +150,20 @@ struct KnowledgeBaseFolderSettingsView: View {
         }
     }
 
+    private var browseDisplayName: String {
+        if browsePath == "/" {
+            return String(localized: "settings.kb_folder.home")
+        }
+        return browsePath.split(separator: "/").last.map(String.init) ?? browsePath
+    }
+
+    private var useThisFolderTitle: String {
+        if browsePath == "/" {
+            return String(localized: "settings.kb_folder.use_home")
+        }
+        return String(localized: "settings.kb_folder.use_this")
+    }
+
     private var footerText: String {
         if !hasAppPassword {
             return String(localized: "settings.kb_folder.no_app_password")
@@ -109,25 +171,16 @@ struct KnowledgeBaseFolderSettingsView: View {
         return String(localized: "settings.kb_folder.footer")
     }
 
-    private func folderDisplayName(_ folder: AuthNcFolderDTO) -> String {
-        if folder.path == "/" {
-            return String(localized: "settings.kb_folder.home")
-        }
-        return folder.name
-    }
-
     @MainActor
-    private func reload() async {
+    private func reload(path: String) async {
         errorMessage = nil
         isLoading = true
         defer { isLoading = false }
         do {
             let client = try makeClient()
             let token = try await authSession.validAccessToken()
-            let payload = try await client.listNcFolders(accessToken: token)
-            folders = payload.folders
-            current = payload.current
-            hasAppPassword = payload.hasNcAppPassword
+            let payload = try await client.listNcFolders(accessToken: token, path: path)
+            apply(payload)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -145,7 +198,7 @@ struct KnowledgeBaseFolderSettingsView: View {
             let user = try await client.patchMe(accessToken: token, kbFolder: path)
             authSession.applyUpdatedUser(user)
             current = user.kbFolder ?? path
-            await reload()
+            await reload(path: browsePath)
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -161,15 +214,26 @@ struct KnowledgeBaseFolderSettingsView: View {
         do {
             let client = try makeClient()
             let token = try await authSession.validAccessToken()
-            let payload = try await client.createNcFolder(accessToken: token, name: name, select: true)
-            folders = payload.folders
-            current = payload.current
-            hasAppPassword = payload.hasNcAppPassword
+            let payload = try await client.createNcFolder(
+                accessToken: token,
+                name: name,
+                parent: browsePath,
+                select: true
+            )
+            apply(payload)
             showCreateSheet = false
             await authSession.refreshProfile()
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func apply(_ payload: AuthNcFoldersResponse) {
+        folders = payload.folders
+        current = payload.current
+        browsePath = payload.browsePath
+        parentPath = payload.parentPath
+        hasAppPassword = payload.hasNcAppPassword
     }
 
     private func makeClient() throws -> URLSessionAuthAPIClient {

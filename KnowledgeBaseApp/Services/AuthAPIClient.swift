@@ -7,8 +7,8 @@ protocol AuthAPIClientProtocol: Sendable {
     func refresh(refreshToken: String) async throws -> AuthTokenResponse
     func me(accessToken: String) async throws -> AuthUserDTO
     func patchMe(accessToken: String, kbFolder: String) async throws -> AuthUserDTO
-    func listNcFolders(accessToken: String) async throws -> AuthNcFoldersResponse
-    func createNcFolder(accessToken: String, name: String, select: Bool) async throws -> AuthNcFoldersResponse
+    func listNcFolders(accessToken: String, path: String) async throws -> AuthNcFoldersResponse
+    func createNcFolder(accessToken: String, name: String, parent: String, select: Bool) async throws -> AuthNcFoldersResponse
     func changePassword(accessToken: String, currentPassword: String?, newPassword: String) async throws
     func logout(accessToken: String?, refreshToken: String?) async throws
 }
@@ -92,18 +92,24 @@ struct URLSessionAuthAPIClient: AuthAPIClientProtocol {
         return envelope.user
     }
 
-    func listNcFolders(accessToken: String) async throws -> AuthNcFoldersResponse {
+    func listNcFolders(accessToken: String, path: String = "/") async throws -> AuthNcFoldersResponse {
         try await get(
             path: "api/auth/nc-folders",
+            queryItems: [URLQueryItem(name: "path", value: path)],
             authorized: true,
             accessToken: accessToken
         )
     }
 
-    func createNcFolder(accessToken: String, name: String, select: Bool) async throws -> AuthNcFoldersResponse {
+    func createNcFolder(
+        accessToken: String,
+        name: String,
+        parent: String = "/",
+        select: Bool
+    ) async throws -> AuthNcFoldersResponse {
         try await post(
             path: "api/auth/nc-folders",
-            body: ["name": name, "select": select],
+            body: ["name": name, "parent": parent, "select": select],
             authorized: true,
             accessToken: accessToken
         )
@@ -139,10 +145,18 @@ struct URLSessionAuthAPIClient: AuthAPIClientProtocol {
 
     private func get<T: Decodable>(
         path: String,
+        queryItems: [URLQueryItem] = [],
         authorized: Bool,
         accessToken: String? = nil
     ) async throws -> T {
-        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false)
+        if !queryItems.isEmpty {
+            components?.queryItems = queryItems
+        }
+        guard let url = components?.url else {
+            throw AuthAPIError.missingBaseURL
+        }
+        var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         if authorized, let accessToken, !accessToken.isEmpty {

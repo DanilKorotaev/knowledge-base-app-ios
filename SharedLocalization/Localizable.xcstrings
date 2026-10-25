@@ -8219,6 +8219,70 @@
           }
         }
       }
+    },
+    "settings.kb_folder.up": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Наверх"
+          }
+        }
+      }
+    },
+    "settings.kb_folder.empty": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No subfolders"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет вложенных папок"
+          }
+        }
+      }
+    },
+    "settings.kb_folder.use_this": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use this folder"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Использовать эту папку"
+          }
+        }
+      }
+    },
+    "settings.kb_folder.use_home": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Nextcloud home"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Использовать корень Nextcloud"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

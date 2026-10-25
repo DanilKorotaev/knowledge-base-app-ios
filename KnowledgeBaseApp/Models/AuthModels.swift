@@ -32,13 +32,40 @@ struct AuthNcFolderDTO: Codable, Equatable, Sendable, Identifiable {
 
 struct AuthNcFoldersResponse: Codable, Equatable, Sendable {
     let current: String
+    let browsePath: String
+    let parentPath: String?
     let hasNcAppPassword: Bool
     let folders: [AuthNcFolderDTO]
 
     enum CodingKeys: String, CodingKey {
         case current
+        case browsePath = "browse_path"
+        case parentPath = "parent_path"
         case hasNcAppPassword = "has_nc_app_password"
         case folders
+    }
+
+    init(
+        current: String,
+        browsePath: String = "/",
+        parentPath: String? = nil,
+        hasNcAppPassword: Bool,
+        folders: [AuthNcFolderDTO]
+    ) {
+        self.current = current
+        self.browsePath = browsePath
+        self.parentPath = parentPath
+        self.hasNcAppPassword = hasNcAppPassword
+        self.folders = folders
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        current = try c.decode(String.self, forKey: .current)
+        browsePath = try c.decodeIfPresent(String.self, forKey: .browsePath) ?? "/"
+        parentPath = try c.decodeIfPresent(String.self, forKey: .parentPath)
+        hasNcAppPassword = try c.decode(Bool.self, forKey: .hasNcAppPassword)
+        folders = try c.decode([AuthNcFolderDTO].self, forKey: .folders)
     }
 }
 
