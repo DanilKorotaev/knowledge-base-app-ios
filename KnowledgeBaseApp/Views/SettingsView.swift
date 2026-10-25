@@ -11,7 +11,6 @@ enum SettingsRoute: Hashable {
 }
 
 struct SettingsView: View {
-    @State private var apiBaseURL: String = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL) ?? ""
     @State private var voiceDefaultTitle: String?
     @State private var voiceDefaultExpiry: String?
     @State private var didCopyVersion = false
@@ -24,16 +23,6 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section {
-                Picker("settings.language", selection: languagePreferenceBinding) {
-                    Text("settings.language.system").tag(AppLanguagePreference.system)
-                    Text("settings.language.english").tag(AppLanguagePreference.english)
-                    Text("settings.language.russian").tag(AppLanguagePreference.russian)
-                }
-            } header: {
-                Text("settings.language")
-            }
-
             Section {
                 if let login = authSession.currentUser?.login ?? loginFromTokenFallback {
                     LabeledContent("auth.login", value: login)
@@ -59,21 +48,6 @@ struct SettingsView: View {
                 .accessibilityIdentifier("auth.sign_out")
             } header: {
                 Text("auth.account_section")
-            }
-
-            Section {
-                TextField("settings.api_base_url", text: $apiBaseURL)
-                    .textContentType(.URL)
-                    .keyboardType(.URL)
-                    .autocorrectionDisabled()
-                Button("common.save") {
-                    let trimmedURL = apiBaseURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                    AppConfiguration.setUserString(trimmedURL.nilIfEmpty, for: AppConfiguration.Keys.apiBaseURL)
-                }
-            } header: {
-                Text("settings.api_section")
-            } footer: {
-                Text("settings.api_footer_auth")
             }
 
             Section {
@@ -119,6 +93,16 @@ struct SettingsView: View {
                 Text("settings.offline")
             } footer: {
                 Text("settings.offline_footer")
+            }
+
+            Section {
+                Picker("settings.language", selection: languagePreferenceBinding) {
+                    Text("settings.language.system").tag(AppLanguagePreference.system)
+                    Text("settings.language.english").tag(AppLanguagePreference.english)
+                    Text("settings.language.russian").tag(AppLanguagePreference.russian)
+                }
+            } header: {
+                Text("settings.language")
             }
 
             Section {
@@ -208,12 +192,6 @@ struct SettingsView: View {
             get: { languageStore.override },
             set: { languageStore.setOverride($0) }
         )
-    }
-}
-
-private extension String {
-    var nilIfEmpty: String? {
-        isEmpty ? nil : self
     }
 }
 
