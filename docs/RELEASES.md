@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.113 | 243 | `ios/v1.0.113` | 2026-10-25 | TestFlight release |
 | 1.0.112 | 242 | `ios/v1.0.112` | 2026-10-25 | TestFlight release |
 | 1.0.111 | 241 | `ios/v1.0.111` | 2026-10-25 | Raise unit coverage above CI 35% gate |
 | 1.0.110 | 238 | `ios/v1.0.110` | 2026-10-25 | Drill-down kb_folder picker without blue list rows |
