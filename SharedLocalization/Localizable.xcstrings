@@ -3305,13 +3305,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Configure the API in Settings, or use a stub build with a demo session when no server is set."
+            "value": "Tap + to start a chat, or pull to refresh if you already have sessions on the server."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Настройте API в Настройках или используйте stub-сборку с демо-сессией без сервера."
+            "value": "Нажмите +, чтобы начать чат, или потяните вниз для обновления, если сессии уже есть на сервере."
           }
         }
       }
@@ -6657,13 +6657,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "No actions yet"
+            "value": "Nothing here yet"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Пока нет действий"
+            "value": "Пока пусто"
           }
         }
       }
@@ -6673,13 +6673,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Active jobs and quick presets will appear here."
+            "value": "Quick actions and running jobs will show up here when available."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Здесь будут активные jobs и быстрые пресеты."
+            "value": "Здесь появятся быстрые действия и текущие задачи, когда они будут доступны."
           }
         }
       }
@@ -6769,13 +6769,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Boards appear here when the server or agent creates them."
+            "value": "Overview boards will appear here when the server creates them."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Доски появятся здесь, когда сервер или агент их создаст."
+            "value": "Доски обзора появятся здесь, когда сервер их создаст."
           }
         }
       }

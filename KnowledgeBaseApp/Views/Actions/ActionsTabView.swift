@@ -167,31 +167,33 @@ final class ActionsTabViewModel {
 
         do {
             let boards = try await client.fetchBoards()
+            // Only fetch boards that the list actually returned — do not probe preferred
+            // ids (404 on empty staging looked like a hard error in the UI).
             let presetsId = boards.first(where: { ActionsBoardIDs.isPresetsBoard($0.id) })?.id
-                ?? ActionsBoardIDs.preferredPresetsBoardId
             let jobsId = boards.first(where: { ActionsBoardIDs.isJobsBoard($0.id) })?.id
-                ?? ActionsBoardIDs.preferredJobsBoardId
 
             async let presets = fetchDetailOptional(id: presetsId)
             async let jobs = fetchDetailOptional(id: jobsId)
-            let (presetsResult, jobsResult) = try await (presets, jobs)
+            let (presetsResult, jobsResult) = await (presets, jobs)
             presetsDetail = presetsResult
             jobsDetail = jobsResult
-            if presetsDetail == nil, jobsDetail == nil {
-                loadError = L10n.string("actions.could_not_load")
-            }
+            // Both missing → empty state, not an error.
+            loadError = nil
         } catch {
             if !hasContent {
+                presetsDetail = nil
+                jobsDetail = nil
                 loadError = error.localizedDescription
             }
         }
     }
 
-    private func fetchDetailOptional(id: String) async throws -> KBBoardDetail? {
+    private func fetchDetailOptional(id: String?) async -> KBBoardDetail? {
+        guard let id else { return nil }
         do {
             return try await client.fetchBoard(id: id, query: .all)
         } catch {
-            // Preferential ids may be missing until MCP upsert; keep the other section.
+            // Board listed but detail failed — keep the other section.
             return nil
         }
     }
