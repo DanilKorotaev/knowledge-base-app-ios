@@ -50,13 +50,7 @@ struct LoginView: View {
             }
             .navigationTitle(step == .server ? "auth.server_title" : "auth.title")
             .navigationBarTitleDisplayMode(.large)
-            .scrollDismissesKeyboard(.interactively)
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("common.done") { dismissKeyboard() }
-                }
-            }
+            .formKeyboardBehavior { dismissKeyboard() }
             .sheet(isPresented: $showChangePassword) {
                 ChangePasswordView {
                     showChangePassword = false
