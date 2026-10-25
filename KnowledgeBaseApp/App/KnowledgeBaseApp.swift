@@ -91,6 +91,9 @@ struct KnowledgeBaseApp: App {
                     deepLinkSessionId = sessionId
                 }
             }
+            .task {
+                await authSession.ensureFreshAccessTokenIfNeeded()
+            }
         }
     }
 }

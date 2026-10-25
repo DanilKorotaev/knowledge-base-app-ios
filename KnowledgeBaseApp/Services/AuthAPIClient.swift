@@ -21,11 +21,17 @@ enum AuthAPIError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .missingBaseURL:
-            return "Server URL is not configured"
-        case let .invalidResponse(_, message):
-            return message ?? "Authentication failed"
+            return String(localized: "auth.error_missing_api_url")
+        case let .invalidResponse(statusCode, message):
+            if statusCode == 401 || statusCode == 403 {
+                return String(localized: "auth.session_expired")
+            }
+            if let message, !message.isEmpty {
+                return message
+            }
+            return String(localized: "auth.session_expired")
         case .decodingFailed:
-            return "Unexpected server response"
+            return String(localized: "network.decoding_failed")
         }
     }
 }

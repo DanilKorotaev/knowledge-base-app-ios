@@ -16,6 +16,20 @@ final class AuthSessionStoreTests: XCTestCase {
         XCTAssertEqual(AuthSessionStore.jwtSubjectUserId(token), 42)
     }
 
+    func testJwtExpiryDetection() {
+        let header = Data(#"{"alg":"none"}"#.utf8).base64URLEncodedString()
+        let past = Int(Date().timeIntervalSince1970) - 120
+        let future = Int(Date().timeIntervalSince1970) + 3600
+        let expiredPayload = Data(#"{"sub":"1","exp":\#(past)}"#.utf8).base64URLEncodedString()
+        let freshPayload = Data(#"{"sub":"1","exp":\#(future)}"#.utf8).base64URLEncodedString()
+        XCTAssertTrue(
+            AuthSessionStore.jwtIsExpiredOrNearExpiry("\(header).\(expiredPayload).sig", skewSeconds: 60)
+        )
+        XCTAssertFalse(
+            AuthSessionStore.jwtIsExpiredOrNearExpiry("\(header).\(freshPayload).sig", skewSeconds: 60)
+        )
+    }
+
     func testApplyTokensPersistsKeychainAndUser() async {
         let user = AuthUserDTO(
             id: 9,

@@ -122,6 +122,17 @@ final class AuthSessionStore {
         NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
     }
 
+    /// Drop local credentials when access/refresh can no longer be renewed (show login).
+    func invalidateLocalSession(reason: String) async {
+        let shouldClear = await MainActor.run { () -> Bool in
+            guard isAuthenticated else { return false }
+            makeLogger(tags: [.network]).releaseInfo("Auth session invalidated: \(reason)")
+            return true
+        }
+        guard shouldClear else { return }
+        await clear(logoutRemote: false)
+    }
+
     private func rebindCaches() {
         let userId = currentUser?.id
         FileOfflineCacheStore.shared.rebindToCurrentUser(userId: userId)
@@ -138,12 +149,28 @@ final class AuthSessionStore {
         }
     }
 
-    /// Returns a valid access token, refreshing once when needed.
+    /// Returns a valid access token, refreshing when missing or near expiry.
     func validAccessToken(forceRefresh: Bool = false) async throws -> String {
-        if !forceRefresh, let access = accessToken, !access.isEmpty {
+        if !forceRefresh, let access = accessToken, !access.isEmpty,
+           !Self.jwtIsExpiredOrNearExpiry(access, skewSeconds: 60) {
             return access
         }
         return try await refreshAccessToken()
+    }
+
+    /// Best-effort renew before the first parallel API calls after cold start.
+    func ensureFreshAccessTokenIfNeeded() async {
+        guard isAuthenticated else { return }
+        guard let access = accessToken, !access.isEmpty else {
+            _ = try? await refreshAccessToken()
+            return
+        }
+        guard Self.jwtIsExpiredOrNearExpiry(access, skewSeconds: 60) else { return }
+        do {
+            _ = try await refreshAccessToken()
+        } catch {
+            await invalidateLocalSession(reason: "proactive refresh failed: \(error.localizedDescription)")
+        }
     }
 
     func refreshAccessToken() async throws -> String {
@@ -154,7 +181,10 @@ final class AuthSessionStore {
         }
         let task = Task<String, Error> {
             guard let refresh = KeychainTokenStore.refreshToken()?.nilIfEmpty else {
-                throw AuthAPIError.invalidResponse(statusCode: 401, message: "Session expired")
+                throw AuthAPIError.invalidResponse(
+                    statusCode: 401,
+                    message: String(localized: "auth.session_expired")
+                )
             }
             guard let client = URLSessionAuthAPIClient.makeFromConfiguration() else {
                 throw AuthAPIError.missingBaseURL
@@ -185,6 +215,30 @@ extension AuthSessionStore {
 
     /// Decode JWT `sub` without verifying signature (cache scoping only).
     static func jwtSubjectUserId(_ token: String) -> Int? {
+        guard let json = jwtPayloadJSON(token) else { return nil }
+        if let sub = json["sub"] as? String { return Int(sub) }
+        if let sub = json["sub"] as? Int { return sub }
+        return nil
+    }
+
+    /// `true` when `exp` is missing, already past, or within `skewSeconds`.
+    static func jwtIsExpiredOrNearExpiry(_ token: String, skewSeconds: TimeInterval) -> Bool {
+        guard let json = jwtPayloadJSON(token) else { return true }
+        let exp: TimeInterval?
+        if let value = json["exp"] as? TimeInterval {
+            exp = value
+        } else if let value = json["exp"] as? Int {
+            exp = TimeInterval(value)
+        } else if let value = json["exp"] as? Double {
+            exp = value
+        } else {
+            exp = nil
+        }
+        guard let exp else { return true }
+        return Date().timeIntervalSince1970 >= (exp - skewSeconds)
+    }
+
+    private static func jwtPayloadJSON(_ token: String) -> [String: Any]? {
         let parts = token.split(separator: ".")
         guard parts.count >= 2 else { return nil }
         var payload = String(parts[1])
@@ -196,9 +250,7 @@ extension AuthSessionStore {
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil
         }
-        if let sub = json["sub"] as? String { return Int(sub) }
-        if let sub = json["sub"] as? Int { return sub }
-        return nil
+        return json
     }
 }
 

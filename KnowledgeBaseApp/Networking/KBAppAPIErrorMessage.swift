@@ -32,17 +32,15 @@ extension KnowledgeBaseAPIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingBaseURL:
-            return "API base URL is not configured."
+            return String(localized: "auth.error_missing_api_url")
         case let .invalidResponse(statusCode, apiMessage):
-            if let apiMessage, !apiMessage.isEmpty {
-                return apiMessage
-            }
-            if statusCode < 0 {
-                return "Invalid server response."
-            }
-            return "Request failed (HTTP \(statusCode))."
+            return KBAppAPIErrorMessage.userFacing(
+                statusCode: statusCode,
+                apiMessage: apiMessage,
+                fallback: String(localized: "network.request_failed")
+            )
         case .decodingFailed:
-            return "Could not read server response."
+            return String(localized: "network.decoding_failed")
         }
     }
 }
@@ -51,15 +49,65 @@ extension FilesAPIError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case let .invalidResponse(statusCode, apiMessage):
-            if let apiMessage, !apiMessage.isEmpty {
-                return apiMessage
-            }
-            if statusCode < 0 {
-                return "Invalid server response."
-            }
-            return "Request failed (HTTP \(statusCode))."
+            return KBAppAPIErrorMessage.userFacing(
+                statusCode: statusCode,
+                apiMessage: apiMessage,
+                fallback: String(localized: "network.request_failed")
+            )
         case .decodingFailed:
-            return "Could not read server response."
+            return String(localized: "network.decoding_failed")
         }
+    }
+}
+
+extension BoardsAPIError: LocalizedError {
+    var errorDescription: String? {
+        switch self {
+        case .missingBaseURL:
+            return String(localized: "auth.error_missing_api_url")
+        case .notFound:
+            return String(localized: "boards.error.not_found")
+        case .decodingFailed:
+            return String(localized: "network.decoding_failed")
+        case let .invalidResponse(statusCode, apiMessage):
+            return KBAppAPIErrorMessage.userFacing(
+                statusCode: statusCode,
+                apiMessage: apiMessage,
+                fallback: String(localized: "boards.error.generic")
+            )
+        }
+    }
+}
+
+extension KBAppAPIErrorMessage {
+    /// Prefer a human message; never surface raw "Access token истёк" / enum dumps.
+    static func userFacing(
+        statusCode: Int,
+        apiMessage: String?,
+        fallback: String
+    ) -> String {
+        if statusCode == 401 || statusCode == 403 {
+            return String(localized: "auth.session_expired")
+        }
+        if let apiMessage, !apiMessage.isEmpty, !isTechnicalAuthMessage(apiMessage) {
+            return apiMessage
+        }
+        if statusCode < 0 {
+            return String(localized: "network.invalid_response")
+        }
+        if statusCode > 0 {
+            return "\(fallback) (HTTP \(statusCode))"
+        }
+        return fallback
+    }
+
+    private static func isTechnicalAuthMessage(_ message: String) -> Bool {
+        let lower = message.lowercased()
+        return lower.contains("access token")
+            || lower.contains("refresh")
+            || lower.contains("истёк")
+            || lower.contains("истек")
+            || lower.contains("unauthorized")
+            || lower.contains("bearer")
     }
 }

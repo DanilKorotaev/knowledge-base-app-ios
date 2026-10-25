@@ -47,13 +47,26 @@ final class KBHTTPTransport: @unchecked Sendable {
             return first
         }
         guard KeychainTokenStore.refreshToken() != nil else {
+            // Access expired and we have nothing to renew — send user to login.
+            await AuthSessionStore.shared.invalidateLocalSession(
+                reason: "401 without refresh token"
+            )
             return first
         }
         do {
             let newToken = try await AuthSessionStore.shared.refreshAccessToken()
             updateAuth(token: newToken)
-            return try await performData(request)
+            let retry = try await performData(request)
+            if retry.1.statusCode == 401 {
+                await AuthSessionStore.shared.invalidateLocalSession(
+                    reason: "401 after refresh"
+                )
+            }
+            return retry
         } catch {
+            await AuthSessionStore.shared.invalidateLocalSession(
+                reason: "refresh failed: \(error.localizedDescription)"
+            )
             return first
         }
     }
