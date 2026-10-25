@@ -6,15 +6,15 @@ final class KBFileOpenLinkTests: XCTestCase {
         let json = Data(
             """
             {
-              "web_url": "https://nextcloud.coredan.ru/f/42",
-              "nextcloud_deeplink": "nextcloud://open-file?user=danilpdr&link=https://nextcloud.coredan.ru/index.php/f/42",
+              "web_url": "https://cloud.example.com/f/42",
+              "nextcloud_deeplink": "nextcloud://open-file?user=demo&link=https://cloud.example.com/index.php/f/42",
               "path": "a.md",
               "change_id": "7"
             }
             """.utf8
         )
         let link = try JSONDecoder().decode(KBFileOpenLink.self, from: json)
-        XCTAssertEqual(link.webURL.absoluteString, "https://nextcloud.coredan.ru/f/42")
+        XCTAssertEqual(link.webURL.absoluteString, "https://cloud.example.com/f/42")
         XCTAssertEqual(link.path, "a.md")
         XCTAssertEqual(
             link.nextcloudDeepLink?.scheme,
@@ -25,7 +25,7 @@ final class KBFileOpenLinkTests: XCTestCase {
     func testDecodesWithoutDeeplink() throws {
         let json = Data(
             """
-            {"web_url":"https://nextcloud.coredan.ru/apps/files/?dir=/KnowledgeBase","path":"x.md"}
+            {"web_url":"https://cloud.example.com/apps/files/?dir=/KnowledgeBase","path":"x.md"}
             """.utf8
         )
         let link = try JSONDecoder().decode(KBFileOpenLink.self, from: json)

@@ -7617,13 +7617,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Use your KB App API base URL, e.g. https://kbapp-staging.coredan.ru"
+            "value": "Enter the address of your KB App API server."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Базовый URL KB App API, например https://kbapp-staging.coredan.ru"
+            "value": "Введите адрес вашего сервера KB App API."
           }
         }
       }
@@ -7895,7 +7895,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Укажите корректный URL сервера."
+            "value": "Введите корректный URL сервера."
           }
         }
       }
@@ -7928,6 +7928,102 @@
           "stringUnit": {
             "state": "translated",
             "value": "Предпочтительнее вход выше. Поле токена — только для отладки."
+          }
+        }
+      }
+    },
+    "auth.server_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server address"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Адрес сервера"
+          }
+        }
+      }
+    },
+    "auth.server_url_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cloud.example.com"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cloud.example.com"
+          }
+        }
+      }
+    },
+    "auth.continue": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продолжить"
+          }
+        }
+      }
+    },
+    "auth.change_server": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change server"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить сервер"
+          }
+        }
+      }
+    },
+    "auth.error_server_unreachable": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cannot reach server. Check the address and network."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось достучаться до сервера. Проверьте адрес и сеть."
+          }
+        }
+      }
+    },
+    "auth.error_server_not_kb": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This does not look like a KB App API server."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это не похоже на сервер KB App API."
           }
         }
       }

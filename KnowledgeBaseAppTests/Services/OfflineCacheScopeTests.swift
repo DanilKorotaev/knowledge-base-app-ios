@@ -3,14 +3,14 @@ import XCTest
 
 final class OfflineCacheScopeTests: XCTestCase {
     func testHostAndUserKeys() {
-        let url = URL(string: "https://kbapp-staging.coredan.ru")!
-        XCTAssertEqual(OfflineCacheScope.hostKey(from: url), "kbapp-staging.coredan.ru")
+        let url = URL(string: "https://api.example.com")!
+        XCTAssertEqual(OfflineCacheScope.hostKey(from: url), "api.example.com")
         XCTAssertEqual(OfflineCacheScope.userKey(userId: 4), "u4")
         XCTAssertEqual(OfflineCacheScope.userKey(userId: nil), "anonymous")
     }
 
     func testIsolationBetweenUsers() {
-        let base = URL(string: "https://kbapp-staging.coredan.ru")!
+        let base = URL(string: "https://api.example.com")!
         let tmp = FileManager.default.temporaryDirectory
             .appendingPathComponent("scope-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: tmp) }
