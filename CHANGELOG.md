@@ -12,6 +12,13 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.111] - 2026-10-25
+
+### Changed
+
+- Align API error description tests with localized copy
+- Raise unit coverage above CI 35% gate
+
 ## [1.0.110] - 2026-10-25
 
 ### Added
@@ -915,7 +922,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.110...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.111...HEAD
+[1.0.111]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.111
 [1.0.110]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.110
 [1.0.109]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.109
 [1.0.108]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.108

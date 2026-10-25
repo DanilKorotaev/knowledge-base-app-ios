@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 1.0.111 | 241 | `ios/v1.0.111` | 2026-10-25 | Raise unit coverage above CI 35% gate |
 | 1.0.110 | 238 | `ios/v1.0.110` | 2026-10-25 | Drill-down kb_folder picker without blue list rows |
 | 1.0.109 | 237 | `ios/v1.0.109` | 2026-10-25 | Pick or create Nextcloud kb_folder |
 | 1.0.108 | 236 | `ios/v1.0.108` | 2026-10-25 | Kb_folder and has_nc_app_password on /auth/me |
