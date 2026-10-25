@@ -46,9 +46,18 @@ final class AuthSessionStore {
                 mustChangePassword: false,
                 cursorIsolation: nil,
                 vaultRootRelative: nil,
-                nextcloudUsername: nil
+                nextcloudUsername: nil,
+                kbFolder: nil,
+                hasNcAppPassword: nil
             )
         }
+        rebindCaches()
+    }
+
+    @MainActor
+    func applyUpdatedUser(_ user: AuthUserDTO) {
+        currentUser = user
+        UserDefaults.standard.set(user.login, forKey: Self.cachedLoginKey)
         rebindCaches()
     }
 
@@ -83,7 +92,9 @@ final class AuthSessionStore {
                 mustChangePassword: false,
                 cursorIsolation: nil,
                 vaultRootRelative: nil,
-                nextcloudUsername: nil
+                nextcloudUsername: nil,
+                kbFolder: nil,
+                hasNcAppPassword: nil
             )
         }
         isAuthenticated = true

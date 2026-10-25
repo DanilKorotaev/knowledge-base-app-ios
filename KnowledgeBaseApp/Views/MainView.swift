@@ -127,6 +127,9 @@ struct MainView: View {
                         case .boards:
                             BoardsSettingsView()
                                 .toolbar(.hidden, for: .tabBar)
+                        case .kbFolder:
+                            KnowledgeBaseFolderSettingsView()
+                                .toolbar(.hidden, for: .tabBar)
                         }
                     }
             }

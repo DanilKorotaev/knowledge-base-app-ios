@@ -7,6 +7,7 @@ enum SettingsRoute: Hashable {
     case offlineCache
     case health
     case boards
+    case kbFolder
 }
 
 struct SettingsView: View {
@@ -39,6 +40,15 @@ struct SettingsView: View {
                 }
                 if let vault = authSession.currentUser?.vaultRootRelative {
                     LabeledContent("auth.vault", value: vault)
+                }
+                NavigationLink(value: SettingsRoute.kbFolder) {
+                    HStack {
+                        Text("settings.kb_folder.title")
+                        Spacer()
+                        Text(authSession.currentUser?.kbFolder ?? "/")
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
                 Button("auth.change_password") {
                     showChangePassword = true

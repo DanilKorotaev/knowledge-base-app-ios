@@ -6,6 +6,9 @@ protocol AuthAPIClientProtocol: Sendable {
     func register(login: String, password: String, email: String?) async throws -> AuthTokenResponse
     func refresh(refreshToken: String) async throws -> AuthTokenResponse
     func me(accessToken: String) async throws -> AuthUserDTO
+    func patchMe(accessToken: String, kbFolder: String) async throws -> AuthUserDTO
+    func listNcFolders(accessToken: String) async throws -> AuthNcFoldersResponse
+    func createNcFolder(accessToken: String, name: String, select: Bool) async throws -> AuthNcFoldersResponse
     func changePassword(accessToken: String, currentPassword: String?, newPassword: String) async throws
     func logout(accessToken: String?, refreshToken: String?) async throws
 }
@@ -80,6 +83,32 @@ struct URLSessionAuthAPIClient: AuthAPIClientProtocol {
         return envelope.user
     }
 
+    func patchMe(accessToken: String, kbFolder: String) async throws -> AuthUserDTO {
+        let envelope: AuthMeResponse = try await patch(
+            path: "api/auth/me",
+            body: ["kb_folder": kbFolder],
+            accessToken: accessToken
+        )
+        return envelope.user
+    }
+
+    func listNcFolders(accessToken: String) async throws -> AuthNcFoldersResponse {
+        try await get(
+            path: "api/auth/nc-folders",
+            authorized: true,
+            accessToken: accessToken
+        )
+    }
+
+    func createNcFolder(accessToken: String, name: String, select: Bool) async throws -> AuthNcFoldersResponse {
+        try await post(
+            path: "api/auth/nc-folders",
+            body: ["name": name, "select": select],
+            authorized: true,
+            accessToken: accessToken
+        )
+    }
+
     func changePassword(accessToken: String, currentPassword: String?, newPassword: String) async throws {
         var body: [String: Any] = ["new_password": newPassword]
         if let currentPassword {
@@ -135,6 +164,20 @@ struct URLSessionAuthAPIClient: AuthAPIClientProtocol {
         if authorized, let accessToken, !accessToken.isEmpty {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        return try await perform(request)
+    }
+
+    private func patch<T: Decodable>(
+        path: String,
+        body: [String: Any],
+        accessToken: String
+    ) async throws -> T {
+        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
         return try await perform(request)
     }

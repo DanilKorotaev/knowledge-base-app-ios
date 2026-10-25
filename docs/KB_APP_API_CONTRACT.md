@@ -46,6 +46,8 @@
 | POST | `/api/auth/change-password` | Bearer | Body `{ current_password?, new_password }` (current optional если `must_change_password`) |
 | GET | `/api/auth/me` | Bearer | `{ "user": { id, login, email, role, must_change_password, cursor_isolation, vault_root_relative, nextcloud_username, kb_folder, has_nc_app_password } }` |
 | PATCH | `/api/auth/me` | Bearer | Body `{ kb_folder? }` — путь KB в NC home пользователя (по умолчанию `/`) |
+| GET | `/api/auth/nc-folders` | Bearer | Список top-level папок NC home: `{ current, has_nc_app_password, folders:[{path,name}] }` |
+| POST | `/api/auth/nc-folders` | Bearer | Body `{ name, select?=true }` — создать папку в NC home (и опционально выбрать как `kb_folder`) |
 
 **Ответ login / register / refresh:**
 

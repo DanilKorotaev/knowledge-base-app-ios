@@ -17,7 +17,9 @@ final class AuthAPIClientTests: XCTestCase {
             "must_change_password": false,
             "cursor_isolation": "strict",
             "vault_root_relative": "users/alice",
-            "nextcloud_username": "alice"
+            "nextcloud_username": "alice",
+            "kb_folder": "/KnowledgeBase",
+            "has_nc_app_password": true
           }
         }
         """.data(using: .utf8)!
@@ -26,7 +28,27 @@ final class AuthAPIClientTests: XCTestCase {
         XCTAssertEqual(decoded.refreshToken, "ref")
         XCTAssertEqual(decoded.user.login, "alice")
         XCTAssertEqual(decoded.user.vaultRootRelative, "users/alice")
+        XCTAssertEqual(decoded.user.kbFolder, "/KnowledgeBase")
+        XCTAssertEqual(decoded.user.hasNcAppPassword, true)
         XCTAssertFalse(decoded.user.mustChangePassword)
+    }
+
+    func testDecodeNcFoldersResponse() throws {
+        let json = """
+        {
+          "current": "/",
+          "has_nc_app_password": true,
+          "folders": [
+            {"path": "/", "name": "/"},
+            {"path": "/Documents", "name": "Documents"}
+          ]
+        }
+        """.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(AuthNcFoldersResponse.self, from: json)
+        XCTAssertEqual(decoded.current, "/")
+        XCTAssertTrue(decoded.hasNcAppPassword)
+        XCTAssertEqual(decoded.folders.count, 2)
+        XCTAssertEqual(decoded.folders[1].path, "/Documents")
     }
 
     func testDecodeSignupStatus() throws {

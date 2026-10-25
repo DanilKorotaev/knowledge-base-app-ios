@@ -199,6 +199,9 @@
 		7A1625DF58CFDBDF226CA234 /* ChatSSEEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC51017B814D106D4029E5FB /* ChatSSEEvent.swift */; };
 		7A6F67AA650023861693F478 /* VideoMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C7EAB19024EC217C87C30B3 /* VideoMessageBubble.swift */; };
 		7AAB6AB8C8247448ED613DA2 /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114F3203B843FD304C959003 /* ChangePasswordView.swift */; };
+		E6D5C4B3A291807060504030 /* KnowledgeBaseFolderSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E6D5C4B3A2918070605040 /* KnowledgeBaseFolderSettingsView.swift */; };
+		A1B2C3D4E5F60718293A4B01 /* FormKeyboardDismiss.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B02 /* FormKeyboardDismiss.swift */; };
+		A1B2C3D4E5F60718293A4B03 /* PasswordGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B04 /* PasswordGenerator.swift */; };
 		7C9EFC0606433244D53E97FB /* StreamTextRevealState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DCD743332007AE3FECBBEC2 /* StreamTextRevealState.swift */; };
 		7CA0B544E68A18AAD2949780 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F15F8746763D8F7653EFBD7 /* Session.swift */; };
 		7DECBC0B2FC6361B142E0A58 /* AttachmentImageGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4D09B0BBB3164307024430 /* AttachmentImageGrid.swift */; };
@@ -519,6 +522,9 @@
 		1019A6F380573724EBF5E632 /* CachingAttachmentLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachingAttachmentLoader.swift; sourceTree = "<group>"; };
 		10EDEFEDF999336B80136FAD /* AttachmentDiskCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentDiskCacheTests.swift; sourceTree = "<group>"; };
 		114F3203B843FD304C959003 /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
+		F7E6D5C4B3A2918070605040 /* KnowledgeBaseFolderSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseFolderSettingsView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B02 /* FormKeyboardDismiss.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormKeyboardDismiss.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B04 /* PasswordGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordGenerator.swift; sourceTree = "<group>"; };
 		1151242F292C6B2EEF8F53BF /* VoiceDefaultExpiredNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDefaultExpiredNotice.swift; sourceTree = "<group>"; };
 		11FCB9FA16131BFAD5134E69 /* UserDefaultsKeyRegistryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsKeyRegistryTests.swift; sourceTree = "<group>"; };
 		120ACA3751D4BA6BA15A924B /* KnowledgeBaseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeBaseApp.swift; sourceTree = "<group>"; };
@@ -1043,6 +1049,7 @@
 			isa = PBXGroup;
 			children = (
 				114F3203B843FD304C959003 /* ChangePasswordView.swift */,
+				F7E6D5C4B3A2918070605040 /* KnowledgeBaseFolderSettingsView.swift */,
 				CFEA117D364C2E818F6DC3AF /* LoginView.swift */,
 			);
 			path = Auth;
@@ -1371,6 +1378,7 @@
 			isa = PBXGroup;
 			children = (
 				EE8A16E93E2D9DED30575E17 /* ClipboardMediaImporter.swift */,
+				A1B2C3D4E5F60718293A4B02 /* FormKeyboardDismiss.swift */,
 				203DD90A4EC3FE23B3512868 /* GalleryMediaImporter.swift */,
 				7E509E50C84415E3D2D5A58A /* KBTopViewController.swift */,
 				0446D0911187C57A67AF311A /* NotificationName+KB.swift */,
@@ -1542,6 +1550,7 @@
 				4D1B4440C7AE610D9A32EB86 /* NextcloudFileOpener.swift */,
 				598F367040C56A302CE61C22 /* OfflineCacheScope.swift */,
 				07204B81323625429910E752 /* OfflineCacheStore.swift */,
+				A1B2C3D4E5F60718293A4B04 /* PasswordGenerator.swift */,
 				0A4E4A6B2EB9CB6A37558F20 /* PendingVoiceStore.swift */,
 				72C3C2F09F77514EEFACBA35 /* PinnedSessionsStore.swift */,
 				BEDBF5EA04BBF2E2041F2632 /* PushNotificationLogger.swift */,
@@ -1948,6 +1957,9 @@
 				C23C2F4A65123DBF396DED41 /* CalendarDayFormatter.swift in Sources */,
 				C698E2635E07120D294CFE42 /* CameraPicker.swift in Sources */,
 				7AAB6AB8C8247448ED613DA2 /* ChangePasswordView.swift in Sources */,
+				E6D5C4B3A291807060504030 /* KnowledgeBaseFolderSettingsView.swift in Sources */,
+				A1B2C3D4E5F60718293A4B01 /* FormKeyboardDismiss.swift in Sources */,
+				A1B2C3D4E5F60718293A4B03 /* PasswordGenerator.swift in Sources */,
 				9F6D9B7AD98C90038D1D8BA9 /* ChangedFilesView.swift in Sources */,
 				DE04AF9EBC2951F6F7946483 /* ChatAPIClient.swift in Sources */,
 				1836ABD21BBA952C83B30390 /* ChatComposerDraft.swift in Sources */,

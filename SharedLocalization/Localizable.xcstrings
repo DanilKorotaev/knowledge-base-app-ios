@@ -8107,6 +8107,118 @@
           }
         }
       }
+    },
+    "settings.kb_folder.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knowledge base folder"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Папка базы знаний"
+          }
+        }
+      }
+    },
+    "settings.kb_folder.section": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nextcloud folders"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Папки Nextcloud"
+          }
+        }
+      }
+    },
+    "settings.kb_folder.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Files sync into the selected folder in your Nextcloud account."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файлы синхронизируются в выбранную папку вашего Nextcloud."
+          }
+        }
+      }
+    },
+    "settings.kb_folder.no_app_password": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nextcloud App Password is not ready yet. Sign out and sign in again, or change your password in the app."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Password Nextcloud ещё не готов. Выйдите и войдите снова или смените пароль в приложении."
+          }
+        }
+      }
+    },
+    "settings.kb_folder.create": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create folder"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создать папку"
+          }
+        }
+      }
+    },
+    "settings.kb_folder.name_placeholder": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Folder name"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Имя папки"
+          }
+        }
+      }
+    },
+    "settings.kb_folder.home": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nextcloud home (/)"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Корень Nextcloud (/)"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

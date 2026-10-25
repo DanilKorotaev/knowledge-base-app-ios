@@ -25,7 +25,9 @@ final class AuthSessionStoreTests: XCTestCase {
             mustChangePassword: false,
             cursorIsolation: "strict",
             vaultRootRelative: "users/bob",
-            nextcloudUsername: "bob"
+            nextcloudUsername: "bob",
+            kbFolder: "/",
+            hasNcAppPassword: false
         )
         let tokens = AuthTokenResponse(
             accessToken: "access-\(UUID().uuidString)",

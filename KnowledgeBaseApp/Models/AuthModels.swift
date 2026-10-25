@@ -9,6 +9,8 @@ struct AuthUserDTO: Codable, Equatable, Sendable {
     let cursorIsolation: String?
     let vaultRootRelative: String?
     let nextcloudUsername: String?
+    let kbFolder: String?
+    let hasNcAppPassword: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id, login, email, role
@@ -16,6 +18,27 @@ struct AuthUserDTO: Codable, Equatable, Sendable {
         case cursorIsolation = "cursor_isolation"
         case vaultRootRelative = "vault_root_relative"
         case nextcloudUsername = "nextcloud_username"
+        case kbFolder = "kb_folder"
+        case hasNcAppPassword = "has_nc_app_password"
+    }
+}
+
+struct AuthNcFolderDTO: Codable, Equatable, Sendable, Identifiable {
+    let path: String
+    let name: String
+
+    var id: String { path }
+}
+
+struct AuthNcFoldersResponse: Codable, Equatable, Sendable {
+    let current: String
+    let hasNcAppPassword: Bool
+    let folders: [AuthNcFolderDTO]
+
+    enum CodingKeys: String, CodingKey {
+        case current
+        case hasNcAppPassword = "has_nc_app_password"
+        case folders
     }
 }
 
