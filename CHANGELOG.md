@@ -12,6 +12,12 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [1.0.114] - 2026-10-26
+
+### Added
+
+- Multi-account switch with per-user cache and board presets
+
 ## [1.0.113] - 2026-10-25
 
 ### Changed
@@ -934,7 +940,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.113...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.114...HEAD
+[1.0.114]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.114
 [1.0.113]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.113
 [1.0.112]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.112
 [1.0.111]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.111
