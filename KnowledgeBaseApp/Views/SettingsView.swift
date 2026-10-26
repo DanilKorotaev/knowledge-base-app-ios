@@ -42,12 +42,44 @@ struct SettingsView: View {
                 Button("auth.change_password") {
                     showChangePassword = true
                 }
+
+                if authSession.savedAccounts.count > 1 {
+                    ForEach(authSession.savedAccounts) { account in
+                        Button {
+                            Task { await authSession.switchToAccount(id: account.id) }
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(account.login)
+                                    Text(accountHostLabel(account))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if account.id == authSession.activeAccountId {
+                                    Text("auth.active_badge")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .disabled(account.id == authSession.activeAccountId)
+                    }
+                }
+
+                Button("auth.add_account") {
+                    Task { await authSession.beginAddAccount() }
+                }
+                .accessibilityIdentifier("auth.add_account")
+
                 Button("auth.sign_out", role: .destructive) {
                     Task { await authSession.clear(logoutRemote: true) }
                 }
                 .accessibilityIdentifier("auth.sign_out")
             } header: {
                 Text("auth.account_section")
+            } footer: {
+                Text("auth.sign_out_footer")
             }
 
             Section {
@@ -157,9 +189,12 @@ struct SettingsView: View {
         }
     }
 
-    /// Best-effort login label when profile is not yet loaded.
     private var loginFromTokenFallback: String? {
         authSession.isAuthenticated ? String(localized: "auth.signed_in") : nil
+    }
+
+    private func accountHostLabel(_ account: SavedAccount) -> String {
+        URL(string: account.apiBaseURL)?.host ?? account.apiBaseURL
     }
 
     private func copyVersionToPasteboard() {

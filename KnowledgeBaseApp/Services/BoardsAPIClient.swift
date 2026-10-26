@@ -24,6 +24,9 @@ protocol BoardsAPIClientProtocol: Sendable {
     func fetchArchivedBoards() async throws -> [KBBoard]
     func archiveBoard(id: String) async throws -> KBBoard
     func restoreBoard(id: String) async throws -> KBBoard
+    func fetchPresets() async throws -> [KBBoardPreset]
+    func installPreset(id: String) async throws -> KBBoardDetail
+    func uninstallPreset(id: String) async throws
 }
 
 extension BoardsAPIClientProtocol {
@@ -56,6 +59,20 @@ extension BoardsAPIClientProtocol {
     func restoreBoard(id: String) async throws -> KBBoard {
         _ = id
         throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "archive not supported")
+    }
+
+    func fetchPresets() async throws -> [KBBoardPreset] {
+        []
+    }
+
+    func installPreset(id: String) async throws -> KBBoardDetail {
+        _ = id
+        throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "presets not supported")
+    }
+
+    func uninstallPreset(id: String) async throws {
+        _ = id
+        throw BoardsAPIError.invalidResponse(statusCode: 501, apiMessage: "presets not supported")
     }
 }
 
@@ -156,6 +173,19 @@ final class StubBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Sendable {
         archivedIds.remove(id)
         lock.unlock()
         return board
+    }
+
+    func fetchPresets() async throws -> [KBBoardPreset] {
+        []
+    }
+
+    func installPreset(id: String) async throws -> KBBoardDetail {
+        _ = id
+        throw BoardsAPIError.notFound
+    }
+
+    func uninstallPreset(id: String) async throws {
+        _ = id
     }
 
     private func lockedArchivedIds() -> Set<String> {
@@ -290,6 +320,40 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
 
     func restoreBoard(id: String) async throws -> KBBoard {
         try await postBoardLifecycle(id: id, action: "restore")
+    }
+
+    func fetchPresets() async throws -> [KBBoardPreset] {
+        let url = baseURL.appendingPathComponent("api/boards/presets")
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        let data = try await performData(request)
+        guard let decoded = try? JSONDecoder().decode(KBBoardPresetsListResponse.self, from: data) else {
+            throw BoardsAPIError.decodingFailed
+        }
+        return decoded.presets
+    }
+
+    func installPreset(id: String) async throws -> KBBoardDetail {
+        let url = baseURL
+            .appendingPathComponent("api/boards/presets")
+            .appendingPathComponent(id)
+            .appendingPathComponent("install")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let data = try await performData(request)
+        guard let decoded = try? JSONDecoder().decode(KBBoardDetail.self, from: data) else {
+            throw BoardsAPIError.decodingFailed
+        }
+        return decoded
+    }
+
+    func uninstallPreset(id: String) async throws {
+        let url = baseURL
+            .appendingPathComponent("api/boards/presets")
+            .appendingPathComponent(id)
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        _ = try await performData(request)
     }
 
     private func postBoardLifecycle(id: String, action: String) async throws -> KBBoard {

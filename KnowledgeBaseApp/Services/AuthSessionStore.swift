@@ -2,6 +2,7 @@ import Foundation
 import Observation
 
 /// Owns login session: Keychain tokens + optional cached user profile.
+/// Supports multiple saved accounts; offline caches stay until full sign-out.
 @Observable
 final class AuthSessionStore {
     static let shared = AuthSessionStore()
@@ -10,6 +11,7 @@ final class AuthSessionStore {
     private(set) var refreshToken: String?
     private(set) var currentUser: AuthUserDTO?
     private(set) var isAuthenticated: Bool = false
+    private(set) var savedAccounts: [SavedAccount] = []
 
     /// Serializes concurrent 401→refresh attempts.
     private let refreshLock = NSLock()
@@ -23,6 +25,10 @@ final class AuthSessionStore {
         currentUser?.mustChangePassword == true
     }
 
+    var activeAccountId: String? {
+        SavedAccountsStore.activeAccountId
+    }
+
     /// UI tests use stub clients and should skip the login gate (unless forced).
     var shouldPresentLoginGate: Bool {
         if UITestRuntime.forceLoginGate { return true }
@@ -31,13 +37,21 @@ final class AuthSessionStore {
     }
 
     func restoreFromKeychain() {
+        savedAccounts = SavedAccountsStore.loadAll()
+        migrateLegacySessionIfNeeded()
+
+        if let activeId = SavedAccountsStore.activeAccountId,
+           let account = SavedAccountsStore.account(id: activeId) {
+            applySavedAccount(account, notify: false)
+            return
+        }
+
         let access = KeychainTokenStore.token()?.trimmingCharacters(in: .whitespacesAndNewlines)
         let refresh = KeychainTokenStore.refreshToken()?.trimmingCharacters(in: .whitespacesAndNewlines)
         accessToken = access?.nilIfEmpty
         refreshToken = refresh?.nilIfEmpty
         isAuthenticated = accessToken != nil
         if currentUser == nil, let access, let sub = Self.jwtSubjectUserId(access) {
-            // Minimal stub so offline cache scopes before /me returns.
             currentUser = AuthUserDTO(
                 id: sub,
                 login: UserDefaults.standard.string(forKey: Self.cachedLoginKey) ?? "user",
@@ -52,12 +66,20 @@ final class AuthSessionStore {
             )
         }
         rebindCaches()
+        savedAccounts = SavedAccountsStore.loadAll()
     }
 
     @MainActor
     func applyUpdatedUser(_ user: AuthUserDTO) {
         currentUser = user
         UserDefaults.standard.set(user.login, forKey: Self.cachedLoginKey)
+        if var account = currentSavedAccount() {
+            account.login = user.login
+            account.vaultRootRelative = user.vaultRootRelative
+            account.kbFolder = user.kbFolder
+            SavedAccountsStore.upsert(account)
+            savedAccounts = SavedAccountsStore.loadAll()
+        }
         rebindCaches()
     }
 
@@ -70,6 +92,7 @@ final class AuthSessionStore {
         currentUser = tokens.user
         UserDefaults.standard.set(tokens.user.login, forKey: Self.cachedLoginKey)
         isAuthenticated = true
+        persistCurrentAsSavedAccount()
         rebindCaches()
         PushNotificationService.shared.onAuthenticated()
         NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
@@ -98,19 +121,68 @@ final class AuthSessionStore {
             )
         }
         isAuthenticated = true
+        persistCurrentAsSavedAccount()
         rebindCaches()
         PushNotificationService.shared.onAuthenticated()
         NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
     }
 
+    /// Switch to another saved account without wiping caches.
+    @MainActor
+    func switchToAccount(id: String) async {
+        guard let account = SavedAccountsStore.account(id: id) else { return }
+        if let current = currentSavedAccount(), current.id != account.id {
+            persistCurrentAsSavedAccount()
+        }
+        await PushNotificationService.shared.unregisterFromServer()
+        applySavedAccount(account, notify: true)
+        PushNotificationService.shared.onAuthenticated()
+    }
+
+    /// Park the current session and show login to add another account (caches kept).
+    @MainActor
+    func beginAddAccount() async {
+        persistCurrentAsSavedAccount()
+        await PushNotificationService.shared.unregisterFromServer()
+        KeychainTokenStore.clearSession()
+        AppConfiguration.setUserString(nil, for: AppConfiguration.Keys.authToken)
+        accessToken = nil
+        refreshToken = nil
+        currentUser = nil
+        isAuthenticated = false
+        SavedAccountsStore.activeAccountId = nil
+        // Keep disk caches for previous account; rebind to anonymous until new login.
+        rebindCaches()
+        savedAccounts = SavedAccountsStore.loadAll()
+        NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
+    }
+
+    /// Full sign-out of the current account: revoke tokens and wipe that account’s offline cache.
     @MainActor
     func clear(logoutRemote: Bool = true) async {
         let access = accessToken
         let refresh = refreshToken
+        let signingOutUserId = currentUser?.id
+        let signingOutAccountId = currentSavedAccount()?.id
+        let apiBase = AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL)
+
         await PushNotificationService.shared.unregisterFromServer()
         if logoutRemote, let client = URLSessionAuthAPIClient.makeFromConfiguration() {
             try? await client.logout(accessToken: access, refreshToken: refresh)
         }
+
+        wipeOfflineCache(apiBaseURL: apiBase, userId: signingOutUserId)
+
+        if let signingOutAccountId {
+            savedAccounts = SavedAccountsStore.remove(id: signingOutAccountId)
+        }
+
+        if let next = savedAccounts.first {
+            applySavedAccount(next, notify: true)
+            PushNotificationService.shared.onAuthenticated()
+            return
+        }
+
         KeychainTokenStore.clearSession()
         AppConfiguration.setUserString(nil, for: AppConfiguration.Keys.authToken)
         UserDefaults.standard.removeObject(forKey: Self.cachedLoginKey)
@@ -118,6 +190,7 @@ final class AuthSessionStore {
         refreshToken = nil
         currentUser = nil
         isAuthenticated = false
+        SavedAccountsStore.activeAccountId = nil
         rebindCaches()
         NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
     }
@@ -139,11 +212,100 @@ final class AuthSessionStore {
         FileAttachmentDiskCache.shared.rebindToCurrentUser(userId: userId)
     }
 
+    private func wipeOfflineCache(apiBaseURL: URL?, userId: Int?) {
+        let root = OfflineCacheScope.storeRoot(apiBaseURL: apiBaseURL, userId: userId)
+        try? FileManager.default.removeItem(at: root)
+    }
+
+    private func currentSavedAccount() -> SavedAccount? {
+        guard let user = currentUser,
+              let base = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL) else {
+            return nil
+        }
+        let id = SavedAccount.makeId(apiBaseURL: base, userId: user.id)
+        return SavedAccountsStore.account(id: id)
+    }
+
+    private func persistCurrentAsSavedAccount() {
+        guard let access = accessToken?.nilIfEmpty,
+              let user = currentUser,
+              let base = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL)?.nilIfEmpty else {
+            return
+        }
+        let account = SavedAccount(
+            id: SavedAccount.makeId(apiBaseURL: base, userId: user.id),
+            apiBaseURL: base,
+            userId: user.id,
+            login: user.login,
+            accessToken: access,
+            refreshToken: refreshToken,
+            vaultRootRelative: user.vaultRootRelative,
+            kbFolder: user.kbFolder
+        )
+        SavedAccountsStore.upsert(account)
+        savedAccounts = SavedAccountsStore.loadAll()
+    }
+
+    private func applySavedAccount(_ account: SavedAccount, notify: Bool) {
+        if let url = URL(string: account.apiBaseURL) {
+            AppConfiguration.setUserString(url.absoluteString, for: AppConfiguration.Keys.apiBaseURL)
+        }
+        KeychainTokenStore.setToken(account.accessToken)
+        KeychainTokenStore.setRefreshToken(account.refreshToken?.nilIfEmpty)
+        AppConfiguration.setUserString(account.accessToken, for: AppConfiguration.Keys.authToken)
+        accessToken = account.accessToken
+        refreshToken = account.refreshToken?.nilIfEmpty
+        currentUser = AuthUserDTO(
+            id: account.userId,
+            login: account.login,
+            email: nil,
+            role: nil,
+            mustChangePassword: false,
+            cursorIsolation: nil,
+            vaultRootRelative: account.vaultRootRelative,
+            nextcloudUsername: nil,
+            kbFolder: account.kbFolder,
+            hasNcAppPassword: nil
+        )
+        UserDefaults.standard.set(account.login, forKey: Self.cachedLoginKey)
+        isAuthenticated = true
+        SavedAccountsStore.activeAccountId = account.id
+        savedAccounts = SavedAccountsStore.loadAll()
+        rebindCaches()
+        if notify {
+            NotificationCenter.default.post(name: .kbAuthSessionDidChange, object: nil)
+        }
+    }
+
+    /// Promote a single Keychain session into the multi-account store (one-time).
+    private func migrateLegacySessionIfNeeded() {
+        guard SavedAccountsStore.loadAll().isEmpty,
+              let access = KeychainTokenStore.token()?.nilIfEmpty,
+              let base = AppConfiguration.string(for: AppConfiguration.Keys.apiBaseURL)?.nilIfEmpty,
+              let userId = Self.jwtSubjectUserId(access) else {
+            return
+        }
+        let login = UserDefaults.standard.string(forKey: Self.cachedLoginKey) ?? "user"
+        let account = SavedAccount(
+            id: SavedAccount.makeId(apiBaseURL: base, userId: userId),
+            apiBaseURL: base,
+            userId: userId,
+            login: login,
+            accessToken: access,
+            refreshToken: KeychainTokenStore.refreshToken(),
+            vaultRootRelative: nil,
+            kbFolder: nil
+        )
+        SavedAccountsStore.upsert(account)
+    }
+
     @MainActor
     func refreshProfile() async {
         guard let access = accessToken, let client = URLSessionAuthAPIClient.makeFromConfiguration() else { return }
         do {
-            currentUser = try await client.me(accessToken: access)
+            let user = try await client.me(accessToken: access)
+            currentUser = user
+            applyUpdatedUser(user)
         } catch {
             // Keep cached user if /me fails (offline).
         }

@@ -250,6 +250,116 @@ struct BoardsAPIClientTests {
     }
 }
 
+@Suite("Boards presets API")
+struct BoardsPresetsAPIClientTests {
+    private func makeClient() -> URLSessionBoardsAPIClient {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [MockURLProtocol.self]
+        let session = URLSession(configuration: config)
+        return URLSessionBoardsAPIClient(
+            baseURL: URL(string: "https://kb.test")!,
+            authToken: "token",
+            urlSession: session,
+            useDemoFallback: false
+        )
+    }
+
+    @Test("fetchPresets decodes catalog with installed flag")
+    func fetchPresets() async throws {
+        let client = makeClient()
+        MockURLProtocol.requestHandler = { request in
+            #expect(request.httpMethod == "GET")
+            #expect(request.url?.path.hasSuffix("/api/boards/presets") == true)
+            let body = """
+            {
+              "presets": [
+                {
+                  "id": "active-jobs",
+                  "title": "Active jobs",
+                  "subtitle": "Background tasks",
+                  "icon": "bolt.horizontal.circle",
+                  "kind": "system",
+                  "surface": "actions",
+                  "installed": false
+                }
+              ],
+              "total": 1
+            }
+            """
+            return (
+                HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "application/json"]
+                )!,
+                Data(body.utf8)
+            )
+        }
+        let presets = try await client.fetchPresets()
+        #expect(presets.count == 1)
+        #expect(presets[0].id == "active-jobs")
+        #expect(presets[0].installed == false)
+        #expect(presets[0].surface == "actions")
+    }
+
+    @Test("installPreset posts and decodes board detail")
+    func installPreset() async throws {
+        let client = makeClient()
+        MockURLProtocol.requestHandler = { request in
+            #expect(request.httpMethod == "POST")
+            #expect(request.url?.path.hasSuffix("/api/boards/presets/active-jobs/install") == true)
+            let body = """
+            {
+              "ok": true,
+              "board": {
+                "id": "active-jobs",
+                "title": "Active jobs",
+                "kind": "system",
+                "sort_order": 50,
+                "enabled": true
+              },
+              "document": {
+                "schema_version": 1,
+                "screen": {"type": "vstack", "id": "root", "children": []}
+              }
+            }
+            """
+            return (
+                HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "application/json"]
+                )!,
+                Data(body.utf8)
+            )
+        }
+        let detail = try await client.installPreset(id: "active-jobs")
+        #expect(detail.board.id == "active-jobs")
+        #expect(detail.document.screen.type == "vstack")
+    }
+
+    @Test("uninstallPreset deletes preset path")
+    func uninstallPreset() async throws {
+        let client = makeClient()
+        MockURLProtocol.requestHandler = { request in
+            #expect(request.httpMethod == "DELETE")
+            #expect(request.url?.path.hasSuffix("/api/boards/presets/active-jobs") == true)
+            return (
+                HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "application/json"]
+                )!,
+                Data(#"{"ok":true,"id":"active-jobs"}"#.utf8)
+            )
+        }
+        try await client.uninstallPreset(id: "active-jobs")
+    }
+}
+
 @Suite("Boards models")
 struct BoardsModelTests {
     @Test("list response accepts items alias")

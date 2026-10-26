@@ -1,16 +1,17 @@
-# Foundation: multi-account cache keys (UI later)
+# Multi-account switch + per-account offline cache
 
-**Статус:** 📋 Planned  
-**Приоритет:** 🟢 Low / later  
-**Категория:** Auth  
-**Depends on:** `task-feature-auth-logout-cache-per-user`
+**Статус:** ✅ Done  
+**Приоритет:** 🟡 Средний  
+**Категория:** Auth / Offline  
 
 ## Цель
 
-Не строить UI переключения аккаунтов сейчас. Заложить: Keychain/cache могут хранить несколько `(server, userId)` профилей; active account pointer. UI switch — отдельная задача после стабильного auth.
+Хранить несколько сессий на устройстве; при переключении аккаунта офлайн-кэш не сбрасывается. Кэш аккаунта удаляется только при полном «Выйти».
 
 ## Чеклист
 
-- [ ] Document storage layout for multi-profile
-- [ ] No UI; single active session only in v1
-- [ ] Ensure logout/cache task keys don’t paint into a corner
+- [x] `SavedAccountsStore` — Keychain list + active pointer
+- [x] `AuthSessionStore`: switch / add account / sign-out (wipe only signed-out scope)
+- [x] Settings UI: saved accounts, add account, sign out footer
+- [x] Offline cache already keyed by `host/u<id>` (`OfflineCacheScope`)
+- [x] Unit test: two accounts survive switch; sign-out drops one then the other

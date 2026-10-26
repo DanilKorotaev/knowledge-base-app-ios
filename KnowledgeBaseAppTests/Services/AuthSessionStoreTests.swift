@@ -2,9 +2,19 @@ import XCTest
 @testable import KnowledgeBaseApp
 
 final class AuthSessionStoreTests: XCTestCase {
+    override func setUp() {
+        super.setUp()
+        KeychainTokenStore.clearSession()
+        SavedAccountsStore.clearAll()
+        UserDefaults.standard.removeObject(forKey: "kb.auth.cached_login")
+        UserDefaults.standard.removeObject(forKey: "kb.auth.active_account_id")
+    }
+
     override func tearDown() {
         KeychainTokenStore.clearSession()
+        SavedAccountsStore.clearAll()
         UserDefaults.standard.removeObject(forKey: "kb.auth.cached_login")
+        UserDefaults.standard.removeObject(forKey: "kb.auth.active_account_id")
         super.tearDown()
     }
 
@@ -185,6 +195,157 @@ final class AuthSessionStoreTests: XCTestCase {
         // We only assert the force flag path is readable (launch args are process-global).
         XCTAssertFalse(UITestRuntime.forceLoginGateArgument.isEmpty)
         XCTAssertFalse(UITestRuntime.launchArgument.isEmpty)
+    }
+
+    func testSignOutWipesOnlyThatAccountOfflineCache() async {
+        let base = URL(string: "https://cache-test.example.com")!
+        AppConfiguration.setUserString(base.absoluteString, for: AppConfiguration.Keys.apiBaseURL)
+
+        let rootA = OfflineCacheScope.storeRoot(apiBaseURL: base, userId: 11)
+        let rootB = OfflineCacheScope.storeRoot(apiBaseURL: base, userId: 22)
+        try? FileManager.default.createDirectory(at: rootA, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: rootB, withIntermediateDirectories: true)
+        try? "a".data(using: .utf8)?.write(to: rootA.appendingPathComponent("marker.txt"))
+        try? "b".data(using: .utf8)?.write(to: rootB.appendingPathComponent("marker.txt"))
+        defer {
+            try? FileManager.default.removeItem(at: OfflineCacheScope.applicationSupportRoot()
+                .appendingPathComponent(OfflineCacheScope.hostKey(from: base), isDirectory: true))
+        }
+
+        let userA = AuthUserDTO(
+            id: 11,
+            login: "alice-cache",
+            email: nil,
+            role: "user",
+            mustChangePassword: false,
+            cursorIsolation: nil,
+            vaultRootRelative: nil,
+            nextcloudUsername: nil,
+            kbFolder: nil,
+            hasNcAppPassword: nil
+        )
+        let userB = AuthUserDTO(
+            id: 22,
+            login: "bob-cache",
+            email: nil,
+            role: "user",
+            mustChangePassword: false,
+            cursorIsolation: nil,
+            vaultRootRelative: nil,
+            nextcloudUsername: nil,
+            kbFolder: nil,
+            hasNcAppPassword: nil
+        )
+
+        await MainActor.run {
+            AuthSessionStore.shared.apply(
+                tokens: AuthTokenResponse(
+                    accessToken: "access-a-cache",
+                    refreshToken: "refresh-a-cache",
+                    tokenType: "bearer",
+                    expiresIn: 3600,
+                    user: userA
+                )
+            )
+        }
+        await AuthSessionStore.shared.beginAddAccount()
+        await MainActor.run {
+            AuthSessionStore.shared.apply(
+                tokens: AuthTokenResponse(
+                    accessToken: "access-b-cache",
+                    refreshToken: "refresh-b-cache",
+                    tokenType: "bearer",
+                    expiresIn: 3600,
+                    user: userB
+                )
+            )
+        }
+
+        // Switch back to alice, then sign her out — only her cache directory should vanish.
+        let aliceId = SavedAccount.makeId(apiBaseURL: base.absoluteString, userId: 11)
+        await AuthSessionStore.shared.switchToAccount(id: aliceId)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: rootA.appendingPathComponent("marker.txt").path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: rootB.appendingPathComponent("marker.txt").path))
+
+        await AuthSessionStore.shared.clear(logoutRemote: false)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: rootA.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: rootB.appendingPathComponent("marker.txt").path))
+        await MainActor.run {
+            XCTAssertEqual(AuthSessionStore.shared.currentUser?.login, "bob-cache")
+        }
+        await AuthSessionStore.shared.clear(logoutRemote: false)
+    }
+
+    func testSwitchAccountKeepsBothSavedAndClearsOnlyOnSignOut() async {
+        AppConfiguration.setUserString("https://api.example.com", for: AppConfiguration.Keys.apiBaseURL)
+        let userA = AuthUserDTO(
+            id: 11,
+            login: "alice",
+            email: nil,
+            role: "user",
+            mustChangePassword: false,
+            cursorIsolation: nil,
+            vaultRootRelative: "users/alice",
+            nextcloudUsername: nil,
+            kbFolder: "/",
+            hasNcAppPassword: nil
+        )
+        let userB = AuthUserDTO(
+            id: 22,
+            login: "bob",
+            email: nil,
+            role: "user",
+            mustChangePassword: false,
+            cursorIsolation: nil,
+            vaultRootRelative: "users/bob",
+            nextcloudUsername: nil,
+            kbFolder: "/",
+            hasNcAppPassword: nil
+        )
+        await MainActor.run {
+            AuthSessionStore.shared.apply(
+                tokens: AuthTokenResponse(
+                    accessToken: "access-a",
+                    refreshToken: "refresh-a",
+                    tokenType: "bearer",
+                    expiresIn: 3600,
+                    user: userA
+                )
+            )
+        }
+        await AuthSessionStore.shared.beginAddAccount()
+        await MainActor.run {
+            XCTAssertFalse(AuthSessionStore.shared.isAuthenticated)
+            XCTAssertEqual(AuthSessionStore.shared.savedAccounts.count, 1)
+            AuthSessionStore.shared.apply(
+                tokens: AuthTokenResponse(
+                    accessToken: "access-b",
+                    refreshToken: "refresh-b",
+                    tokenType: "bearer",
+                    expiresIn: 3600,
+                    user: userB
+                )
+            )
+            XCTAssertEqual(AuthSessionStore.shared.savedAccounts.count, 2)
+            XCTAssertEqual(AuthSessionStore.shared.currentUser?.login, "bob")
+        }
+        let aliceId = SavedAccount.makeId(apiBaseURL: "https://api.example.com", userId: 11)
+        await AuthSessionStore.shared.switchToAccount(id: aliceId)
+        await MainActor.run {
+            XCTAssertEqual(AuthSessionStore.shared.currentUser?.login, "alice")
+            XCTAssertEqual(KeychainTokenStore.token(), "access-a")
+            XCTAssertEqual(AuthSessionStore.shared.savedAccounts.count, 2)
+        }
+        await AuthSessionStore.shared.clear(logoutRemote: false)
+        await MainActor.run {
+            XCTAssertEqual(AuthSessionStore.shared.currentUser?.login, "bob")
+            XCTAssertEqual(AuthSessionStore.shared.savedAccounts.count, 1)
+        }
+        await AuthSessionStore.shared.clear(logoutRemote: false)
+        await MainActor.run {
+            XCTAssertFalse(AuthSessionStore.shared.isAuthenticated)
+            XCTAssertTrue(AuthSessionStore.shared.savedAccounts.isEmpty)
+        }
     }
 }
 

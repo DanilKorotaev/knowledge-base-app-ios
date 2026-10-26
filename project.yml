@@ -33,10 +33,16 @@ targets:
     platform: iOS
     sources:
       - path: KnowledgeBaseApp
+        excludes:
+          - "**/*conflicted*"
+          - "**/(conflicted copy)*"
       - path: SharedAppGroup
       - path: SharedIntents
       - path: SharedWatchConnectivity
       - path: SharedLocalization
+        excludes:
+          - "**/*conflicted*"
+          - "**/(conflicted copy)*"
     resources:
       - path: KnowledgeBaseApp/Resources/ru.lproj
     dependencies:
@@ -106,6 +112,8 @@ targets:
       Release: Config/Release.xcconfig
     sources:
       - path: KnowledgeBaseAppTests
+        excludes:
+          - "**/*conflicted*"
     dependencies:
       - target: KnowledgeBaseApp
     settings:
@@ -118,6 +126,8 @@ targets:
     platform: iOS
     sources:
       - path: KnowledgeBaseAppUITests
+        excludes:
+          - "**/*conflicted*"
       # Share launch-arg constant with the app target (no @testable import in UI tests).
       - path: KnowledgeBaseApp/Configuration/UITestRuntime.swift
     dependencies:

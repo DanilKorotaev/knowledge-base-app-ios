@@ -131,6 +131,37 @@ struct KBBoardDetail: Codable, Equatable, Sendable {
     }
 }
 
+/// Installable board catalog entry from `GET /api/boards/presets`.
+struct KBBoardPreset: Identifiable, Codable, Equatable, Hashable, Sendable {
+    let id: String
+    let title: String
+    let subtitle: String?
+    let icon: String?
+    let kind: String?
+    let surface: String?
+    let installed: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case subtitle
+        case icon
+        case kind
+        case surface
+        case installed
+    }
+
+    var systemImageName: String {
+        if let icon, !icon.isEmpty { return icon }
+        return "rectangle.stack.badge.plus"
+    }
+}
+
+struct KBBoardPresetsListResponse: Codable, Equatable, Sendable {
+    let presets: [KBBoardPreset]
+    let total: Int?
+}
+
 struct KBBoardsListResponse: Codable, Equatable, Sendable {
     let boards: [KBBoard]
     let total: Int?

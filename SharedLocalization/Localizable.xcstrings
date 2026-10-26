@@ -433,118 +433,6 @@
         }
       }
     },
-    "network.request_failed": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn’t complete the request."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось выполнить запрос."
-          }
-        }
-      }
-    },
-    "network.decoding_failed": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn’t read the server response."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось прочитать ответ сервера."
-          }
-        }
-      }
-    },
-    "network.invalid_response": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Invalid server response."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Некорректный ответ сервера."
-          }
-        }
-      }
-    },
-    "auth.session_expired": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Session expired. Please sign in again."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сессия истекла. Войдите снова."
-          }
-        }
-      }
-    },
-    "auth.error_missing_api_url": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Server URL is not configured."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Адрес сервера не настроен."
-          }
-        }
-      }
-    },
-    "boards.error.generic": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Couldn’t load boards. Pull to refresh or try again later."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Не удалось загрузить обзор. Потяните вниз, чтобы обновить."
-          }
-        }
-      }
-    },
-    "boards.error.not_found": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Board not found."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Доска не найдена."
-          }
-        }
-      }
-    },
     "tab.health": {
       "localizations": {
         "en": {
@@ -3033,13 +2921,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "API base URL is stored on device (UserDefaults / App Group). Session JWT is in Keychain after sign-in."
+            "value": "Matches env vars KBAPP_API_BASE_URL and KBAPP_AUTH_TOKEN. The bearer token is stored in the Keychain when you tap Save."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Базовый URL API хранится на устройстве (UserDefaults / App Group). JWT сессии — в Keychain после входа."
+            "value": "Соответствует переменным KBAPP_API_BASE_URL и KBAPP_AUTH_TOKEN. Токен сохраняется в Keychain после «Сохранить»."
           }
         }
       }
@@ -3417,13 +3305,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tap + to start a chat, or pull to refresh if you already have sessions on the server."
+            "value": "Configure the API in Settings, or use a stub build with a demo session when no server is set."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Нажмите +, чтобы начать чат, или потяните вниз для обновления, если сессии уже есть на сервере."
+            "value": "Настройте API в Настройках или используйте stub-сборку с демо-сессией без сервера."
           }
         }
       }
@@ -6769,13 +6657,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nothing here yet"
+            "value": "No actions yet"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Пока пусто"
+            "value": "Пока нет действий"
           }
         }
       }
@@ -6785,13 +6673,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Quick actions and running jobs will show up here when available."
+            "value": "Active jobs and quick presets will appear here."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Здесь появятся быстрые действия и текущие задачи, когда они будут доступны."
+            "value": "Здесь будут активные jobs и быстрые пресеты."
           }
         }
       }
@@ -6881,13 +6769,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Overview boards will appear here when the server creates them."
+            "value": "Boards appear here when the server or agent creates them."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Доски обзора появятся здесь, когда сервер их создаст."
+            "value": "Доски появятся здесь, когда сервер или агент их создаст."
           }
         }
       }
@@ -7676,6 +7564,118 @@
         }
       }
     },
+    "network.request_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t complete the request."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось выполнить запрос."
+          }
+        }
+      }
+    },
+    "network.decoding_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t read the server response."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось прочитать ответ сервера."
+          }
+        }
+      }
+    },
+    "network.invalid_response": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid server response."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Некорректный ответ сервера."
+          }
+        }
+      }
+    },
+    "auth.session_expired": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Session expired. Please sign in again."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сессия истекла. Войдите снова."
+          }
+        }
+      }
+    },
+    "auth.error_missing_api_url": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server URL is not configured."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Адрес сервера не настроен."
+          }
+        }
+      }
+    },
+    "boards.error.generic": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load boards. Pull to refresh or try again later."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось загрузить обзор. Потяните вниз, чтобы обновить."
+          }
+        }
+      }
+    },
+    "boards.error.not_found": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board not found."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доска не найдена."
+          }
+        }
+      }
+    },
     "auth.title": {
       "localizations": {
         "en": {
@@ -8392,6 +8392,166 @@
           "stringUnit": {
             "state": "translated",
             "value": "Использовать корень Nextcloud"
+          }
+        }
+      }
+    },
+    "auth.add_account": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add account"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить аккаунт"
+          }
+        }
+      }
+    },
+    "auth.switch_account": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch account"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить аккаунт"
+          }
+        }
+      }
+    },
+    "auth.saved_accounts": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved accounts"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранённые аккаунты"
+          }
+        }
+      }
+    },
+    "auth.sign_out_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign out removes this account’s offline cache. Switching accounts keeps each cache until you sign out."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выход удаляет офлайн-кэш этого аккаунта. При переключении кэш каждого аккаунта сохраняется, пока не нажмёте «Выйти»."
+          }
+        }
+      }
+    },
+    "auth.active_badge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Активен"
+          }
+        }
+      }
+    },
+    "boards.presets.title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board presets"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пресеты досок"
+          }
+        }
+      }
+    },
+    "boards.presets.footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overview and Actions start empty. Install a preset to add a board for this account."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overview и Actions по умолчанию пустые. Установите пресет, чтобы добавить доску для этого аккаунта."
+          }
+        }
+      }
+    },
+    "boards.presets.install": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить"
+          }
+        }
+      }
+    },
+    "boards.presets.uninstall": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить"
+          }
+        }
+      }
+    },
+    "boards.presets.installed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлен"
           }
         }
       }
