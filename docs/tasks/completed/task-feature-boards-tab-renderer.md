@@ -1,6 +1,6 @@
 # Feature: Overview / Boards tab + Structured UI renderer for board documents
 
-**Status:** In progress  
+**Status:** ✅ Done (shipped)
 **Related (KB notes):** `Документация/Задачи/task-kb-dashboards-platform.md` (этап A placeholder + renderer; API later)  
 **Related (bot):** `knowledge-base-bot/docs/tasks/pending/task-feature-boards-api-and-cache.md`
 

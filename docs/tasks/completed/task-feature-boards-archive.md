@@ -1,6 +1,6 @@
 # Feature: Archive boards from Overview
 
-**Status:** In progress  
+**Status:** ✅ Done (shipped)
 **Related (KB notes):** `Документация/Задачи/task-boards-archive.md`  
 **Related (bot):** archive/restore routes + MCP tools
 

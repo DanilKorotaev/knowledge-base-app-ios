@@ -1,6 +1,6 @@
 # Feature: Structured UI MVP (JSON screen in chat)
 
-**Status:** In progress (feature branch `feature/structured-ui-mvp`)  
+**Status:** ✅ Done (shipped)
 **Priority:** High  
 **Related (bot):** `knowledge-base-bot/docs/tasks/pending/task-feature-structured-ui-mvp.md`
 

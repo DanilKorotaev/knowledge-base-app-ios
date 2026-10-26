@@ -1,6 +1,6 @@
 # Feature: Actions tab (Structured UI widgets / presets)
 
-**Status:** In progress (v1 shell + jobs)  
+**Status:** ✅ Done (shipped)
 **Priority:** Medium  
 **Related:** boards `system_query_jobs`, Structured UI `action_id`, bot boards MCP
 

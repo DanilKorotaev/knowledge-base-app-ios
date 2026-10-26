@@ -1,6 +1,6 @@
 # UX: Main tab shell (Chats + Settings), remove session-list mic bar
 
-**Status:** In progress (`feature/main-tab-shell-sessions-settings`) — code + tests done; awaiting merge  
+**Status:** ✅ Done (shipped)
 **Related (KB notes):** `Документация/Задачи/task-kb-dashboards-platform.md` (этап A, без Overview пока)
 
 ## Goal

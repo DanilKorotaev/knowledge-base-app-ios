@@ -1,6 +1,6 @@
 # Auth: Server URL → login / register → session
 
-**Статус:** 🚧 In progress  
+**Статус:** ✅ Done  
 **Приоритет:** 🔴 Высокий  
 **Категория:** Auth  
 **Эпик:** vault `эпик-kb-app-avtorizaciya-multiuser`  

@@ -1,58 +1,76 @@
-# Architecture
+# Architecture (Knowledge Base iOS App)
 
-## Goal
+## Product
 
-Alternative **iOS client** to the same knowledge base infrastructure as the Telegram bot:
+Native **iOS client** for the multi-user **KB App API** (`knowledge-base-bot/kb_app_api/`):
 
-- Shared **PostgreSQL** (sessions, messages) — once KB App API exists.
-- Same **Cursor CLI** / processing services on the server.
-- **Nextcloud WebDAV** and **Whisper** transcription remain server-side concerns.
+- JWT login / register / refresh (Keychain)
+- Multiple saved accounts + per-account offline cache
+- Chats (SSE), voice, attachments, changed files
+- Overview (boards) + Actions (presets / active jobs)
+- Structured UI in chat and board documents
+- Push (APNs), widgets, Watch voice relay
 
-The app talks only to **HTTPS APIs**; it does not run Cursor or touch the database directly.
+The app speaks **HTTPS only**. It does not run Cursor or touch Postgres/Nextcloud directly.
 
-## Current implementation
+Telegram bot / Mini App are **not** this client’s primary story (server-side legacy).
 
-| Area | Status |
-|------|--------|
-| SwiftUI shell (`MainView`, `SettingsView`) | Initial |
-| `AppConfiguration` | `KBAPP_*` env; URL в UserDefaults; **токен** — Keychain (+ миграция с UserDefaults) |
-| `KnowledgeBaseAPIClientProtocol` | Sessions list + create session |
-| `StubKnowledgeBaseAPIClient` + `InMemoryKBStore` | Demo session when no base URL |
-| `URLSessionKnowledgeBaseAPIClient` | `GET/POST /api/sessions`, messages, attachments, files |
-| `ChatAPIClientProtocol` | Messages + `streamTextMessage` / send + attachments (stub + `URLSession` same host) |
-| `SSEventParser` / `ChatSSEEvent` | SSE `data:` + JSON `delta`/`done` для `POST …/messages` с `Accept: text/event-stream` |
-| `ChatView` / `ChatViewModel` | Thread + composer + gallery + **camera** + file importer |
-| `NewSessionSheet` | Create session (stub / `POST /api/sessions`) |
-| `KBSession`, `KBMessage` | REST-oriented models |
-| `FilesAPIClientProtocol` | Changed files + revert (stub + `GET/POST …/api/files/…`) |
-| `ChangedFilesView` / `FileDiffView` | List, before/after, revert |
-| Widget extension | Small / medium / lock screen; mic via **`StartVoiceRecordingIntent`** → `knowledgebase://record` |
-| Deep link | Opens app, shows voice hint banner on main screen |
+## Runtime shape
 
-## Voice (partial)
+```text
+┌─────────────────────────────────────────┐
+│  KnowledgeBaseApp (SwiftUI)             │
+│  Tabs: Chats · Overview · Actions · … · Settings │
+└─────────────────┬───────────────────────┘
+                  │ Bearer JWT (+ refresh)
+                  ▼
+┌─────────────────────────────────────────┐
+│  KB App API                             │
+│  auth · sessions · boards · jobs · push │
+└─────┬───────────┬───────────┬───────────┘
+      │           │           │
+      ▼           ▼           ▼
+  per-user     Cursor CLI   APNs
+  vault/NC     (query jobs)
+```
 
-| Piece | Status |
-|-------|--------|
-| `VoiceRecordingService` | AAC to temp file, metering |
-| `VoiceRecordingViewModel` + `MicRecordControl` | Hold / cancel / lock, review sheet |
-| `ChatAPIClientProtocol.sendVoiceRecording` | `VoiceRecordingSendResult` — stub + `POST /api/query/voice` (multipart + опц. `transcription` в JSON) |
-| `VoiceRoutingContext` | Active chat session + KB toggle for voice send |
-| `kbSessionThreadDidChange` | Voice send notifies open `ChatView` + session list to refetch |
+## Auth & accounts
 
-## Next (product / backend)
+| Piece | Role |
+|-------|------|
+| `AuthSessionStore` | Active session, switch / add / sign-out |
+| `SavedAccountsStore` | Keychain list of accounts |
+| `OfflineCacheScope` | Disk cache rooted by API host + `userId` |
+| `KBHTTPTransport` | Resolves Bearer from Keychain **per request** (account switch) |
 
-- **Voice (remaining)** — multipart upload + Whisper-backed transcription text (KB App API + bot services).
-- **Chat** — серверный SSE по `text/event-stream` (prod; см. `tasks/completed/task-feature-chat.md`); WebSocket — только если понадобится отдельно от SSE.
+On `kbAuthSessionDidChange`, Main / Boards / Actions clear in-memory state and refetch.
 
-## Backend boundary
+## Main modules
 
-Canonical HTTP contract for this app: **`docs/KB_APP_API_CONTRACT.md`** and **`docs/openapi/kb-app-api.yaml`**. Higher-level product notes remain in Nextcloud («Архитектура и бэкенд API»).
+| Area | Location |
+|------|----------|
+| Shell / tabs | `Views/MainView.swift` |
+| Auth UI | `Views/Auth/` |
+| Chat | `Views/Chat/`, `ViewModels/ChatViewModel.swift` |
+| Boards / Actions | `Views/Boards/`, `Views/Actions/`, `ViewModels/BoardsViewModel.swift` |
+| Networking | `Services/*APIClient.swift`, `Networking/KBHTTPTransport.swift` |
+| Offline | `Services/OfflineCacheStore.swift`, `AttachmentDiskCache.swift` |
+| Push / Watch / Widgets | dedicated targets + App Intents |
 
-**KB App API** is implemented in `knowledge-base-bot/kb_app_api/`. Until the user sets a server URL (onboarding) and signs in (JWT in Keychain), the app uses in-memory stubs. With URL + token it uses `URLSessionKnowledgeBaseAPIClient`. Keep paths and JSON aligned with the repo contract in the same change as server updates.
+Stubs (`Stub*`) power UI tests (`-UITesting`) without a server.
 
-Open choice for the repo layout (documented in Nextcloud tasks folder): separate `kb-app-api` service importing bot services vs. later merge into a gateway.
+## Contract
 
-## Constraints (mandatory)
+Canonical HTTP/JSON: [`KB_APP_API_CONTRACT.md`](KB_APP_API_CONTRACT.md)  
+Backend guides: `knowledge-base-bot/docs/kb-app-api/`  
+Keep contract + client models aligned in the **same** change as API shape changes.
 
-- Services expose protocols; dependencies are injected.
-- New logic ships with tests (see `CODING_STANDARDS.md`).
+## UI / design
+
+Native-like SwiftUI (platform conventions). Shared product patterns with a future Android app, **not** pixel-identical skins. See [`UI.md`](UI.md).
+
+## Constraints
+
+- Protocol-first services; inject dependencies (`CODING_STANDARDS.md`)
+- New logic ships with tests; CI gate: `bundle exec fastlane test` (≥ 35% line coverage)
+- No baked production secrets in the binary — server URL at login; JWT in Keychain

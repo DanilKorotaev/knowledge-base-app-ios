@@ -1,0 +1,15 @@
+---
+description: Keep iOS docs aligned with multi-user KB App reality
+alwaysApply: true
+---
+
+# Documentation stays current (iOS)
+
+When you change user-facing or contract-facing behavior:
+
+1. Update the matching guide in the same change:
+   - `docs/ARCHITECTURE.md`, `docs/KB_APP_API_CONTRACT.md`, `docs/UI.md`
+   - `docs/FASTLANE.md` / `docs/RELEASE_PROCESS.md` if release/CI changed
+2. If a guide is missing, add a short follow-up under `docs/todo.md` — do not silently skip.
+3. Prefer moving finished task specs to `docs/tasks/completed/` over leaving stale “In progress” in `pending/`.
+4. Do not revive Telegram-bot-primary wording as the app’s main story.

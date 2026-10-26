@@ -287,15 +287,26 @@ Timeout клиента на SSE: **600 s** (Cursor + sync могут заним�
 
 Ответ revert: `{ "ok": true, "change_id": "…", "path": "…" }`.
 
-## Boards (Overview)
+## Boards (Overview / Actions)
 
-Клиент рисует каталог и документ; структура БЗ на устройстве **не** зашита.
+Клиент рисует каталог и документ; структура БЗ на устройстве **не** зашита.  
+Boards scoped per user on the server (`user_id` + `id`). Empty Overview until presets / MCP install.
 
 | Метод | Путь | Ответ |
 |-------|------|--------|
 | GET | `/api/boards` | `200` — `{ "boards": [ Board ], "total" }` (или `"items"`) |
+| GET | `/api/boards/presets` | Catalog of installable presets (`id`, `title`, `subtitle?`, `icon?`, `kind`, `surface`) |
+| POST | `/api/boards/presets/{preset_id}/install` | Install preset into the user’s boards |
+| DELETE | `/api/boards/presets/{preset_id}` | Uninstall that preset board |
+| PUT | `/api/boards/order` | Body `{ "ordered_ids": ["…"] }` |
+| GET | `/api/boards/archived` | Archived boards |
+| POST | `/api/boards/{board_id}/archive` \| `…/restore` | Soft archive / restore |
 | GET | `/api/boards/{board_id}` | `200` — `{ "board", "document", "rendered_at?" }` |
-| POST | `/api/boards/{board_id}/refresh` | `200` — тот же shape, что detail (force recompute / remote refetch) |
+| PUT | `/api/boards/{board_id}` | Upsert definition / static document |
+| DELETE | `/api/boards/{board_id}` | Remove board |
+| POST | `/api/boards/{board_id}/refresh` | Force recompute / remote refetch |
+
+Built-in preset ids (server catalog): `active-jobs`, `actions-presets` (Actions surface). Overview hides jobs boards — they live on the Actions tab.
 
 **Board (список):** `id`, `title`, `subtitle?`, `icon?` (SF Symbol), `kind` (`cached_view` \| `remote` \| `system`), `sort_order`, `enabled`, `list_cell?`, `rendered_at?`.
 
@@ -304,6 +315,10 @@ Timeout клиента на SSE: **600 s** (Cursor + sync могут заним�
 **document:** тот же Structured UI schema, что в чате (`schema_version` + `screen`), плюс узлы `metric` (`label` + `text`/`value`) и `table` (`columns: [{id,label}]`, `rows: [[string]]`).
 
 iOS: при **404** на list/detail (API ещё не задеплоен) показывает встроенный demo-каталог.
+
+## Multi-account (client)
+
+Switching saved accounts is **client-side** (Keychain + cache scope). API stays single Bearer per request; no special “switch account” endpoint.
 
 ## Синхронизация (не в клиенте MVP)
 
