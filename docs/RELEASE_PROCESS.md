@@ -52,6 +52,8 @@ You do **not** need to edit `VERSION` for routine work — write a clear commit 
 
 Optional: put draft notes under `## [Unreleased]` in [`CHANGELOG.md`](../CHANGELOG.md); deploy folds them into the cut version.
 
+**TestFlight “What to Test”:** `prepare_release.py` writes `fastlane/metadata/testflight_whatsnew.txt` from the same release notes (commits + Unreleased). Fastlane `beta` passes that text as `changelog:` to `upload_to_testflight` — not the raw git commit subject alone.
+
 ## Deploy details
 
 1. [`scripts/ci/prepare_release.py`](../scripts/ci/prepare_release.py) runs **before** Fastlane (local working tree only — not pushed yet).

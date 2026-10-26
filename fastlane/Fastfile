@@ -181,11 +181,21 @@ platform :ios do
     asc_app_id = "6768027088" if asc_app_id.empty?
     configure_deliver_altool_for_xcode26!(platform: "ios", apple_id: asc_app_id)
 
+    whatsnew_path = File.expand_path("metadata/testflight_whatsnew.txt", __dir__)
+    changelog_text = if File.file?(whatsnew_path)
+                       File.read(whatsnew_path, encoding: "UTF-8").strip
+                     else
+                       "See CHANGELOG.md for this build."
+                     end
+    # App Store Connect “What to Test” (localized default).
+    changelog_text = changelog_text[0, 3900] if changelog_text.length > 3900
+
     upload_to_testflight(
       app_identifier: app_id,
       apple_id: asc_app_id,
       app_platform: "ios",
-      skip_waiting_for_build_processing: true
+      skip_waiting_for_build_processing: true,
+      changelog: changelog_text
     )
 
     write_ci_testflight_metadata(

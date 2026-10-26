@@ -123,12 +123,11 @@ final class KBHTTPTransport: @unchecked Sendable {
 
     private func makeInterceptor(requestId: String) -> KBRequestInterceptor {
         lock.lock()
-        let token = authToken
         let e2e = useE2EIntegrationUser
         lock.unlock()
         return KBRequestInterceptor(
             requestId: requestId,
-            authToken: token,
+            authToken: resolvedAuthToken(),
             useE2EIntegrationUser: e2e,
             clientMetadata: clientMetadata,
             apiLogger: apiLogger
@@ -137,15 +136,25 @@ final class KBHTTPTransport: @unchecked Sendable {
 
     private func applyCommonHeaders(to request: inout URLRequest) {
         lock.lock()
-        let token = authToken
         let e2e = useE2EIntegrationUser
         lock.unlock()
-        if let token, !token.isEmpty {
+        if let token = resolvedAuthToken(), !token.isEmpty {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         if e2e {
             request.setValue("1", forHTTPHeaderField: "X-KB-App-E2E")
         }
         clientMetadata.apply(to: &request)
+    }
+
+    /// Prefer live Keychain/session token so account switch does not keep a stale Bearer.
+    private func resolvedAuthToken() -> String? {
+        if let live = KeychainTokenStore.token()?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !live.isEmpty {
+            return live
+        }
+        lock.lock()
+        defer { lock.unlock() }
+        return authToken
     }
 }

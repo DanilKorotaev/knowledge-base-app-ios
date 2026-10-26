@@ -107,8 +107,13 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
 /// Remote client via Alamofire (`KBHTTPTransport`): auth headers + request/response logging.
 /// Paths and JSON: `docs/KB_APP_API_CONTRACT.md` (OpenAPI subset in `docs/openapi/kb-app-api.yaml`).
 final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @unchecked Sendable {
-    private let baseURL: URL
+    private let fallbackBaseURL: URL
     private let transport: KBHTTPTransport
+
+    /// Live API base — follows account switch when `AppConfiguration` base URL changes.
+    private var baseURL: URL {
+        AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL) ?? fallbackBaseURL
+    }
 
     init(
         baseURL: URL,
@@ -116,7 +121,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         urlSession: URLSession = .shared,
         useE2EIntegrationUser: Bool = false
     ) {
-        self.baseURL = baseURL
+        self.fallbackBaseURL = baseURL
         self.transport = KBHTTPTransport(
             authToken: authToken,
             useE2EIntegrationUser: useE2EIntegrationUser,

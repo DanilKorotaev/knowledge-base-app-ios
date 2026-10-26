@@ -52,6 +52,11 @@ struct BoardsTabView: View {
                 .task {
                     await viewModel.loadIfNeeded()
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .kbAuthSessionDidChange)) { _ in
+                    path = NavigationPath()
+                    showArchive = false
+                    Task { await viewModel.reloadForAccountSwitch() }
+                }
                 .onChange(of: appActions.pendingBoardId, initial: true) { _, boardId in
                     guard let boardId else { return }
                     Task { await openBoardFromAction(boardId) }

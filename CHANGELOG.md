@@ -12,6 +12,10 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Fixed
+
+- Reload chats / Overview / Actions immediately when switching saved accounts (live Bearer + UI reset)
+
 ### Added
 
 - Multi-user KB App: JWT login/register, Keychain session, refresh on 401
@@ -19,6 +23,7 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 - Board presets catalog install into Overview / Actions
 - Nextcloud-style server-first login; pick or create `kb_folder`
 - Push registration after login; per-user device tokens
+- TestFlight “What to Test” notes from CHANGELOG via prepare_release
 
 ### Changed
 

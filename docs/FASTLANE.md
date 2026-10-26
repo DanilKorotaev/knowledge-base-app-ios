@@ -125,6 +125,8 @@ After **CI** (`test`) and **Deploy TestFlight** (`beta`), the workflow sends a m
 
 **TestFlight message:** marketing version + build number (from `fastlane/test_output/ci_testflight.json` after upload), bundle id, CHANGELOG / tag links, success or failure. On success, deploy commits `VERSION` + changelog and tags `ios/v{VERSION}` (with `[skip ci]`).
 
+**What to Test (ASC):** filled from `fastlane/metadata/testflight_whatsnew.txt` produced by `prepare_release.py` (CHANGELOG bullets for that version), via Fastlane `changelog:`.
+
 Local dry-run (no network):
 
 ```bash

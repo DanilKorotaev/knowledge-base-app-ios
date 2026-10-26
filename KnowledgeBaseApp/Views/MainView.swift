@@ -323,6 +323,9 @@ struct MainView: View {
             .onReceive(NotificationCenter.default.publisher(for: .kbSessionThreadDidChange)) { _ in
                 Task { await loadSessions(showFullScreenLoading: false) }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .kbAuthSessionDidChange)) { _ in
+                Task { await handleAuthSessionDidChange() }
+            }
             .onChange(of: navigationPath.count) { oldCount, newCount in
                 // Swipe-back from a draft chat: composer is persisted on disappear;
                 // refresh local-draft rows so non-empty drafts appear in the list.
@@ -705,6 +708,17 @@ struct MainView: View {
         } catch {
             loadError = error.localizedDescription
         }
+    }
+
+    @MainActor
+    private func handleAuthSessionDidChange() async {
+        navigationPath = NavigationPath()
+        searchText = ""
+        searchResults = nil
+        loadError = nil
+        sessions = []
+        sessionsSyncStatus = .idle
+        await loadSessions(showFullScreenLoading: true)
     }
 
     @MainActor

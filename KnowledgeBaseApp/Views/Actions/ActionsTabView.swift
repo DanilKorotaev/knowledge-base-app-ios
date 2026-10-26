@@ -67,6 +67,9 @@ struct ActionsTabView: View {
         .task {
             await viewModel.loadIfNeeded()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .kbAuthSessionDidChange)) { _ in
+            Task { await viewModel.reloadForAccountSwitch() }
+        }
     }
 
     @ViewBuilder
@@ -138,6 +141,14 @@ final class ActionsTabViewModel {
 
     func reload() async {
         await load(showFullScreenLoading: !hasContent)
+    }
+
+    func reloadForAccountSwitch() async {
+        presetsDetail = nil
+        jobsDetail = nil
+        loadError = nil
+        didLoadOnce = true
+        await load(showFullScreenLoading: true)
     }
 
     func cancelJob(id: String) async {

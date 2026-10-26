@@ -1,0 +1,3 @@
+Knowledge Base App (placeholder)
+
+• CI will overwrite this file in prepare_release.py before upload.

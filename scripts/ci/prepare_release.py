@@ -26,7 +26,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 VERSION_PATH = REPO_ROOT / "VERSION"
 CHANGELOG_PATH = REPO_ROOT / "CHANGELOG.md"
 RELEASES_PATH = REPO_ROOT / "docs" / "RELEASES.md"
+TESTFLIGHT_WHATSNEW_PATH = REPO_ROOT / "fastlane" / "metadata" / "testflight_whatsnew.txt"
 TAG_PREFIX = "ios/v"
+# App Store Connect "What to Test" limit
+TESTFLIGHT_WHATSNEW_MAX = 3900
 
 SEMVER_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
 RELEASE_COMMIT_RE = re.compile(
@@ -213,6 +216,40 @@ def build_notes(
         seen.add(key)
         sections[classify_subject(subject)].append(note)
     return {k: v for k, v in sections.items() if v}
+
+
+def render_testflight_whatsnew(
+    version: str, notes: dict[str, list[str]], note_summary: str
+) -> str:
+    """Plain-text What to Test for upload_to_testflight(changelog:)."""
+    lines = [f"Knowledge Base App {version}", ""]
+    if notes:
+        for heading in ("Added", "Changed", "Fixed"):
+            items = notes.get(heading) or []
+            if not items:
+                continue
+            lines.append(f"{heading}:")
+            for item in items:
+                lines.append(f"• {item}")
+            lines.append("")
+    else:
+        lines.append(f"• {note_summary}")
+        lines.append("")
+    lines.append("Requires multi-user KB App API when using login / account switch.")
+    text = "\n".join(lines).strip() + "\n"
+    if len(text) > TESTFLIGHT_WHATSNEW_MAX:
+        text = text[: TESTFLIGHT_WHATSNEW_MAX - 1].rstrip() + "…\n"
+    return text
+
+
+def write_testflight_whatsnew(
+    version: str, notes: dict[str, list[str]], note_summary: str
+) -> None:
+    TESTFLIGHT_WHATSNEW_PATH.parent.mkdir(parents=True, exist_ok=True)
+    TESTFLIGHT_WHATSNEW_PATH.write_text(
+        render_testflight_whatsnew(version, notes, note_summary),
+        encoding="utf-8",
+    )
 
 
 def render_version_section(
@@ -486,10 +523,12 @@ def main() -> int:
     VERSION_PATH.write_text(new_ver + "\n", encoding="utf-8")
     update_changelog(new_ver, args.date, notes, keep_existing_body=keep_existing)
     update_releases(new_ver, str(args.build or "—"), args.date, note_summary)
+    write_testflight_whatsnew(new_ver, notes, note_summary)
 
     changed = new_ver != file_ver or bool(commits) or bool(unreleased)
     print(f"prepare_release: {file_ver} -> {new_ver} ({reason})")
     print(f"last_tag={last_tag or '-'} commits={len(commits)}")
+    print(f"testflight_whatsnew={TESTFLIGHT_WHATSNEW_PATH.relative_to(REPO_ROOT)}")
     write_github_output(new_ver, last_ver, reason, changed)
     return 0
 

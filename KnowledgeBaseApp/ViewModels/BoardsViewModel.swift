@@ -26,6 +26,14 @@ final class BoardsViewModel {
         await load(showFullScreenLoading: boards.isEmpty)
     }
 
+    /// Drop previous account's boards and fetch for the newly active session.
+    func reloadForAccountSwitch() async {
+        boards = []
+        loadError = nil
+        didLoadOnce = true
+        await load(showFullScreenLoading: true)
+    }
+
     func load(showFullScreenLoading: Bool) async {
         if showFullScreenLoading {
             isLoading = true

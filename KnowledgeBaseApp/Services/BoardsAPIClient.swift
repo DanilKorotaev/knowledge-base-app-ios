@@ -198,9 +198,13 @@ final class StubBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Sendable {
 /// Remote boards client. On **404** for the list endpoint, falls back to `DemoBoardsCatalog`
 /// so the Overview tab works before the backend ships.
 final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Sendable {
-    private let baseURL: URL
+    private let fallbackBaseURL: URL
     private let transport: KBHTTPTransport
     private let useDemoFallback: Bool
+
+    private var baseURL: URL {
+        AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL) ?? fallbackBaseURL
+    }
 
     init(
         baseURL: URL,
@@ -208,7 +212,7 @@ final class URLSessionBoardsAPIClient: BoardsAPIClientProtocol, @unchecked Senda
         urlSession: URLSession = .shared,
         useDemoFallback: Bool = true
     ) {
-        self.baseURL = baseURL
+        self.fallbackBaseURL = baseURL
         self.transport = KBHTTPTransport(authToken: authToken, urlSession: urlSession)
         self.useDemoFallback = useDemoFallback
     }

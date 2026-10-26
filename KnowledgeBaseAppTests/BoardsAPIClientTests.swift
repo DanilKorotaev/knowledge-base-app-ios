@@ -420,6 +420,16 @@ struct BoardsViewModelTests {
         #expect(vm.boards.count == 1)
     }
 
+    @Test("reloadForAccountSwitch clears then loads")
+    func reloadForAccountSwitch() async {
+        let vm = BoardsViewModel(client: StubBoardsAPIClient())
+        await vm.loadIfNeeded()
+        #expect(!vm.boards.isEmpty)
+        await vm.reloadForAccountSwitch()
+        #expect(vm.boards.count == 1)
+        #expect(vm.loadError == nil)
+    }
+
     @Test("detail load and refresh")
     func detail() async {
         let vm = BoardDetailViewModel(boardId: DemoBoardsCatalog.demoKPIId, client: StubBoardsAPIClient())
