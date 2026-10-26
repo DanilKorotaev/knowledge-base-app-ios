@@ -12,6 +12,19 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-26
+
+### Changed
+
+- Multi-user KB App: JWT login/register, Keychain session, refresh on 401
+- Switch between saved accounts with per-account offline cache (until full logout)
+- Board presets catalog install into Overview / Actions
+- Nextcloud-style server-first login; pick or create `kb_folder`
+- Push registration after login; per-user device tokens
+- Account-centric Settings (no baked API URL/token in the binary)
+- File open flows use authenticated Nextcloud links / deeplinks (public auto-shares are server-side legacy)
+- Requires a multi-user KB App API (per-user vault + App Password). Older shared-token backends are not supported.
+
 ### Fixed
 
 - Reload chats / Overview / Actions immediately when switching saved accounts (live Bearer + UI reset)
@@ -962,7 +975,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v1.0.114...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v2.0.0...HEAD
+[2.0.0]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.0
 [1.0.114]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.114
 [1.0.113]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.113
 [1.0.112]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.112
