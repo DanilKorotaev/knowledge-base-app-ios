@@ -1,32 +1,39 @@
-
-# Fastlane
-# Gym / local uploads (repo root)
-# Ruby / Bundler
-# Secrets
-# SwiftPM (if added later)
 # Xcode
-# macOS
-**/fastlane_test.log
-*.dSYM.zip
-*.ipa
-*.py[cod]
+DerivedData/
+*.xcuserstate
 *.xccheckout
 *.xcscmblueprint
-*.xcuserstate
-.DS_Store
-.build/
-.bundle/
-.derivedData-ci/
+xcuserdata/
+
+# Secrets
 .env
-.swiftpm/
 Config/Secrets.xcconfig
-DerivedData/
-__pycache__/
-fastlane/Preview.html
-fastlane/build_logs
+
+# macOS
+.DS_Store
+
+# SwiftPM (if added later)
+.build/
+.swiftpm/
+
+# Gym / local uploads (repo root)
+*.ipa
+*.dSYM.zip
+
+# Fastlane
 fastlane/report.xml
+fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
-fastlane/ui_test_output
+fastlane/build_logs
+**/fastlane_test.log
+
+# Ruby / Bundler
 vendor/bundle/
-xcuserdata/
+.bundle/
+.derivedData-ci/
+fastlane/ui_test_output
+
+# Python
+__pycache__/
+*.py[cod]
