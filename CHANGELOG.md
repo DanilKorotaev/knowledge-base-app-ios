@@ -12,6 +12,23 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+### Added
+
+- Multi-user KB App: JWT login/register, Keychain session, refresh on 401
+- Switch between saved accounts with per-account offline cache (until full logout)
+- Board presets catalog install into Overview / Actions
+- Nextcloud-style server-first login; pick or create `kb_folder`
+- Push registration after login; per-user device tokens
+
+### Changed
+
+- Account-centric Settings (no baked API URL/token in the binary)
+- File open flows use authenticated Nextcloud links / deeplinks (public auto-shares are server-side legacy)
+
+### Notes
+
+- Requires a multi-user KB App API (per-user vault + App Password). Older shared-token backends are not supported.
+
 ## [1.0.114] - 2026-10-26
 
 ### Added
