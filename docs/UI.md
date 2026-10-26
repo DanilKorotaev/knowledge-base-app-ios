@@ -17,43 +17,80 @@ Do **not** force identical pixels across platforms. Share: IA (tabs), copy, icon
 
 - Mostly **default SwiftUI** chrome (readable MVP; Settings feels sparse; system blue prominent buttons).
 - Structured UI / boards already bring richer layouts from the server.
-- No shared token file in-repo yet — introduce via Figma variables → small `Theme` / Asset catalog when redesign starts.
+- Design work lives in Figma first; app Theme / Asset catalog comes **after** tokens settle.
+
+## Themes: Light + Dark (required)
+
+Product must support **both** appearances from day one of redesign. Primary authoring target is **Dark** (how Danil uses the app); every screen still needs a Light twin.
+
+Figma Starter allows **one mode per variable collection**, so the file uses:
+
+- `Semantic` (Light)
+- `Semantic Dark` (Dark)
+
+On Professional, merge into one collection with Light/Dark modes. Until then: bind Light screens to `Semantic`, Dark screens to `Semantic Dark`.
+
+## Figma file
+
+Working file: [KB App](https://www.figma.com/design/yTzrP1UKQYqKddokP1oC7n) (Starter → 3 pages: **Tokens**, **iOS**, **Platforms**).
+
+| Page | Contents |
+|------|----------|
+| Tokens | Color / spacing / radius + scenario inventory |
+| iOS | Simulator reference PNGs (Light + Dark) — temporary; replace with components later |
+| Platforms | Android / Web / Mobile web placeholders |
+
+### Scenario inventory (must be covered)
+
+| Scenario | Notes |
+|----------|--------|
+| Chats | List + thread chrome |
+| SUI · summary | `callout` / `metric` / `table` (JSON-driven) |
+| SUI · jobs | tip callout + cancel + `chart` (Actions) |
+| SUI · navigation | `list_row` + chevron (`open_board` / `open_tab`) |
+| SUI · form | checkbox / radio / date / text / submit |
+| Calendar range | Board `period_ui=range` → Choose dates sheet |
+| Settings + offline cache | Manage offline cache |
+| Health sync | **Redesign focus** — permissions, categories, sync progress, zip/archive export (inspire from watch/Health export apps) |
+
+Stub demos for SUI live in `DemoBoardsCatalog` (`demo-kpi`, `demo-nav`, `demo-form`, `demo-active-jobs`).
 
 ## Figma + Cursor
 
-Official **Figma MCP** in Cursor:
-
 1. Chat: `/add-plugin figma` (or Marketplace → Figma).
-2. **Cursor Settings → Tools & MCP → Connect** next to Figma → allow account access.
-3. In Figma: create file e.g. `KB App` with pages `iOS`, `Android`, `Tokens`.
-4. Select a frame → **Copy link to selection** → paste into Cursor chat (“implement this Settings screen in SwiftUI”).
+2. **Cursor Settings → Tools & MCP → Connect** next to Figma.
+3. Open the KB App file → select a frame → **Copy link to selection** → paste into Cursor (“implement this in SwiftUI”).
 
-MCP reads layout/components/variables; you still **approve** visuals before large code PRs.
-
-Remote server URL (manual): `https://mcp.figma.com/mcp` — see [Figma + Cursor setup](https://help.figma.com/hc/en-us/articles/39889260656407).
+MCP reads layout/components/variables; still **approve** visuals before large code PRs.
 
 ## How we capture “how it looks now”
 
-Prefer **real device / Simulator screenshots** (data-filled), not wireframes alone:
+Prefer Simulator screenshots driven by stub UITests (sharp, repeatable):
 
 | Method | Who | Notes |
 |--------|-----|--------|
-| Simulator + XCUITest / Fastlane `ui_test` | Agent or CI | Stub UI; good for chrome, weak for real boards data |
-| Manual Simulator screenshots into chat / Figma | Human | Best for “with my vault” |
-| SwiftUI `#Preview` | Dev | Fast; agent cannot “see” Xcode canvas unless you export images |
-| Future: snapshot tests | CI | Optional regression |
+| `DesignScreenshotUITests` + `simctl ui … appearance` | Agent | Light + Dark PNGs → Figma references |
+| Smoke UITests (`-UITesting`) | CI | Functional; not the design gallery |
+| Real-account screenshots | Human / agent with credentials | Vault-filled boards, Health |
 
-Agent can **drive Simulator UITests** and attach screenshots when lanes exist; for product redesign, drop 4–6 PNGs of live tabs into the chat or Figma.
+```bash
+# Example (local)
+xcrun simctl ui <UDID> appearance light
+xcodebuild test -scheme KnowledgeBaseApp -destination "id=<UDID>" \
+  -only-testing:KnowledgeBaseAppUITests/DesignScreenshotUITests/testCaptureLightScenarios
+xcrun simctl ui <UDID> appearance dark
+xcodebuild test … -only-testing:…/testCaptureDarkScenarios
+```
 
-## Redesign workflow (recommended)
+Reference PNGs are **pictures**, not components. Next phase: tokens → native-like components → rebuild each screen.
 
-1. Screenshots of live app (Settings, Chats with threads, Overview, Actions, Login).
-2. Figma: tokens + 1–2 reference frames (native iOS).
-3. Agree frames in chat (link to selection).
-4. Implement SwiftUI against frames (small PRs).
-5. Mirror IA later for Android Material.
+## Redesign workflow
 
-Priority screens: **Settings / account switch** → Chats list → Overview → Login.
+1. Keep Light/Dark reference gallery current (stub + optional real data).
+2. Lock tokens (accent, surfaces, text, radii, spacing).
+3. Componentize Structured UI blocks (callout variants, metric, list_row, form controls, chart).
+4. Screen-by-screen: Settings / offline → Chats → Overview/SUI → Actions → **Health sync** → Login.
+5. Mirror IA later for Android Material / Web / Mini App.
 
 ## Related
 

@@ -5,6 +5,8 @@ import Foundation
 enum DemoBoardsCatalog {
     static let demoKPIId = "demo-kpi"
     static let demoJobsId = "demo-active-jobs"
+    static let demoNavId = "demo-nav"
+    static let demoFormId = "demo-form"
 
     static func boards() -> [KBBoard] {
         [
@@ -25,7 +27,44 @@ enum DemoBoardsCatalog {
                         KBBoardListMetric(label: "Last", value: "1 200"),
                     ]
                 ),
-                renderedAt: "2026-08-27T12:00:00Z"
+                renderedAt: "2026-08-27T12:00:00Z",
+                periodUi: "range"
+            ),
+            KBBoard(
+                id: demoNavId,
+                title: "Demo: navigation",
+                subtitle: "list_row + chevron (open_board)",
+                icon: "list.bullet",
+                kind: "cached_view",
+                sortOrder: 15,
+                enabled: true,
+                listCell: KBBoardListCell(
+                    kind: "status",
+                    title: "Demo: navigation",
+                    subtitle: "list_row + chevron",
+                    statusText: "3 rows",
+                    statusTone: "info"
+                ),
+                renderedAt: "2026-08-27T12:00:00Z",
+                periodUi: "none"
+            ),
+            KBBoard(
+                id: demoFormId,
+                title: "Demo: form",
+                subtitle: "checkbox / radio / date / submit",
+                icon: "checklist",
+                kind: "cached_view",
+                sortOrder: 16,
+                enabled: true,
+                listCell: KBBoardListCell(
+                    kind: "status",
+                    title: "Demo: form",
+                    subtitle: "Interactive fields",
+                    statusText: "form",
+                    statusTone: "info"
+                ),
+                renderedAt: "2026-08-27T12:00:00Z",
+                periodUi: "none"
             ),
             KBBoard(
                 id: demoJobsId,
@@ -52,6 +91,10 @@ enum DemoBoardsCatalog {
         switch id {
         case demoKPIId:
             return KBBoardDetail(board: board, document: kpiDocument, renderedAt: board.renderedAt)
+        case demoNavId:
+            return KBBoardDetail(board: board, document: navDocument, renderedAt: board.renderedAt)
+        case demoFormId:
+            return KBBoardDetail(board: board, document: formDocument, renderedAt: board.renderedAt)
         case demoJobsId:
             return KBBoardDetail(board: board, document: jobsDocument, renderedAt: board.renderedAt)
         default:
@@ -159,6 +202,101 @@ enum DemoBoardsCatalog {
                         KBStructuredUISeriesPoint(x: "Thu", y: 7),
                         KBStructuredUISeriesPoint(x: "Fri", y: 6),
                     ]
+                ),
+            ]
+        )
+    )
+
+    private static let navDocument = KBStructuredUIDocument(
+        schemaVersion: 1,
+        screen: KBStructuredUINode(
+            type: "vstack",
+            id: "root",
+            children: [
+                KBStructuredUINode(type: "text", id: "title", text: "Browse sections"),
+                KBStructuredUINode(
+                    type: "callout",
+                    id: "hint",
+                    text: "list_row with action open_board — chevron means navigation, not a form event.",
+                    variant: "info"
+                ),
+                KBStructuredUINode(
+                    type: "list_row",
+                    id: "row_summary",
+                    text: "Demo: summary",
+                    label: "Metrics & table",
+                    action: .openBoard(id: demoKPIId),
+                    systemImage: "chart.bar"
+                ),
+                KBStructuredUINode(
+                    type: "list_row",
+                    id: "row_form",
+                    text: "Demo: form",
+                    label: "Interactive fields",
+                    action: .openBoard(id: demoFormId),
+                    systemImage: "checklist"
+                ),
+                KBStructuredUINode(
+                    type: "list_row",
+                    id: "row_actions",
+                    text: "Open Actions tab",
+                    label: "Jobs live under Actions",
+                    action: .openTab("actions"),
+                    systemImage: "bolt.horizontal.circle"
+                ),
+            ]
+        )
+    )
+
+    private static let formDocument = KBStructuredUIDocument(
+        schemaVersion: 1,
+        screen: KBStructuredUINode(
+            type: "vstack",
+            id: "root",
+            children: [
+                KBStructuredUINode(type: "text", id: "title", text: "Demo form"),
+                KBStructuredUINode(
+                    type: "callout",
+                    id: "hint",
+                    text: "Draft values stay local until Submit — then ui-events carries them.",
+                    variant: "tip"
+                ),
+                KBStructuredUINode(
+                    type: "checkbox",
+                    id: "include_archive",
+                    label: "Include archived",
+                    value: .bool(false)
+                ),
+                KBStructuredUINode(
+                    type: "radio_group",
+                    id: "scope",
+                    label: "Scope",
+                    value: .string("week"),
+                    options: [
+                        KBStructuredUIOption(id: "day", label: "Day"),
+                        KBStructuredUIOption(id: "week", label: "Week"),
+                        KBStructuredUIOption(id: "month", label: "Month"),
+                    ]
+                ),
+                KBStructuredUINode(
+                    type: "date",
+                    id: "from_date",
+                    label: "From",
+                    value: .string("2026-08-01")
+                ),
+                KBStructuredUINode(
+                    type: "text_field",
+                    id: "note",
+                    label: "Note",
+                    value: .string(""),
+                    placeholder: "Optional note"
+                ),
+                KBStructuredUINode(
+                    type: "button",
+                    id: "submit",
+                    label: "Submit",
+                    actionId: "submit_form",
+                    submit: true
                 ),
             ]
         )

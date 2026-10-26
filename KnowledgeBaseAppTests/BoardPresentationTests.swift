@@ -109,7 +109,7 @@ struct BoardPresentationTests {
     @Test("demo catalog details cover both boards")
     func demoCatalog() {
         let boards = DemoBoardsCatalog.boards()
-        #expect(boards.count == 2)
+        #expect(boards.count == 4)
         for board in boards {
             let detail = DemoBoardsCatalog.detail(id: board.id)
             #expect(detail != nil)

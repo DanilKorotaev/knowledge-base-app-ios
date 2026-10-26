@@ -221,6 +221,7 @@
 		85E9C6ABC738279DB8390CC3 /* KnowledgeBaseWatchWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0918361EBC76BB3D5E095F37 /* KnowledgeBaseWatchWidgets.swift */; };
 		863D87927CAE81A25AC6AB3F /* PendingVoiceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE439ABCFABF62A1AFF2C11 /* PendingVoiceCapture.swift */; };
 		867A69F3A1AA6F7B7E5905A6 /* MarkdownTextBlockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFF88AB53A3C8CD731FCF09 /* MarkdownTextBlockView.swift */; };
+		88D71CB713561869036D8EC6 /* DesignScreenshotUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D2C8F64A3590131CBE84FA /* DesignScreenshotUITests.swift */; };
 		89C8515EFB86EC4AD1B2993F /* KBHealthSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 010024768DA53950B806E3C6 /* KBHealthSyncService.swift */; };
 		89EEB90AA9DAA7B7B3FD614B /* VoiceSessionTargetResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD04BBF3695F6E725789AE24 /* VoiceSessionTargetResolver.swift */; };
 		8A2C3ACBAD904B5C198DD917 /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73F56F73720756CA11B8BFA8 /* ChatViewModelTests.swift */; };
@@ -826,6 +827,7 @@
 		DF8B79A7EF8CEFA6282562FB /* FileBatchWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBatchWriter.swift; sourceTree = "<group>"; };
 		E234A59CC512EFB706BC6C3F /* FilesAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesAPIClientTests.swift; sourceTree = "<group>"; };
 		E256BEA838E1C097EDA85500 /* KnowledgeBaseAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KnowledgeBaseAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2D2C8F64A3590131CBE84FA /* DesignScreenshotUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignScreenshotUITests.swift; sourceTree = "<group>"; };
 		E3BF92D36072675ED80760F0 /* HealthUtilitiesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthUtilitiesTests.swift; sourceTree = "<group>"; };
 		E44F76443DF5EAE121CDD13D /* VoiceRecordingPauseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceRecordingPauseTests.swift; sourceTree = "<group>"; };
 		E464DD368B3EEA6C96165D4D /* KBClientMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBClientMetadata.swift; sourceTree = "<group>"; };
@@ -1494,6 +1496,7 @@
 		AD7DE4A29C0F25492E47D67B /* KnowledgeBaseAppUITests */ = {
 			isa = PBXGroup;
 			children = (
+				E2D2C8F64A3590131CBE84FA /* DesignScreenshotUITests.swift */,
 				AE83E4BBCEA1A002D7584229 /* KnowledgeBaseAppUITests.swift */,
 			);
 			path = KnowledgeBaseAppUITests;
@@ -2340,6 +2343,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88D71CB713561869036D8EC6 /* DesignScreenshotUITests.swift in Sources */,
 				7E5F76C1D9124DEB99D64F4A /* KnowledgeBaseAppUITests.swift in Sources */,
 				141E7B9FB9369A6FFED94391 /* UITestRuntime.swift in Sources */,
 			);
