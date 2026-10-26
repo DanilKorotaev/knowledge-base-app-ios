@@ -6,7 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
-| 2.0.0 | 245 | `ios/v2.0.0` | 2026-10-26 | TestFlight release |
+| 2.0.0 | 247 | `ios/v2.0.0` | 2026-10-26 | TestFlight release |
 | 1.0.114 | 244 | `ios/v1.0.114` | 2026-10-26 | Multi-account switch with per-user cache and board presets |
 | 1.0.113 | 243 | `ios/v1.0.113` | 2026-10-25 | TestFlight release |
 | 1.0.112 | 242 | `ios/v1.0.112` | 2026-10-25 | TestFlight release |
