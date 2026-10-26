@@ -1,6 +1,6 @@
 # Knowledge Base (iOS)
 
-Native SwiftUI client for the personal knowledge base stack: same PostgreSQL sessions and processing pipeline as the Telegram bot, exposed later via **KB App API** (FastAPI). See the knowledge base implementation plan for the full product picture.
+Native SwiftUI client for the multi-user **KB App API** (JWT, chats, boards, Actions, push). Backend: `knowledge-base-bot`. Design notes: [docs/UI.md](docs/UI.md).
 
 **Repository:** [github.com/DanilKorotaev/knowledge-base-app-ios](https://github.com/DanilKorotaev/knowledge-base-app-ios)
 
@@ -38,18 +38,18 @@ Details: [docs/SETUP.md](docs/SETUP.md).
 | Document | Description |
 |----------|-------------|
 | [docs/README.md](docs/README.md) | Documentation index |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Multi-user app architecture |
+| [docs/KB_APP_API_CONTRACT.md](docs/KB_APP_API_CONTRACT.md) | HTTP/JSON contract |
+| [docs/UI.md](docs/UI.md) | Native UI + Figma workflow |
+| [docs/DOCUMENTATION_MAP.md](docs/DOCUMENTATION_MAP.md) | What the Markdown tree is |
 | [docs/SETUP.md](docs/SETUP.md) | Environment and Xcode setup |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Workflow and XcodeGen |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Modules and future backend boundary |
-| [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md) | Protocol-first + tests |
-| [docs/todo.md](docs/todo.md) | Active tasks |
-| [docs/completed.md](docs/completed.md) | Completed tasks |
 | [docs/FASTLANE.md](docs/FASTLANE.md) | Match, `fastlane test`, TestFlight |
+| [docs/todo.md](docs/todo.md) | Active tasks |
 
 ## Related projects
 
-- **HealthSync** — same Apple Developer account and CI/Fastlane playbook when you add TestFlight.
-- **Knowledge Base Telegram bot** — shared domain; backend tasks for the iOS API live in Nextcloud (`Документация/Задачи/KB App API — бэкенд для iOS/`) until a dedicated repo exists.
+- **knowledge-base-bot** — KB App API backend (`docs/kb-app-api/`).
+- **HealthSync** — same Apple Developer / Fastlane playbook.
 
 ## License
 
