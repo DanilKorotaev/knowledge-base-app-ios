@@ -38,12 +38,15 @@ Telegram bot / Mini App are **not** this client’s primary story (server-side l
 
 | Piece | Role |
 |-------|------|
-| `AuthSessionStore` | Active session, switch / add / sign-out |
+| `AuthSessionStore` | Active session, switch / add / sign-out; proactive refresh on launch |
 | `SavedAccountsStore` | Keychain list of accounts |
+| `ServerURLHistoryStore` | Recent API base URLs for login prefill / suggestions |
 | `OfflineCacheScope` | Disk cache rooted by API host + `userId` |
-| `KBHTTPTransport` | Resolves Bearer from Keychain **per request** (account switch) |
+| `KBHTTPTransport` | Resolves Bearer from Keychain **per request** (account switch); forces fresh token after refresh |
 
 On `kbAuthSessionDidChange`, Main / Boards / Actions clear in-memory state and refetch.
+
+**Logout on open (historical bug):** access JWT TTL is ~1h; cold start refreshes near-expiry tokens. After a successful `/refresh`, a retry could still send the *old* Bearer (stale Keychain read), hit 401 again, and call `invalidateLocalSession` (“401 after refresh”). Fixed by forcing the new access token on the retry request and only wiping the session on definitive 401/403 from refresh (not on network/5xx).
 
 ## Main modules
 

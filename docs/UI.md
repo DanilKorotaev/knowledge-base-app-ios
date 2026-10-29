@@ -84,6 +84,12 @@ xcodebuild test … -only-testing:…/testCaptureDarkScenarios
 
 Reference PNGs are **pictures**, not components. Next phase: tokens → native-like components → rebuild each screen.
 
+## Login / re-login (shipped)
+
+- Server-first: prefill last API URL + recent-host list; URL field uses system URL content type.
+- Sign-in / register: username + password content types for Passwords Autofill (no password in UserDefaults).
+- See [`API_CONFIGURATION.md`](API_CONFIGURATION.md) for Associated Domains / AASA ops note.
+
 ## Redesign workflow
 
 1. Keep Light/Dark reference gallery current (stub + optional real data).

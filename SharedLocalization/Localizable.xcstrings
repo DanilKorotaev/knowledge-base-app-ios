@@ -7729,13 +7729,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Enter the address of your KB App API server."
+            "value": "Enter the KB App API address. Recent servers appear below; the keyboard may also suggest URLs."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Введите адрес вашего сервера KB App API."
+            "value": "Введите адрес KB App API. Недавние серверы — ниже; клавиатура тоже может предложить URL."
           }
         }
       }
@@ -8552,6 +8552,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Установлен"
+          }
+        }
+      }
+    },
+    "auth.server_recent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent servers"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недавние серверы"
+          }
+        }
+      }
+    },
+    "auth.sign_in_autofill_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS can save and autofill your login from Passwords. Use the same username field as when you registered."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS может сохранить логин в «Паролях» и подставлять его. Используйте тот же логин, что при регистрации."
           }
         }
       }

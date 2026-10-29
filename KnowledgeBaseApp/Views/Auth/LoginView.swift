@@ -20,6 +20,7 @@ struct LoginView: View {
     @Bindable private var session = AuthSessionStore.shared
     @State private var step: Step = .server
     @State private var serverURL: String = ""
+    @State private var recentURLs: [String] = []
     @State private var login = ""
     @State private var password = ""
     @State private var email = ""
@@ -56,6 +57,12 @@ struct LoginView: View {
                     showChangePassword = false
                 }
             }
+            .onAppear {
+                refreshRecentURLs()
+                if serverURL.isEmpty, let prefill = ServerURLHistoryStore.preferredPrefill() {
+                    serverURL = prefill
+                }
+            }
         }
     }
 
@@ -77,6 +84,22 @@ struct LoginView: View {
                 Text("auth.server_section")
             } footer: {
                 Text("auth.server_footer")
+            }
+
+            if !recentURLs.isEmpty {
+                Section {
+                    ForEach(recentURLs, id: \.self) { url in
+                        Button {
+                            serverURL = url
+                            focusedField = .serverURL
+                        } label: {
+                            Label(displayHost(for: url), systemImage: "clock.arrow.circlepath")
+                        }
+                        .accessibilityIdentifier("auth.server_recent.\(displayHost(for: url))")
+                    }
+                } header: {
+                    Text("auth.server_recent")
+                }
             }
 
             if let errorMessage {
@@ -145,6 +168,8 @@ struct LoginView: View {
                     .textInputAutocapitalization(.never)
                     .focused($focusedField, equals: .login)
                     .accessibilityIdentifier("auth.login")
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .password }
 
                 passwordField
 
@@ -181,6 +206,8 @@ struct LoginView: View {
             } footer: {
                 if mode == .register {
                     Text("auth.register_password_footer")
+                } else {
+                    Text("auth.sign_in_autofill_footer")
                 }
             }
 
@@ -227,6 +254,8 @@ struct LoginView: View {
             }
             .focused($focusedField, equals: .password)
             .accessibilityIdentifier("auth.password")
+            .submitLabel(.go)
+            .onSubmit { Task { await submitCredentials() } }
 
             Button {
                 isPasswordVisible.toggle()
@@ -258,6 +287,8 @@ struct LoginView: View {
         do {
             let result = try await ServerProbe.probe(baseURL: base)
             AppConfiguration.setUserString(base.absoluteString, for: AppConfiguration.Keys.apiBaseURL)
+            ServerURLHistoryStore.remember(url: base)
+            refreshRecentURLs()
             confirmedBaseURL = base
             openSignup = result.openSignup
             if !result.openSignup {
@@ -294,6 +325,7 @@ struct LoginView: View {
             } else {
                 tokens = try await client.login(login: trimmedLogin, password: password)
             }
+            ServerURLHistoryStore.remember(url: base)
             session.apply(tokens: tokens)
             if tokens.user.mustChangePassword {
                 showChangePassword = true
@@ -303,6 +335,14 @@ struct LoginView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func refreshRecentURLs() {
+        recentURLs = ServerURLHistoryStore.suggestions()
+    }
+
+    private func displayHost(for urlString: String) -> String {
+        URL(string: urlString)?.host ?? urlString
     }
 
     private func dismissKeyboard() {

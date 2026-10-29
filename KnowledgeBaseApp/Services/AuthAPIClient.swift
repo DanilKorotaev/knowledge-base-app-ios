@@ -34,7 +34,21 @@ enum AuthAPIError: LocalizedError, Equatable {
             return String(localized: "network.decoding_failed")
         }
     }
+
+    /// True when the server rejected credentials / refresh (safe to clear local session).
+    var isUnauthorized: Bool {
+        if case let .invalidResponse(statusCode, _) = self {
+            return statusCode == 401 || statusCode == 403
+        }
+        return false
+    }
+
+    /// Network / decode / 5xx must not wipe Keychain; only definitive auth rejection.
+    static func isDefinitiveAuthFailure(_ error: Error) -> Bool {
+        (error as? AuthAPIError)?.isUnauthorized == true
+    }
 }
+
 
 struct URLSessionAuthAPIClient: AuthAPIClientProtocol {
     private let baseURL: URL

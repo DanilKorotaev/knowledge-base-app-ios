@@ -96,6 +96,23 @@ final class AuthAPIClientTests: XCTestCase {
         )
     }
 
+    func testDefinitiveAuthFailureOnlyFor401403() {
+        XCTAssertTrue(AuthAPIError.invalidResponse(statusCode: 401, message: nil).isUnauthorized)
+        XCTAssertTrue(AuthAPIError.invalidResponse(statusCode: 403, message: nil).isUnauthorized)
+        XCTAssertFalse(AuthAPIError.invalidResponse(statusCode: 500, message: "boom").isUnauthorized)
+        XCTAssertFalse(AuthAPIError.decodingFailed.isUnauthorized)
+        XCTAssertTrue(
+            AuthAPIError.isDefinitiveAuthFailure(
+                AuthAPIError.invalidResponse(statusCode: 401, message: nil)
+            )
+        )
+        XCTAssertFalse(
+            AuthAPIError.isDefinitiveAuthFailure(
+                URLError(.notConnectedToInternet)
+            )
+        )
+    }
+
     func testDecodeSignupStatus() throws {
         let json = #"{"open_signup":true}"#.data(using: .utf8)!
         let decoded = try JSONDecoder().decode(AuthSignupStatus.self, from: json)

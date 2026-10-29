@@ -70,7 +70,7 @@
 }
 ```
 
-iOS: access + refresh в Keychain (App Group); на 401 — `POST /refresh` один раз, иначе login gate.
+iOS: access + refresh в Keychain (App Group); на 401 — `POST /refresh` один раз с **принудительным** новым access на retry. Сессию на устройстве сбрасываем только при **definitive** auth failure (401/403 от `/refresh` или повторный 401 уже с новым токеном). Сетевые/5xx ошибки refresh сессию **не** чистят.
 
 ## Сессии
 

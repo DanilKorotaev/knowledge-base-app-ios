@@ -12,6 +12,7 @@
 - [x] Docs refresh (ARCHITECTURE, CONTRACT boards/presets, UI.md, DOCUMENTATION_MAP) — 2026-10-26
 - [ ] Figma MCP connect + first Settings frames (see [UI.md](UI.md))
 - [ ] Live screenshots → redesign Settings / account switch (native iOS)
+- [ ] Mac mini: install Figma Desktop + Open Figma MCP plugin (`~/Projects/tools/open-figma-mcp-plugin`) so KB App API `cursor-agent` can use the local bridge (WS 127.0.0.1:18765)
 
 ### Integration
 

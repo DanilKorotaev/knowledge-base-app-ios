@@ -56,7 +56,9 @@ final class KBHTTPTransport: @unchecked Sendable {
         do {
             let newToken = try await AuthSessionStore.shared.refreshAccessToken()
             updateAuth(token: newToken)
-            let retry = try await performData(request)
+            // Force the just-issued access token on retry. Preferring Keychain alone can
+            // race with delete+add writes and re-send the expired Bearer → false logout.
+            let retry = try await performData(request, forceAuthToken: newToken)
             if retry.1.statusCode == 401 {
                 await AuthSessionStore.shared.invalidateLocalSession(
                     reason: "401 after refresh"
@@ -64,17 +66,27 @@ final class KBHTTPTransport: @unchecked Sendable {
             }
             return retry
         } catch {
-            await AuthSessionStore.shared.invalidateLocalSession(
-                reason: "refresh failed: \(error.localizedDescription)"
-            )
+            // Network / 5xx during refresh must not wipe a still-valid refresh session.
+            if AuthAPIError.isDefinitiveAuthFailure(error) {
+                await AuthSessionStore.shared.invalidateLocalSession(
+                    reason: "refresh failed: \(error.localizedDescription)"
+                )
+            } else {
+                apiLogger.logger.releaseInfo(
+                    "Auth refresh deferred (keeping session): \(error.localizedDescription)"
+                )
+            }
             return first
         }
     }
 
-    private func performData(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+    private func performData(
+        _ request: URLRequest,
+        forceAuthToken: String? = nil
+    ) async throws -> (Data, HTTPURLResponse) {
         let id = UUID().uuidString
         let start = CACurrentMediaTime()
-        let interceptor = makeInterceptor(requestId: id)
+        let interceptor = makeInterceptor(requestId: id, forceAuthToken: forceAuthToken)
         let emptyCodes = Set(200 ..< 600)
         let response = await session.request(request, interceptor: interceptor)
             .serializingData(emptyResponseCodes: emptyCodes)
@@ -121,13 +133,17 @@ final class KBHTTPTransport: @unchecked Sendable {
         }
     }
 
-    private func makeInterceptor(requestId: String) -> KBRequestInterceptor {
+    private func makeInterceptor(
+        requestId: String,
+        forceAuthToken: String? = nil
+    ) -> KBRequestInterceptor {
         lock.lock()
         let e2e = useE2EIntegrationUser
         lock.unlock()
         return KBRequestInterceptor(
             requestId: requestId,
-            authToken: resolvedAuthToken(),
+            authToken: forceAuthToken?.nilIfEmpty ?? resolvedAuthToken(),
+            forceAuthToken: forceAuthToken,
             useE2EIntegrationUser: e2e,
             clientMetadata: clientMetadata,
             apiLogger: apiLogger
@@ -158,3 +174,8 @@ final class KBHTTPTransport: @unchecked Sendable {
         return authToken
     }
 }
+
+private extension String {
+    var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+

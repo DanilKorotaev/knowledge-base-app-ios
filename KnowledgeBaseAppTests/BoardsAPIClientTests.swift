@@ -20,7 +20,7 @@ struct BoardsAPIClientTests {
     func stubFetchBoards() async throws {
         let client = StubBoardsAPIClient()
         let boards = try await client.fetchBoards()
-        #expect(boards.count == 2)
+        #expect(boards.count == 4)
         #expect(boards.first?.id == DemoBoardsCatalog.demoKPIId)
         let detail = try await client.fetchBoard(id: DemoBoardsCatalog.demoKPIId)
         #expect(detail.document.screen.type == "vstack")
@@ -119,7 +119,7 @@ struct BoardsAPIClientTests {
         defer { MockURLProtocol.requestHandler = nil }
 
         let boards = try await client.fetchBoards()
-        #expect(boards.count == 2)
+        #expect(boards.count == 4)
     }
 
     @Test("remote list 404 without fallback throws")
@@ -412,12 +412,12 @@ struct BoardsViewModelTests {
     func load() async {
         let vm = BoardsViewModel(client: StubBoardsAPIClient())
         await vm.loadIfNeeded()
-        // Stub returns KPI + jobs; Overview hides jobs (Actions tab).
-        #expect(vm.boards.count == 1)
+        // Stub: KPI + nav + form + jobs; Overview hides jobs (Actions tab).
+        #expect(vm.boards.count == 3)
         #expect(vm.boards.first?.id == DemoBoardsCatalog.demoKPIId)
         #expect(vm.loadError == nil)
         await vm.loadIfNeeded()
-        #expect(vm.boards.count == 1)
+        #expect(vm.boards.count == 3)
     }
 
     @Test("reloadForAccountSwitch clears then loads")
@@ -426,7 +426,7 @@ struct BoardsViewModelTests {
         await vm.loadIfNeeded()
         #expect(!vm.boards.isEmpty)
         await vm.reloadForAccountSwitch()
-        #expect(vm.boards.count == 1)
+        #expect(vm.boards.count == 3)
         #expect(vm.loadError == nil)
     }
 

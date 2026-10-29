@@ -7,11 +7,21 @@ The app talks to your deployed **KB App API** after the user picks a server at l
 | Value | Source |
 |-------|--------|
 | API base URL | Onboarding / Settings → UserDefaults + App Group |
+| Recent API URLs | `ServerURLHistoryStore` (UserDefaults + App Group; max 8) |
 | Session JWT | Login / register → **Keychain** (App Group) |
 
 Optional **Xcode scheme** env (`KBAPP_API_BASE_URL`, `KBAPP_AUTH_TOKEN`) overrides storage for a single Run / UI-test session. **Info.plist bake-in is ignored.**
 
 Without URL + token the app uses **in-memory stubs** (offline demo) until login.
+
+### Fast re-login
+
+1. **Server step** prefills the last successful base URL and lists recent hosts; the field uses `textContentType(.URL)` for QuickType.
+2. **Credentials** use `textContentType(.username)` + `.password` / `.newPassword` so iOS can offer **Save Password?** / Passwords Autofill. The app does **not** store plaintext passwords in UserDefaults.
+
+### Associated Domains (optional, Autofill ranking)
+
+For strongest Password Autofill ranking, add **Associated Domains** `webcredentials:<api-host>` on the iOS app and serve an Apple App Site Association (AASA) file from the API host (or its public reverse-proxy), e.g. `https://<api-host>/.well-known/apple-app-site-association` with a `webcredentials.apps` entry for `66C9VGAZR5.com.coredan.KnowledgeBaseApp`. Not required for basic save/autofill when `textContentType` is set; improves domain association.
 
 ## Local development on Mac
 

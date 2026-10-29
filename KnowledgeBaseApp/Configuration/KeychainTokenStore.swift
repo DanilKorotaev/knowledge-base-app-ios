@@ -71,6 +71,8 @@ enum KeychainTokenStore {
             query.removeValue(forKey: kSecAttrAccessGroup as String)
             SecItemAdd(query as CFDictionary, nil)
         }
+        // Post-refresh API retries must not re-read a mid-delete Keychain window:
+        // KBHTTPTransport forces the new access token on the retry request.
     }
 
     private static func readSecret(account: String, useAccessGroup: Bool) -> String? {

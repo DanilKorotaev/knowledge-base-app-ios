@@ -27,6 +27,8 @@ struct UserDefaultsKeyPrefix: Hashable, Sendable {
 extension UserDefaultsKey {
     // App configuration (Settings screen; token is in Keychain)
     static let apiBaseURL = UserDefaultsKey("kbapp.config.api_base_url")
+    /// Recently used KB App API base URLs (JSON/string array; not secrets).
+    static let serverURLHistory = UserDefaultsKey("kb.auth.server_url_history")
 
     // Voice routing
     static let defaultVoiceSession = UserDefaultsKey("kb.voice.default_session")

@@ -324,14 +324,31 @@ final class AuthSessionStore {
     func ensureFreshAccessTokenIfNeeded() async {
         guard isAuthenticated else { return }
         guard let access = accessToken, !access.isEmpty else {
-            _ = try? await refreshAccessToken()
+            do {
+                _ = try await refreshAccessToken()
+            } catch {
+                if AuthAPIError.isDefinitiveAuthFailure(error) {
+                    await invalidateLocalSession(reason: "proactive refresh failed: \(error.localizedDescription)")
+                } else {
+                    makeLogger(tags: [.network]).releaseInfo(
+                        "Proactive refresh deferred (keeping session): \(error.localizedDescription)"
+                    )
+                }
+            }
             return
         }
         guard Self.jwtIsExpiredOrNearExpiry(access, skewSeconds: 60) else { return }
         do {
             _ = try await refreshAccessToken()
         } catch {
-            await invalidateLocalSession(reason: "proactive refresh failed: \(error.localizedDescription)")
+            // Transient network / 5xx must not log the user out on every cold start.
+            if AuthAPIError.isDefinitiveAuthFailure(error) {
+                await invalidateLocalSession(reason: "proactive refresh failed: \(error.localizedDescription)")
+            } else {
+                makeLogger(tags: [.network]).releaseInfo(
+                    "Proactive refresh deferred (keeping session): \(error.localizedDescription)"
+                )
+            }
         }
     }
 

@@ -64,6 +64,12 @@ enum UserDefaultsKeyRegistry {
             valueType: .string
         ),
         .init(
+            key: .serverURLHistory,
+            description: "Recent KB App API base URLs for login suggestions",
+            category: .config,
+            valueType: .json
+        ),
+        .init(
             key: .defaultVoiceSession,
             description: "Default voice target session + optional TTL (JSON)",
             category: .voice,
