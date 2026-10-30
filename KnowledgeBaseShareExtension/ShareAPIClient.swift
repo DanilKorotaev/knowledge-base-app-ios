@@ -87,8 +87,7 @@ final class ShareAPIClient: @unchecked Sendable {
         if let url = URL(string: urlString), url.scheme != nil {
             absolute = url
         } else if urlString.hasPrefix("/"),
-                  let url = URL(string: urlString, relativeTo: baseURL)?.absoluteURL
-        {
+                  let url = URL(string: urlString, relativeTo: baseURL)?.absoluteURL {
             absolute = url
         } else {
             absolute = baseURL.appendingPathComponent(urlString)

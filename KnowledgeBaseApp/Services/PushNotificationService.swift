@@ -14,7 +14,7 @@ final class PushNotificationService: NSObject, UNUserNotificationCenterDelegate 
 
     var onOpenSession: ((String) -> Void)?
 
-    private override init() {
+    override private init() {
         super.init()
     }
 

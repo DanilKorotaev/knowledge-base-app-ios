@@ -224,4 +224,3 @@ private extension XCUIElement {
         return XCTWaiter().wait(for: [expectation], timeout: timeout) == .completed
     }
 }
-

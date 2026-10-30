@@ -8,7 +8,6 @@
 
 import SwiftUI
 
-
 struct UserDefaultsAddView: View {
     @SwiftUI.Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: ViewModel

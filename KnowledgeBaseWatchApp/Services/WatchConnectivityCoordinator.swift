@@ -18,7 +18,7 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
     /// URLs passed to `transferFile` — must stay on disk until `didFinish fileTransfer`.
     private var outgoingTransferURLs: Set<URL> = []
 
-    private override init() {
+    override private init() {
         super.init()
         WatchRelayLog.forwardToPhone = { [weak self] line in
             self?.forwardLogLine(line)
@@ -90,7 +90,7 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
         }
     }
 
-    private nonisolated func forwardLogLine(_ line: String) {
+    nonisolated private func forwardLogLine(_ line: String) {
         Task { @MainActor [weak self] in
             guard let self else { return }
             self.activateIfNeeded()

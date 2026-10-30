@@ -8,7 +8,6 @@
 
 import SwiftUI
 
-
 struct UserDefaultsInspectorSettingsView: View {
     @StateObject
     private var viewModel = ViewModel()

@@ -72,7 +72,7 @@ final class WatchRecordingService {
         try session.setActive(true, options: [])
     }
 
-    private nonisolated static func requestMicPermission() async -> Bool {
+    nonisolated private static func requestMicPermission() async -> Bool {
         await AVAudioApplication.requestRecordPermission()
     }
 }

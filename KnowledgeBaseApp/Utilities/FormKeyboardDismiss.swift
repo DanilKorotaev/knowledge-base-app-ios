@@ -88,8 +88,7 @@ private final class FormKeyboardDismissInstallerView: UIView, UIGestureRecognize
                 || name.contains("Button")
                 || name.contains("Switch")
                 || name.contains("Slider")
-                || name.contains("Segmented")
-            {
+                || name.contains("Segmented") {
                 return false
             }
             view = current.superview

@@ -3,7 +3,7 @@ import SwiftUI
 struct ChangedFilesView: View {
     let filesClient: FilesAPIClientProtocol
     /// When set, only changes for this chat session are listed.
-    var sessionId: String? = nil
+    var sessionId: String?
 
     @State private var files: [KBChangedFile] = []
     @State private var loadError: String?

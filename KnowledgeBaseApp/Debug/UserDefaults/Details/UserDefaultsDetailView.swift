@@ -9,7 +9,6 @@
 import SwiftUI
 import UIKit
 
-
 struct UserDefaultsDetailView: View {
     @SwiftUI.Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: ViewModel

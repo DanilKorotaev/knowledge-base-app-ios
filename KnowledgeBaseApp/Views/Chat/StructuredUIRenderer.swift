@@ -8,7 +8,7 @@ struct StructuredUIPanelView: View {
     var onFullscreenImage: ((UIImage) -> Void)?
     var onAction: (String, String, [String: StructuredUIFormValue]?) -> Void
     /// Client-side actions from node `action` (navigation, alerts, chart detail).
-    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)? = nil
+    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)?
 
     @State private var draftValues: [String: StructuredUIFormValue] = [:]
 

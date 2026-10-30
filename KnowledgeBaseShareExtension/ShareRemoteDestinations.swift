@@ -25,8 +25,7 @@ enum ShareRemoteDestinations {
         guard let node else { return }
         if let action = node["action"] as? [String: Any],
            (action["type"] as? String) == "remote_ui",
-           (action["share"] as? Bool) == true
-        {
+           (action["share"] as? Bool) == true {
             let shareURL = (action["share_url"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
             let primaryURL = (action["url"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
             let url = (shareURL?.isEmpty == false ? shareURL : nil) ?? primaryURL
@@ -90,8 +89,7 @@ enum ShareRemoteDestinations {
         let type = node["type"] as? String
         if type == "markdown" || type == "text" || type == "callout",
            let text = node["text"] as? String,
-           !text.isEmpty
-        {
+           !text.isEmpty {
             parts.append(text)
         }
         if type == "list_row" {
@@ -127,8 +125,7 @@ enum ShareRemoteDestinations {
         guard let node else { return }
         if (node["type"] as? String) == "markdown",
            let text = node["text"] as? String,
-           !text.isEmpty
-        {
+           !text.isEmpty {
             parts.append(text)
         }
         if let children = node["children"] as? [[String: Any]] {

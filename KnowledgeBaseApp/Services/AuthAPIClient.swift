@@ -49,7 +49,6 @@ enum AuthAPIError: LocalizedError, Equatable {
     }
 }
 
-
 struct URLSessionAuthAPIClient: AuthAPIClientProtocol {
     private let baseURL: URL
     private let urlSession: URLSession

@@ -11,6 +11,8 @@ Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 - **2026-10-30 iteration 1:** fixed all `trailing_comma` (109 → 0 via `--fix`); rule re-enabled in `.swiftlint.yml` (soft CI). Baseline table below still shows the original snapshot; refresh JSON/summary when closing a larger batch.
 - **2026-10-30 iteration 2:** fixed all `sorted_imports` (90 → 0 via `--fix`); rule added to soft `opt_in_rules`.
 - **2026-10-30 iteration 3:** fixed all `number_separator` (69 → 0 via `--fix`); rule re-enabled in `.swiftlint.yml` (soft CI).
+- **2026-10-30 iteration 4:** fixed all `trailing_closure` (~45 → 0); rule added to soft `opt_in_rules`.
+- **2026-10-30 iteration 5:** cleared style/low-risk batch (~33 → 0 via `--fix`): `opening_brace`, `vertical_whitespace`, `trailing_newline`, `implicit_optional_initialization`, `unneeded_synthesized_initializer`, `modifier_order`, `redundant_type_annotation`. Soft: defaults re-enabled; `modifier_order` + `redundant_type_annotation` added to `opt_in_rules`. Strict residual after this pass: **988** (29 rules).
 
 ## By rule (descending)
 
@@ -25,7 +27,7 @@ Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 | 72 | `identifier_name` |
 | ~~69~~ **0** | `number_separator` *(cleared; soft-enabled)* |
 | 45 | `attributes` |
-| 44 | `trailing_closure` |
+| ~~44~~ **0** | `trailing_closure` *(cleared; soft-enabled)* |
 | 31 | `file_name` |
 | 28 | `pattern_matching_keywords` |
 | 27 | `type_body_length` |
@@ -33,21 +35,21 @@ Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 | 21 | `file_length` |
 | 12 | `cyclomatic_complexity` |
 | 12 | `file_header` |
-| 7 | `vertical_whitespace` |
-| 7 | `opening_brace` |
-| 6 | `implicit_optional_initialization` |
-| 6 | `modifier_order` |
+| ~~7~~ **0** | `vertical_whitespace` *(cleared; soft-enabled)* |
+| ~~7~~ **0** | `opening_brace` *(cleared; soft-enabled)* |
+| ~~6~~ **0** | `implicit_optional_initialization` *(cleared; soft-enabled)* |
+| ~~6~~ **0** | `modifier_order` *(cleared; soft-enabled)* |
 | 4 | `large_tuple` |
 | 4 | `static_over_final_class` |
 | 3 | `multiline_function_chains` |
-| 3 | `redundant_type_annotation` |
+| ~~3~~ **0** | `redundant_type_annotation` *(cleared; soft-enabled)* |
 | 3 | `optional_data_string_conversion` |
 | 2 | `type_name` |
 | 2 | `vertical_whitespace_closing_braces` |
-| 2 | `trailing_newline` |
+| ~~2~~ **0** | `trailing_newline` *(cleared; soft-enabled)* |
 | 2 | `legacy_multiple` |
 | 2 | `function_parameter_count` |
-| 2 | `unneeded_synthesized_initializer` |
+| ~~2~~ **0** | `unneeded_synthesized_initializer` *(cleared; soft-enabled)* |
 | 2 | `multiline_literal_brackets` |
 | 1 | `for_where` |
 | 1 | `force_cast` |

@@ -17,7 +17,7 @@ extension UserDefaultsDetailView {
         @Published var valueType: UserDefaultsValueType
         @Published var stringValue: String = ""
         @Published var boolValue: Bool = false
-        @Published var dateValue: Date = Date()
+        @Published var dateValue = Date()
         @Published var dataSize: String = ""
         @Published var success: Bool = false
         @Published var error: Error?

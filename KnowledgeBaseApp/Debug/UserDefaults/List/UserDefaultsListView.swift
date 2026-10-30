@@ -8,8 +8,6 @@
 
 import SwiftUI
 
-
-
 struct UserDefaultsListView: View {
     @StateObject
     private var viewModel = ViewModel()

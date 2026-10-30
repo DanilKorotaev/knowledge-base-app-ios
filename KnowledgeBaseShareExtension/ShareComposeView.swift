@@ -5,7 +5,7 @@ struct ShareComposeView: View {
     let onCancel: () -> Void
     let onFinished: () -> Void
     /// Open a URL in the host app (Share Extension cannot use `openURL` Environment reliably).
-    var onOpenHostURL: ((URL) -> Void)? = nil
+    var onOpenHostURL: ((URL) -> Void)?
 
     var body: some View {
         NavigationStack {
@@ -177,8 +177,7 @@ struct ShareComposeView: View {
     private var remoteResultBody: some View {
         let raw = viewModel.remoteResultText ?? ""
         if viewModel.remoteResultIsMarkdown,
-           let attributed = Self.attributedMarkdownPreservingNewlines(raw)
-        {
+           let attributed = Self.attributedMarkdownPreservingNewlines(raw) {
             Text(attributed)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)

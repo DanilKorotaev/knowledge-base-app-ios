@@ -10,7 +10,7 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
     private var pendingPreference: DefaultVoiceSessionPreference?
     private let relayCoordinator = WatchVoiceRelayCoordinator()
 
-    private override init() {
+    override private init() {
         super.init()
     }
 

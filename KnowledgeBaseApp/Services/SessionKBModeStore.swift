@@ -14,7 +14,7 @@ final class SessionKBModeStore: SessionKBModeStoreProtocol {
 
     private let userDefaults: UserDefaultsServiceDescription
     private let sharedSuite: UserDefaults?
-    private let storageKey: UserDefaultsKey = UserDefaultsKey("kb.sessions.use_knowledge_base")
+    private let storageKey = UserDefaultsKey("kb.sessions.use_knowledge_base")
 
     init(
         userDefaults: UserDefaultsServiceDescription = UserDefaultsService.shared,

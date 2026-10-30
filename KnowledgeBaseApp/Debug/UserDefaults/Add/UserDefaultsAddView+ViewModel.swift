@@ -37,7 +37,7 @@ extension UserDefaultsAddView {
         @Published var valueType: UserDefaultsValueType = .string
         @Published var stringValue: String = ""
         @Published var boolValue: Bool = false
-        @Published var dateValue: Date = Date()
+        @Published var dateValue = Date()
         @Published var success: Bool = false
         @Published var error: Error?
 

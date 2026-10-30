@@ -8,7 +8,6 @@
 
 import Foundation
 
-
 protocol UserDefaultsInspectorServiceDescription {
     var systemKeyPrefixes: [String] { get }
 

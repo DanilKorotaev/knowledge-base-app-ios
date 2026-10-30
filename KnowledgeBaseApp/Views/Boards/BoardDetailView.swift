@@ -310,8 +310,7 @@ struct BoardDetailView: View {
             comps.month = month
             comps.day = 1
             if let start = cal.date(from: comps),
-               let end = cal.date(byAdding: DateComponents(month: 1, day: -1), to: start)
-            {
+               let end = cal.date(byAdding: DateComponents(month: 1, day: -1), to: start) {
                 rangeStart = start
                 rangeEnd = end
                 rangeInitialMonth = start

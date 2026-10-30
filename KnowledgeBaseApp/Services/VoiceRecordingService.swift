@@ -203,7 +203,7 @@ final class VoiceRecordingService: VoiceRecordingServiceProtocol {
         try? session.setActive(false, options: .notifyOthersOnDeactivation)
     }
 
-    private nonisolated static func requestMicPermission() async -> Bool {
+    nonisolated private static func requestMicPermission() async -> Bool {
         await AVAudioApplication.requestRecordPermission()
     }
 }

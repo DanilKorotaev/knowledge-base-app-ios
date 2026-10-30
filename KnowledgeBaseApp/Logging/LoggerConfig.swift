@@ -17,14 +17,6 @@ protocol ExcludedLoggerTagsProviderDescription: AnyObject {
 struct LoggerConfig {
     let excludedTagProvider: ExcludedLoggerTagsProviderDescription
     let settings: LoggerSettingsProviderDescription
-
-    init(
-        excludedTagProvider: ExcludedLoggerTagsProviderDescription,
-        settings: LoggerSettingsProviderDescription
-    ) {
-        self.excludedTagProvider = excludedTagProvider
-        self.settings = settings
-    }
 }
 
 extension LoggerConfig {

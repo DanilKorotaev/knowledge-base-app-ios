@@ -8,7 +8,6 @@
 
 import SwiftUI
 
-
 struct UserDefaultsRegistryKeySelectionView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var selectedKey: KnownUserDefaultsKey?

@@ -5,12 +5,6 @@ struct KBFileOpenLink: Equatable, Sendable {
     let webURL: URL
     let nextcloudDeepLink: URL?
     let path: String
-
-    init(webURL: URL, nextcloudDeepLink: URL?, path: String) {
-        self.webURL = webURL
-        self.nextcloudDeepLink = nextcloudDeepLink
-        self.path = path
-    }
 }
 
 extension KBFileOpenLink: Decodable {

@@ -5,7 +5,7 @@ struct StructuredUIMetricNodeView: View {
     let node: KBStructuredUINode
     /// When true, use a more compact type scale (metric grids).
     var compact: Bool = false
-    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)? = nil
+    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)?
 
     private var isTappable: Bool {
         node.action != nil && onAppAction != nil
@@ -186,7 +186,7 @@ struct StructuredUITableNodeView: View {
 
 struct StructuredUIChartNodeView: View {
     let node: KBStructuredUINode
-    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)? = nil
+    var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)?
 
     private var points: [(id: Int, label: String, display: String, value: Double)] {
         (node.series ?? []).enumerated().compactMap { index, point in

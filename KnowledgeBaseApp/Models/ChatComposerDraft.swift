@@ -77,7 +77,7 @@ struct ChatComposerDraft: Equatable {
     var attachments: [PendingAttachment] = []
     var voiceClips: [PendingVoiceClip] = []
     /// Ephemeral idempotency key for the next compose POST (not persisted in draft store).
-    var clientMessageId: String? = nil
+    var clientMessageId: String?
 
     var trimmedText: String {
         text.trimmingCharacters(in: .whitespacesAndNewlines)
