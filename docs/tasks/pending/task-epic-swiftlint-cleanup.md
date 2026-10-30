@@ -21,7 +21,7 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 **Baseline inventory (2026-10-30):** **1334** violations across **40** rules (see inventory md). Soft config disables remaining backlog rules + `nesting` and keeps opt-ins that already pass.
 
-**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Iteration 4 `trailing_closure` (~45 → 0; soft-enabled 2026-10-30). Iteration 5 style/low-risk batch (~33 → 0; soft-enabled 2026-10-30): `opening_brace`, `vertical_whitespace`, `trailing_newline`, `implicit_optional_initialization`, `unneeded_synthesized_initializer`, `modifier_order`, `redundant_type_annotation`. Next: Force/unsafe or size/complexity groups.
+**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Iteration 4 `trailing_closure` (~45 → 0; soft-enabled 2026-10-30). Iteration 5 style/low-risk batch (~33 → 0; soft-enabled 2026-10-30): `opening_brace`, `vertical_whitespace`, `trailing_newline`, `implicit_optional_initialization`, `unneeded_synthesized_initializer`, `modifier_order`, `redundant_type_annotation`. Iteration 6 Force/unsafe (2026-10-30): `force_try` + `force_cast` → 0 and soft-enabled; production `force_unwrapping` cleared (~76 → 0); **123** remain in tests only. Next: finish test `force_unwrapping`, or size/complexity.
 
 ## How to re-enable a rule
 
@@ -45,8 +45,31 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 ### Force / unsafe
 
-- [ ] `force_unwrapping` (~199)
-- [ ] `force_cast` / `force_try` (1 each)
+- [x] `force_cast` / `force_try` (1 each → 0; soft-enabled 2026-10-30)
+- [ ] `force_unwrapping` (**123** remain, all in tests; production cleared 2026-10-30)
+
+Residual `force_unwrapping` files (tests only):
+
+| Count | File |
+|------:|------|
+| 35 | `KnowledgeBaseAppTests/KnowledgeBaseAPIClientTests.swift` |
+| 23 | `KnowledgeBaseAppTests/BoardsAPIClientTests.swift` |
+| 12 | `KnowledgeBaseAppTests/Services/AuthAPIClientHTTPTests.swift` |
+| 11 | `KnowledgeBaseAppTests/HealthAPIClientTests.swift` |
+| 8 | `KnowledgeBaseAppTests/KBHealthSyncServiceTests.swift` |
+| 7 | `KnowledgeBaseAppTests/KBStructuredUITests.swift` |
+| 4 | `KnowledgeBaseAppTests/Services/AuthAPIClientTests.swift` |
+| 4 | `KnowledgeBaseAppTests/Networking/KBApiLoggerTests.swift` |
+| 4 | `KnowledgeBaseAppTests/HealthKitServiceTests.swift` |
+| 3 | `KnowledgeBaseAppTests/KBSessionTests.swift` |
+| 3 | `KnowledgeBaseAppTests/HealthUtilitiesTests.swift` |
+| 2 | `KnowledgeBaseAppTests/Networking/KBAppAPIErrorMessageTests.swift` |
+| 2 | `KnowledgeBaseAppTests/KBMessageTests.swift` |
+| 1 | `KnowledgeBaseAppTests/UserDefaults/UserDefaultsTestSupport.swift` |
+| 1 | `KnowledgeBaseAppTests/UserDefaults/UserDefaultsDebugModelsTests.swift` |
+| 1 | `KnowledgeBaseAppTests/DefaultVoiceSessionTests.swift` |
+| 1 | `KnowledgeBaseAppTests/Debug/UserDefaultsListViewModelTests.swift` |
+| 1 | `KnowledgeBaseAppTests/ChatAPIClientTests.swift` |
 
 ### Size / complexity thresholds
 

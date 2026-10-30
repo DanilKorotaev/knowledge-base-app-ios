@@ -10,16 +10,21 @@ enum PasswordGenerator {
     static func make(length: Int = 20) -> String {
         let len = max(12, length)
         var chars: [Character] = [
-            lowers.randomElement()!,
-            uppers.randomElement()!,
-            digits.randomElement()!,
-            symbols.randomElement()!
+            randomChar(from: lowers),
+            randomChar(from: uppers),
+            randomChar(from: digits),
+            randomChar(from: symbols)
         ]
         let pool = lowers + uppers + digits + symbols
         while chars.count < len {
-            chars.append(pool.randomElement()!)
+            chars.append(randomChar(from: pool))
         }
         chars.shuffle()
         return String(chars)
+    }
+
+    private static func randomChar(from alphabet: [Character]) -> Character {
+        precondition(!alphabet.isEmpty, "Password alphabet must be non-empty")
+        return alphabet[Int.random(in: 0..<alphabet.count)]
     }
 }

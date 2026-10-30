@@ -24,7 +24,9 @@ final class KBHTTPTransport: @unchecked Sendable {
         self.authToken = authToken
         self.useE2EIntegrationUser = useE2EIntegrationUser
         self.clientMetadata = clientMetadata
-        let configuration = urlSession.configuration.copy() as! URLSessionConfiguration
+        guard let configuration = urlSession.configuration.copy() as? URLSessionConfiguration else {
+            preconditionFailure("URLSessionConfiguration.copy() must return URLSessionConfiguration")
+        }
         configuration.timeoutIntervalForRequest = Self.streamingRequestTimeout
         configuration.timeoutIntervalForResource = 3_600
         self.streamingSession = URLSession(configuration: configuration)

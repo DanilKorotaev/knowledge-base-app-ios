@@ -360,7 +360,7 @@ enum StructuredUIChartDisplay {
         guard !labels.isEmpty else { return [] }
         let n = min(max(count, 1), labels.count)
         if n == 1 { return [labels[labels.count / 2]] }
-        if n == 2 { return [labels.first!, labels.last!] }
+        if n == 2 { return [labels[0], labels[labels.count - 1]] }
         var out: [String] = []
         var seen = Set<String>()
         for i in 0..<n {

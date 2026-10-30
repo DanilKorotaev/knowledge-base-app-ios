@@ -161,10 +161,12 @@ final class ShareAPIClient: @unchecked Sendable {
     // MARK: - Private
 
     private func fetchSessionsPage(page: Int, perPage: Int) async throws -> (sessions: [KBSession], total: Int) {
-        var components = URLComponents(
+        guard var components = URLComponents(
             url: baseURL.appendingPathComponent("api/sessions"),
             resolvingAgainstBaseURL: false
-        )!
+        ) else {
+            throw ShareAPIError.missingConfiguration
+        }
         components.queryItems = [
             URLQueryItem(name: "page", value: String(page)),
             URLQueryItem(name: "per_page", value: String(perPage))
@@ -217,9 +219,9 @@ final class ShareAPIClient: @unchecked Sendable {
         let crlf = "\r\n"
 
         func appendField(name: String, value: String) {
-            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-            data.append("Content-Disposition: form-data; name=\"\(name)\"\(crlf)\(crlf)".data(using: .utf8)!)
-            data.append("\(value)\(crlf)".data(using: .utf8)!)
+            data.append(Data("--\(boundary)\(crlf)".utf8))
+            data.append(Data("Content-Disposition: form-data; name=\"\(name)\"\(crlf)\(crlf)".utf8))
+            data.append(Data("\(value)\(crlf)".utf8))
         }
 
         appendField(name: "content", value: draft.text)
@@ -230,16 +232,16 @@ final class ShareAPIClient: @unchecked Sendable {
 
         for attachment in draft.attachments {
             let fileData = try Data(contentsOf: attachment.localURL)
-            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+            data.append(Data("--\(boundary)\(crlf)".utf8))
             data.append(
-                "Content-Disposition: form-data; name=\"files\"; filename=\"\(attachment.filename)\"\(crlf)".data(using: .utf8)!
+                Data("Content-Disposition: form-data; name=\"files\"; filename=\"\(attachment.filename)\"\(crlf)".utf8)
             )
-            data.append("Content-Type: \(attachment.mimeType)\(crlf)\(crlf)".data(using: .utf8)!)
+            data.append(Data("Content-Type: \(attachment.mimeType)\(crlf)\(crlf)".utf8))
             data.append(fileData)
-            data.append(crlf.data(using: .utf8)!)
+            data.append(Data(crlf.utf8))
         }
 
-        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)--\(crlf)".utf8))
         return data
     }
 }

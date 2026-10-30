@@ -72,7 +72,8 @@ private struct SelectablePlainTextView: UIViewRepresentable {
 /// Forces `UIPasteboard.general.string` on Copy so Handoff / Universal Clipboard stay plain text.
 private final class PlainCopyTextView: UITextView {
     override func copy(_ sender: Any?) {
-        let selected = text(in: selectedTextRange ?? textRange(from: beginningOfDocument, to: endOfDocument)!)
+        let range = selectedTextRange ?? textRange(from: beginningOfDocument, to: endOfDocument)
+        let selected = range.flatMap { text(in: $0) }
         UIPasteboard.general.string = selected ?? text
     }
 

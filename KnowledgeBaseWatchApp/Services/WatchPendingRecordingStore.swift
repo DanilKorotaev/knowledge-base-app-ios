@@ -15,7 +15,12 @@ final class WatchPendingRecordingStore {
     private let indexFileName = "index.json"
 
     private var directoryURL: URL {
-        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        guard let base = FileManager.default.urls(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask
+        ).first else {
+            preconditionFailure("applicationSupportDirectory is unavailable")
+        }
         let dir = base.appendingPathComponent(directoryName, isDirectory: true)
         if !FileManager.default.fileExists(atPath: dir.path) {
             try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)

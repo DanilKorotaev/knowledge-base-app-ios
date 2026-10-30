@@ -162,10 +162,12 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return try await fetchSessions() }
 
-        var components = URLComponents(
+        guard var components = URLComponents(
             url: baseURL.appendingPathComponent("api/sessions/search"),
             resolvingAgainstBaseURL: false
-        )!
+        ) else {
+            throw KnowledgeBaseAPIError.missingBaseURL
+        }
         components.queryItems = [URLQueryItem(name: "q", value: trimmed)]
         guard let url = components.url else { throw KnowledgeBaseAPIError.missingBaseURL }
 
@@ -182,10 +184,12 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
     }
 
     private func fetchSessionsPage(page: Int, perPage: Int) async throws -> (sessions: [KBSession], total: Int) {
-        var components = URLComponents(
+        guard var components = URLComponents(
             url: baseURL.appendingPathComponent("api/sessions"),
             resolvingAgainstBaseURL: false
-        )!
+        ) else {
+            throw KnowledgeBaseAPIError.missingBaseURL
+        }
         components.queryItems = [
             URLQueryItem(name: "page", value: String(page)),
             URLQueryItem(name: "per_page", value: String(perPage))
@@ -268,12 +272,15 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
             .appendingPathComponent("api")
             .appendingPathComponent("sessions")
             .appendingPathComponent("archived")
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            throw KnowledgeBaseAPIError.missingBaseURL
+        }
         components.queryItems = [
             URLQueryItem(name: "page", value: "1"),
             URLQueryItem(name: "per_page", value: "100")
         ]
-        var request = URLRequest(url: components.url!)
+        guard let requestURL = components.url else { throw KnowledgeBaseAPIError.missingBaseURL }
+        var request = URLRequest(url: requestURL)
         request.httpMethod = "GET"
         let data = try await performData(request)
         let decoder = JSONDecoder()
@@ -454,21 +461,24 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         limit: Int,
         beforeMessageId: String?
     ) async throws -> KBMessagesPage {
-        var components = URLComponents(
+        guard var components = URLComponents(
             url: baseURL
                 .appendingPathComponent("api")
                 .appendingPathComponent("sessions")
                 .appendingPathComponent(sessionId)
                 .appendingPathComponent("messages"),
             resolvingAgainstBaseURL: false
-        )!
+        ) else {
+            throw KnowledgeBaseAPIError.missingBaseURL
+        }
         var query: [URLQueryItem] = [URLQueryItem(name: "limit", value: String(limit))]
         if let beforeMessageId, !beforeMessageId.isEmpty {
             query.append(URLQueryItem(name: "before", value: beforeMessageId))
         }
         components.queryItems = query
 
-        var request = URLRequest(url: components.url!)
+        guard let requestURL = components.url else { throw KnowledgeBaseAPIError.missingBaseURL }
+        var request = URLRequest(url: requestURL)
         request.httpMethod = "GET"
         let data = try await performData(request)
 
@@ -1057,22 +1067,22 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let crlf = "\r\n"
         let mime = "audio/mp4"
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-        data.append("Content-Disposition: form-data; name=\"content\"\(crlf)\(crlf)".data(using: .utf8)!)
-        data.append("\(content)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
+        data.append(Data("Content-Disposition: form-data; name=\"content\"\(crlf)\(crlf)".utf8))
+        data.append(Data("\(content)\(crlf)".utf8))
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-        data.append("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".data(using: .utf8)!)
-        data.append("\(useKnowledgeBase)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
+        data.append(Data("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".utf8))
+        data.append(Data("\(useKnowledgeBase)\(crlf)".utf8))
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
         data.append(
-            "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+            Data("Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".utf8)
         )
-        data.append("Content-Type: \(mime)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(Data("Content-Type: \(mime)\(crlf)\(crlf)".utf8))
         data.append(fileData)
-        data.append(crlf.data(using: .utf8)!)
-        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        data.append(Data(crlf.utf8))
+        data.append(Data("--\(boundary)--\(crlf)".utf8))
         return data
     }
 
@@ -1085,14 +1095,14 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let crlf = "\r\n"
         let mime = "audio/mp4"
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
         data.append(
-            "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+            Data("Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".utf8)
         )
-        data.append("Content-Type: \(mime)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(Data("Content-Type: \(mime)\(crlf)\(crlf)".utf8))
         data.append(fileData)
-        data.append(crlf.data(using: .utf8)!)
-        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        data.append(Data(crlf.utf8))
+        data.append(Data("--\(boundary)--\(crlf)".utf8))
         return data
     }
 
@@ -1108,26 +1118,26 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let crlf = "\r\n"
         let mime = "audio/mp4"
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-        data.append("Content-Disposition: form-data; name=\"session_id\"\(crlf)\(crlf)".data(using: .utf8)!)
-        data.append("\(sessionId)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
+        data.append(Data("Content-Disposition: form-data; name=\"session_id\"\(crlf)\(crlf)".utf8))
+        data.append(Data("\(sessionId)\(crlf)".utf8))
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-        data.append("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".data(using: .utf8)!)
-        data.append("\(useKnowledgeBase)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
+        data.append(Data("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".utf8))
+        data.append(Data("\(useKnowledgeBase)\(crlf)".utf8))
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-        data.append("Content-Disposition: form-data; name=\"transcription_hint\"\(crlf)\(crlf)".data(using: .utf8)!)
-        data.append("\(transcriptionHint)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
+        data.append(Data("Content-Disposition: form-data; name=\"transcription_hint\"\(crlf)\(crlf)".utf8))
+        data.append(Data("\(transcriptionHint)\(crlf)".utf8))
 
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
         data.append(
-            "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+            Data("Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".utf8)
         )
-        data.append("Content-Type: \(mime)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(Data("Content-Type: \(mime)\(crlf)\(crlf)".utf8))
         data.append(fileData)
-        data.append(crlf.data(using: .utf8)!)
-        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        data.append(Data(crlf.utf8))
+        data.append(Data("--\(boundary)--\(crlf)".utf8))
         return data
     }
 
@@ -1140,17 +1150,17 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
     ) -> Data {
         var data = Data()
         let crlf = "\r\n"
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-        data.append("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".data(using: .utf8)!)
-        data.append("\(useKnowledgeBase)\(crlf)".data(using: .utf8)!)
-        data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)\(crlf)".utf8))
+        data.append(Data("Content-Disposition: form-data; name=\"use_knowledge_base\"\(crlf)\(crlf)".utf8))
+        data.append(Data("\(useKnowledgeBase)\(crlf)".utf8))
+        data.append(Data("--\(boundary)\(crlf)".utf8))
         data.append(
-            "Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+            Data("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\(crlf)".utf8)
         )
-        data.append("Content-Type: \(mimeType)\(crlf)\(crlf)".data(using: .utf8)!)
+        data.append(Data("Content-Type: \(mimeType)\(crlf)\(crlf)".utf8))
         data.append(fileData)
-        data.append(crlf.data(using: .utf8)!)
-        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        data.append(Data(crlf.utf8))
+        data.append(Data("--\(boundary)--\(crlf)".utf8))
         return data
     }
 
@@ -1163,9 +1173,9 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let crlf = "\r\n"
 
         func appendField(name: String, value: String) {
-            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
-            data.append("Content-Disposition: form-data; name=\"\(name)\"\(crlf)\(crlf)".data(using: .utf8)!)
-            data.append("\(value)\(crlf)".data(using: .utf8)!)
+            data.append(Data("--\(boundary)\(crlf)".utf8))
+            data.append(Data("Content-Disposition: form-data; name=\"\(name)\"\(crlf)\(crlf)".utf8))
+            data.append(Data("\(value)\(crlf)".utf8))
         }
 
         appendField(name: "content", value: draft.text)
@@ -1182,28 +1192,28 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
 
         for attachment in draft.attachments {
             let fileData = try Data(contentsOf: attachment.localURL)
-            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+            data.append(Data("--\(boundary)\(crlf)".utf8))
             data.append(
-                "Content-Disposition: form-data; name=\"files\"; filename=\"\(attachment.filename)\"\(crlf)".data(using: .utf8)!
+                Data("Content-Disposition: form-data; name=\"files\"; filename=\"\(attachment.filename)\"\(crlf)".utf8)
             )
-            data.append("Content-Type: \(attachment.mimeType)\(crlf)\(crlf)".data(using: .utf8)!)
+            data.append(Data("Content-Type: \(attachment.mimeType)\(crlf)\(crlf)".utf8))
             data.append(fileData)
-            data.append(crlf.data(using: .utf8)!)
+            data.append(Data(crlf.utf8))
         }
 
         for clip in draft.voiceClips {
             let fileData = try Data(contentsOf: clip.audioURL)
             let filename = clip.audioURL.lastPathComponent
-            data.append("--\(boundary)\(crlf)".data(using: .utf8)!)
+            data.append(Data("--\(boundary)\(crlf)".utf8))
             data.append(
-                "Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".data(using: .utf8)!
+                Data("Content-Disposition: form-data; name=\"audio\"; filename=\"\(filename)\"\(crlf)".utf8)
             )
-            data.append("Content-Type: audio/mp4\(crlf)\(crlf)".data(using: .utf8)!)
+            data.append(Data("Content-Type: audio/mp4\(crlf)\(crlf)".utf8))
             data.append(fileData)
-            data.append(crlf.data(using: .utf8)!)
+            data.append(Data(crlf.utf8))
         }
 
-        data.append("--\(boundary)--\(crlf)".data(using: .utf8)!)
+        data.append(Data("--\(boundary)--\(crlf)".utf8))
         return data
     }
 

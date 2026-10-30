@@ -92,7 +92,13 @@ enum StructuredUITableDisplay {
             && raw.count == 10
     }
 
-    private static let isoDayRegex = try! NSRegularExpression(pattern: #"^\d{4}-\d{2}-\d{2}$"#)
+    private static let isoDayRegex: NSRegularExpression = {
+        do {
+            return try NSRegularExpression(pattern: #"^\d{4}-\d{2}-\d{2}$"#)
+        } catch {
+            preconditionFailure("Invalid ISO day regex: \(error)")
+        }
+    }()
 
     private static func formatISODate(_ raw: String) -> String? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)

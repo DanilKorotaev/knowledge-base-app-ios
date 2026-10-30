@@ -39,9 +39,11 @@ struct KBClientMetadata: Equatable, Sendable {
         #else
         let os = "unknown"
         #endif
+        let resolvedVersion = version.flatMap { $0.isEmpty ? nil : $0 } ?? "0"
+        let resolvedBuild = build.flatMap { $0.isEmpty ? nil : $0 } ?? "0"
         return KBClientMetadata(
-            appVersion: (version?.isEmpty == false) ? version! : "0",
-            buildNumber: (build?.isEmpty == false) ? build! : "0",
+            appVersion: resolvedVersion,
+            buildNumber: resolvedBuild,
             platform: "ios",
             osVersion: os,
             logSessionId: LogSession.shared.id
