@@ -12,6 +12,16 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-10-30
+
+### Changed
+
+- Add Structured UI demo boards and Light/Dark screenshot lane for Figma.
+
+### Fixed
+
+- Fix auth logout/session handling and improve login UX for multi-server use.
+
 ## [2.0.0] - 2026-10-26
 
 ### Changed
@@ -975,7 +985,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v2.0.0...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v2.0.1...HEAD
+[2.0.1]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.1
 [2.0.0]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.0
 [1.0.114]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.114
 [1.0.113]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v1.0.113
