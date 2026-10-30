@@ -43,7 +43,10 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
         if let error {
             WatchRelayLogger.error("WCSession activation failed: \(error.localizedDescription)")
         } else {
-            WatchRelayLogger.info("WCSession activated state=\(activationState.rawValue) paired=\(session.isPaired) watchInstalled=\(session.isWatchAppInstalled)")
+            WatchRelayLogger.info(
+                "WCSession activated state=\(activationState.rawValue) "
+                    + "paired=\(session.isPaired) watchInstalled=\(session.isWatchAppInstalled)"
+            )
         }
         if activationState == .activated {
             syncContextToWatch()

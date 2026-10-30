@@ -7,7 +7,8 @@ protocol UserDefaultsServiceSettingsDescription: AnyObject {
 }
 
 enum UserDefaultsServiceOperation: String {
-    case object, value, string, array, dictionary, data, integer, bool, float, double, url, set, setValue, removeObject, removePersistentDomain, dictionaryRepresentation
+    case object, value, string, array, dictionary, data, integer, bool, float, double, url
+    case set, setValue, removeObject, removePersistentDomain, dictionaryRepresentation
 }
 
 struct UserDefaultsServiceEvent {

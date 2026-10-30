@@ -21,7 +21,7 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 **Baseline inventory (2026-10-30):** **1334** violations across **40** rules (see inventory md). Soft config disables remaining backlog rules + `nesting` and keeps opt-ins that already pass.
 
-**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Iteration 4 `trailing_closure` (~45 → 0; soft-enabled 2026-10-30). Iteration 5 style/low-risk batch (~33 → 0; soft-enabled 2026-10-30): `opening_brace`, `vertical_whitespace`, `trailing_newline`, `implicit_optional_initialization`, `unneeded_synthesized_initializer`, `modifier_order`, `redundant_type_annotation`. Iteration 6 Force/unsafe (2026-10-30): `force_try` + `force_cast` → 0 and soft-enabled; production `force_unwrapping` cleared (~76 → 0). Iteration 7 (2026-10-30): test `force_unwrapping` **123 → 0** (`Data(…).utf8`, `XCTUnwrap` / `#require`, `TimeZone.gmt`); soft-enabled. Next: size/complexity (`line_length` ~178).
+**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Iteration 4 `trailing_closure` (~45 → 0; soft-enabled 2026-10-30). Iteration 5 style/low-risk batch (~33 → 0; soft-enabled 2026-10-30): `opening_brace`, `vertical_whitespace`, `trailing_newline`, `implicit_optional_initialization`, `unneeded_synthesized_initializer`, `modifier_order`, `redundant_type_annotation`. Iteration 6 Force/unsafe (2026-10-30): `force_try` + `force_cast` → 0 and soft-enabled; production `force_unwrapping` cleared (~76 → 0). Iteration 7 (2026-10-30): test `force_unwrapping` **123 → 0** (`Data(…).utf8`, `XCTUnwrap` / `#require`, `TimeZone.gmt`); soft-enabled. Iteration 8 (2026-10-30): `line_length` — fixed 2 errors + all lines >160; soft-enabled with warning **160** / error **200** (strict inventory still ~150 at 120). Next: size/complexity (`type_body_length` / `file_length` / …) or lower soft `line_length` warning toward 120.
 
 ## How to re-enable a rule
 
@@ -50,7 +50,7 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 ### Size / complexity thresholds
 
-- [ ] `line_length` (~175; 173 warning / 2 error under strict defaults)
+- [x] `line_length` (soft-enabled 2026-10-30: warning 160 / error 200; errors + >160 cleared; ~150 remain under strict 120 — optional follow-up)
 - [ ] `type_body_length` / `file_length` / `function_body_length` / `function_parameter_count` / `cyclomatic_complexity` / `nesting` / `large_tuple`
 
 ### Naming / structure

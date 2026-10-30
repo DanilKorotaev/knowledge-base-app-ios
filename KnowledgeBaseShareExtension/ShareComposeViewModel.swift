@@ -94,7 +94,9 @@ final class ShareComposeViewModel {
         }
 
         ShareFileLogger.info(
-            "bootstrap payload textLen=\(payload.text.count) attachments=\(payload.attachments.count) sessions=\(sessions.count) remoteDest=\(destinations.count)"
+            "bootstrap payload textLen=\(payload.text.count) "
+                + "attachments=\(payload.attachments.count) sessions=\(sessions.count) "
+                + "remoteDest=\(destinations.count)"
         )
 
         if apiClient == nil {

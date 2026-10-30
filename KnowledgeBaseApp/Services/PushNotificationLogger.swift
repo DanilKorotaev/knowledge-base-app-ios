@@ -33,7 +33,9 @@ enum PushNotificationLogger {
     ) {
         let userInfo = response.notification.request.content.userInfo
         logger.debugInfo(
-            "[push] user tapped action=\(response.actionIdentifier) sessionId=\(sessionId ?? "nil") deliveredAt=\(response.notification.date) payload=\(PushPayloadFormatter.json(userInfo))"
+            "[push] user tapped action=\(response.actionIdentifier) "
+                + "sessionId=\(sessionId ?? "nil") deliveredAt=\(response.notification.date) "
+                + "payload=\(PushPayloadFormatter.json(userInfo))"
         )
     }
 

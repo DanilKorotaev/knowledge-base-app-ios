@@ -359,11 +359,20 @@ private final class FailingStreamChatAPIClient: ChatAPIClientProtocol, @unchecke
         }
     }
 
-    func streamVoiceMessage(sessionId: String, audioFileURL: URL, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
 
-    func streamComposedMessage(sessionId: String, draft: ChatComposerDraft, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
@@ -407,11 +416,20 @@ private final class SlowStreamChatAPIClient: ChatAPIClientProtocol, @unchecked S
         }
     }
 
-    func streamVoiceMessage(sessionId: String, audioFileURL: URL, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
 
-    func streamComposedMessage(sessionId: String, draft: ChatComposerDraft, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
@@ -448,11 +466,20 @@ private final class InMemoryChatAPIClient: ChatAPIClientProtocol, @unchecked Sen
         AsyncThrowingStream { $0.finish() }
     }
 
-    func streamVoiceMessage(sessionId: String, audioFileURL: URL, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
     }
 
-    func streamComposedMessage(sessionId: String, draft: ChatComposerDraft, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }

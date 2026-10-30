@@ -71,7 +71,9 @@ final class WatchConnectivityCoordinator: NSObject, WCSessionDelegate {
         session.transferFile(fileURL, metadata: metadata)
         outgoingTransferURLs.insert(fileURL)
         WatchRelayLog.info(
-            "transferFile queued recordingId=\(recordingID) sessionId=\(sessionID ?? "nil") reachable=\(session.isReachable) activation=\(session.activationState.rawValue) path=\(fileURL.lastPathComponent)"
+            "transferFile queued recordingId=\(recordingID) sessionId=\(sessionID ?? "nil") "
+                + "reachable=\(session.isReachable) activation=\(session.activationState.rawValue) "
+                + "path=\(fileURL.lastPathComponent)"
         )
     }
 

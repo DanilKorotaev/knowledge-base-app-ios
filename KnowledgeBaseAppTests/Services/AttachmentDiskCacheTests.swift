@@ -40,11 +40,14 @@ final class AttachmentDiskCacheTests: XCTestCase {
     }
 
     func testLRUEvictsOldestWhenOverLimit() throws {
-        cache.store(data: Data(repeating: 1, count: 80), key: "a", metadata: CachedAttachmentMetadata(fileName: "a", mimeType: nil, sessionId: nil, messageId: nil))
+        let metaA = CachedAttachmentMetadata(fileName: "a", mimeType: nil, sessionId: nil, messageId: nil)
+        let metaB = CachedAttachmentMetadata(fileName: "b", mimeType: nil, sessionId: nil, messageId: nil)
+        let metaC = CachedAttachmentMetadata(fileName: "c", mimeType: nil, sessionId: nil, messageId: nil)
+        cache.store(data: Data(repeating: 1, count: 80), key: "a", metadata: metaA)
         Thread.sleep(forTimeInterval: 0.01)
-        cache.store(data: Data(repeating: 2, count: 80), key: "b", metadata: CachedAttachmentMetadata(fileName: "b", mimeType: nil, sessionId: nil, messageId: nil))
+        cache.store(data: Data(repeating: 2, count: 80), key: "b", metadata: metaB)
         Thread.sleep(forTimeInterval: 0.01)
-        cache.store(data: Data(repeating: 3, count: 80), key: "c", metadata: CachedAttachmentMetadata(fileName: "c", mimeType: nil, sessionId: nil, messageId: nil))
+        cache.store(data: Data(repeating: 3, count: 80), key: "c", metadata: metaC)
 
         let keys = Set(cache.allEntries().map(\.cacheKey))
         XCTAssertFalse(keys.contains("a"))

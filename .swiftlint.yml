@@ -43,7 +43,6 @@ disabled_rules:
   - identifier_name
   - large_tuple
   - legacy_multiple
-  - line_length
   - multiline_arguments
   - multiline_function_chains
   - multiline_literal_brackets
@@ -58,6 +57,13 @@ disabled_rules:
   - type_name
   - vertical_parameter_alignment_on_call
   - vertical_whitespace_closing_braces
+
+# Soft line_length: error 200; warning 160 until remaining ~150 at strict 120 are sliced.
+line_length:
+  warning: 160
+  error: 200
+  ignores_comments: true
+  ignores_urls: true
 
 # Opt-ins that already pass (0 violations on 2026-10-30 inventory).
 opt_in_rules:
