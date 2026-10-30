@@ -6,6 +6,9 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 2.0.5 | 259 | `ios/v2.0.5` | 2026-10-30 | TestFlight release |
+| 2.0.4 | 257 | `ios/v2.0.4` | 2026-10-30 | TestFlight release |
+| 2.0.3 | 254 | `ios/v2.0.3` | 2026-10-30 | TestFlight release |
 | 2.0.2 | 253 | `ios/v2.0.2` | 2026-10-30 | Add soft SwiftLint CI gate with strict inventory and cleanup epic. |
 | 2.0.1 | 252 | `ios/v2.0.1` | 2026-10-30 | Fix auth logout/session handling and improve login UX for multi-server use. |
 | 2.0.0 | 250 | `ios/v2.0.0` | 2026-10-26 | TestFlight release |
