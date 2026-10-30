@@ -96,13 +96,7 @@ actor WatchVoiceRelayCoordinator {
                 hintedSessionID: relay.hintedSessionID,
                 chatClient: client,
                 sessionProvider: {
-                    if let api = client as? KnowledgeBaseAPIClientProtocol {
-                        return try await api.fetchSessions()
-                    }
-                    if let remote = URLSessionKnowledgeBaseAPIClient() {
-                        return try await remote.fetchSessions()
-                    }
-                    return []
+                    try await client.fetchSessions()
                 }
             )
             WatchRelayLogger.info("Relay success recordingId=\(recordingID) previewChars=\(preview.count)")

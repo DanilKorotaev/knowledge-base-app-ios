@@ -8,6 +8,11 @@ opt_out_usage
 default_platform(:ios)
 
 platform :ios do
+  desc "Run SwiftLint with soft CI config (.swiftlint.yml). Zero violations required."
+  lane :lint do
+    run_swiftlint!
+  end
+
   desc "Run unit tests (KnowledgeBaseApp) with coverage; fails if line coverage < MIN_COVERAGE (default 35)."
   lane :test do
     setup_ci if ENV["CI"]
@@ -236,6 +241,12 @@ end
 
 def run_xcodegen!
   script = File.expand_path("../scripts/ci/xcodegen_generate.sh", __dir__)
+  UI.user_error!("Missing #{script}") unless File.file?(script)
+  sh("bash", script)
+end
+
+def run_swiftlint!
+  script = File.expand_path("../scripts/ci/swiftlint.sh", __dir__)
   UI.user_error!("Missing #{script}") unless File.file?(script)
   sh("bash", script)
 end

@@ -2,7 +2,7 @@
 
 Test and TestFlight automation. Same playbook as the **Apple Health / HealthSync** plan: **Match** (private Git repo for certs) + **App Store Connect API key** (no interactive 2FA on CI).
 
-**Agents / pre-push:** use **`bundle exec fastlane test`** (and `beta` only with secrets) — not raw `xcodebuild` or standalone `scripts/ci/*`. See `.cursor/rules/fastlane-ci-parity.mdc`.
+**Agents / pre-push:** use **`bundle exec fastlane lint`** + **`bundle exec fastlane test`** (and `beta` only with secrets) — not raw `xcodebuild` or standalone deploy scripts. See `.cursor/rules/fastlane-ci-parity.mdc` and `.cursor/rules/swiftlint-ci-parity.mdc`.
 
 ## Prerequisites
 
@@ -26,11 +26,21 @@ Confirm Fastlane comes from the bundle (path should be under your gem home / `ve
 bundle exec which fastlane
 ```
 
+## Lane: `lint`
+
+Runs **SwiftLint** with the soft CI config (`.swiftlint.yml`) via `scripts/ci/swiftlint.sh`. **Zero violations** required (`--strict`). Needs `swiftlint` on PATH (`brew install swiftlint`).
+
+Strict inventory / progressive cleanup: `.swiftlint-strict.yml` + epic [`docs/tasks/pending/task-epic-swiftlint-cleanup.md`](tasks/pending/task-epic-swiftlint-cleanup.md).
+
+```bash
+bundle exec fastlane lint
+```
+
 ## Lane: `test`
 
 Runs **scan** on **KnowledgeBaseAppTests** only, writes results under `fastlane/test_output/`, then enforces **line coverage for the `KnowledgeBaseApp.app` target only** (SPM dependencies such as Alamofire are excluded). Default minimum **35%**, override with `MIN_COVERAGE`.
 
-**This gate blocks CI** and therefore **auto TestFlight** on `main` when coverage is below the threshold (individual tests may still pass).
+**This gate blocks CI** and therefore **auto TestFlight** on `main` when coverage is below the threshold (individual tests may still pass). Soft SwiftLint (`lint`) also blocks CI.
 
 ```bash
 bundle exec fastlane test

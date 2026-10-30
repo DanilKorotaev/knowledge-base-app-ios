@@ -1,0 +1,48 @@
+---
+description: Run soft SwiftLint (CI config) in addition to Fastlane tests when changing iOS
+alwaysApply: true
+---
+
+# SwiftLint / CI parity (mandatory for agents)
+
+CI runs **soft** SwiftLint (`.swiftlint.yml`, zero violations) via `bundle exec fastlane lint` before/alongside tests. Agents must run the same gate when changing Swift sources — not only `fastlane test`.
+
+## Required (repo root)
+
+```bash
+brew install swiftlint   # once per machine if missing
+bundle exec fastlane lint
+bundle exec fastlane test
+```
+
+Equivalent without Fastlane (same soft config):
+
+```bash
+bash scripts/ci/swiftlint.sh
+```
+
+## Soft vs strict
+
+| Config | File | Purpose |
+|--------|------|---------|
+| Soft (CI) | `.swiftlint.yml` | Must stay **0** violations |
+| Strict | `.swiftlint-strict.yml` | Inventory / progressive cleanup only |
+
+Do **not** fail the soft gate by re-enabling rules without fixing violations. Work the epic: `docs/tasks/pending/task-epic-swiftlint-cleanup.md` (+ inventory md/json).
+
+Refresh strict inventory when closing a rule-group subtask:
+
+```bash
+swiftlint lint --config .swiftlint-strict.yml --reporter summary
+```
+
+## Do NOT
+
+- Skip lint because “tests passed”
+- Point CI or agents at `.swiftlint-strict.yml` until soft ≈ agreed strict set
+- Lower soft standards by blanketing `disable` comments without an epic note
+
+## References
+
+- `docs/DEVELOPMENT.md`, `docs/CODING_STANDARDS.md`, `docs/FASTLANE.md`
+- `.cursor/rules/fastlane-ci-parity.mdc`

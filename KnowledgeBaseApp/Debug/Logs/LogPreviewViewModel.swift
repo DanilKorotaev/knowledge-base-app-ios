@@ -113,7 +113,7 @@ final class LogPreviewViewModel: ObservableObject, LogPreviewDetailsViewDelegate
     }
 
     private func setup() {
-        guard let logData = try? String(contentsOf: fileURL) else { return }
+        guard let logData = try? String(contentsOf: fileURL, encoding: .utf8) else { return }
         let logLines = logData.components(separatedBy: .newlines)
         var rawLogs: [String] = []
         var currentLog: [String] = []

@@ -26,11 +26,9 @@ enum WorkoutRouteLoader {
 
         var points: [RoutePoint] = []
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            var query: HKWorkoutRouteQuery?
-            query = HKWorkoutRouteQuery(route: route) { _, locations, done, error in
+            let query = HKWorkoutRouteQuery(route: route) { _, locations, done, error in
                 if let error {
                     continuation.resume(throwing: error)
-                    if let query { store.stop(query) }
                     return
                 }
                 if let locations {
@@ -46,15 +44,10 @@ enum WorkoutRouteLoader {
                     }
                 }
                 if done {
-                    if let query { store.stop(query) }
                     continuation.resume(returning: ())
                 }
             }
-            if let query {
-                store.execute(query)
-            } else {
-                continuation.resume(returning: ())
-            }
+            store.execute(query)
         }
 
         guard !points.isEmpty else { return nil }

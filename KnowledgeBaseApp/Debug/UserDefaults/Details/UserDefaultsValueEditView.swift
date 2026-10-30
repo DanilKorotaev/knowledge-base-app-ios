@@ -45,7 +45,7 @@ struct UserDefaultsValueEditView: View {
             }
         }
         .kbErrorAlert(error: $viewModel.error)
-        .onChange(of: viewModel.success) { success in
+        .onChange(of: viewModel.success) { _, success in
             if success {
                 dismiss()
             }

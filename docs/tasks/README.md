@@ -44,6 +44,7 @@ When implementing shared services in **`knowledge-base-bot`**, follow that repo�
 
 | File | Topic | Статус (2026-06-20) |
 |------|--------|---------------------|
+| `task-epic-swiftlint-cleanup.md` | Soft SwiftLint CI + strict inventory / Sendable | 🟡 soft green |
 | `task-backend-kb-app-api-sync.md` | Contract alignment + E2E automation | 🟡 ongoing |
 | `task-feature-push-notifications-chat.md` | APNs when reply ready | 🟡 MVP в коде, E2E на устройстве |
 | `task-feature-watch-app-voice.md` | watchOS companion, complication | 🟡 relay + deep link готовы; **нет WidgetKit complication** |

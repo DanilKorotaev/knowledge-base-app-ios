@@ -15,6 +15,7 @@ bundle install   # once per machine / after Gemfile change
 
 | Goal | Command | CI workflow |
 |------|---------|---------------|
+| SwiftLint (soft CI config) | `bundle exec fastlane lint` | `.github/workflows/ci.yml` |
 | Tests + coverage gate | `bundle exec fastlane test` | `.github/workflows/ci.yml` |
 | TestFlight archive/upload | `bundle exec fastlane beta` | `.github/workflows/deploy-testflight.yml` |
 
@@ -22,8 +23,9 @@ Run from the **repository root** (`knowledge-base-app-ios/`), not from `fastlane
 
 ## Before push to `main`
 
-1. **`bundle exec fastlane test`** — must pass; lane enforces **≥ 35%** line coverage on `KnowledgeBaseApp.app`.
-2. If you changed **`fastlane/Fastfile`**, deploy workflows, or release scripts: re-read the lane — internal steps use paths relative to the Fastfile (`__dir__`), not the shell cwd.
+1. **`bundle exec fastlane lint`** — soft SwiftLint (`.swiftlint.yml`) must be **0** violations. See `.cursor/rules/swiftlint-ci-parity.mdc`.
+2. **`bundle exec fastlane test`** — must pass; lane enforces **≥ 35%** line coverage on `KnowledgeBaseApp.app`.
+3. If you changed **`fastlane/Fastfile`**, deploy workflows, or release scripts: re-read the lane — internal steps use paths relative to the Fastfile (`__dir__`), not the shell cwd.
 
 Full **`beta`** needs Match + ASC secrets (CI / local env). Agents cannot skip `test` and assume `beta` will work.
 
@@ -36,7 +38,8 @@ Full **`beta`** needs Match + ASC secrets (CI / local env). Agents cannot skip `
 ## Allowed outside Fastlane
 
 - `xcodegen generate` after editing `project.yml` (then commit `.xcodeproj`)
-- `bash scripts/ci/check_no_hardcoded_cyrillic.sh` (also in CI; lightweight lint)
+- `bash scripts/ci/check_no_hardcoded_cyrillic.sh` (also in CI; lightweight string lint)
+- `bash scripts/ci/swiftlint.sh` (same soft config as `fastlane lint`)
 - Editing `VERSION` / `CHANGELOG.md` without running deploy scripts locally
 
 ## Why

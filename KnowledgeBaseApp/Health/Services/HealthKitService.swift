@@ -309,7 +309,7 @@ final class HealthKitService: HealthKitServiceProtocol {
                 from: sleepQueryStart,
                 to: dayEnd
             )
-            var summary = DailyMetricsSleepAggregator.buildSummary(
+            let summary = DailyMetricsSleepAggregator.buildSummary(
                 categorySamples: sleepSamples,
                 dayStart: dayStart,
                 dayEnd: dayEnd
@@ -541,7 +541,12 @@ final class HealthKitService: HealthKitServiceProtocol {
         let dayKey = CalendarDayFormatter.yyyyMMddLocalDay(containing: workout.startDate, calendar: calendar)
         let heartRateSamples = try await heartRateSamplesDuringWorkout(workout)
         let distanceKm = workout.totalDistance.map { $0.doubleValue(for: HKUnit.meter()) / 1000.0 }
-        let activeCalories = workout.totalEnergyBurned?.doubleValue(for: HKUnit.kilocalorie())
+        let activeCalories: Double? = {
+            guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
+                  let sum = workout.statistics(for: energyType)?.sumQuantity()
+            else { return nil }
+            return sum.doubleValue(for: .kilocalorie())
+        }()
         let durationMinutes = workout.duration / 60.0
         let elevationGainM = workout.metadata?[HKMetadataKeyElevationAscended] as? Double
         let averagePaceMinPerKm: Double?

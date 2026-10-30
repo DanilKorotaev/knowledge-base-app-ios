@@ -31,6 +31,8 @@ After changing root **`VERSION`**, marketing version is synced in **`fastlane be
 
 ```bash
 bundle install
+brew install swiftlint       # once per machine if missing
+bundle exec fastlane lint    # soft SwiftLint (.swiftlint.yml) — required
 bundle exec fastlane test    # required before push to main
 ```
 
@@ -46,11 +48,17 @@ TestFlight path (needs Match + ASC secrets locally, or CI):
 bundle exec fastlane beta
 ```
 
-`xcodebuild` alone is fine for a quick compile in Xcode, but **not** for deciding whether CI will pass (no coverage gate, different cwd/flags).
+`xcodebuild` alone is fine for a quick compile in Xcode, but **not** for deciding whether CI will pass (no coverage gate / soft lint, different cwd/flags).
+
+## Lint (SwiftLint)
+
+- **Soft (CI):** `.swiftlint.yml` — `bundle exec fastlane lint` or `bash scripts/ci/swiftlint.sh`
+- **Strict (inventory only):** `.swiftlint-strict.yml` — see epic `docs/tasks/pending/task-epic-swiftlint-cleanup.md`
+- Agents must run soft lint in addition to tests (`.cursor/rules/swiftlint-ci-parity.mdc`).
 
 ## Testing
 
-Same as **Building and testing** above — `bundle exec fastlane test` is the only pre-push gate documented here.
+Same as **Building and testing** above — pre-push gates are **`fastlane lint`** + **`fastlane test`**.
 
 ## Main shell (tabs)
 
@@ -88,13 +96,14 @@ Match / TestFlight: include `com.coredan.KnowledgeBaseApp.watch` in `fastlane ma
 
 ## CI
 
-- **CI** (`.github/workflows/ci.yml`): `bundle exec fastlane test` on every push/PR to `main` — **tests + line coverage gate** (`MIN_COVERAGE`, default **35%** for `KnowledgeBaseApp.app`).
+- **CI** (`.github/workflows/ci.yml`): `bundle exec fastlane lint` (soft SwiftLint) + `bundle exec fastlane test` on every push/PR to `main` — **lint + tests + line coverage gate** (`MIN_COVERAGE`, default **35%** for `KnowledgeBaseApp.app`).
 - **TestFlight** (`.github/workflows/deploy-testflight.yml`): runs automatically **only after green CI** on push to `main`; manual **workflow_dispatch** also available — see [FASTLANE.md](FASTLANE.md).
 
 ### Pre-push checklist (`main`)
 
 ```bash
+bundle exec fastlane lint
 bundle exec fastlane test
 ```
 
-All tests must pass and coverage must be **≥ 35%**. Otherwise TestFlight will not run on push.
+Lint must be clean, all tests must pass, and coverage must be **≥ 35%**. Otherwise TestFlight will not run on push.

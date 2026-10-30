@@ -42,7 +42,7 @@ enum ShareRemoteDestinations {
                 found.append(
                     ShareRemoteDestination(
                         id: id,
-                        label: label ?? "Action",
+                        label: label,
                         urlTemplate: url,
                         title: title
                     )

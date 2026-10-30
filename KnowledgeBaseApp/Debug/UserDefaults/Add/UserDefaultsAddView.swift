@@ -28,7 +28,7 @@ struct UserDefaultsAddView: View {
         .navigationBarTitleDisplayMode(.inline)
         .kbErrorAlert(error: $viewModel.error)
         .kbSuccessAlert(isPresented: $viewModel.success, title: L10n.string("ud.value_saved"))
-        .onChange(of: viewModel.success) { success in
+        .onChange(of: viewModel.success) { _, success in
             if success {
                 dismiss()
             }

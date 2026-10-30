@@ -15,6 +15,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
+### ios lint
+
+```sh
+[bundle exec] fastlane ios lint
+```
+
+Run SwiftLint with soft CI config (.swiftlint.yml). Zero violations required.
+
 ### ios test
 
 ```sh

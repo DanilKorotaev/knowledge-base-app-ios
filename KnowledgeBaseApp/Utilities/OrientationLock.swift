@@ -16,11 +16,8 @@ enum OrientationLock {
             return
         }
         let orientations: UIInterfaceOrientationMask = mask
-        scene.requestGeometryUpdate(.iOS(interfaceOrientations: orientations)) { error in
-            if error != nil {
-                // Fallback: user can rotate manually once mask allows landscape.
-            }
-        }
+        // Completion error is non-optional on current SDK; ignore failures (user can rotate manually).
+        scene.requestGeometryUpdate(.iOS(interfaceOrientations: orientations)) { _ in }
         for window in scene.windows {
             window.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
         }

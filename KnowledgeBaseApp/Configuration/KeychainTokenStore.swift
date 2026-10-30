@@ -95,7 +95,7 @@ enum KeychainTokenStore {
     }
 
     private static func deleteSecret(account: String, includeLegacy: Bool) {
-        var sharedQuery: [String: Any] = [
+        let sharedQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,

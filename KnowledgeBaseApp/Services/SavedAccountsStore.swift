@@ -123,7 +123,7 @@ enum SavedAccountsStore {
     }
 
     private static func deleteBlob() {
-        var shared: [String: Any] = [
+        let shared: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,

@@ -27,6 +27,9 @@ jobs:
         with:
           xcode-version: latest-stable
 
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
       - name: Pick iOS Simulator
         run: |
           DEVICE_NAME=$(python3 - <<'PY'
@@ -63,6 +66,11 @@ jobs:
       - name: Install gems
         run: bundle install --jobs 4 --retry 3
 
+      - name: SwiftLint (soft CI config)
+        id: lint
+        continue-on-error: true
+        run: bundle exec fastlane lint
+
       - name: Generate Xcode project (XcodeGen)
         run: bash scripts/ci/xcodegen_generate.sh
 
@@ -83,6 +91,10 @@ jobs:
           python3 scripts/ci/telegram_notify.py tests
           --outcome ${{ steps.tests.outcome }}
           --ui-outcome ${{ steps.ui_tests.outcome || 'skipped' }}
+
+      - name: Fail if SwiftLint failed
+        if: steps.lint.outcome != 'success'
+        run: exit 1
 
       - name: Fail if unit tests failed
         if: steps.tests.outcome != 'success'
