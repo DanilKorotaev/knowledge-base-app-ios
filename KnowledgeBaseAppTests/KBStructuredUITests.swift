@@ -148,7 +148,7 @@ final class KBStructuredUITests: XCTestCase {
         XCTAssertEqual(document.screen.supportedChildren[3].downloadURL, "/api/attachments/1/download")
         XCTAssertEqual(document.screen.supportedChildren[4].label, "Docs")
         XCTAssertEqual(document.screen.supportedChildren[5].fileName, "notes.pdf")
-        XCTAssertEqual(document.screen.supportedChildren[5].fileSize, 2048)
+        XCTAssertEqual(document.screen.supportedChildren[5].fileSize, 2_048)
         XCTAssertTrue(document.screen.supportedChildren.allSatisfy(\.isSupported))
     }
 

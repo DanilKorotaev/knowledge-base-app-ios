@@ -146,7 +146,7 @@ enum BoardPeriodSelection: Equatable, Hashable {
         let comps = calendar.dateComponents([.year, .month, .day], from: date)
         return String(
             format: "%04d-%02d-%02d",
-            comps.year ?? 1970,
+            comps.year ?? 1_970,
             comps.month ?? 1,
             comps.day ?? 1
         )
@@ -154,7 +154,7 @@ enum BoardPeriodSelection: Equatable, Hashable {
 
     static func currentMonth(from date: Date = Date(), calendar: Calendar = .current) -> BoardPeriodSelection {
         let comps = calendar.dateComponents([.year, .month], from: date)
-        return .month(year: comps.year ?? 2026, month: comps.month ?? 1)
+        return .month(year: comps.year ?? 2_026, month: comps.month ?? 1)
     }
 
     static func normalizeRange(from: Date, to: Date, calendar: Calendar = .current) -> BoardPeriodSelection {

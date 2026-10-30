@@ -26,7 +26,7 @@ final class KBHTTPTransport: @unchecked Sendable {
         self.clientMetadata = clientMetadata
         let configuration = urlSession.configuration.copy() as! URLSessionConfiguration
         configuration.timeoutIntervalForRequest = Self.streamingRequestTimeout
-        configuration.timeoutIntervalForResource = 3600
+        configuration.timeoutIntervalForResource = 3_600
         self.streamingSession = URLSession(configuration: configuration)
         self.session = Session(configuration: urlSession.configuration)
     }

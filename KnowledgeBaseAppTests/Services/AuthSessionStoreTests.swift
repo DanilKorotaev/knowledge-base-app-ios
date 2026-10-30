@@ -29,7 +29,7 @@ final class AuthSessionStoreTests: XCTestCase {
     func testJwtExpiryDetection() {
         let header = Data(#"{"alg":"none"}"#.utf8).base64URLEncodedString()
         let past = Int(Date().timeIntervalSince1970) - 120
-        let future = Int(Date().timeIntervalSince1970) + 3600
+        let future = Int(Date().timeIntervalSince1970) + 3_600
         let near = Int(Date().timeIntervalSince1970) + 30
         let expiredPayload = Data(#"{"sub":"1","exp":\#(past)}"#.utf8).base64URLEncodedString()
         let freshPayload = Data(#"{"sub":"1","exp":\#(future)}"#.utf8).base64URLEncodedString()
@@ -71,7 +71,7 @@ final class AuthSessionStoreTests: XCTestCase {
                     accessToken: "access-full",
                     refreshToken: "refresh-full",
                     tokenType: "bearer",
-                    expiresIn: 3600,
+                    expiresIn: 3_600,
                     user: user
                 )
             )
@@ -104,7 +104,7 @@ final class AuthSessionStoreTests: XCTestCase {
                     accessToken: "access-inv",
                     refreshToken: "refresh-inv",
                     tokenType: "bearer",
-                    expiresIn: 3600,
+                    expiresIn: 3_600,
                     user: user
                 )
             )
@@ -121,7 +121,7 @@ final class AuthSessionStoreTests: XCTestCase {
 
     func testEnsureFreshAccessTokenNoOpWhenFresh() async {
         let header = Data(#"{"alg":"none"}"#.utf8).base64URLEncodedString()
-        let future = Int(Date().timeIntervalSince1970) + 7200
+        let future = Int(Date().timeIntervalSince1970) + 7_200
         let payload = Data(#"{"sub":"9","exp":\#(future)}"#.utf8).base64URLEncodedString()
         let access = "\(header).\(payload).sig"
         let user = AuthUserDTO(
@@ -142,7 +142,7 @@ final class AuthSessionStoreTests: XCTestCase {
                     accessToken: access,
                     refreshToken: "refresh-fresh",
                     tokenType: "bearer",
-                    expiresIn: 7200,
+                    expiresIn: 7_200,
                     user: user
                 )
             )
@@ -172,7 +172,7 @@ final class AuthSessionStoreTests: XCTestCase {
             accessToken: "access-\(UUID().uuidString)",
             refreshToken: "refresh-\(UUID().uuidString)",
             tokenType: "bearer",
-            expiresIn: 3600,
+            expiresIn: 3_600,
             user: user
         )
         await MainActor.run {
@@ -243,7 +243,7 @@ final class AuthSessionStoreTests: XCTestCase {
                     accessToken: "access-a-cache",
                     refreshToken: "refresh-a-cache",
                     tokenType: "bearer",
-                    expiresIn: 3600,
+                    expiresIn: 3_600,
                     user: userA
                 )
             )
@@ -255,7 +255,7 @@ final class AuthSessionStoreTests: XCTestCase {
                     accessToken: "access-b-cache",
                     refreshToken: "refresh-b-cache",
                     tokenType: "bearer",
-                    expiresIn: 3600,
+                    expiresIn: 3_600,
                     user: userB
                 )
             )
@@ -308,7 +308,7 @@ final class AuthSessionStoreTests: XCTestCase {
                     accessToken: "access-a",
                     refreshToken: "refresh-a",
                     tokenType: "bearer",
-                    expiresIn: 3600,
+                    expiresIn: 3_600,
                     user: userA
                 )
             )
@@ -322,7 +322,7 @@ final class AuthSessionStoreTests: XCTestCase {
                     accessToken: "access-b",
                     refreshToken: "refresh-b",
                     tokenType: "bearer",
-                    expiresIn: 3600,
+                    expiresIn: 3_600,
                     user: userB
                 )
             )

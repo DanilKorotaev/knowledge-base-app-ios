@@ -330,8 +330,8 @@ enum StructuredUITimerDisplay {
 
     static func elapsedText(since start: Date, now: Date) -> String {
         let seconds = max(0, Int(now.timeIntervalSince(start)))
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
+        let hours = seconds / 3_600
+        let minutes = (seconds % 3_600) / 60
         let secs = seconds % 60
         if hours > 0 {
             return String(format: "%d:%02d:%02d", hours, minutes, secs)

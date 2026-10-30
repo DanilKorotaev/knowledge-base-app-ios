@@ -6,7 +6,7 @@ final class KBLoggerSettings: LoggerSettingsProviderDescription {
 
     static let defaultMaxHTTPBodyLogBytes = 4_096
     static let minMaxHTTPBodyLogBytes = 1_024
-    static let maxMaxHTTPBodyLogBytes = 10 * 1024 * 1024
+    static let maxMaxHTTPBodyLogBytes = 10 * 1_024 * 1_024
 
     @UserDefault(key: .loggerDebugConsole, defaultValue: true)
     var isDebugLogger: Bool

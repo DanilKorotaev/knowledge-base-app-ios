@@ -129,7 +129,7 @@ final class InMemoryKBStore: @unchecked Sendable {
                         id: "att-photo-1",
                         fileType: "photo",
                         fileName: "whiteboard.jpg",
-                        fileSize: 2048,
+                        fileSize: 2_048,
                         mimeType: "image/jpeg",
                         downloadURL: "demo-photo",
                         transcription: nil
@@ -147,7 +147,7 @@ final class InMemoryKBStore: @unchecked Sendable {
                         id: "att-voice-1",
                         fileType: "voice",
                         fileName: "voice.m4a",
-                        fileSize: 4096,
+                        fileSize: 4_096,
                         mimeType: "audio/mp4",
                         downloadURL: "demo-voice",
                         transcription: "Add a meeting tomorrow at 10"

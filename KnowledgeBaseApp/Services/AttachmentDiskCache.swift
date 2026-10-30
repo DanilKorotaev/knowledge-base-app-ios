@@ -50,7 +50,7 @@ final class FileAttachmentDiskCache: AttachmentDiskCacheProtocol, @unchecked Sen
     init(
         fileManager: FileManager = .default,
         baseURL: URL? = nil,
-        maxBytes: Int64 = 256 * 1024 * 1024
+        maxBytes: Int64 = 256 * 1_024 * 1_024
     ) {
         self.fileManager = fileManager
         self.maxBytes = maxBytes

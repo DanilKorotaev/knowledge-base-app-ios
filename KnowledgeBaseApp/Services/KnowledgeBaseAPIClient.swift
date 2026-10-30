@@ -90,7 +90,7 @@ struct StubKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol {
         guard let url = URL(string: "https://example.invalid/share/\(token)") else {
             throw KnowledgeBaseAPIError.decodingFailed
         }
-        return SessionShareLink(shareURL: url, apiURL: nil, expiresAt: Date().addingTimeInterval(30 * 24 * 3600))
+        return SessionShareLink(shareURL: url, apiURL: nil, expiresAt: Date().addingTimeInterval(30 * 24 * 3_600))
     }
 
     func revokeSessionShare(sessionId: String) async throws {

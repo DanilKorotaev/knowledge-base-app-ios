@@ -20,7 +20,7 @@ final class KBHealthSyncService {
     private static let syncStatePath = "sync_state.json"
     private static let workoutBatchLimit = 50
 
-    static let defaultDailyBackfillMaxAgeDays = 1095
+    static let defaultDailyBackfillMaxAgeDays = 1_095
 
     var onProgress: ProgressHandler?
 

@@ -263,7 +263,7 @@ final class HealthKitService: HealthKitServiceProtocol {
             from: dayStart,
             to: dayEnd
         )
-        let distanceKm = distanceMeters / 1000.0
+        let distanceKm = distanceMeters / 1_000.0
 
         let activeCalories = try await cumulativeSum(
             .activeEnergyBurned,
@@ -540,7 +540,7 @@ final class HealthKitService: HealthKitServiceProtocol {
         let syncedAt = CalendarDayFormatter.iso8601UTCSeconds(from: Date())
         let dayKey = CalendarDayFormatter.yyyyMMddLocalDay(containing: workout.startDate, calendar: calendar)
         let heartRateSamples = try await heartRateSamplesDuringWorkout(workout)
-        let distanceKm = workout.totalDistance.map { $0.doubleValue(for: HKUnit.meter()) / 1000.0 }
+        let distanceKm = workout.totalDistance.map { $0.doubleValue(for: HKUnit.meter()) / 1_000.0 }
         let activeCalories: Double? = {
             guard let energyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned),
                   let sum = workout.statistics(for: energyType)?.sumQuantity()

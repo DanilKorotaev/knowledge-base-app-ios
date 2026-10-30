@@ -23,7 +23,7 @@ final class VoiceSessionTargetResolverTests: XCTestCase {
             defaultPreference: DefaultVoiceSessionPreference(
                 sessionId: "inbox",
                 sessionTitle: "Inbox",
-                expiresAt: Date().addingTimeInterval(3600),
+                expiresAt: Date().addingTimeInterval(3_600),
                 previousSessionId: nil,
                 previousSessionTitle: nil
             ),
@@ -97,15 +97,15 @@ final class DefaultVoiceSessionPreferenceTests: XCTestCase {
 
         XCTAssertEqual(
             DefaultVoiceSessionTTL.oneHour.expirationDate(from: start)?.timeIntervalSince1970,
-            start.addingTimeInterval(3600).timeIntervalSince1970
+            start.addingTimeInterval(3_600).timeIntervalSince1970
         )
         XCTAssertEqual(
             DefaultVoiceSessionTTL.thirtyMinutes.expirationDate(from: start)?.timeIntervalSince1970,
-            start.addingTimeInterval(1800).timeIntervalSince1970
+            start.addingTimeInterval(1_800).timeIntervalSince1970
         )
         XCTAssertEqual(
             DefaultVoiceSessionTTL.twoHours.expirationDate(from: start)?.timeIntervalSince1970,
-            start.addingTimeInterval(7200).timeIntervalSince1970
+            start.addingTimeInterval(7_200).timeIntervalSince1970
         )
         XCTAssertNil(DefaultVoiceSessionTTL.indefinite.expirationDate(from: start))
         XCTAssertNotNil(DefaultVoiceSessionTTL.endOfDay.expirationDate(from: start, calendar: calendar))
@@ -411,7 +411,7 @@ final class VoiceRoutingContextTests: XCTestCase {
             DefaultVoiceSessionPreference(
                 sessionId: "live",
                 sessionTitle: "Live",
-                expiresAt: Date().addingTimeInterval(3600),
+                expiresAt: Date().addingTimeInterval(3_600),
                 previousSessionId: nil,
                 previousSessionTitle: nil
             )

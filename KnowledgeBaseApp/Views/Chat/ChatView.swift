@@ -398,7 +398,7 @@ struct ChatView: View {
         isChatScrollReady = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             isChatScrollReady = true
-            let ms = Int((CFAbsoluteTimeGetCurrent() - armedAt) * 1000)
+            let ms = Int((CFAbsoluteTimeGetCurrent() - armedAt) * 1_000)
             ChatOpenLogger.initialLayoutReady(sessionId: viewModel.session.id, milliseconds: ms)
             ChatPaginationLogger.scrollArmed(afterSeconds: 0.4)
             if let sample = latestScrollSample, sample.isNearOldestEdge {

@@ -40,10 +40,10 @@ struct HealthKitServiceTests {
         let sut = HealthKitService(healthStore: HealthStoreMock())
         let input = DailyAggregationInput(
             date: "2026-03-30",
-            steps: 8000,
+            steps: 8_000,
             distanceKm: 6.1,
             activeCalories: 450,
-            basalCalories: 1600,
+            basalCalories: 1_600,
             exerciseMinutes: 70,
             standHours: 12,
             restingHeartRate: 58,
@@ -75,10 +75,10 @@ struct HealthKitServiceTests {
         )
         let input = DailyAggregationInput(
             date: "2026-03-30",
-            steps: 8000,
+            steps: 8_000,
             distanceKm: 6.1,
             activeCalories: 450,
-            basalCalories: 1600,
+            basalCalories: 1_600,
             exerciseMinutes: 70,
             standHours: 12,
             restingHeartRate: nil,
@@ -98,10 +98,10 @@ struct HealthKitServiceTests {
         let sut = HealthKitService(healthStore: HealthStoreMock())
         let input = DailyAggregationInput(
             date: "2026-03-30",
-            steps: 8000,
+            steps: 8_000,
             distanceKm: 6.1,
             activeCalories: 450,
-            basalCalories: 1600,
+            basalCalories: 1_600,
             exerciseMinutes: 70,
             standHours: 12,
             restingHeartRate: 58,
@@ -115,7 +115,7 @@ struct HealthKitServiceTests {
             syncedAt: "2026-03-30T10:00:00Z"
         )
         let result = sut.makeDailyHealthData(from: input)
-        #expect(result.totalCalories == 2050)
+        #expect(result.totalCalories == 2_050)
         #expect(result.hrvAverage == 45)
         #expect(result.oxygenSaturationAverage == 97)
         #expect(result.heartRate?.average == 90)
@@ -125,7 +125,7 @@ struct HealthKitServiceTests {
     func makeWorkoutDataCalculatesHeartRateAndZones() {
         let sut = HealthKitService(healthStore: HealthStoreMock())
         let start = ISO8601DateFormatter().date(from: "2026-03-30T10:00:00Z")!
-        let end = start.addingTimeInterval(3600)
+        let end = start.addingTimeInterval(3_600)
         let input = WorkoutAggregationInput(
             sourceIdentifier: "00000000-0000-0000-0000-000000000001",
             date: "2026-03-30",
@@ -141,9 +141,9 @@ struct HealthKitServiceTests {
             heartRateSamples: [
                 .init(timestamp: start, bpm: 90, durationMinutes: 10),
                 .init(timestamp: start.addingTimeInterval(600), bpm: 105, durationMinutes: 15),
-                .init(timestamp: start.addingTimeInterval(1500), bpm: 120, durationMinutes: 20),
-                .init(timestamp: start.addingTimeInterval(2700), bpm: 135, durationMinutes: 10),
-                .init(timestamp: start.addingTimeInterval(3300), bpm: 150, durationMinutes: 5)
+                .init(timestamp: start.addingTimeInterval(1_500), bpm: 120, durationMinutes: 20),
+                .init(timestamp: start.addingTimeInterval(2_700), bpm: 135, durationMinutes: 10),
+                .init(timestamp: start.addingTimeInterval(3_300), bpm: 150, durationMinutes: 5)
             ],
             route: nil,
             linkedNote: nil,

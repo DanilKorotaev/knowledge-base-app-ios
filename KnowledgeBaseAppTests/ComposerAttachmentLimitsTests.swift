@@ -53,7 +53,7 @@ final class ComposerAttachmentLimitsTests: XCTestCase {
 
         let tooLarge = ComposerAttachmentLimits.ValidationError.fileTooLarge(
             filename: "doc.pdf",
-            maxBytes: 1024
+            maxBytes: 1_024
         ).message
         XCTAssertTrue(tooLarge.contains("doc.pdf"))
     }

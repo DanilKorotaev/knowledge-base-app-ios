@@ -55,7 +55,6 @@ disabled_rules:
   - multiple_closures_with_trailing_closure
   - nesting
   - non_optional_string_data_conversion
-  - number_separator
   - opening_brace
   - optional_data_string_conversion
   - pattern_matching_keywords

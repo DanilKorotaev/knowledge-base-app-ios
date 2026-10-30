@@ -4,7 +4,7 @@ import Foundation
 enum ComposerAttachmentLimits {
     static let maxFileAttachments = 10
     /// Raised for short screen recordings / gallery videos (was 25 MB).
-    static let maxBytesPerAttachment: Int64 = 100 * 1024 * 1024
+    static let maxBytesPerAttachment: Int64 = 100 * 1_024 * 1_024
 
     enum ValidationError: Equatable {
         case tooManyFiles(max: Int)

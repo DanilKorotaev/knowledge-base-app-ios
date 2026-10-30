@@ -26,7 +26,7 @@ final class DefaultVoiceSessionStoreTests: XCTestCase {
         let preference = DefaultVoiceSessionPreference(
             sessionId: "125",
             sessionTitle: "Session 125",
-            expiresAt: Date().addingTimeInterval(3600),
+            expiresAt: Date().addingTimeInterval(3_600),
             previousSessionId: "100",
             previousSessionTitle: "Previous"
         )

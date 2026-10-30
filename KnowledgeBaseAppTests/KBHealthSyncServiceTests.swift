@@ -12,10 +12,10 @@ struct KBHealthSyncServiceTests {
         healthKit.isHealthDataAvailable = true
         healthKit.dailyInput = DailyAggregationInput(
             date: "2026-03-01",
-            steps: 5000,
+            steps: 5_000,
             distanceKm: 3.2,
             activeCalories: 400,
-            basalCalories: 1200,
+            basalCalories: 1_200,
             exerciseMinutes: 30,
             standHours: 8,
             restingHeartRate: 58,
@@ -65,7 +65,7 @@ struct KBHealthSyncServiceTests {
                         sourceIdentifier: "ABC",
                         date: "2026-03-01",
                         startAt: fixedDate,
-                        endAt: fixedDate.addingTimeInterval(1800),
+                        endAt: fixedDate.addingTimeInterval(1_800),
                         workoutType: "running",
                         durationMinutes: 30,
                         distanceKm: 5,
@@ -122,8 +122,8 @@ struct KBHealthSyncServiceTests {
             syncedAt: nil
         )
 
-        let start = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 3)))
-        let end = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 4)))
+        let start = try #require(utc.date(from: DateComponents(year: 2_026, month: 3, day: 3)))
+        let end = try #require(utc.date(from: DateComponents(year: 2_026, month: 3, day: 4)))
         let api = StubHealthAPIClient()
         let service = KBHealthSyncService(
             healthKit: healthKit,
@@ -164,8 +164,8 @@ struct KBHealthSyncServiceTests {
             uploadBatchSize: 10
         )
 
-        let start = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 3)))
-        let end = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 4)))
+        let start = try #require(utc.date(from: DateComponents(year: 2_026, month: 3, day: 3)))
+        let end = try #require(utc.date(from: DateComponents(year: 2_026, month: 3, day: 4)))
         try await service.syncDailyHistory(from: start, to: end)
 
         let dailyPaths = api.uploadedFiles.filter { $0.path.hasPrefix("daily/") }.map(\.path)
@@ -187,8 +187,8 @@ struct KBHealthSyncServiceTests {
             uploadBatchSize: 1
         )
 
-        let start = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 3)))
-        let end = try #require(utc.date(from: DateComponents(year: 2026, month: 3, day: 4)))
+        let start = try #require(utc.date(from: DateComponents(year: 2_026, month: 3, day: 3)))
+        let end = try #require(utc.date(from: DateComponents(year: 2_026, month: 3, day: 4)))
         try await service.syncDailyHistory(from: start, to: end)
 
         let dailyPaths = api.uploadedFiles.filter { $0.path.hasPrefix("daily/") }.map(\.path)
@@ -199,10 +199,10 @@ struct KBHealthSyncServiceTests {
     @Test("loadTodayPreview returns daily data")
     func loadTodayPreview() async throws {
         let healthKit = MockHealthKitService()
-        healthKit.dailyInput.steps = 1234
+        healthKit.dailyInput.steps = 1_234
         let service = KBHealthSyncService(healthKit: healthKit, apiClient: StubHealthAPIClient())
         let daily = try await service.loadTodayPreview()
-        #expect(daily.steps == 1234)
+        #expect(daily.steps == 1_234)
     }
 }
 

@@ -273,7 +273,7 @@ struct BoardDetailView: View {
 
     private func monthName(_ month: Int) -> String {
         var comps = DateComponents()
-        comps.year = 2000
+        comps.year = 2_000
         comps.month = month
         comps.day = 1
         guard let date = Calendar.current.date(from: comps) else { return String(month) }

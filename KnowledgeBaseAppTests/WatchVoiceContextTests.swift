@@ -6,7 +6,7 @@ final class WatchVoiceContextTests: XCTestCase {
         let context: [String: Any] = [
             WatchConnectivityKeys.defaultSessionID: "109",
             WatchConnectivityKeys.defaultSessionTitle: "Wonder",
-            WatchConnectivityKeys.expiresAt: Date().addingTimeInterval(3600).timeIntervalSince1970,
+            WatchConnectivityKeys.expiresAt: Date().addingTimeInterval(3_600).timeIntervalSince1970,
             WatchConnectivityKeys.lastResponsePreview: "Hello from assistant",
             WatchConnectivityKeys.relayStatus: WatchRelayStatus.success.rawValue
         ]
@@ -52,7 +52,7 @@ final class WatchVoiceContextTests: XCTestCase {
     func testDisplaySessionTitleAndExpiry() {
         let fresh = WatchVoiceContext(applicationContext: [
             WatchConnectivityKeys.defaultSessionTitle: "Session 125",
-            WatchConnectivityKeys.expiresAt: Date().addingTimeInterval(3600).timeIntervalSince1970
+            WatchConnectivityKeys.expiresAt: Date().addingTimeInterval(3_600).timeIntervalSince1970
         ])
         XCTAssertEqual(fresh.displaySessionTitle, "Session 125")
         XCTAssertFalse(fresh.isDefaultExpired)

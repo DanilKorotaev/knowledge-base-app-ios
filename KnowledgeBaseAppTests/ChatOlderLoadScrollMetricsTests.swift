@@ -6,9 +6,9 @@ final class ChatOlderLoadScrollMetricsTests: XCTestCase {
         // Resting at bottom: large positive offset (from real device logs).
         XCTAssertFalse(
             ChatOlderLoadScrollMetrics.isNearOldestLoadedEdge(
-                contentOffsetY: 1657,
+                contentOffsetY: 1_657,
                 contentInsetTop: 0,
-                contentHeight: 2277,
+                contentHeight: 2_277,
                 containerHeight: 620
             )
         )
@@ -19,7 +19,7 @@ final class ChatOlderLoadScrollMetricsTests: XCTestCase {
             ChatOlderLoadScrollMetrics.isNearOldestLoadedEdge(
                 contentOffsetY: -238,
                 contentInsetTop: 116,
-                contentHeight: 2252,
+                contentHeight: 2_252,
                 containerHeight: 620
             )
         )
@@ -58,7 +58,7 @@ final class ChatOlderLoadScrollMetricsTests: XCTestCase {
         let snapshot = ChatOlderLoadScrollMetrics.debugSnapshot(
             contentOffsetY: 500,
             contentInsetTop: 0,
-            contentHeight: 2000,
+            contentHeight: 2_000,
             containerHeight: 600
         )
         XCTAssertTrue(snapshot.contains("near=no"))
@@ -68,7 +68,7 @@ final class ChatOlderLoadScrollMetricsTests: XCTestCase {
         let snapshot = ChatOlderLoadScrollMetrics.debugSnapshot(
             contentOffsetY: -50,
             contentInsetTop: 100,
-            contentHeight: 2000,
+            contentHeight: 2_000,
             containerHeight: 600
         )
         XCTAssertTrue(snapshot.contains("near=YES"))

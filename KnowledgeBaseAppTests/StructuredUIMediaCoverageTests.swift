@@ -149,7 +149,7 @@ final class StructuredUIMediaCoverageTests: XCTestCase {
             label: "Notes",
             downloadURL: "/api/attachments/1/download",
             fileName: "notes.pdf",
-            fileSize: 1024
+            fileSize: 1_024
         )
         XCTAssertTrue(StructuredUIURLPolicy.isAllowedDownloadPath(node.downloadURL))
         let host = UIHostingController(
