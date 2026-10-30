@@ -143,7 +143,7 @@ struct HealthKitServiceTests {
                 .init(timestamp: start.addingTimeInterval(600), bpm: 105, durationMinutes: 15),
                 .init(timestamp: start.addingTimeInterval(1500), bpm: 120, durationMinutes: 20),
                 .init(timestamp: start.addingTimeInterval(2700), bpm: 135, durationMinutes: 10),
-                .init(timestamp: start.addingTimeInterval(3300), bpm: 150, durationMinutes: 5),
+                .init(timestamp: start.addingTimeInterval(3300), bpm: 150, durationMinutes: 5)
             ],
             route: nil,
             linkedNote: nil,

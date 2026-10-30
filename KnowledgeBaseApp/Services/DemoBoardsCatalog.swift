@@ -24,7 +24,7 @@ enum DemoBoardsCatalog {
                     subtitle: "Sample metrics and table",
                     metrics: [
                         KBBoardListMetric(label: "Total", value: "12 450"),
-                        KBBoardListMetric(label: "Last", value: "1 200"),
+                        KBBoardListMetric(label: "Last", value: "1 200")
                     ]
                 ),
                 renderedAt: "2026-08-27T12:00:00Z",
@@ -82,7 +82,7 @@ enum DemoBoardsCatalog {
                     statusTone: "info"
                 ),
                 renderedAt: "2026-08-27T12:00:00Z"
-            ),
+            )
         ]
     }
 
@@ -136,7 +136,7 @@ enum DemoBoardsCatalog {
                             id: "m_count",
                             text: "18",
                             label: "Count"
-                        ),
+                        )
                     ],
                     spacing: 12
                 ),
@@ -147,14 +147,14 @@ enum DemoBoardsCatalog {
                     columns: [
                         KBStructuredUITableColumn(id: "date", label: "Date"),
                         KBStructuredUITableColumn(id: "item", label: "Item"),
-                        KBStructuredUITableColumn(id: "amount", label: "Amount"),
+                        KBStructuredUITableColumn(id: "amount", label: "Amount")
                     ],
                     rows: [
                         ["2026-08-20", "Alpha", "1 200"],
                         ["2026-08-12", "Beta", "890"],
-                        ["2026-08-01", "Gamma", "450"],
+                        ["2026-08-01", "Gamma", "450"]
                     ]
-                ),
+                )
             ]
         )
     )
@@ -179,10 +179,10 @@ enum DemoBoardsCatalog {
                     columns: [
                         KBStructuredUITableColumn(id: "session", label: "Session"),
                         KBStructuredUITableColumn(id: "status", label: "Status"),
-                        KBStructuredUITableColumn(id: "duration", label: "Duration"),
+                        KBStructuredUITableColumn(id: "duration", label: "Duration")
                     ],
                     rows: [
-                        ["Training plan", "running", "2m 14s"],
+                        ["Training plan", "running", "2m 14s"]
                     ]
                 ),
                 KBStructuredUINode(
@@ -200,9 +200,9 @@ enum DemoBoardsCatalog {
                         KBStructuredUISeriesPoint(x: "Tue", y: 5),
                         KBStructuredUISeriesPoint(x: "Wed", y: 4),
                         KBStructuredUISeriesPoint(x: "Thu", y: 7),
-                        KBStructuredUISeriesPoint(x: "Fri", y: 6),
+                        KBStructuredUISeriesPoint(x: "Fri", y: 6)
                     ]
-                ),
+                )
             ]
         )
     )
@@ -243,7 +243,7 @@ enum DemoBoardsCatalog {
                     label: "Jobs live under Actions",
                     action: .openTab("actions"),
                     systemImage: "bolt.horizontal.circle"
-                ),
+                )
             ]
         )
     )
@@ -275,7 +275,7 @@ enum DemoBoardsCatalog {
                     options: [
                         KBStructuredUIOption(id: "day", label: "Day"),
                         KBStructuredUIOption(id: "week", label: "Week"),
-                        KBStructuredUIOption(id: "month", label: "Month"),
+                        KBStructuredUIOption(id: "month", label: "Month")
                     ]
                 ),
                 KBStructuredUINode(
@@ -297,7 +297,7 @@ enum DemoBoardsCatalog {
                     label: "Submit",
                     actionId: "submit_form",
                     submit: true
-                ),
+                )
             ]
         )
     )

@@ -20,7 +20,7 @@ final class OfflineCacheStoreTests: XCTestCase {
     func testSaveAndLoadSessions() {
         let sessions = [
             KBSession(id: "1", title: "Alpha", messageCount: 2, updatedAt: Date()),
-            KBSession(id: "2", title: "Beta", messageCount: 0, updatedAt: Date()),
+            KBSession(id: "2", title: "Beta", messageCount: 0, updatedAt: Date())
         ]
         store.saveSessions(sessions)
 
@@ -31,7 +31,7 @@ final class OfflineCacheStoreTests: XCTestCase {
 
     func testUpsertSessionUpdatesTitle() {
         store.saveSessions([
-            KBSession(id: "1", title: "Old", messageCount: 0, updatedAt: Date()),
+            KBSession(id: "1", title: "Old", messageCount: 0, updatedAt: Date())
         ])
         store.upsertSession(KBSession(id: "1", title: "New", messageCount: 3, updatedAt: Date()))
 
@@ -41,7 +41,7 @@ final class OfflineCacheStoreTests: XCTestCase {
 
     func testRemoveSessionDeletesSessionsAndMessages() {
         store.saveSessions([
-            KBSession(id: "s1", title: "Chat", messageCount: 1, updatedAt: Date()),
+            KBSession(id: "s1", title: "Chat", messageCount: 1, updatedAt: Date())
         ])
         let message = KBMessage(id: "m1", role: .user, content: "hi", createdAt: Date())
         store.saveWindow(
@@ -58,7 +58,7 @@ final class OfflineCacheStoreTests: XCTestCase {
     func testMessageWindowRoundTripPreservesOrder() {
         let messages = [
             KBMessage(id: "m1", role: .user, content: "one", createdAt: Date()),
-            KBMessage(id: "m2", role: .assistant, content: "two", createdAt: Date()),
+            KBMessage(id: "m2", role: .assistant, content: "two", createdAt: Date())
         ]
         store.saveWindow(
             sessionId: "42",

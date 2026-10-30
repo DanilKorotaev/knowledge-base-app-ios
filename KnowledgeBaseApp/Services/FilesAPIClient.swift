@@ -36,7 +36,7 @@ final class StubFilesAPIClient: FilesAPIClientProtocol, @unchecked Sendable {
                 changeKind: "modified",
                 beforeText: "Version: 1",
                 afterText: "Version: 2\nUpdated by assistant."
-            ),
+            )
         ]
     }
 

@@ -67,7 +67,7 @@ final class ShakeDetectorInstallerController: UIViewController {
                 queue: .main
             ) { [weak self] _ in
                 self?.monitor?.claimFirstResponder()
-            },
+            }
         ]
     }
 

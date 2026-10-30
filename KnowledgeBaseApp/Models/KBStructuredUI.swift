@@ -464,7 +464,7 @@ struct KBUIEventResponse: Codable, Equatable, Sendable {
 
 enum StructuredUIFormDraft {
     private static let formFieldTypes: Set<String> = [
-        "checkbox", "radio_group", "select", "text_field", "date", "time", "slider", "stepper",
+        "checkbox", "radio_group", "select", "text_field", "date", "time", "slider", "stepper"
     ]
 
     /// Seed local draft from server node tree (checkbox / radio / select / text_field).

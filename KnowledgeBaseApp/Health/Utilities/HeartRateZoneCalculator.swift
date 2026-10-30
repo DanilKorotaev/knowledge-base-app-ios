@@ -58,7 +58,7 @@ enum HeartRateZoneCalculator {
             (0.60, 0.70),
             (0.70, 0.80),
             (0.80, 0.90),
-            (0.90, 1.00),
+            (0.90, 1.00)
         ]
         return percents.enumerated().map { index, pair in
             let lower = maxHeartRateBpm * pair.0

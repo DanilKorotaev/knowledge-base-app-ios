@@ -169,7 +169,7 @@ final class InMemoryKBStore: @unchecked Sendable {
                 content: "<b>HTML reply</b> with <i>emphasis</i> and a <a href=\"https://example.com\">link</a>.",
                 createdAt: Date(),
                 contentFormat: .html
-            ),
+            )
         ]
     }
 }

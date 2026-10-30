@@ -260,7 +260,7 @@ struct BoardDetailView: View {
             }
         }
         .presentationDetents([
-            .height(BoardDateRangePickerView.fittedContentHeight + 56 + 34),
+            .height(BoardDateRangePickerView.fittedContentHeight + 56 + 34)
         ])
         .presentationDragIndicator(.visible)
         .presentationContentInteraction(.resizes)

@@ -106,9 +106,9 @@ final class URLSessionHealthAPIClient: HealthAPIClientProtocol, @unchecked Senda
             "files": files.map { file in
                 [
                     "path": file.path,
-                    "content_base64": file.data.base64EncodedString(),
+                    "content_base64": file.data.base64EncodedString()
                 ]
-            },
+            }
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         let (data, response) = try await transport.data(for: request)

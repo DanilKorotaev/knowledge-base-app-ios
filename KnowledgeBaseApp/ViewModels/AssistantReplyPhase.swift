@@ -122,7 +122,7 @@ enum AssistantReplyPhaseNotification {
     static func post(sessionId: String, phase: AssistantReplyPhase, activityLabel: String? = nil) {
         var userInfo: [String: Any] = [
             KBNotificationUserInfoKey.sessionId: sessionId,
-            KBNotificationUserInfoKey.assistantReplyPhaseKind: phase.notificationKind,
+            KBNotificationUserInfoKey.assistantReplyPhaseKind: phase.notificationKind
         ]
         if !phase.displayText.isEmpty {
             userInfo[KBNotificationUserInfoKey.assistantReplyPhaseText] = phase.displayText

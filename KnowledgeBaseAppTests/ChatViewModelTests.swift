@@ -310,7 +310,7 @@ final class ChatViewModelTests: XCTestCase {
         viewModel.isLoading = true
         viewModel.hasMoreOlder = true
         viewModel.messages = [
-            KBMessage(id: "m1", role: .user, content: "x", createdAt: Date()),
+            KBMessage(id: "m1", role: .user, content: "x", createdAt: Date())
         ]
 
         await viewModel.loadOlder()
@@ -525,7 +525,7 @@ final class ChatViewModelTests: XCTestCase {
         let client = StubChatAPIClient(store: store)
         let viewModel = ChatViewModel(session: makeSession(id: sessionId), client: client)
         viewModel.messages = [
-            KBMessage(id: "kb-optimistic-1", role: .user, content: "hello once", createdAt: Date()),
+            KBMessage(id: "kb-optimistic-1", role: .user, content: "hello once", createdAt: Date())
         ] + serverMessages
 
         await viewModel.reloadLatestWindow()
@@ -554,7 +554,7 @@ final class ChatViewModelTests: XCTestCase {
                 content: "brand new send",
                 createdAt: Date(),
                 clientMessageId: "cccccccc-dddd-4eee-8fff-000000000001"
-            ),
+            )
         ]
 
         await viewModel.reloadLatestWindow()

@@ -200,7 +200,7 @@ private final class RelayWatchChatAPIClient: ChatAPIClientProtocol {
             return KBMessagesPage(
                 messages: [
                     KBMessage(id: "803", role: .user, content: transcription, createdAt: nil),
-                    KBMessage(id: "804", role: .assistant, content: polledAssistantReply, createdAt: nil),
+                    KBMessage(id: "804", role: .assistant, content: polledAssistantReply, createdAt: nil)
                 ],
                 total: 2,
                 hasMoreOlder: false

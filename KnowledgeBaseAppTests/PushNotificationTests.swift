@@ -34,8 +34,8 @@ final class PushNotificationPayloadTests: XCTestCase {
             "aps": [
                 "alert": ["title": "Session 125", "body": "Preview"],
                 "sound": "default",
-                "thread-id": "125",
-            ] as [String: Any],
+                "thread-id": "125"
+            ] as [String: Any]
         ]
         let json = PushPayloadFormatter.json(userInfo)
         XCTAssertTrue(json.contains("chat_reply_ready"))
@@ -49,7 +49,7 @@ final class PushNotificationPayloadTests: XCTestCase {
             "when": Date(timeIntervalSince1970: 0),
             "blob": Data([0xAB, 0xCD]),
             "link": URL(string: "https://example.com")!,
-            "nums": [1, 2, 3],
+            "nums": [1, 2, 3]
         ]
         let json = PushPayloadFormatter.json(userInfo)
         XCTAssertTrue(json.contains("1970"))
@@ -75,7 +75,7 @@ final class PushNotificationColdLaunchTests: XCTestCase {
         let userInfo: [AnyHashable: Any] = [
             "session_id": "125",
             "type": "chat_reply_ready",
-            "message_id": "698",
+            "message_id": "698"
         ]
         service.bootstrapFromLaunch(remoteNotification: userInfo)
 
@@ -136,8 +136,8 @@ final class PushNotificationLoggerTests: XCTestCase {
             "aps": [
                 "alert": ["title": "Session 125", "body": "Preview"],
                 "sound": "default",
-                "thread-id": "125",
-            ] as [String: Any],
+                "thread-id": "125"
+            ] as [String: Any]
         ]
         PushNotificationLogger.receivedInForeground(
             userInfo: userInfo,

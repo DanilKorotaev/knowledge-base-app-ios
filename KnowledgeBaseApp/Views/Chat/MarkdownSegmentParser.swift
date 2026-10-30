@@ -35,7 +35,7 @@ enum MarkdownSegment: Equatable, Identifiable {
 
 enum MarkdownLineParser {
     private static let thematicBreakCharacters: Set<Character> = [
-        "-", "−", "–", "—", "*", "_",
+        "-", "−", "–", "—", "*", "_"
     ]
 
     /// GFM thematic break: `---`, `***`, `___` (spaces allowed between chars).

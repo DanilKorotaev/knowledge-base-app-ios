@@ -168,7 +168,7 @@ final class ShareAPIClient: @unchecked Sendable {
         )!
         components.queryItems = [
             URLQueryItem(name: "page", value: String(page)),
-            URLQueryItem(name: "per_page", value: String(perPage)),
+            URLQueryItem(name: "per_page", value: String(perPage))
         ]
         guard let url = components.url else { throw ShareAPIError.missingConfiguration }
 

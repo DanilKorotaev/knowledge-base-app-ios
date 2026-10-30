@@ -140,7 +140,7 @@ enum UserDefaultsKeyRegistry {
             description: "Keys ignored on write (inspector only)",
             category: .inspector,
             valueType: .json
-        ),
+        )
     ]
 
     static let knownPrefixes: [KnownUserDefaultsPrefix] = [
@@ -149,7 +149,7 @@ enum UserDefaultsKeyRegistry {
             description: "Per-tag logger enable flag",
             category: .loggerTags,
             valueType: .bool
-        ),
+        )
     ]
 
     static func knownKey(for key: String) -> KnownUserDefaultsKey? {

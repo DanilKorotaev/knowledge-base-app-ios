@@ -287,7 +287,7 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
 
         XCTAssertEqual(events, [
             .activity(label: "Запускаю тесты…"),
-            .delta("Hi"),
+            .delta("Hi")
         ])
 
         MockURLProtocol.requestHandler = nil

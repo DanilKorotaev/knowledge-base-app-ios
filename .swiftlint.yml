@@ -64,7 +64,6 @@ disabled_rules:
   - sorted_imports
   - static_over_final_class
   - trailing_closure
-  - trailing_comma
   - trailing_newline
   - type_body_length
   - type_name

@@ -82,7 +82,7 @@ enum ClipboardMediaImporter {
             "public.png",
             "public.jpeg",
             "public.heic",
-            "public.image",
+            "public.image"
         ]
         for type in typeCandidates {
             if let data = board.data(forPasteboardType: type), !data.isEmpty,
@@ -256,11 +256,11 @@ enum ClipboardMediaImporter {
         UTType.heic.identifier,
         UTType.heif.identifier,
         UTType.gif.identifier,
-        UTType.webP.identifier,
+        UTType.webP.identifier
     ]
 
     private static let knownImageExtensions: Set<String> = [
-        "jpg", "jpeg", "png", "heic", "heif", "gif", "webp",
+        "jpg", "jpeg", "png", "heic", "heif", "gif", "webp"
     ]
 
     private static func writeImageAttachment(

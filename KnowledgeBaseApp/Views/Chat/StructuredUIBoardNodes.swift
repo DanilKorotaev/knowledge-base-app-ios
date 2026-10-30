@@ -83,7 +83,7 @@ struct StructuredUIMetricsGridView<Content: View>: View {
     private var columns: [GridItem] {
         [
             GridItem(.flexible(), spacing: spacing),
-            GridItem(.flexible(), spacing: spacing),
+            GridItem(.flexible(), spacing: spacing)
         ]
     }
 

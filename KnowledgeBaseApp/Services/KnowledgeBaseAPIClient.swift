@@ -188,7 +188,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         )!
         components.queryItems = [
             URLQueryItem(name: "page", value: String(page)),
-            URLQueryItem(name: "per_page", value: String(perPage)),
+            URLQueryItem(name: "per_page", value: String(perPage))
         ]
         guard let url = components.url else { throw KnowledgeBaseAPIError.missingBaseURL }
 
@@ -271,7 +271,7 @@ final class URLSessionKnowledgeBaseAPIClient: KnowledgeBaseAPIClientProtocol, @u
         var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "page", value: "1"),
-            URLQueryItem(name: "per_page", value: "100"),
+            URLQueryItem(name: "per_page", value: "100")
         ]
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"

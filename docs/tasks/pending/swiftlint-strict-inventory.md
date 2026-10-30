@@ -2,9 +2,13 @@
 
 Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 
-- **Total violations:** 1334
-- **Unique rules:** 40
-- **By severity:** {'Warning': 1306, 'Error': 28}
+- **Total violations (baseline):** 1334
+- **Unique rules (baseline):** 40
+- **By severity (baseline):** {'Warning': 1306, 'Error': 28}
+
+## Progress notes
+
+- **2026-10-30 iteration 1:** fixed all `trailing_comma` (109 → 0 via `--fix`); rule re-enabled in `.swiftlint.yml` (soft CI). Baseline table below still shows the original snapshot; refresh JSON/summary when closing a larger batch.
 
 ## By rule (descending)
 
@@ -13,7 +17,7 @@ Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 | 215 | `required_deinit` |
 | 199 | `force_unwrapping` |
 | 178 | `line_length` |
-| 109 | `trailing_comma` |
+| ~~109~~ **0** | `trailing_comma` *(cleared; soft-enabled)* |
 | 94 | `non_optional_string_data_conversion` |
 | 90 | `sorted_imports` |
 | 72 | `identifier_name` |

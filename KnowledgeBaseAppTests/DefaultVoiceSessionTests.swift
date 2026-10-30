@@ -215,7 +215,7 @@ final class VoiceRoutingContextTests: XCTestCase {
         let routing = VoiceRoutingContext(store: store)
         let sessions = [
             KBSession(id: "inbox", title: "Inbox", messageCount: 0, updatedAt: nil),
-            KBSession(id: "other", title: "Other", messageCount: 0, updatedAt: nil),
+            KBSession(id: "other", title: "Other", messageCount: 0, updatedAt: nil)
         ]
 
         XCTAssertNil(routing.mainScreenVoiceChatSession(in: sessions))
@@ -273,7 +273,7 @@ final class VoiceRoutingContextTests: XCTestCase {
         )
         let sessions = [
             KBSession(id: "default", title: "Default", messageCount: 0, updatedAt: nil),
-            KBSession(id: "chat", title: "Chat", messageCount: 0, updatedAt: nil),
+            KBSession(id: "chat", title: "Chat", messageCount: 0, updatedAt: nil)
         ]
 
         XCTAssertEqual(routing.resolveVoiceTargetSessionId(in: sessions), "chat")

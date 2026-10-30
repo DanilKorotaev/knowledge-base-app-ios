@@ -427,7 +427,7 @@ enum StubStructuredUIMockFlow {
                     node(type: "text", id: "subtitle", text: "Mock structured UI flow (MVP)."),
                     node(type: "button", id: "btn_yes", label: "Yes", actionId: "confirm_yes"),
                     node(type: "button", id: "btn_no", label: "No", actionId: "confirm_no"),
-                    node(type: "button", id: "btn_form", label: "Open form", actionId: "open_form"),
+                    node(type: "button", id: "btn_form", label: "Open form", actionId: "open_form")
                 ]
             )
         )
@@ -454,7 +454,7 @@ enum StubStructuredUIMockFlow {
                         options: [
                             KBStructuredUIOption(id: "system", label: "System"),
                             KBStructuredUIOption(id: "light", label: "Light"),
-                            KBStructuredUIOption(id: "dark", label: "Dark"),
+                            KBStructuredUIOption(id: "dark", label: "Dark")
                         ]
                     ),
                     node(
@@ -465,7 +465,7 @@ enum StubStructuredUIMockFlow {
                         options: [
                             KBStructuredUIOption(id: "ios", label: "iOS"),
                             KBStructuredUIOption(id: "bot", label: "Bot"),
-                            KBStructuredUIOption(id: "infra", label: "Infra"),
+                            KBStructuredUIOption(id: "infra", label: "Infra")
                         ],
                         multi: true
                     ),
@@ -483,7 +483,7 @@ enum StubStructuredUIMockFlow {
                         label: "Submit",
                         actionId: "submit_form",
                         submit: true
-                    ),
+                    )
                 ]
             )
         )
@@ -497,7 +497,7 @@ enum StubStructuredUIMockFlow {
                 children: [
                     node(type: "text", id: "title", text: "Submitted"),
                     node(type: "text", id: "body", text: summary),
-                    node(type: "button", id: "btn_done", label: "Done", actionId: "done"),
+                    node(type: "button", id: "btn_done", label: "Done", actionId: "done")
                 ]
             )
         )
@@ -511,7 +511,7 @@ enum StubStructuredUIMockFlow {
                 children: [
                     node(type: "text", id: "title", text: "Confirmed"),
                     node(type: "text", id: "body", text: "You chose Yes. Tap Done to finish."),
-                    node(type: "button", id: "btn_done", label: "Done", actionId: "done"),
+                    node(type: "button", id: "btn_done", label: "Done", actionId: "done")
                 ]
             )
         )
@@ -525,7 +525,7 @@ enum StubStructuredUIMockFlow {
                 children: [
                     node(type: "text", id: "title", text: "Declined"),
                     node(type: "text", id: "body", text: "You chose No. Tap Done to finish."),
-                    node(type: "button", id: "btn_done", label: "Done", actionId: "done"),
+                    node(type: "button", id: "btn_done", label: "Done", actionId: "done")
                 ]
             )
         )
@@ -538,7 +538,7 @@ enum StubStructuredUIMockFlow {
                 id: "root",
                 children: [
                     node(type: "text", id: "title", text: "Finished"),
-                    node(type: "text", id: "body", text: "Mock flow complete."),
+                    node(type: "text", id: "body", text: "Mock flow complete.")
                 ]
             )
         )
@@ -551,7 +551,7 @@ enum StubStructuredUIMockFlow {
                 id: "root",
                 children: [
                     node(type: "text", id: "title", text: "Interactive UI off"),
-                    node(type: "text", id: "body", text: "Mode turned off. You can continue in the chat."),
+                    node(type: "text", id: "body", text: "Mode turned off. You can continue in the chat.")
                 ]
             )
         )

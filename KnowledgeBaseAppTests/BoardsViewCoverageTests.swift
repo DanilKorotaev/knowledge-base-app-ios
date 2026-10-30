@@ -96,7 +96,7 @@ struct BoardsViewCoverageTests {
                     label: "Rows",
                     columns: [
                         KBStructuredUITableColumn(id: "a", label: "A"),
-                        KBStructuredUITableColumn(id: "b", label: "B"),
+                        KBStructuredUITableColumn(id: "b", label: "B")
                     ],
                     rows: [["1", "2"], ["3"]]
                 )

@@ -336,7 +336,7 @@ final class ComposerDraftStore: ComposerDraftStoreProtocol, @unchecked Sendable 
         "jpg", "jpeg", "png", "heic", "heif", "gif", "webp",
         "mp4", "mov", "m4v", "avi", "mkv",
         "m4a", "mp3", "wav", "ogg", "webm",
-        "pdf", "txt", "md", "json", "log", "bin",
+        "pdf", "txt", "md", "json", "log", "bin"
     ]
 
     private static func normalizedFileExtension(pathExtension: String, mimeType: String?) -> String {

@@ -75,7 +75,7 @@ final class KBStructuredUITests: XCTestCase {
             "notify": .bool(true),
             "theme": .string("dark"),
             "topics": .strings(["ios", "bot"]),
-            "note": .string("hi"),
+            "note": .string("hi")
         ]
         let result = StubStructuredUIMockFlow.apply(
             actionId: "submit_form",
@@ -298,7 +298,7 @@ final class KBStructuredUITests: XCTestCase {
                         minimum: 0,
                         maximum: 100
                     ),
-                    KBStructuredUINode(type: "stepper", id: "n", minimum: 1, maximum: 9),
+                    KBStructuredUINode(type: "stepper", id: "n", minimum: 1, maximum: 9)
                 ]
             )
         )
@@ -315,7 +315,7 @@ final class KBStructuredUITests: XCTestCase {
                 id: "root",
                 children: [
                     KBStructuredUINode(type: "date", id: "due", value: .string("2026-01-01")),
-                    KBStructuredUINode(type: "time", id: "at"),
+                    KBStructuredUINode(type: "time", id: "at")
                 ]
             )
         )
@@ -330,7 +330,7 @@ final class KBStructuredUITests: XCTestCase {
             "notify": .bool(false),
             "theme": .string("dark"),
             "topics": .strings(["ios", "bot"]),
-            "note": .string("shipped"),
+            "note": .string("shipped")
         ]
         let baked = StructuredUIFormDraft.applying(submitted, to: open.screen)
         let seeded = StructuredUIFormDraft.seed(from: baked)
@@ -342,7 +342,7 @@ final class KBStructuredUITests: XCTestCase {
 
     func testStructuredUIErrorMessageSanitizesJSON() {
         let error = NSError(domain: "test", code: 404, userInfo: [
-            NSLocalizedDescriptionKey: #"{"detail":"Not Found"}"#,
+            NSLocalizedDescriptionKey: #"{"detail":"Not Found"}"#
         ])
         XCTAssertEqual(
             StructuredUIErrorMessage.userFacing(error),

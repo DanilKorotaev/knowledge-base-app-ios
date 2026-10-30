@@ -91,7 +91,7 @@ enum ShareItemLoader {
             UTType.video.identifier,
             UTType.mpeg4Movie.identifier,
             UTType.quickTimeMovie.identifier,
-            UTType.avi.identifier,
+            UTType.avi.identifier
         ]
         for type in videoTypes where provider.hasItemConformingToTypeIdentifier(type) {
             if let attachment = await copyProviderItem(provider, typeIdentifier: type, into: directory, preferredKind: .video) {

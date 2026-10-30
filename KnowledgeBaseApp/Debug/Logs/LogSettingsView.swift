@@ -14,7 +14,7 @@ final class LogSettingsViewModel: ObservableObject {
         262_144,
         1_048_576,
         5 * 1_048_576,
-        10 * 1_048_576,
+        10 * 1_048_576
     ]
 
     @Published var isFileLoggerEnabled: Bool {

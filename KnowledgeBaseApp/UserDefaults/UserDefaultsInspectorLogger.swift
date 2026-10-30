@@ -16,7 +16,7 @@ final class UserDefaultsInspectorLogger {
         .loggerFileEnabled,
         .loggerVerboseNetwork,
         .loggerMaxLogFiles,
-        .loggerSessionId,
+        .loggerSessionId
     ]
 
     private init(

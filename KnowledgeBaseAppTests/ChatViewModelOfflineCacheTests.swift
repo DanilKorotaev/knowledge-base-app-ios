@@ -21,7 +21,7 @@ final class ChatViewModelOfflineCacheTests: XCTestCase {
         let cache = FileOfflineCacheStore(baseURL: cacheDir)
         let cached = [
             KBMessage(id: "cached-1", role: .user, content: "offline", createdAt: Date()),
-            KBMessage(id: "cached-2", role: .assistant, content: "reply", createdAt: Date()),
+            KBMessage(id: "cached-2", role: .assistant, content: "reply", createdAt: Date())
         ]
         cache.saveWindow(
             sessionId: sessionId,
@@ -50,7 +50,7 @@ final class ChatViewModelOfflineCacheTests: XCTestCase {
             page: KBMessagesPage(
                 messages: [
                     KBMessage(id: "c1", role: .user, content: "cached", createdAt: Date()),
-                    KBMessage(id: "c2", role: .assistant, content: "reply", createdAt: Date()),
+                    KBMessage(id: "c2", role: .assistant, content: "reply", createdAt: Date())
                 ],
                 total: 2,
                 hasMoreOlder: false
@@ -151,7 +151,7 @@ final class ChatViewModelOfflineCacheTests: XCTestCase {
         let cached = (1 ... 4).map { index in
             KBMessage(id: "m\(index)", role: .user, content: "msg \(index)", createdAt: Date())
         } + [
-            KBMessage(id: "m5", role: .assistant, content: "reply", createdAt: Date()),
+            KBMessage(id: "m5", role: .assistant, content: "reply", createdAt: Date())
         ]
         cache.saveWindow(
             sessionId: sessionId,

@@ -82,7 +82,7 @@ struct ComposerPasteTextView: UIViewRepresentable {
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: textView.leadingAnchor),
             label.trailingAnchor.constraint(lessThanOrEqualTo: textView.trailingAnchor),
-            label.topAnchor.constraint(equalTo: textView.topAnchor, constant: 4),
+            label.topAnchor.constraint(equalTo: textView.topAnchor, constant: 4)
         ])
         return label
     }
@@ -161,7 +161,7 @@ final class PasteAwareTextView: UITextView {
         UTType.heic.identifier,
         UTType.heif.identifier,
         UTType.gif.identifier,
-        UTType.webP.identifier,
+        UTType.webP.identifier
     ]
 
     static func sessionHasImportableImage(_ session: UIDropSession) -> Bool {

@@ -19,7 +19,9 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 | CI script | [`scripts/ci/swiftlint.sh`](../../../scripts/ci/swiftlint.sh) |
 | Fastlane | `bundle exec fastlane lint` |
 
-**Baseline inventory (2026-10-30):** **1334** violations across **40** rules (see inventory md). Soft config disables those + `nesting` and keeps opt-ins that already pass.
+**Baseline inventory (2026-10-30):** **1334** violations across **40** rules (see inventory md). Soft config disables remaining backlog rules + `nesting` and keeps opt-ins that already pass.
+
+**Progress:** Iteration 1 re-enabled `trailing_comma` in soft CI (−109). Next: `sorted_imports`.
 
 ## How to re-enable a rule
 
@@ -35,8 +37,8 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 ### High-noise style (correctable / mechanical)
 
-- [ ] `trailing_comma` (~109)
-- [ ] `sorted_imports` (~90)
+- [x] `trailing_comma` (~109 → 0; soft-enabled 2026-10-30)
+- [ ] `sorted_imports` (~90) — **next**
 - [ ] `number_separator` (~69)
 - [ ] `trailing_closure` (~44)
 - [ ] `opening_brace` / `vertical_whitespace` / `trailing_newline` / `implicit_optional_initialization` / `unneeded_synthesized_initializer` / `modifier_order` / `redundant_type_annotation` (small counts)

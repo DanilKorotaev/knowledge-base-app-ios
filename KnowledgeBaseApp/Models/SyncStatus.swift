@@ -73,7 +73,7 @@ enum SyncNetworkError {
             URLError.notConnectedToInternet.rawValue,
             URLError.networkConnectionLost.rawValue,
             URLError.dataNotAllowed.rawValue,
-            URLError.internationalRoamingOff.rawValue,
+            URLError.internationalRoamingOff.rawValue
         ].contains(ns.code)
     }
 

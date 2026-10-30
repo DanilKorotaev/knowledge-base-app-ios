@@ -15,7 +15,7 @@ final class ConsoleLoggerTests: XCTestCase {
             userInfo: [
                 NSLocalizedDescriptionKey: "failed",
                 NSLocalizedFailureReasonErrorKey: "reason",
-                NSLocalizedRecoverySuggestionErrorKey: "retry",
+                NSLocalizedRecoverySuggestionErrorKey: "retry"
             ]
         )
         logger.log(error, level: .error, buildLevel: .release)

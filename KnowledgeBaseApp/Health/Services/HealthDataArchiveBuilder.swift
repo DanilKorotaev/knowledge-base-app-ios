@@ -93,7 +93,7 @@ struct HealthDataArchiveBuilder {
             "daily_from": CalendarDayFormatter.yyyyMMdd(for: range.start),
             "daily_to": CalendarDayFormatter.yyyyMMdd(for: range.end),
             "includes_workouts": includeWorkouts,
-            "file_count": fileCount,
+            "file_count": fileCount
         ]
         let manifestData = try JSONSerialization.data(withJSONObject: manifest, options: [.prettyPrinted, .sortedKeys])
         try manifestData.write(to: healthRoot.appendingPathComponent("export_manifest.json"))

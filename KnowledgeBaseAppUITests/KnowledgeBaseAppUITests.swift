@@ -11,7 +11,7 @@ final class KnowledgeBaseAppUITests: XCTestCase {
         app.launchArguments = [
             UITestRuntime.launchArgument,
             "-AppleLanguages", "(en)",
-            "-AppleLocale", "en_US",
+            "-AppleLocale", "en_US"
         ]
         app.launch()
     }
@@ -190,7 +190,7 @@ final class AuthLoginUITests: XCTestCase {
             UITestRuntime.launchArgument,
             UITestRuntime.forceLoginGateArgument,
             "-AppleLanguages", "(en)",
-            "-AppleLocale", "en_US",
+            "-AppleLocale", "en_US"
         ]
         app.launch()
 

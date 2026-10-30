@@ -196,7 +196,7 @@ final class KBHealthSyncService {
         let stateData = try encoder.encode(state)
         onProgress?("uploading", uploadedDailyFiles + 1, uploadTotal)
         _ = try await apiClient.uploadSyncFiles([
-            HealthSyncFileUpload(path: Self.syncStatePath, data: stateData),
+            HealthSyncFileUpload(path: Self.syncStatePath, data: stateData)
         ])
 
         SyncRunStore.recordSuccess(at: clock())
@@ -271,7 +271,7 @@ final class KBHealthSyncService {
         )
         let stateData = try encoder.encode(checkpoint)
         _ = try await apiClient.uploadSyncFiles([
-            HealthSyncFileUpload(path: Self.syncStatePath, data: stateData),
+            HealthSyncFileUpload(path: Self.syncStatePath, data: stateData)
         ])
         HealthSyncLogger.batchUploaded(
             days: batchCount,

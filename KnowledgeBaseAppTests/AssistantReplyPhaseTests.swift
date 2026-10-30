@@ -22,12 +22,12 @@ final class AssistantReplyPhaseTests: XCTestCase {
             .idle,
             .waiting,
             .streaming(text: "partial"),
-            .finalizing(text: "done"),
+            .finalizing(text: "done")
         ]
         for phase in phases {
             var userInfo: [String: Any] = [
                 KBNotificationUserInfoKey.sessionId: "s1",
-                KBNotificationUserInfoKey.assistantReplyPhaseKind: phase.notificationKind,
+                KBNotificationUserInfoKey.assistantReplyPhaseKind: phase.notificationKind
             ]
             if !phase.displayText.isEmpty {
                 userInfo[KBNotificationUserInfoKey.assistantReplyPhaseText] = phase.displayText
@@ -54,7 +54,7 @@ final class AssistantReplyPhaseTests: XCTestCase {
             .waiting,
             .streaming(text: "a"),
             .streaming(text: "ab"),
-            .finalizing(text: "ab"),
+            .finalizing(text: "ab")
         ])
         XCTAssertNil(updates[0].activityLabel)
         XCTAssertNil(updates.last?.activityLabel)
@@ -82,7 +82,7 @@ final class AssistantReplyPhaseTests: XCTestCase {
             object: nil,
             userInfo: [
                 KBNotificationUserInfoKey.sessionId: "s2",
-                KBNotificationUserInfoKey.assistantReplyPhaseKind: "idle",
+                KBNotificationUserInfoKey.assistantReplyPhaseKind: "idle"
             ]
         )
         XCTAssertEqual(AssistantReplyPhaseNotification.parse(notification)?.phase, .idle)
@@ -100,7 +100,7 @@ final class AssistantReplyPhaseTests: XCTestCase {
             userInfo: [
                 KBNotificationUserInfoKey.sessionId: "s3",
                 KBNotificationUserInfoKey.assistantReplyPhaseKind: "waiting",
-                KBNotificationUserInfoKey.assistantReplyActivityLabel: "Читаю README.md…",
+                KBNotificationUserInfoKey.assistantReplyActivityLabel: "Читаю README.md…"
             ]
         )
         let parsed = AssistantReplyPhaseNotification.parse(notification)

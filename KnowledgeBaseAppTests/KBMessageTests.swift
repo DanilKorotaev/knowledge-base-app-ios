@@ -473,7 +473,7 @@ final class MessageContentRendererTests: XCTestCase {
             ("Intro\n\n```\ncode\n```", { if case .codeBlock = $0 { return true }; return false }),
             ("Intro\n\n> quote", { if case .blockquote = $0 { return true }; return false }),
             ("Intro\n\n# Title", { if case .header = $0 { return true }; return false }),
-            ("Intro\n\n---", { if case .horizontalRule = $0 { return true }; return false }),
+            ("Intro\n\n---", { if case .horizontalRule = $0 { return true }; return false })
         ]
         for (md, matchesBlock) in cases {
             let segments = MarkdownSegmentParser.segments(from: md)
@@ -660,7 +660,7 @@ final class MessageContentRendererTests: XCTestCase {
                     mimeType: "application/pdf",
                     downloadURL: "/d",
                     transcription: nil
-                ),
+                )
             ]
         )
 

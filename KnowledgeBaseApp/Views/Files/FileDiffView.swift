@@ -346,7 +346,7 @@ private struct UnifiedDiffLine: Identifiable {
                     prefix: " ",
                     content: L10n.string("diff.no_textual_changes"),
                     kind: .context
-                ),
+                )
             ]
         }
 

@@ -73,7 +73,7 @@ struct HealthAPIClientTests {
         defer { MockURLProtocol.requestHandler = nil }
 
         let result = try await client.uploadSyncFiles([
-            HealthSyncFileUpload(path: "daily/2026-01-01.json", data: Data("{}".utf8)),
+            HealthSyncFileUpload(path: "daily/2026-01-01.json", data: Data("{}".utf8))
         ])
         #expect(result.written == ["daily/2026-01-01.json"])
         #expect(result.syncedToNextcloud)

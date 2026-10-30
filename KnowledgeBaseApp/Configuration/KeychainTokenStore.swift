@@ -64,7 +64,7 @@ enum KeychainTokenStore {
             kSecAttrAccount as String: account,
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrAccessGroup as String: accessGroup
         ]
         let status = SecItemAdd(query as CFDictionary, nil)
         if status == errSecMissingEntitlement {
@@ -81,7 +81,7 @@ enum KeychainTokenStore {
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
             kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne,
+            kSecMatchLimit as String: kSecMatchLimitOne
         ]
         if useAccessGroup {
             query[kSecAttrAccessGroup as String] = accessGroup
@@ -99,7 +99,7 @@ enum KeychainTokenStore {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
-            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrAccessGroup as String: accessGroup
         ]
         SecItemDelete(sharedQuery as CFDictionary)
 
@@ -107,7 +107,7 @@ enum KeychainTokenStore {
             let legacyQuery: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
-                kSecAttrAccount as String: account,
+                kSecAttrAccount as String: account
             ]
             SecItemDelete(legacyQuery as CFDictionary)
         }

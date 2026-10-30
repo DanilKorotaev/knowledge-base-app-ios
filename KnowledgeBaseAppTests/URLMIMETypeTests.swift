@@ -18,7 +18,7 @@ final class URLMIMETypeTests: XCTestCase {
             ("thumb.webp", "image/webp"),
             ("notes.txt", "text/plain"),
             ("readme.md", "text/markdown"),
-            ("unknown.bin", "application/octet-stream"),
+            ("unknown.bin", "application/octet-stream")
         ]
         for (name, expected) in cases {
             XCTAssertEqual(URL(fileURLWithPath: "/tmp/\(name)").kbPreferredMIMEType, expected)

@@ -29,7 +29,7 @@ enum PipelineErrorMessageClassifier {
         // RU: try again later
         "\u{043F}\u{043E}\u{043F}\u{0440}\u{043E}\u{0431}\u{0443}\u{0439}\u{0442}\u{0435} \u{043F}\u{043E}\u{0437}\u{0436}\u{0435}",
         "an error occurred",
-        "try again later",
+        "try again later"
     ]
 
     /// Heuristic for assistant replies that are user-facing pipeline failures (not a real answer).

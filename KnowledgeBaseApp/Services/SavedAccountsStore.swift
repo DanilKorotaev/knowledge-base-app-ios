@@ -94,7 +94,7 @@ enum SavedAccountsStore {
             kSecAttrAccount as String: account,
             kSecValueData as String: data,
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
-            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrAccessGroup as String: accessGroup
         ]
         let status = SecItemAdd(query as CFDictionary, nil)
         if status == errSecMissingEntitlement {
@@ -110,7 +110,7 @@ enum SavedAccountsStore {
             kSecAttrAccount as String: account,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
-            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrAccessGroup as String: accessGroup
         ]
         var item: CFTypeRef?
         var status = SecItemCopyMatching(query as CFDictionary, &item)
@@ -127,13 +127,13 @@ enum SavedAccountsStore {
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: account,
-            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrAccessGroup as String: accessGroup
         ]
         SecItemDelete(shared as CFDictionary)
         let legacy: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
+            kSecAttrAccount as String: account
         ]
         SecItemDelete(legacy as CFDictionary)
     }

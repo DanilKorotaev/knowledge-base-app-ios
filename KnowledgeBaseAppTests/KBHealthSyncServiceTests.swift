@@ -77,11 +77,11 @@ struct KBHealthSyncServiceTests {
                         route: nil,
                         linkedNote: nil,
                         syncedAt: nil
-                    ),
+                    )
                 ],
                 Data([0x01])
             ),
-            ([], Data([0x01])),
+            ([], Data([0x01]))
         ]
 
         let api = StubHealthAPIClient()

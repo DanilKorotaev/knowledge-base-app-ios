@@ -12,7 +12,7 @@ final class DesignScreenshotUITests: XCTestCase {
         app.launchArguments = [
             UITestRuntime.launchArgument,
             "-AppleLanguages", "(en)",
-            "-AppleLocale", "en_US",
+            "-AppleLocale", "en_US"
         ]
         app.launch()
     }

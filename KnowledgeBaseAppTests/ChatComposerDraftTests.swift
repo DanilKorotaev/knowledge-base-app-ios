@@ -37,7 +37,7 @@ final class ChatComposerDraftTests: XCTestCase {
         var draft = ChatComposerDraft()
         draft.attachments = [
             PendingAttachment(localURL: URL(fileURLWithPath: "/tmp/1"), kind: .file, filename: "1", mimeType: "text/plain"),
-            PendingAttachment(localURL: URL(fileURLWithPath: "/tmp/2"), kind: .file, filename: "2", mimeType: "text/plain"),
+            PendingAttachment(localURL: URL(fileURLWithPath: "/tmp/2"), kind: .file, filename: "2", mimeType: "text/plain")
         ]
         if case .compose = ChatComposerSendPlanner.route(for: draft) {
             XCTAssertTrue(true)
@@ -50,7 +50,7 @@ final class ChatComposerDraftTests: XCTestCase {
         var draft = ChatComposerDraft()
         draft.text = "Caption"
         draft.attachments = [
-            PendingAttachment(localURL: URL(fileURLWithPath: "/tmp/1"), kind: .image, filename: "1.jpg", mimeType: "image/jpeg"),
+            PendingAttachment(localURL: URL(fileURLWithPath: "/tmp/1"), kind: .image, filename: "1.jpg", mimeType: "image/jpeg")
         ]
         if case .compose = ChatComposerSendPlanner.route(for: draft) {
             XCTAssertTrue(true)

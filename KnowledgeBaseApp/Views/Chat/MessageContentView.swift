@@ -62,7 +62,7 @@ enum MessageContentRenderer {
         guard let data = html.data(using: .utf8) else { return nil }
         let options: [NSAttributedString.DocumentReadingOptionKey: Any] = [
             .documentType: NSAttributedString.DocumentType.html,
-            .characterEncoding: String.Encoding.utf8.rawValue,
+            .characterEncoding: String.Encoding.utf8.rawValue
         ]
         guard let ns = try? NSAttributedString(data: data, options: options, documentAttributes: nil) else {
             return nil

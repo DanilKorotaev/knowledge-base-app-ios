@@ -13,7 +13,7 @@ enum PasswordGenerator {
             lowers.randomElement()!,
             uppers.randomElement()!,
             digits.randomElement()!,
-            symbols.randomElement()!,
+            symbols.randomElement()!
         ]
         let pool = lowers + uppers + digits + symbols
         while chars.count < len {
