@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 2.0.6 | 260 | `ios/v2.0.6` | 2026-10-30 | Clear remaining test force_unwrapping and enable in soft CI. |
 | 2.0.5 | 259 | `ios/v2.0.5` | 2026-10-30 | TestFlight release |
 | 2.0.4 | 257 | `ios/v2.0.4` | 2026-10-30 | TestFlight release |
 | 2.0.3 | 254 | `ios/v2.0.3` | 2026-10-30 | TestFlight release |
