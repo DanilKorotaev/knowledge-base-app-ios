@@ -63,8 +63,8 @@ final class UserDefaultsDebugModelsTests: XCTestCase {
         XCTAssertEqual(dataSnapshot.valuePreviewText, "12 bytes")
     }
 
-    func testInspectorItemSearchableText() {
-        let known = UserDefaultsKeyRegistry.knownKey(for: UserDefaultsKey.apiBaseURL.rawValue)!
+    func testInspectorItemSearchableText() throws {
+        let known = try XCTUnwrap(UserDefaultsKeyRegistry.knownKey(for: UserDefaultsKey.apiBaseURL.rawValue))
         let item = UserDefaultsInspectorItem(
             key: UserDefaultsKey.apiBaseURL.rawValue,
             knownKey: known,

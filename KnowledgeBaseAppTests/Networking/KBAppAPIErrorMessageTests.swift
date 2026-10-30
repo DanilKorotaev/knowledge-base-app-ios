@@ -3,16 +3,16 @@ import XCTest
 
 final class KBAppAPIErrorMessageTests: XCTestCase {
     func testParseEnvelopePrefersMessage() {
-        let data = """
+        let data = Data("""
         {"error":{"code":"NOT_FOUND","message":"Session missing","detail":"id=1"}}
-        """.data(using: .utf8)!
+        """.utf8)
         XCTAssertEqual(KBAppAPIErrorMessage.parse(from: data), "Session missing")
     }
 
     func testParseEnvelopeFallsBackToDetail() {
-        let data = """
+        let data = Data("""
         {"error":{"detail":"bad input"}}
-        """.data(using: .utf8)!
+        """.utf8)
         XCTAssertEqual(KBAppAPIErrorMessage.parse(from: data), "bad input")
     }
 

@@ -27,12 +27,12 @@ final class KBApiLoggerTests: XCTestCase {
 
     func testLogMessageFromHTTPResponseWithJSONBody() throws {
         let url = URL(string: "https://kb.test/api")!
-        let response = HTTPURLResponse(
+        let response = try XCTUnwrap(HTTPURLResponse(
             url: url,
             statusCode: 200,
             httpVersion: nil,
             headerFields: ["Content-Type": "application/json"]
-        )!
+        ))
         let body = Data("{\"ok\":true}".utf8)
         let message = base.logMessage(from: response, data: body)
         XCTAssertTrue(message.contains("https://kb.test/api"))
@@ -85,8 +85,8 @@ final class KBApiLoggerTests: XCTestCase {
     func testKBApiLoggerSuccessAndErrorResponses() throws {
         let apiLogger = KBApiLogger(logger: capture, settings: settings)
         let url = URL(string: "https://kb.test/x")!
-        let ok = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)!
-        let fail = HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil)!
+        let ok = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil))
+        let fail = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil))
 
         apiLogger.log(response: ok, data: nil, id: "3", startTime: CACurrentMediaTime())
         XCTAssertEqual(capture.entries.last?.level, .info)
@@ -98,7 +98,7 @@ final class KBApiLoggerTests: XCTestCase {
     func testKBApiLoggerNetworkError() throws {
         let apiLogger = KBApiLogger(logger: capture, settings: settings)
         let url = URL(string: "https://kb.test/x")!
-        let response = HTTPURLResponse(url: url, statusCode: 503, httpVersion: nil, headerFields: nil)!
+        let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 503, httpVersion: nil, headerFields: nil))
         apiLogger.log(error: URLError(.timedOut), id: "5", response: response)
         XCTAssertEqual(capture.entries.last?.level, .error)
         XCTAssertTrue(capture.entries.last?.message.contains("503") == true)

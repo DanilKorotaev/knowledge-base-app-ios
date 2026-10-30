@@ -3,7 +3,7 @@ import XCTest
 
 final class KBStructuredUITests: XCTestCase {
     func testDecodeStructuredUIDocument() throws {
-        let json = """
+        let json = Data("""
         {
           "schema_version": 1,
           "screen": {
@@ -15,7 +15,7 @@ final class KBStructuredUITests: XCTestCase {
             ]
           }
         }
-        """.data(using: .utf8)!
+        """.utf8)
 
         let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
         XCTAssertEqual(document.schemaVersion, 1)
@@ -25,7 +25,7 @@ final class KBStructuredUITests: XCTestCase {
     }
 
     func testDecodeMessageWithStructuredUI() throws {
-        let json = """
+        let json = Data("""
         {
           "id": "1",
           "role": "assistant",
@@ -41,7 +41,7 @@ final class KBStructuredUITests: XCTestCase {
             }
           }
         }
-        """.data(using: .utf8)!
+        """.utf8)
 
         let message = try JSONDecoder().decode(KBMessage.self, from: json)
         XCTAssertEqual(message.structuredUI?.screen.type, "vstack")
@@ -99,7 +99,7 @@ final class KBStructuredUITests: XCTestCase {
     }
 
     func testDecodeMediaAndDividerNodes() throws {
-        let json = """
+        let json = Data("""
         {
           "schema_version": 1,
           "screen": {
@@ -138,7 +138,7 @@ final class KBStructuredUITests: XCTestCase {
             ]
           }
         }
-        """.data(using: .utf8)!
+        """.utf8)
 
         let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
         let types = document.screen.supportedChildren.map(\.type)
@@ -213,7 +213,7 @@ final class KBStructuredUITests: XCTestCase {
     }
 
     func testDecodeP2LayoutAndFormNodes() throws {
-        let json = """
+        let json = Data("""
         {
           "schema_version": 1,
           "screen": {
@@ -244,7 +244,7 @@ final class KBStructuredUITests: XCTestCase {
             ]
           }
         }
-        """.data(using: .utf8)!
+        """.utf8)
 
         let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
         let types = document.screen.supportedChildren.map(\.type)
@@ -259,7 +259,7 @@ final class KBStructuredUITests: XCTestCase {
     }
 
     func testDecodeP3Nodes() throws {
-        let json = """
+        let json = Data("""
         {
           "schema_version": 1,
           "screen": {
@@ -273,7 +273,7 @@ final class KBStructuredUITests: XCTestCase {
             ]
           }
         }
-        """.data(using: .utf8)!
+        """.utf8)
 
         let document = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
         XCTAssertEqual(document.screen.supportedChildren.map(\.type), ["markdown", "slider", "stepper", "confirm"])
@@ -368,9 +368,10 @@ final class KBStructuredUITests: XCTestCase {
         XCTAssertEqual(document.screen.type, "timer")
         let start = StructuredUITimerDisplay.startDate(from: document.screen)
         XCTAssertNotNil(start)
+        let startDate = try XCTUnwrap(start)
         let text = StructuredUITimerDisplay.elapsedText(
-            since: start!,
-            now: start!.addingTimeInterval(65)
+            since: startDate,
+            now: startDate.addingTimeInterval(65)
         )
         XCTAssertEqual(text, "1:05")
     }

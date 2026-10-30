@@ -30,20 +30,20 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let json = """
+        let json = Data("""
         [{"id":"1","title":"One","message_count":2}]
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "GET")
             XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer tok")
             XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions") == true)
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, json)
         }
 
@@ -61,12 +61,12 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         config.protocolClasses = [MockURLProtocol.self]
 
         MockURLProtocol.requestHandler = { request in
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 503,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, Data())
         }
 
@@ -89,9 +89,9 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
     }
 
     func testKBChangedFileDecodesSnakeCaseJSON() throws {
-        let json = """
+        let json = Data("""
         {"id":"c1","path":"a.md","change_kind":"modified","before_text":null,"after_text":"# x"}
-        """.data(using: .utf8)!
+        """.utf8)
         let file = try JSONDecoder().decode(KBChangedFile.self, from: json)
         XCTAssertEqual(file.changeKind, "modified")
         XCTAssertEqual(file.afterText, "# x")
@@ -101,17 +101,17 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let body = """
+        let body = Data("""
         {"error":{"code":"rate_limit","message":"Slow down","detail":null}}
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 429,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
 
@@ -137,19 +137,19 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let payload = """
+        let payload = Data("""
         {"transcription":"Recognized phrase"}
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "POST")
             XCTAssertTrue(request.url?.path.contains("/api/query/voice/transcribe") == true)
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, payload)
         }
 
@@ -169,19 +169,19 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let payload = """
+        let payload = Data("""
         {"messages":[{"id":"m1","role":"user","content":"voice","created_at":"2026-01-01T12:00:00Z"}],"transcription":"Hello from Whisper"}
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "POST")
             XCTAssertTrue(request.url?.path.contains("/api/query/voice") == true)
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, payload)
         }
 
@@ -209,7 +209,7 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let sse = """
+        let sse = Data("""
         data: {"delta":"Hi"}
 
 
@@ -219,18 +219,18 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         data: {"done":true}
 
 
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "POST")
             XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/s1/messages") == true)
             XCTAssertTrue(request.value(forHTTPHeaderField: "Accept")?.contains("text/event-stream") == true)
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: ["Content-Type": "text/event-stream; charset=utf-8"]
-            )!
+            ))
             return (response, sse)
         }
 
@@ -254,7 +254,7 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let sse = """
+        let sse = Data("""
         data: {"activity":"tool","label":"Запускаю тесты…"}
 
 
@@ -264,15 +264,15 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         data: {"done":true}
 
 
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: ["Content-Type": "text/event-stream; charset=utf-8"]
-            )!
+            ))
             return (response, sse)
         }
 
@@ -294,15 +294,14 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
     }
 
     func testChatSSEEventDecodesActivityPayload() throws {
-        let json = #"{"activity":"tool","label":"Читаю README.md…"}"#.data(using: .utf8)!
+        let json = Data(#"{"activity":"tool","label":"Читаю README.md…"}"#.utf8)
         let event = try JSONDecoder().decode(ChatSSEEvent.self, from: json)
         XCTAssertEqual(event.activity, "tool")
         XCTAssertEqual(event.label, "Читаю README.md…")
     }
 
     func testChatSSEEventDecodesUserMessageAck() throws {
-        let json = #"{"user_message_acked":{"message_id":42,"client_message_id":"aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"}}"#
-            .data(using: .utf8)!
+        let json = Data(#"{"user_message_acked":{"message_id":42,"client_message_id":"aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee"}}"#.utf8)
         let event = try JSONDecoder().decode(ChatSSEEvent.self, from: json)
         XCTAssertEqual(event.userMessageAcked?.messageId, 42)
         XCTAssertEqual(event.userMessageAcked?.clientMessageId, "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee")
@@ -313,17 +312,17 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let sse = "data: {\"delta\":\"Hi\"}\r\n\r\ndata: {\"delta\":\"!\"}\r\n\r\ndata: {\"done\":true}\r\n\r\n".data(using: .utf8)!
+        let sse = Data("data: {\"delta\":\"Hi\"}\r\n\r\ndata: {\"delta\":\"!\"}\r\n\r\ndata: {\"done\":true}\r\n\r\n".utf8)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "POST")
             XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/s1/messages") == true)
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: ["Content-Type": "text/event-stream; charset=utf-8"]
-            )!
+            ))
             return (response, sse)
         }
 
@@ -347,18 +346,18 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let json = """
+        let json = Data("""
         {"messages":[{"id":"a","role":"assistant","content":"One two","created_at":"2026-01-01T00:00:00Z"}]}
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "POST")
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: ["Content-Type": "application/json"]
-            )!
+            ))
             return (response, json)
         }
 
@@ -402,13 +401,13 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "DELETE")
             XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/42") == true)
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: ["Content-Type": "application/json"]
-            )!
-            return (response, #"{"success":true}"#.data(using: .utf8)!)
+            ))
+            return (response, Data(#"{"success":true}"#.utf8))
         }
 
         let base = URL(string: "https://kb.test")!
@@ -421,19 +420,19 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [MockURLProtocol.self]
 
-        let json = """
+        let json = Data("""
         {"session":{"id":"42","title":"New","message_count":0,"updated_at":"2026-06-01T12:00:00Z"}}
-        """.data(using: .utf8)!
+        """.utf8)
 
         MockURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.httpMethod, "PATCH")
             XCTAssertTrue(request.url?.path.hasSuffix("/api/sessions/42") == true)
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: ["Content-Type": "application/json"]
-            )!
+            ))
             return (response, json)
         }
 

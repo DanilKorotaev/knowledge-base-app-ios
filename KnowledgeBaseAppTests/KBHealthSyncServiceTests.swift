@@ -7,7 +7,7 @@ import Testing
 struct KBHealthSyncServiceTests {
     @Test("syncRecent uploads daily and sync_state when no workouts")
     func syncRecentUploadsDailyAndState() async throws {
-        let fixedDate = ISO8601DateFormatter().date(from: "2026-03-01T12:00:00Z")!
+        let fixedDate = try #require(ISO8601DateFormatter().date(from: "2026-03-01T12:00:00Z"))
         let healthKit = MockHealthKitService()
         healthKit.isHealthDataAvailable = true
         healthKit.dailyInput = DailyAggregationInput(
@@ -56,7 +56,7 @@ struct KBHealthSyncServiceTests {
 
     @Test("syncRecent uploads workout JSON files")
     func syncRecentUploadsWorkouts() async throws {
-        let fixedDate = ISO8601DateFormatter().date(from: "2026-03-01T12:00:00Z")!
+        let fixedDate = try #require(ISO8601DateFormatter().date(from: "2026-03-01T12:00:00Z"))
         let healthKit = MockHealthKitService()
         healthKit.workoutBatches = [
             (
@@ -100,8 +100,8 @@ struct KBHealthSyncServiceTests {
     @Test("syncDailyHistory uploads each day in range")
     func syncDailyHistoryUploadsRange() async throws {
         var utc = Calendar(identifier: .gregorian)
-        utc.timeZone = TimeZone(secondsFromGMT: 0)!
-        let fixedDate = ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z")!
+        utc.timeZone = TimeZone.gmt
+        let fixedDate = try #require(ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z"))
         let healthKit = MockHealthKitService()
         healthKit.dailyInput = DailyAggregationInput(
             date: "2026-03-01",
@@ -145,8 +145,8 @@ struct KBHealthSyncServiceTests {
     @Test("syncDailyHistory resumes after checkpoint")
     func syncDailyHistoryResumesAfterCheckpoint() async throws {
         var utc = Calendar(identifier: .gregorian)
-        utc.timeZone = TimeZone(secondsFromGMT: 0)!
-        let fixedDate = ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z")!
+        utc.timeZone = TimeZone.gmt
+        let fixedDate = try #require(ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z"))
         let healthKit = MockHealthKitService()
         let api = StubHealthAPIClient()
         api.syncState = SyncState(
@@ -175,8 +175,8 @@ struct KBHealthSyncServiceTests {
     @Test("syncDailyHistory streams uploads in batches")
     func syncDailyHistoryStreamsBatches() async throws {
         var utc = Calendar(identifier: .gregorian)
-        utc.timeZone = TimeZone(secondsFromGMT: 0)!
-        let fixedDate = ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z")!
+        utc.timeZone = TimeZone.gmt
+        let fixedDate = try #require(ISO8601DateFormatter().date(from: "2026-03-05T12:00:00Z"))
         let healthKit = MockHealthKitService()
         let api = StubHealthAPIClient()
         let service = KBHealthSyncService(

@@ -22,13 +22,14 @@ struct HealthAPIClientTests {
         MockURLProtocol.requestHandler = { request in
             #expect(request.url?.path.hasSuffix("/api/me/settings") == true)
             #expect(request.httpMethod == "GET")
-            let body = #"{"health_data_relative":"HealthData/custom"}"#.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let body = Data(#"{"health_data_relative":"HealthData/custom"}"#.utf8)
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -41,12 +42,13 @@ struct HealthAPIClientTests {
     func fetchSyncStateNotFound() async throws {
         let (client, _) = makeClient()
         MockURLProtocol.requestHandler = { request in
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 404,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, Data())
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -61,13 +63,14 @@ struct HealthAPIClientTests {
         MockURLProtocol.requestHandler = { request in
             #expect(request.httpMethod == "POST")
             #expect(request.url?.path.hasSuffix("/api/health/sync/files") == true)
-            let body = #"{"written":["daily/2026-01-01.json"],"synced_to_nextcloud":true}"#.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let body = Data(#"{"written":["daily/2026-01-01.json"],"synced_to_nextcloud":true}"#.utf8)
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -84,13 +87,14 @@ struct HealthAPIClientTests {
         let (client, _) = makeClient()
         MockURLProtocol.requestHandler = { request in
             #expect(request.httpMethod == "PATCH")
-            let body = #"{"health_data_relative":"HealthData"}"#.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let body = Data(#"{"health_data_relative":"HealthData"}"#.utf8)
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         defer { MockURLProtocol.requestHandler = nil }

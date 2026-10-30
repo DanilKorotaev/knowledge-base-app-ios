@@ -5,11 +5,13 @@ import Testing
 @Suite("HealthKitService")
 struct HealthKitServiceTests {
     @Test("required read types include core HealthKit identifiers")
-    func requiredReadTypesContainsCoreIdentifiers() {
+    func requiredReadTypesContainsCoreIdentifiers() throws {
         let sut = HealthKitService(healthStore: HealthStoreMock())
         #expect(sut.requiredReadTypes.contains(HKObjectType.workoutType()))
-        #expect(sut.requiredReadTypes.contains(HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!))
-        #expect(sut.requiredReadTypes.contains(HKObjectType.quantityType(forIdentifier: .stepCount)!))
+        let sleep = try #require(HKObjectType.categoryType(forIdentifier: .sleepAnalysis))
+        let steps = try #require(HKObjectType.quantityType(forIdentifier: .stepCount))
+        #expect(sut.requiredReadTypes.contains(sleep))
+        #expect(sut.requiredReadTypes.contains(steps))
         #expect(sut.requiredReadTypes.contains(HKObjectType.activitySummaryType()))
     }
 
@@ -24,7 +26,7 @@ struct HealthKitServiceTests {
     @Test("dailyAggregationInput uses local calendar day key")
     func dailyAggregationInputUsesLocalCalendarDayKey() async throws {
         var utc = Calendar(identifier: .gregorian)
-        utc.timeZone = TimeZone(secondsFromGMT: 0)!
+        utc.timeZone = TimeZone.gmt
         let sut = HealthKitService(healthStore: HealthStoreMock(), calendar: utc)
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
@@ -122,9 +124,9 @@ struct HealthKitServiceTests {
     }
 
     @Test("makeWorkoutData calculates heart rate zones")
-    func makeWorkoutDataCalculatesHeartRateAndZones() {
+    func makeWorkoutDataCalculatesHeartRateAndZones() throws {
         let sut = HealthKitService(healthStore: HealthStoreMock())
-        let start = ISO8601DateFormatter().date(from: "2026-03-30T10:00:00Z")!
+        let start = try #require(ISO8601DateFormatter().date(from: "2026-03-30T10:00:00Z"))
         let end = start.addingTimeInterval(3_600)
         let input = WorkoutAggregationInput(
             sourceIdentifier: "00000000-0000-0000-0000-000000000001",

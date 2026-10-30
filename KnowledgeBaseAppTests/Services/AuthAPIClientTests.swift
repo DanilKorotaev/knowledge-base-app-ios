@@ -3,7 +3,7 @@ import XCTest
 
 final class AuthAPIClientTests: XCTestCase {
     func testDecodeTokenResponse() throws {
-        let json = """
+        let json = Data("""
         {
           "access_token": "acc",
           "refresh_token": "ref",
@@ -22,7 +22,7 @@ final class AuthAPIClientTests: XCTestCase {
             "has_nc_app_password": true
           }
         }
-        """.data(using: .utf8)!
+        """.utf8)
         let decoded = try JSONDecoder().decode(AuthTokenResponse.self, from: json)
         XCTAssertEqual(decoded.accessToken, "acc")
         XCTAssertEqual(decoded.refreshToken, "ref")
@@ -34,7 +34,7 @@ final class AuthAPIClientTests: XCTestCase {
     }
 
     func testDecodeNcFoldersResponse() throws {
-        let json = """
+        let json = Data("""
         {
           "current": "/kb",
           "browse_path": "/kb",
@@ -44,7 +44,7 @@ final class AuthAPIClientTests: XCTestCase {
             {"path": "/kb/notes", "name": "notes"}
           ]
         }
-        """.data(using: .utf8)!
+        """.utf8)
         let decoded = try JSONDecoder().decode(AuthNcFoldersResponse.self, from: json)
         XCTAssertEqual(decoded.current, "/kb")
         XCTAssertEqual(decoded.browsePath, "/kb")
@@ -55,13 +55,13 @@ final class AuthAPIClientTests: XCTestCase {
     }
 
     func testDecodeNcFoldersResponseDefaultsBrowsePath() throws {
-        let json = """
+        let json = Data("""
         {
           "current": "/",
           "has_nc_app_password": false,
           "folders": []
         }
-        """.data(using: .utf8)!
+        """.utf8)
         let decoded = try JSONDecoder().decode(AuthNcFoldersResponse.self, from: json)
         XCTAssertEqual(decoded.browsePath, "/")
         XCTAssertNil(decoded.parentPath)
@@ -114,7 +114,7 @@ final class AuthAPIClientTests: XCTestCase {
     }
 
     func testDecodeSignupStatus() throws {
-        let json = #"{"open_signup":true}"#.data(using: .utf8)!
+        let json = Data(#"{"open_signup":true}"#.utf8)
         let decoded = try JSONDecoder().decode(AuthSignupStatus.self, from: json)
         XCTAssertTrue(decoded.openSignup)
     }

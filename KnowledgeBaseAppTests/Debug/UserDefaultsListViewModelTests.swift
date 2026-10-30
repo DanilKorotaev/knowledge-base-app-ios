@@ -74,7 +74,7 @@ final class UserDefaultsListViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.sections.flatMap(\.items).contains { $0.key.hasPrefix("com.apple") })
 
         if let section = viewModel.sections.first(where: { $0.items.contains { $0.key == userKey } }) {
-            let index = section.items.firstIndex { $0.key == userKey }!
+            let index = try XCTUnwrap(section.items.firstIndex { $0.key == userKey })
             viewModel.deleteItems(in: section, at: IndexSet(integer: index))
         }
         XCTAssertNil(storage.object(forKey: userKey))

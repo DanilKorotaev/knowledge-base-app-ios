@@ -58,7 +58,7 @@ struct BoardsAPIClientTests {
         let client = makeClient()
         MockURLProtocol.requestHandler = { request in
             #expect(request.url?.path.hasSuffix("/api/boards") == true)
-            let body = """
+            let body = Data("""
             {
               "boards": [
                 {
@@ -86,13 +86,14 @@ struct BoardsAPIClientTests {
               ],
               "total": 2
             }
-            """.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            """.utf8)
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -108,12 +109,13 @@ struct BoardsAPIClientTests {
     func remoteListFallback() async throws {
         let client = makeClient(useDemoFallback: true)
         MockURLProtocol.requestHandler = { request in
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 404,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, Data())
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -126,12 +128,13 @@ struct BoardsAPIClientTests {
     func remoteListNoFallback() async {
         let client = makeClient(useDemoFallback: false)
         MockURLProtocol.requestHandler = { request in
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 404,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, Data())
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -155,7 +158,7 @@ struct BoardsAPIClientTests {
         let client = makeClient()
         MockURLProtocol.requestHandler = { request in
             #expect(request.url?.path.hasSuffix("/api/boards/b1") == true)
-            let body = """
+            let body = Data("""
             {
               "board": {
                 "id": "b1",
@@ -183,13 +186,14 @@ struct BoardsAPIClientTests {
               },
               "rendered_at": "2026-08-27T12:00:00Z"
             }
-            """.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            """.utf8)
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -210,15 +214,16 @@ struct BoardsAPIClientTests {
             let path = request.url?.path ?? ""
             paths.append(path)
             if path.hasSuffix("/refresh") {
-                let response = HTTPURLResponse(
-                    url: request.url!,
+                let url = try #require(request.url)
+                let response = try #require(HTTPURLResponse(
+                    url: url,
                     statusCode: 404,
                     httpVersion: nil,
                     headerFields: nil
-                )!
+                ))
                 return (response, Data())
             }
-            let body = """
+            let body = Data("""
             {
               "board": {
                 "id": "b1",
@@ -232,13 +237,14 @@ struct BoardsAPIClientTests {
                 "screen": {"type": "text", "id": "t", "text": "ok"}
               }
             }
-            """.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            """.utf8)
+            let url = try #require(request.url)
+            let response = try #require(HTTPURLResponse(
+                url: url,
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         defer { MockURLProtocol.requestHandler = nil }
@@ -286,13 +292,14 @@ struct BoardsPresetsAPIClientTests {
               "total": 1
             }
             """
+            let url = try #require(request.url)
             return (
-                HTTPURLResponse(
-                    url: request.url!,
+                try #require(HTTPURLResponse(
+                    url: url,
                     statusCode: 200,
                     httpVersion: nil,
                     headerFields: ["Content-Type": "application/json"]
-                )!,
+                )),
                 Data(body.utf8)
             )
         }
@@ -325,13 +332,14 @@ struct BoardsPresetsAPIClientTests {
               }
             }
             """
+            let url = try #require(request.url)
             return (
-                HTTPURLResponse(
-                    url: request.url!,
+                try #require(HTTPURLResponse(
+                    url: url,
                     statusCode: 200,
                     httpVersion: nil,
                     headerFields: ["Content-Type": "application/json"]
-                )!,
+                )),
                 Data(body.utf8)
             )
         }
@@ -346,13 +354,14 @@ struct BoardsPresetsAPIClientTests {
         MockURLProtocol.requestHandler = { request in
             #expect(request.httpMethod == "DELETE")
             #expect(request.url?.path.hasSuffix("/api/boards/presets/active-jobs") == true)
+            let url = try #require(request.url)
             return (
-                HTTPURLResponse(
-                    url: request.url!,
+                try #require(HTTPURLResponse(
+                    url: url,
                     statusCode: 200,
                     httpVersion: nil,
                     headerFields: ["Content-Type": "application/json"]
-                )!,
+                )),
                 Data(#"{"ok":true,"id":"active-jobs"}"#.utf8)
             )
         }
@@ -364,9 +373,9 @@ struct BoardsPresetsAPIClientTests {
 struct BoardsModelTests {
     @Test("list response accepts items alias")
     func itemsAlias() throws {
-        let json = """
+        let json = Data("""
         {"items":[{"id":"x","title":"X","kind":"remote","sort_order":1,"enabled":true}],"total":1}
-        """.data(using: .utf8)!
+        """.utf8)
         let decoded = try JSONDecoder().decode(KBBoardsListResponse.self, from: json)
         #expect(decoded.boards.count == 1)
         #expect(decoded.boards[0].systemImageName == "network")
@@ -374,7 +383,7 @@ struct BoardsModelTests {
 
     @Test("metric and table nodes are supported")
     func metricTableSupported() throws {
-        let json = """
+        let json = Data("""
         {
           "schema_version": 1,
           "screen": {
@@ -391,7 +400,7 @@ struct BoardsModelTests {
             ]
           }
         }
-        """.data(using: .utf8)!
+        """.utf8)
         let doc = try JSONDecoder().decode(KBStructuredUIDocument.self, from: json)
         #expect(doc.screen.supportedChildren.count == 2)
         #expect(doc.screen.supportedChildren[0].isSupported)

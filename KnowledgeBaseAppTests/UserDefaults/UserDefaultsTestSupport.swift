@@ -13,7 +13,9 @@ final class MockUserDefaultsServiceSettings: UserDefaultsServiceSettingsDescript
 enum UserDefaultsTestSupport {
     static func makeIsolatedStorage() -> (suiteName: String, storage: UserDefaults) {
         let suiteName = "kb.tests.\(UUID().uuidString)"
-        let storage = UserDefaults(suiteName: suiteName)!
+        guard let storage = UserDefaults(suiteName: suiteName) else {
+            preconditionFailure("Failed to create UserDefaults suite \(suiteName)")
+        }
         return (suiteName, storage)
     }
 

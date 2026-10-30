@@ -17,7 +17,7 @@ final class AuthAPIClientHTTPTests: XCTestCase {
         AuthURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.url?.path, "/api/auth/login")
             XCTAssertEqual(request.httpMethod, "POST")
-            let body = """
+            let body = Data("""
             {
               "access_token":"a1",
               "refresh_token":"r1",
@@ -34,13 +34,13 @@ final class AuthAPIClientHTTPTests: XCTestCase {
                 "nextcloud_username":"carol"
               }
             }
-            """.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            """.utf8)
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: ["Content-Type": "application/json"]
-            )!
+            ))
             return (response, body)
         }
 
@@ -57,13 +57,13 @@ final class AuthAPIClientHTTPTests: XCTestCase {
     func testSignupStatus() async throws {
         AuthURLProtocol.requestHandler = { request in
             XCTAssertTrue(request.url?.path.hasSuffix("/api/auth/signup-status") == true)
-            let body = #"{"open_signup":true}"#.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let body = Data(#"{"open_signup":true}"#.utf8)
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         let client = URLSessionAuthAPIClient(
@@ -76,13 +76,13 @@ final class AuthAPIClientHTTPTests: XCTestCase {
 
     func testLoginMapsHTTPError() async {
         AuthURLProtocol.requestHandler = { request in
-            let body = #"{"detail":"Неверный логин или пароль"}"#.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            let body = Data(#"{"detail":"Неверный логин или пароль"}"#.utf8)
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 401,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         let client = URLSessionAuthAPIClient(
@@ -106,16 +106,16 @@ final class AuthAPIClientHTTPTests: XCTestCase {
     func testMeRequiresBearer() async throws {
         AuthURLProtocol.requestHandler = { request in
             XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer tok")
-            let body = """
+            let body = Data("""
             {"user":{"id":1,"login":"a","email":null,"role":"user","must_change_password":false,
              "cursor_isolation":"strict","vault_root_relative":"users/a","nextcloud_username":"a"}}
-            """.data(using: .utf8)!
-            let response = HTTPURLResponse(
-                url: request.url!,
+            """.utf8)
+            let response = try XCTUnwrap(HTTPURLResponse(
+                url: try XCTUnwrap(request.url),
                 statusCode: 200,
                 httpVersion: nil,
                 headerFields: nil
-            )!
+            ))
             return (response, body)
         }
         let client = URLSessionAuthAPIClient(

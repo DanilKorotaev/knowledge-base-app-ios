@@ -93,7 +93,7 @@ final class DefaultVoiceSessionPreferenceTests: XCTestCase {
     func testTTLExpirationDates() {
         let start = Date(timeIntervalSince1970: 1_700_000_000)
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        calendar.timeZone = TimeZone.gmt
 
         XCTAssertEqual(
             DefaultVoiceSessionTTL.oneHour.expirationDate(from: start)?.timeIntervalSince1970,

@@ -3,11 +3,11 @@ import XCTest
 
 final class KBSessionTests: XCTestCase {
     func testDecodeArrayJSON() throws {
-        let json = """
+        let json = Data("""
         [
           {"id":"s1","title":"Workout","message_count":12,"updated_at":"2026-03-29T10:00:00Z","use_knowledge_base":false}
         ]
-        """.data(using: .utf8)!
+        """.utf8)
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -22,18 +22,18 @@ final class KBSessionTests: XCTestCase {
     }
 
     func testDecodeDefaultsUseKnowledgeBaseToTrue() throws {
-        let json = """
+        let json = Data("""
         [{"id":"s1","title":"Workout","message_count":0}]
-        """.data(using: .utf8)!
+        """.utf8)
 
         let session = try JSONDecoder().decode([KBSession].self, from: json)[0]
         XCTAssertTrue(session.useKnowledgeBase)
     }
 
     func testDecodePagedItemsWrapper() throws {
-        let json = """
+        let json = Data("""
         {"items":[{"id":"a","title":"A","message_count":0}]}
-        """.data(using: .utf8)!
+        """.utf8)
 
         struct Page: Codable {
             let items: [KBSession]?

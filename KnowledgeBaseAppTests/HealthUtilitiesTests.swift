@@ -14,20 +14,19 @@ struct HealthUtilitiesTests {
     }
 
     @Test("CalendarDayFormatter formats UTC day key")
-    func calendarDayFormatterUTC() {
+    func calendarDayFormatterUTC() throws {
         let formatter = ISO8601DateFormatter()
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        let date = formatter.date(from: "2026-03-01T12:00:00Z")!
+        let date = try #require(formatter.date(from: "2026-03-01T12:00:00Z"))
         #expect(CalendarDayFormatter.yyyyMMdd(for: date) == "2026-03-01")
     }
 
     @Test("CalendarDayFormatter parses yyyy-MM-dd start of day")
-    func calendarDayFormatterStartOfDay() {
+    func calendarDayFormatterStartOfDay() throws {
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
-        let date = CalendarDayFormatter.startOfDay(fromYyyyMMdd: "2026-03-01", calendar: calendar)
-        #expect(date != nil)
-        #expect(CalendarDayFormatter.yyyyMMddLocalDay(containing: date!, calendar: calendar) == "2026-03-01")
+        calendar.timeZone = TimeZone.gmt
+        let date = try #require(CalendarDayFormatter.startOfDay(fromYyyyMMdd: "2026-03-01", calendar: calendar))
+        #expect(CalendarDayFormatter.yyyyMMddLocalDay(containing: date, calendar: calendar) == "2026-03-01")
     }
 
     @Test("SyncState round-trips JSON keys")

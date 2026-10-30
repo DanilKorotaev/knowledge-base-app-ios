@@ -120,7 +120,7 @@ final class ChatAPIClientTests: XCTestCase {
         XCTAssertTrue(first.hasMoreOlder)
         XCTAssertTrue(first.messages.last?.content.contains("msg 7") ?? false)
 
-        let oldestId = first.messages.first!.id
+        let oldestId = try XCTUnwrap(first.messages.first).id
         let older = try await client.fetchMessagesPage(
             sessionId: sessionId,
             limit: 5,
