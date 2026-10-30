@@ -58,7 +58,7 @@ struct ComposerAttachmentStripView: View {
                             .frame(width: 72, height: 72)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     } else {
-                        ComposerFileChipView(attachment: attachment, showsRemoveButton: false, onRemove: {})
+                        ComposerFileChipView(attachment: attachment, showsRemoveButton: false) {}
                     }
                 }
                 .buttonStyle(.plain)

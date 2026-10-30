@@ -51,7 +51,7 @@ final class ShareComposeViewModel {
     }
 
     var selectedSessionTitle: String {
-        sessions.first(where: { $0.id == selectedSessionId })?.title ?? ""
+        sessions.first { $0.id == selectedSessionId }?.title ?? ""
     }
 
     func isPinned(_ sessionId: String) -> Bool {
@@ -232,7 +232,7 @@ final class ShareComposeViewModel {
 
         phase = .working
         let useKB = kbModeBySession[sessionId]
-            ?? sessions.first(where: { $0.id == sessionId })?.useKnowledgeBase
+            ?? sessions.first { $0.id == sessionId }?.useKnowledgeBase
             ?? true
 
         ShareFileLogger.info(

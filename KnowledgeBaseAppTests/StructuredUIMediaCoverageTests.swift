@@ -105,7 +105,7 @@ final class StructuredUIMediaCoverageTests: XCTestCase {
 
     func testFullscreenImageViewerHosts() {
         let host = UIHostingController(
-            rootView: FullscreenImageViewer(image: Self.testImage(), onDismiss: {})
+            rootView: FullscreenImageViewer(image: Self.testImage()) {}
         )
         host.view.frame = CGRect(x: 0, y: 0, width: 320, height: 480)
         attachToWindow(host)

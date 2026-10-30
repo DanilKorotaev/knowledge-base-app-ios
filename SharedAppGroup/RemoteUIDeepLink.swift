@@ -29,7 +29,7 @@ enum RemoteUIDeepLink {
         else {
             return nil
         }
-        let title = items.first(where: { $0.name == "title" })?.value?
+        let title = items.first { $0.name == "title" }?.value?
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return (target, (title?.isEmpty == false) ? title : nil)
     }

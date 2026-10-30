@@ -21,7 +21,7 @@ struct SearchTextFieldConfigurator: UIViewRepresentable {
 
 private extension UIView {
     func nearestViewController() -> UIViewController? {
-        sequence(first: next, next: { $0?.next })
-            .first(where: { $0 is UIViewController }) as? UIViewController
+        sequence(first: next) { $0?.next }
+            .first { $0 is UIViewController } as? UIViewController
     }
 }

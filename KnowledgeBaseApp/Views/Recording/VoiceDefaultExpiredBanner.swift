@@ -49,7 +49,7 @@ struct VoiceDefaultExpiredBanner: View {
 
 #Preview("Cleared") {
     List {
-        VoiceDefaultExpiredBanner(notice: .cleared, onDismiss: {})
+        VoiceDefaultExpiredBanner(notice: .cleared) {}
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
@@ -59,7 +59,7 @@ struct VoiceDefaultExpiredBanner: View {
 
 #Preview("Restored") {
     List {
-        VoiceDefaultExpiredBanner(notice: .restored(sessionTitle: "Inbox"), onDismiss: {})
+        VoiceDefaultExpiredBanner(notice: .restored(sessionTitle: "Inbox")) {}
             .listRowInsets(EdgeInsets())
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)

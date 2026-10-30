@@ -3,7 +3,7 @@ import XCTest
 
 final class LoggingUtilityTests: XCTestCase {
     func testCollectionGroup() {
-        let grouped = ["ab", "aa", "b"].group(by: { String($0.prefix(1)) })
+        let grouped = ["ab", "aa", "b"].group { String($0.prefix(1)) }
         XCTAssertEqual(grouped["a"]?.count, 2)
         XCTAssertEqual(grouped["b"]?.count, 1)
     }

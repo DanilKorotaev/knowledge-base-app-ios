@@ -26,9 +26,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
         let preview = try await WatchVoiceRelayProcessor.process(
             audioURL: audioURL,
             hintedSessionID: "125",
-            chatClient: client,
-            sessionProvider: { self.makeSessions() }
-        )
+            chatClient: client
+        ) { self.makeSessions() }
 
         XCTAssertTrue(preview.contains("Ответ"))
         XCTAssertFalse(preview.contains("[?25h"))
@@ -42,9 +41,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
         let preview = try await WatchVoiceRelayProcessor.process(
             audioURL: audioURL,
             hintedSessionID: nil,
-            chatClient: client,
-            sessionProvider: { self.makeSessions(ids: ["alpha", "beta"]) }
-        )
+            chatClient: client
+        ) { self.makeSessions(ids: ["alpha", "beta"]) }
 
         XCTAssertTrue(preview.contains("pong"))
     }
@@ -57,9 +55,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
         let preview = try await WatchVoiceRelayProcessor.process(
             audioURL: audioURL,
             hintedSessionID: "",
-            chatClient: client,
-            sessionProvider: { self.makeSessions(ids: ["alpha", "beta"]) }
-        )
+            chatClient: client
+        ) { self.makeSessions(ids: ["alpha", "beta"]) }
 
         XCTAssertTrue(preview.contains("alpha-reply"))
     }
@@ -74,9 +71,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
             _ = try await WatchVoiceRelayProcessor.process(
                 audioURL: audioURL,
                 hintedSessionID: "missing",
-                chatClient: client,
-                sessionProvider: { [] }
-            )
+                chatClient: client
+            ) { [] }
             XCTFail("expected noTargetSession")
         } catch let error as WatchRelayError {
             guard case .noTargetSession = error else {
@@ -96,9 +92,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
             _ = try await WatchVoiceRelayProcessor.process(
                 audioURL: audioURL,
                 hintedSessionID: "125",
-                chatClient: client,
-                sessionProvider: { self.makeSessions() }
-            )
+                chatClient: client
+            ) { self.makeSessions() }
             XCTFail("expected emptyTranscription")
         } catch let error as WatchRelayError {
             guard case .emptyTranscription = error else {
@@ -118,9 +113,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
         let preview = try await WatchVoiceRelayProcessor.process(
             audioURL: audioURL,
             hintedSessionID: "125",
-            chatClient: client,
-            sessionProvider: { self.makeSessions() }
-        )
+            chatClient: client
+        ) { self.makeSessions() }
 
         XCTAssertEqual(preview.count, 200)
     }
@@ -137,9 +131,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
         let preview = try await WatchVoiceRelayProcessor.process(
             audioURL: audioURL,
             hintedSessionID: "125",
-            chatClient: client,
-            sessionProvider: { self.makeSessions() }
-        )
+            chatClient: client
+        ) { self.makeSessions() }
 
         XCTAssertEqual(preview, "Hello watch")
     }
@@ -157,9 +150,8 @@ final class WatchVoiceRelayProcessorTests: XCTestCase {
         let preview = try await WatchVoiceRelayProcessor.process(
             audioURL: audioURL,
             hintedSessionID: "125",
-            chatClient: client,
-            sessionProvider: { self.makeSessions() }
-        )
+            chatClient: client
+        ) { self.makeSessions() }
 
         XCTAssertEqual(preview, "Принято. Можем прогнать следующий шаг теста.")
     }

@@ -107,7 +107,7 @@ final class LogPreviewViewModel: ObservableObject, LogPreviewDetailsViewDelegate
         let search = searchText.lowercased()
         let selectedFilterValues = selectedFilters.map(\.value)
         items = logs.filter { log in
-            (selectedFilterValues.isEmpty || selectedFilterValues.contains(where: { log.message.contains($0) }))
+            (selectedFilterValues.isEmpty || selectedFilterValues.contains { log.message.contains($0) })
                 && (search.isEmpty || log.message.lowercased().contains(search))
         }
     }
@@ -132,7 +132,7 @@ final class LogPreviewViewModel: ObservableObject, LogPreviewDetailsViewDelegate
             rawLogs.append(currentLog.joined(separator: "\n"))
         }
 
-        filters = tags.group(by: { $0 })
+        filters = tags.group { $0 }
             .map { ($0.key, $0.value.count) }
             .sorted { $0.1 > $1.1 }
             .map { LogPreviewFilterItem.tag($0.0, count: $0.1) }

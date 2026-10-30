@@ -180,8 +180,8 @@ final class ActionsTabViewModel {
             let boards = try await client.fetchBoards()
             // Only fetch boards that the list actually returned — do not probe preferred
             // ids (404 on empty staging looked like a hard error in the UI).
-            let presetsId = boards.first(where: { ActionsBoardIDs.isPresetsBoard($0.id) })?.id
-            let jobsId = boards.first(where: { ActionsBoardIDs.isJobsBoard($0.id) })?.id
+            let presetsId = boards.first { ActionsBoardIDs.isPresetsBoard($0.id) }?.id
+            let jobsId = boards.first { ActionsBoardIDs.isJobsBoard($0.id) }?.id
 
             async let presets = fetchDetailOptional(id: presetsId)
             async let jobs = fetchDetailOptional(id: jobsId)

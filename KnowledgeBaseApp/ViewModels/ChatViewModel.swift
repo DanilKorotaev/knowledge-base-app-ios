@@ -27,7 +27,7 @@ final class ChatViewModel {
 
     /// Latest assistant message with a structured UI document (for in-flight / interactivity).
     var activeStructuredUIMessageId: String? {
-        messages.last(where: { $0.role == .assistant && $0.structuredUI != nil })?.id
+        messages.last { $0.role == .assistant && $0.structuredUI != nil }?.id
     }
 
     func toggleStructuredUIPreference() {
@@ -955,7 +955,7 @@ final class ChatViewModel {
     }
 
     private func beginSendAttempt() {
-        preSendLastMessageId = messages.last(where: { !$0.id.hasPrefix("kb-optimistic-") })?.id
+        preSendLastMessageId = messages.last { !$0.id.hasPrefix("kb-optimistic-") }?.id
         userMessageAckedForCurrentSend = false
     }
 
@@ -1117,7 +1117,7 @@ final class ChatViewModel {
             return await finishHardSendFailure(
                 error: error,
                 retryDraft: retryDraft,
-                optimisticMessageId: messages.last(where: { $0.role == .user })?.id,
+                optimisticMessageId: messages.last { $0.role == .user }?.id,
                 errorText: error.localizedDescription
             )
         }
@@ -1268,9 +1268,9 @@ final class ChatViewModel {
             return false
         }
 
-        let anchorId = messages.last(where: { $0.id.hasPrefix("kb-optimistic-") })?.id
+        let anchorId = messages.last { $0.id.hasPrefix("kb-optimistic-") }?.id
             ?? optimisticMessageId
-            ?? messages.last(where: { $0.role == .user })?.id
+            ?? messages.last { $0.role == .user }?.id
         if let anchorId {
             pendingSendRetry = FailedSendRetry(
                 kind: .draft(retryDraft),

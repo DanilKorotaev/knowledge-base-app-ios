@@ -61,7 +61,6 @@ disabled_rules:
   - redundant_type_annotation
   - required_deinit
   - static_over_final_class
-  - trailing_closure
   - trailing_newline
   - type_body_length
   - type_name
@@ -112,6 +111,7 @@ opt_in_rules:
   - static_operator
   - strong_iboutlet
   - toggle_bool
+  - trailing_closure
   - unavailable_function
   - unneeded_parentheses_in_closure_argument
   - unowned_variable_capture

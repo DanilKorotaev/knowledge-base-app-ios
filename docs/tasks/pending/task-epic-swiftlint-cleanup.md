@@ -21,7 +21,7 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 **Baseline inventory (2026-10-30):** **1334** violations across **40** rules (see inventory md). Soft config disables remaining backlog rules + `nesting` and keeps opt-ins that already pass.
 
-**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Next: `trailing_closure`.
+**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Iteration 4 `trailing_closure` (~45 → 0; soft-enabled 2026-10-30). Next: small mechanical group (`opening_brace` / `vertical_whitespace` / …).
 
 ## How to re-enable a rule
 
@@ -40,8 +40,8 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 - [x] `trailing_comma` (~109 → 0; soft-enabled 2026-10-30)
 - [x] `sorted_imports` (~90 → 0; soft-enabled 2026-10-30)
 - [x] `number_separator` (~69 → 0; soft-enabled 2026-10-30)
-- [ ] `trailing_closure` (~44) — **next**
-- [ ] `opening_brace` / `vertical_whitespace` / `trailing_newline` / `implicit_optional_initialization` / `unneeded_synthesized_initializer` / `modifier_order` / `redundant_type_annotation` (small counts)
+- [x] `trailing_closure` (~45 → 0; soft-enabled 2026-10-30)
+- [ ] `opening_brace` / `vertical_whitespace` / `trailing_newline` / `implicit_optional_initialization` / `unneeded_synthesized_initializer` / `modifier_order` / `redundant_type_annotation` (small counts) — **next**
 
 ### Force / unsafe
 

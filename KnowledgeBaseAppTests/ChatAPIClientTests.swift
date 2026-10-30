@@ -128,7 +128,7 @@ final class ChatAPIClientTests: XCTestCase {
         )
         XCTAssertEqual(older.messages.count, 5)
         XCTAssertTrue(older.hasMoreOlder)
-        XCTAssertFalse(older.messages.contains(where: { $0.id == oldestId }))
+        XCTAssertFalse(older.messages.contains { $0.id == oldestId })
     }
 
     func testTranscribeVoiceRecordingReturnsStubText() async throws {

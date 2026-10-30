@@ -280,17 +280,16 @@ struct ChatView: View {
                                     && message.id == viewModel.activeStructuredUIMessageId,
                                 showsStructuredUI: true,
                                 isStructuredUIInteractive: viewModel.structuredUIPreferenceEnabled
-                                    && message.id == viewModel.activeStructuredUIMessageId,
-                                onStructuredUIAction: { actionId, componentId, values in
-                                    Task {
-                                        await viewModel.sendStructuredUIEvent(
-                                            actionId: actionId,
-                                            componentId: componentId,
-                                            values: values
-                                        )
-                                    }
+                                    && message.id == viewModel.activeStructuredUIMessageId
+                            ) { actionId, componentId, values in
+                                Task {
+                                    await viewModel.sendStructuredUIEvent(
+                                        actionId: actionId,
+                                        componentId: componentId,
+                                        values: values
+                                    )
                                 }
-                            )
+                            }
                             if viewModel.shouldShowSendRetry(for: message) {
                                 MessageSendRetryBar(
                                     errorText: viewModel.pendingSendRetry?.errorDescription,

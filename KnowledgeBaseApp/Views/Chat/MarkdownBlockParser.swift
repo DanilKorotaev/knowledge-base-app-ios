@@ -56,7 +56,7 @@ enum MarkdownBlockParser {
 
     private static func isTableRow(_ line: String) -> Bool {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
-        return trimmed.contains("|") && trimmed.filter({ $0 == "|" }).count >= 2
+        return trimmed.contains("|") && trimmed.filter { $0 == "|" }.count >= 2
     }
 
     private static func isSeparatorRow(_ line: String) -> Bool {

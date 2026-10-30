@@ -65,7 +65,7 @@ enum MarkdownLineParser {
     }
 
     static func parseListItem(_ line: String) -> MarkdownListItem? {
-        let leading = line.prefix(while: { $0 == " " }).count
+        let leading = line.prefix { $0 == " " }.count
         let indentLevel = leading / 2
         let trimmed = line.trimmingCharacters(in: .whitespaces)
 
@@ -222,7 +222,7 @@ enum MarkdownSegmentParser {
                 continue
             }
 
-            let hashCount = raw.prefix(while: { $0 == "#" }).count
+            let hashCount = raw.prefix { $0 == "#" }.count
             if hashCount > 0, hashCount <= 6, raw.dropFirst(hashCount).first == " " {
                 flushParagraph()
                 result.append(.header(level: hashCount, line: raw))
@@ -251,7 +251,7 @@ enum MarkdownSegmentParser {
         if MarkdownLineParser.parseListItem(line) != nil { return true }
         if MarkdownLineParser.isBlockquoteLine(line) { return true }
         if MarkdownLineParser.isThematicBreak(line) { return true }
-        let hashCount = line.prefix(while: { $0 == "#" }).count
+        let hashCount = line.prefix { $0 == "#" }.count
         if hashCount > 0, hashCount <= 6, line.dropFirst(hashCount).first == " " { return true }
         return false
     }

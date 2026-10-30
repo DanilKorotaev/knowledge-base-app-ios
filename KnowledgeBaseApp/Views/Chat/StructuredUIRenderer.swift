@@ -171,16 +171,15 @@ private struct StructuredUINodeView: View {
                 StructuredUIListRowNodeView(
                     node: node,
                     isSending: isSending,
-                    onAction: onAction,
-                    onAppAction: { action, source in
-                        let resolved = Self.resolveAppAction(
-                            action,
-                            isSubmit: false,
-                            draftValues: draftValues
-                        )
-                        onAppAction?(resolved, source)
-                    }
-                )
+                    onAction: onAction
+                ) { action, source in
+                    let resolved = Self.resolveAppAction(
+                        action,
+                        isSubmit: false,
+                        draftValues: draftValues
+                    )
+                    onAppAction?(resolved, source)
+                }
             case "confirm":
                 StructuredUIConfirmNodeView(
                     node: node,
@@ -288,7 +287,7 @@ private struct StructuredUINodeView: View {
                     } else {
                         let selectedId = draftValues[node.id]?.stringValue
                             ?? node.options?.first?.id
-                        let selectedLabel = node.options?.first(where: { $0.id == selectedId })?.label
+                        let selectedLabel = node.options?.first { $0.id == selectedId }?.label
                             ?? selectedId
                             ?? ""
                         Text(selectedLabel)

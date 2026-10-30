@@ -84,7 +84,7 @@ final class KBStructuredUITests: XCTestCase {
         )
         XCTAssertEqual(result.userContent, "[UI] note=hi; notify=true; theme=dark; topics=[ios,bot]")
         XCTAssertEqual(
-            result.screen.screen.supportedChildren.first(where: { $0.type == "text" })?.text,
+            result.screen.screen.supportedChildren.first { $0.type == "text" }?.text,
             "Submitted"
         )
     }

@@ -94,11 +94,10 @@ actor WatchVoiceRelayCoordinator {
             let preview = try await WatchVoiceRelayProcessor.process(
                 audioURL: localAudioURL,
                 hintedSessionID: relay.hintedSessionID,
-                chatClient: client,
-                sessionProvider: {
-                    try await client.fetchSessions()
-                }
-            )
+                chatClient: client
+            ) {
+                try await client.fetchSessions()
+            }
             WatchRelayLogger.info("Relay success recordingId=\(recordingID) previewChars=\(preview.count)")
             publishStatus(.success, preview: preview, error: nil)
         } catch {

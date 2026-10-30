@@ -65,14 +65,14 @@ final class ChatViewModelTests: XCTestCase {
         await viewModel.startStructuredUIFlow()
         XCTAssertFalse(viewModel.isSendingUIEvent)
         XCTAssertNil(viewModel.errorMessage)
-        let welcome = viewModel.messages.last(where: { $0.role == .assistant })
-        XCTAssertEqual(welcome?.structuredUI?.screen.supportedChildren.first(where: { $0.type == "button" })?.label, "Yes")
+        let welcome = viewModel.messages.last { $0.role == .assistant }
+        XCTAssertEqual(welcome?.structuredUI?.screen.supportedChildren.first { $0.type == "button" }?.label, "Yes")
 
         await viewModel.sendStructuredUIEvent(actionId: "confirm_yes", componentId: "btn_yes")
         XCTAssertTrue(viewModel.messages.contains { $0.role == .user && $0.content == "[UI] Yes" })
-        let confirmed = viewModel.messages.last(where: { $0.role == .assistant })
+        let confirmed = viewModel.messages.last { $0.role == .assistant }
         XCTAssertEqual(
-            confirmed?.structuredUI?.screen.supportedChildren.first(where: { $0.type == "text" })?.text,
+            confirmed?.structuredUI?.screen.supportedChildren.first { $0.type == "text" }?.text,
             "Confirmed"
         )
     }

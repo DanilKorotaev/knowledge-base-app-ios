@@ -12,9 +12,8 @@ final class LogFilesProviderShareListingTests: XCTestCase {
         try Data("share-line\n".utf8).write(to: shareLog)
 
         let provider = LogFilesProvider(
-            session: LogSession.shared,
-            shareLogURLsProvider: { [shareLog] }
-        )
+            session: LogSession.shared
+        ) { [shareLog] }
         let shareEntries = provider.allLogFileEntries.filter { $0.source == .shareExtension }
         XCTAssertEqual(shareEntries.map(\.url.lastPathComponent), ["share-extension.log"])
         XCTAssertTrue(provider.allLogFileEntries.contains { $0.source == .mainApp } || provider.logFileUrls.isEmpty || true)

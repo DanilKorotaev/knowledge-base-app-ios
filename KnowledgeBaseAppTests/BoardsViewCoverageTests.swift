@@ -113,9 +113,8 @@ struct BoardsViewCoverageTests {
                     isSending: false,
                     isInteractive: false,
                     attachmentLoader: nil,
-                    onFullscreenImage: nil,
-                    onAction: { _, _, _ in }
-                )
+                    onFullscreenImage: nil
+                ) { _, _, _ in }
             )
         }
     }

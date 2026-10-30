@@ -41,11 +41,11 @@ struct StructuredUIChartDetailView: View {
 
     private var selectedPoint: StructuredUIChartDetailPoint? {
         if usesDates, let selectedDate {
-            return points.min(by: { lhs, rhs in
+            return points.min { lhs, rhs in
                 let ld = abs((lhs.date ?? .distantPast).timeIntervalSince(selectedDate))
                 let rd = abs((rhs.date ?? .distantPast).timeIntervalSince(selectedDate))
                 return ld < rd
-            })
+            }
         }
         return points.last
     }
