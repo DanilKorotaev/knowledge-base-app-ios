@@ -1,7 +1,7 @@
 import Foundation
 import HealthKit
-import Testing
 @testable import KnowledgeBaseApp
+import Testing
 
 @Suite("KBHealthSyncService")
 struct KBHealthSyncServiceTests {

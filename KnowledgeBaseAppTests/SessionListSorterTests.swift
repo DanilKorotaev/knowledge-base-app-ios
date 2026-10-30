@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 final class SessionListSorterTests: XCTestCase {
     private func session(_ id: String) -> KBSession {

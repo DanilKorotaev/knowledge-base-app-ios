@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 final class ConsoleLoggerTests: XCTestCase {
     func testLogsStringMessage() {

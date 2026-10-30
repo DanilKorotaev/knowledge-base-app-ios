@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 final class ComposerAttachmentLimitsTests: XCTestCase {
     private func attachment(filename: String, size: Int64? = nil) -> PendingAttachment {

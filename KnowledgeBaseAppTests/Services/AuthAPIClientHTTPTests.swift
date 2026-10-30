@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 /// URLProtocol stub for AuthAPIClient network paths.
 final class AuthAPIClientHTTPTests: XCTestCase {

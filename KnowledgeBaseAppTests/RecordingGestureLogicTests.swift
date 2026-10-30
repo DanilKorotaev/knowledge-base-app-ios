@@ -1,6 +1,6 @@
 import CoreGraphics
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 final class RecordingGestureLogicTests: XCTestCase {
     func testCancelWhenSwipeLeftPastThreshold() {

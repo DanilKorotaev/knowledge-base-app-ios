@@ -1,6 +1,6 @@
 import HealthKit
-import Testing
 @testable import KnowledgeBaseApp
+import Testing
 
 @Suite("HealthKitService")
 struct HealthKitServiceTests {

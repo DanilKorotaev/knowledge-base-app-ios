@@ -61,7 +61,6 @@ disabled_rules:
   - pattern_matching_keywords
   - redundant_type_annotation
   - required_deinit
-  - sorted_imports
   - static_over_final_class
   - trailing_closure
   - trailing_newline
@@ -110,6 +109,7 @@ opt_in_rules:
   - reduce_into
   - redundant_nil_coalescing
   - sorted_first_last
+  - sorted_imports
   - static_operator
   - strong_iboutlet
   - toggle_bool

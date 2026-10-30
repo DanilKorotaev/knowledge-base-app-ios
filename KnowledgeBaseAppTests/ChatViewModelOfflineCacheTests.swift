@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 @MainActor
 final class ChatViewModelOfflineCacheTests: XCTestCase {

@@ -1,6 +1,6 @@
-import XCTest
-@testable import KnowledgeBaseApp
 import Alamofire
+@testable import KnowledgeBaseApp
+import XCTest
 
 final class KBClientMetadataTests: XCTestCase {
     func testApplySetsVersionHeadersAndUserAgent() {

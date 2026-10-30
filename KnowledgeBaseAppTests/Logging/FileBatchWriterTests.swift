@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 final class FileBatchWriterTests: XCTestCase {
     func testWritesAndFlushesOnClose() throws {

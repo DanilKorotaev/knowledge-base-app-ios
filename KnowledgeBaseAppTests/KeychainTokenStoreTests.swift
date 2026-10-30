@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 final class KeychainTokenStoreTests: XCTestCase {
     override func tearDown() {

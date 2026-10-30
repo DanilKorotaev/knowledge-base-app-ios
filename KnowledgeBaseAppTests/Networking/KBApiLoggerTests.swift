@@ -1,6 +1,6 @@
+@testable import KnowledgeBaseApp
 import QuartzCore
 import XCTest
-@testable import KnowledgeBaseApp
 
 final class KBApiLoggerTests: XCTestCase {
     private var settings: MockLoggerSettings!

@@ -1,7 +1,7 @@
-import SwiftUI
-import UIKit
-import Testing
 @testable import KnowledgeBaseApp
+import SwiftUI
+import Testing
+import UIKit
 
 @MainActor
 enum ViewCoverageHost {

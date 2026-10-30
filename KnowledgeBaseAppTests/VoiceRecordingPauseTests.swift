@@ -1,6 +1,6 @@
+@testable import KnowledgeBaseApp
 import SwiftUI
 import XCTest
-@testable import KnowledgeBaseApp
 
 final class VoiceRecordingSessionLogicTests: XCTestCase {
     func testAutoPauseOnlyWhenLockedAndRecording() {

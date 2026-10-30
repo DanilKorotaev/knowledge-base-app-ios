@@ -1,7 +1,7 @@
+@testable import KnowledgeBaseApp
 import SwiftUI
 import UIKit
 import XCTest
-@testable import KnowledgeBaseApp
 
 private struct HostAwareMockLoader: KBAttachmentLoaderProtocol {
     let apiHost: String

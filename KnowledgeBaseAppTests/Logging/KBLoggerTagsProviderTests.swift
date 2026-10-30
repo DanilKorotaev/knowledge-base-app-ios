@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 final class KBLoggerTagsProviderTests: XCTestCase {
     private var suiteName: String!

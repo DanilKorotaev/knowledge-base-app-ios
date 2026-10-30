@@ -9,6 +9,7 @@ Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 ## Progress notes
 
 - **2026-10-30 iteration 1:** fixed all `trailing_comma` (109 → 0 via `--fix`); rule re-enabled in `.swiftlint.yml` (soft CI). Baseline table below still shows the original snapshot; refresh JSON/summary when closing a larger batch.
+- **2026-10-30 iteration 2:** fixed all `sorted_imports` (90 → 0 via `--fix`); rule added to soft `opt_in_rules`.
 
 ## By rule (descending)
 
@@ -19,7 +20,7 @@ Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 | 178 | `line_length` |
 | ~~109~~ **0** | `trailing_comma` *(cleared; soft-enabled)* |
 | 94 | `non_optional_string_data_conversion` |
-| 90 | `sorted_imports` |
+| ~~90~~ **0** | `sorted_imports` *(cleared; soft-enabled)* |
 | 72 | `identifier_name` |
 | 69 | `number_separator` |
 | 45 | `attributes` |

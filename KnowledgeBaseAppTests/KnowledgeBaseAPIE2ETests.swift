@@ -1,5 +1,5 @@
-import XCTest
 @testable import KnowledgeBaseApp
+import XCTest
 
 private extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }

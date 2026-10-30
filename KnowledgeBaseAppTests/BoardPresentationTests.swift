@@ -1,6 +1,6 @@
 import Foundation
-import Testing
 @testable import KnowledgeBaseApp
+import Testing
 
 @Suite("BoardPresentation")
 struct BoardPresentationTests {

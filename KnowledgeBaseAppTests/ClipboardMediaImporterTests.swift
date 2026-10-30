@@ -1,7 +1,7 @@
-import UniformTypeIdentifiers
-import UIKit
-import XCTest
 @testable import KnowledgeBaseApp
+import UIKit
+import UniformTypeIdentifiers
+import XCTest
 
 final class ClipboardMediaImporterTests: XCTestCase {
     override func tearDown() {
