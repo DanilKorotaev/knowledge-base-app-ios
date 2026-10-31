@@ -9,6 +9,11 @@ struct StructuredUIChartDetailPoint: Identifiable, Hashable {
     let value: Double
 }
 
+private struct StructuredUIDatedChartPoint {
+    let date: Date
+    let value: Double
+}
+
 struct StructuredUIChartDetailView: View {
     let title: String
     let points: [StructuredUIChartDetailPoint]
@@ -19,10 +24,10 @@ struct StructuredUIChartDetailView: View {
     @State private var magnifyBaseDays: Double?
     @Environment(\.dismiss) private var dismiss
 
-    private var datedPoints: [(date: Date, value: Double, displayLabel: String)] {
+    private var datedPoints: [StructuredUIDatedChartPoint] {
         points.compactMap { point in
             guard let date = point.date else { return nil }
-            return (date, point.value, point.displayLabel)
+            return StructuredUIDatedChartPoint(date: date, value: point.value)
         }
     }
 

@@ -112,6 +112,12 @@ enum AssistantReplyStreamConsumer {
     }
 }
 
+struct AssistantReplyPhasePayload: Equatable {
+    let sessionId: String
+    let phase: AssistantReplyPhase
+    let activityLabel: String?
+}
+
 enum AssistantReplyPhaseNotification {
     static let name = Notification.Name("kbAssistantReplyPhaseDidChange")
 
@@ -133,7 +139,7 @@ enum AssistantReplyPhaseNotification {
         NotificationCenter.default.post(name: name, object: nil, userInfo: userInfo)
     }
 
-    static func parse(_ notification: Notification) -> (sessionId: String, phase: AssistantReplyPhase, activityLabel: String?)? {
+    static func parse(_ notification: Notification) -> AssistantReplyPhasePayload? {
         guard let sessionId = notification.userInfo?[KBNotificationUserInfoKey.sessionId] as? String,
               let kind = notification.userInfo?[KBNotificationUserInfoKey.assistantReplyPhaseKind] as? String,
               let phase = AssistantReplyPhase(
@@ -142,6 +148,6 @@ enum AssistantReplyPhaseNotification {
               )
         else { return nil }
         let activityLabel = notification.userInfo?[KBNotificationUserInfoKey.assistantReplyActivityLabel] as? String
-        return (sessionId, phase, activityLabel)
+        return AssistantReplyPhasePayload(sessionId: sessionId, phase: phase, activityLabel: activityLabel)
     }
 }

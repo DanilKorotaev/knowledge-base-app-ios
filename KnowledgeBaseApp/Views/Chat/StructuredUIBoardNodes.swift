@@ -184,15 +184,21 @@ struct StructuredUITableNodeView: View {
     }
 }
 
+private struct StructuredUIChartPreviewPoint: Identifiable {
+    let id: Int
+    let label: String
+    let value: Double
+}
+
 struct StructuredUIChartNodeView: View {
     let node: KBStructuredUINode
     var onAppAction: ((KBAppAction, KBStructuredUINode) -> Void)?
 
-    private var points: [(id: Int, label: String, display: String, value: Double)] {
+    private var points: [StructuredUIChartPreviewPoint] {
         (node.series ?? []).enumerated().compactMap { index, point in
             guard let value = point.y else { return nil }
             let raw = point.x?.isEmpty == false ? (point.x ?? "") : "\(index + 1)"
-            return (index, raw, StructuredUIChartDisplay.axisLabel(from: raw), value)
+            return StructuredUIChartPreviewPoint(id: index, label: raw, value: value)
         }
     }
 

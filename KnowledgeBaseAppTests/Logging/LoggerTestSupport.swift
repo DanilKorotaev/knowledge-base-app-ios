@@ -13,12 +13,18 @@ final class MockExcludedLoggerTagsProvider: ExcludedLoggerTagsProviderDescriptio
     var excludedTags: Set<LoggerTag> = []
 }
 
+struct CapturedLogEntry {
+    let message: String
+    let level: LogLevel
+    let buildLevel: LogBuildLevel
+}
+
 final class CapturingLogger: Logger {
-    private(set) var entries: [(message: String, level: LogLevel, buildLevel: LogBuildLevel)] = []
+    private(set) var entries: [CapturedLogEntry] = []
 
     func log(_ message: Any?, level: LogLevel, buildLevel: LogBuildLevel) {
         guard let message else { return }
-        entries.append(("\(message)", level, buildLevel))
+        entries.append(CapturedLogEntry(message: "\(message)", level: level, buildLevel: buildLevel))
     }
 
     func tag(_ tag: LoggerTag) -> Logger { self }

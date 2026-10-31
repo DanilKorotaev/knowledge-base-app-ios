@@ -8,6 +8,8 @@ Generated with `swiftlint lint --config .swiftlint-strict.yml --reporter json`.
 
 ## Progress notes
 
+- **2026-10-31 iteration 10:** size/complexity soft gates. Cleared `large_tuple` (4→0); `WorkoutTypeSlug` dict cut cyclomatic 85; soft-enabled length/complexity/nesting/large_tuple with raised soft thresholds. Strict still has ~ file/type/function length + cyclo≤14 under tight defaults.
+
 - **2026-10-31 iteration 9:** cleared multiline/layout + tiny leftovers (~22 → 0); soft-enabled listed rules. `static_over_final_class` remains (URLProtocol). Strict residual ~650 after prior clears; refresh JSON when closing a larger batch.
 
 - **2026-10-30 iteration 1:** fixed all `trailing_comma` (109 → 0 via `--fix`); rule re-enabled in `.swiftlint.yml` (soft CI). Baseline table below still shows the original snapshot; refresh JSON/summary when closing a larger batch.

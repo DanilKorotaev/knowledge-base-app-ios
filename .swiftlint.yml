@@ -32,20 +32,13 @@ excluded:
 # Rules that currently fail under the strict baseline (re-enable via epic subtasks).
 disabled_rules:
   - attributes
-  - cyclomatic_complexity
   - file_header
-  - file_length
   - file_name
-  - function_body_length
-  - function_parameter_count
   - identifier_name
-  - large_tuple
-  - nesting
   - non_optional_string_data_conversion
   - pattern_matching_keywords
   - required_deinit
   - static_over_final_class
-  - type_body_length
   - type_name
 
 # Soft line_length: error 200; warning 160 until remaining ~150 at strict 120 are sliced.
@@ -54,6 +47,32 @@ line_length:
   error: 200
   ignores_comments: true
   ignores_urls: true
+
+# Soft size/complexity gates (iteration 10): warning = current max + margin; tighten later.
+# Worst production files today: ChatViewModel ~1794 / type ~1594; function bodies ≤107; params ≤7.
+file_length:
+  warning: 1850
+  error: 2000
+
+type_body_length:
+  warning: 1650
+  error: 1800
+
+function_body_length:
+  warning: 120
+  error: 150
+
+function_parameter_count:
+  warning: 7
+  error: 8
+
+cyclomatic_complexity:
+  warning: 15
+  error: 20
+
+nesting:
+  type_level: 2
+  function_level: 3
 
 # Opt-ins that already pass (re-enabled progressively via epic).
 opt_in_rules:
