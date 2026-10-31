@@ -137,6 +137,7 @@
 		4F3B22BF69BF7FB53E0F702E /* LoggingUtilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C8E1A68E164507C86BF6F76 /* LoggingUtilityTests.swift */; };
 		4F573D9E7AF42D21F3EC5AAD /* AssistantReplyPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F177E2C6F97AA880529F5F /* AssistantReplyPhase.swift */; };
 		50149FF33D425943F179B84E /* BoardsArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC6A7BBFC8839700CBB7B0B /* BoardsArchiveView.swift */; };
+		507D1F83075B9CE33D056575 /* KnowledgeBaseAPIClient+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8312754C6A340A4168D22D /* KnowledgeBaseAPIClient+Chat.swift */; };
 		53073E94FA8A2789C2A88DAE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 09E3BBC29E5C1D378BF4C8B8 /* InfoPlist.strings */; };
 		5374DA950655D9CDC1F7C21F /* PendingVoiceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CE439ABCFABF62A1AFF2C11 /* PendingVoiceCapture.swift */; };
 		53FDB826E259B0CFCD14E27F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35BC1DA99AD0F7B6E33E63C5 /* Assets.xcassets */; };
@@ -850,6 +851,7 @@
 		EB1F215090174ACE1EABAB6E /* KBSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBSession.swift; sourceTree = "<group>"; };
 		EB53440D2678FAF8E1960AF3 /* WatchRelayAudioInbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRelayAudioInbox.swift; sourceTree = "<group>"; };
 		EB7867145911FE7BBDB15120 /* UserDefaultsInspectorSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsInspectorSettings.swift; sourceTree = "<group>"; };
+		EB8312754C6A340A4168D22D /* KnowledgeBaseAPIClient+Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KnowledgeBaseAPIClient+Chat.swift"; sourceTree = "<group>"; };
 		EB8AE7FD6B7E7A644A425D13 /* NewSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewSessionSheet.swift; sourceTree = "<group>"; };
 		EBA439013BC5F2B88B399380 /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
 		EC30808A94368AFDF66DDF39 /* DailyHealthKitDataProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyHealthKitDataProviding.swift; sourceTree = "<group>"; };
@@ -1563,6 +1565,7 @@
 				23A2E84461D4F497E84180FD /* KBAppActionCenter.swift */,
 				FD8A15F6500D1B708191407C /* KBAttachmentLoader.swift */,
 				CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */,
+				EB8312754C6A340A4168D22D /* KnowledgeBaseAPIClient+Chat.swift */,
 				263C5B1B56AA607AEFAFA6ED /* MessageCopyContent.swift */,
 				2BDBAA5B91EBB81D135FD403 /* NetworkPathMonitor.swift */,
 				4D1B4440C7AE610D9A32EB86 /* NextcloudFileOpener.swift */,
@@ -2057,6 +2060,7 @@
 				20B75722F2ED81948F5D2BCC /* KBStructuredUI.swift in Sources */,
 				B94D0F429E6F9A7123D1851D /* KBTopViewController.swift in Sources */,
 				9EA32402A5214BDB1D13D253 /* KeychainTokenStore.swift in Sources */,
+				507D1F83075B9CE33D056575 /* KnowledgeBaseAPIClient+Chat.swift in Sources */,
 				FA4A5CE5CB29F0354B53C199 /* KnowledgeBaseAPIClient.swift in Sources */,
 				00543EEFFC3C42A06BC4D2A0 /* KnowledgeBaseApp.swift in Sources */,
 				3E3686DD8A6345F55E307ADD /* KnowledgeBaseAppShortcuts.swift in Sources */,

@@ -48,15 +48,15 @@ line_length:
   ignores_comments: true
   ignores_urls: true
 
-# Soft size/complexity gates (iteration 12): ratcheted after ChatViewModel+Send extract.
-# Worst production files today: APIClient ~1395; ChatViewModel ~871 / +Send ~657; MainView ~993; fn body ≤107; params ≤7.
+# Soft size/complexity gates (iteration 13): ratcheted after KnowledgeBaseAPIClient+Chat extract.
+# Worst today: ChatViewModelTests ~1215; MainView ~993; ChatViewModel ~914 / type ~903; APIClient ~580 / +Chat ~818.
 file_length:
-  warning: 1450
-  error: 1600
+  warning: 1250
+  error: 1400
 
 type_body_length:
-  warning: 1450
-  error: 1600
+  warning: 1250
+  error: 1400
 
 function_body_length:
   warning: 120
