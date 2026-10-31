@@ -173,7 +173,6 @@ final class WatchVoiceSessionContextSync: NSObject, WCSessionDelegate {
             context[WatchConnectivityKeys.relayStatus] = status
         }
     }
-
 }
 #else
 enum WatchVoiceSessionContextSync {

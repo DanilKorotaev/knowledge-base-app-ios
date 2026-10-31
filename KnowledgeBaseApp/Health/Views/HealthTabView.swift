@@ -37,13 +37,17 @@ struct HealthTabView: View {
         } message: {
             Text(viewModel.presentedAlert?.message ?? "")
         }
-        .sheet(isPresented: $showArchiveShareSheet, onDismiss: {
-            viewModel.clearExportArchive()
-        }) {
-            if let url = viewModel.exportArchiveURL {
-                ShareSheet(items: [url])
+        .sheet(
+            isPresented: $showArchiveShareSheet,
+            onDismiss: {
+                viewModel.clearExportArchive()
+            },
+            content: {
+                if let url = viewModel.exportArchiveURL {
+                    ShareSheet(items: [url])
+                }
             }
-        }
+        )
         .onChange(of: viewModel.exportArchiveURL) { _, url in
             showArchiveShareSheet = url != nil
         }

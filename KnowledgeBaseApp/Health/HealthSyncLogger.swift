@@ -11,7 +11,7 @@ enum HealthSyncLogger {
 
     static func batchUploaded(days: Int, uploaded: Int, total: Int, oldest: String?) {
         // Avoid flooding release logs on multi-year backfills (every 50 days or last batch).
-        guard uploaded == total || uploaded % 50 == 0 || days >= 50 else { return }
+        guard uploaded == total || uploaded.isMultiple(of: 50) || days >= 50 else { return }
         logger.releaseInfo(
             "[health-sync] batch uploaded=\(uploaded)/\(total) batchDays=\(days) oldest=\(oldest ?? "nil")"
         )

@@ -91,13 +91,14 @@ struct BoardPresentationTests {
         let rows = [["1", "2"], ["3"]]
         #expect(StructuredUITableDisplay.columnCount(columns: columns, rows: rows) == 2)
         #expect(StructuredUITableDisplay.cell(["x"], at: 0) == "x")
-        #expect(StructuredUITableDisplay.cell(["x"], at: 3) == "")
+        #expect(StructuredUITableDisplay.cell(["x"], at: 3).isEmpty)
         #expect(
             StructuredUITableDisplay.cell(
                 ["2026-09-01"],
                 at: 0,
                 column: KBStructuredUITableColumn(id: "date", label: "Date")
-            ).contains("2026")
+            )
+            .contains("2026")
         )
         #expect(StructuredUITableDisplay.columnCount(columns: [], rows: []) == 0)
         #expect(StructuredUITableDisplay.allowsHorizontalScroll(scrollHorizontal: nil, columnCount: 4))

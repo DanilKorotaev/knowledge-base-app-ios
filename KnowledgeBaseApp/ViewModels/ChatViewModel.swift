@@ -1178,10 +1178,8 @@ final class ChatViewModel {
             }
         }
 
-        for attachment in draft.attachments {
-            if attachment.localURL.startAccessingSecurityScopedResource() {
-                scopedURLs.append(attachment.localURL)
-            }
+        for attachment in draft.attachments where attachment.localURL.startAccessingSecurityScopedResource() {
+            scopedURLs.append(attachment.localURL)
         }
 
         beginSendAttempt()

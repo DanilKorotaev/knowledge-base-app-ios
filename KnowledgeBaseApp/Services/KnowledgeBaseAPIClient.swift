@@ -853,7 +853,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
                         while let r = pending.range(of: Data([10, 10])) {
                             let eventBytes = pending[..<r.lowerBound]
                             pending = Data(pending[r.upperBound...])
-                            let block = String(decoding: eventBytes, as: UTF8.self)
+                            guard let block = String(bytes: eventBytes, encoding: .utf8) else { continue }
                             guard let payload = SSEventParser.dataPayload(fromSingleEventBlock: block) else { continue }
                             if Self.handleSSEChatPayload(payload, continuation: continuation) {
                                 sawDoneEvent = true
@@ -863,8 +863,8 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
                         if sawDoneEvent { break }
                     }
                     if !sawDoneEvent, !pending.isEmpty {
-                        let block = String(decoding: pending, as: UTF8.self)
-                        if let payload = SSEventParser.dataPayload(fromSingleEventBlock: block),
+                        if let block = String(bytes: pending, encoding: .utf8),
+                           let payload = SSEventParser.dataPayload(fromSingleEventBlock: block),
                            Self.handleSSEChatPayload(payload, continuation: continuation) {
                             sawDoneEvent = true
                         }
@@ -1187,7 +1187,10 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         let transcriptions = draft.voiceClips.map(\.transcriptionSegment)
         if !transcriptions.isEmpty {
             let json = try JSONSerialization.data(withJSONObject: transcriptions)
-            appendField(name: "audio_transcriptions", value: String(decoding: json, as: UTF8.self))
+            guard let transcriptionsJSON = String(bytes: json, encoding: .utf8) else {
+                throw URLError(.cannotDecodeContentData)
+            }
+            appendField(name: "audio_transcriptions", value: transcriptionsJSON)
         }
 
         for attachment in draft.attachments {

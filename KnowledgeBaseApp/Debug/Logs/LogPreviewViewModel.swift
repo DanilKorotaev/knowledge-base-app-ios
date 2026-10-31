@@ -43,11 +43,13 @@ final class LogPreviewViewModel: ObservableObject, LogPreviewDetailsViewDelegate
         } else {
             let fileName = fileURL.deletingPathExtension().lastPathComponent
             let selectedFilterValues = selectedFilters.map(\.value).sorted().joined(separator: "+")
-            let sharedFileName = [fileName,
-                                  searchText.isEmpty ? nil : searchText,
-                                  selectedFilterValues.isEmpty ? nil : selectedFilterValues]
-                .compactMap { $0 }
-                .joined(separator: "+")
+            let sharedFileName = [
+                fileName,
+                searchText.isEmpty ? nil : searchText,
+                selectedFilterValues.isEmpty ? nil : selectedFilterValues
+            ]
+            .compactMap { $0 }
+            .joined(separator: "+")
             let tempURL = URL(fileURLWithPath: NSTemporaryDirectory())
                 .appendingPathComponent("\(sharedFileName).\(fileURL.pathExtension)")
             do {

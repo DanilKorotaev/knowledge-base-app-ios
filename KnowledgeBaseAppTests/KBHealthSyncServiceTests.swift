@@ -225,7 +225,7 @@ private final class MockHealthKitService: HealthKitServiceProtocol {
         sleep: nil,
         activityRings: nil,
         weightKg: nil,
-            syncedAt: nil
+        syncedAt: nil
     )
     var workoutBatches: [(workouts: [WorkoutAggregationInput], newAnchor: Data?)] = []
 

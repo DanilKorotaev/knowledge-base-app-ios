@@ -307,7 +307,7 @@ struct BoardDateRangePickerView: View {
             guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
             cursor = next
         }
-        while days.count % 7 != 0 {
+        while !days.count.isMultiple(of: 7) {
             days.append(nil)
         }
         return days

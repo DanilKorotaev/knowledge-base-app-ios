@@ -33,30 +33,20 @@ excluded:
 disabled_rules:
   - attributes
   - cyclomatic_complexity
-  - empty_string
   - file_header
   - file_length
   - file_name
-  - for_where
   - function_body_length
   - function_parameter_count
   - identifier_name
   - large_tuple
-  - legacy_multiple
-  - multiline_arguments
-  - multiline_function_chains
-  - multiline_literal_brackets
-  - multiple_closures_with_trailing_closure
   - nesting
   - non_optional_string_data_conversion
-  - optional_data_string_conversion
   - pattern_matching_keywords
   - required_deinit
   - static_over_final_class
   - type_body_length
   - type_name
-  - vertical_parameter_alignment_on_call
-  - vertical_whitespace_closing_braces
 
 # Soft line_length: error 200; warning 160 until remaining ~150 at strict 120 are sliced.
 line_length:
@@ -65,7 +55,7 @@ line_length:
   ignores_comments: true
   ignores_urls: true
 
-# Opt-ins that already pass (0 violations on 2026-10-30 inventory).
+# Opt-ins that already pass (re-enabled progressively via epic).
 opt_in_rules:
   - array_init
   - closure_end_indentation
@@ -77,6 +67,7 @@ opt_in_rules:
   - contains_over_range_nil_comparison
   - empty_collection_literal
   - empty_count
+  - empty_string
   - enum_case_associated_values_count
   - explicit_init
   - extension_access_modifier
@@ -88,9 +79,13 @@ opt_in_rules:
   - implicit_return
   - joined_default_parameter
   - last_where
+  - legacy_multiple
   - literal_expression_end_indentation
   - lower_acl_than_parent
   - modifier_order
+  - multiline_arguments
+  - multiline_function_chains
+  - multiline_literal_brackets
   - nslocalizedstring_key
   - object_literal
   - operator_usage_whitespace
@@ -114,6 +109,8 @@ opt_in_rules:
   - unneeded_parentheses_in_closure_argument
   - unowned_variable_capture
   - untyped_error_in_catch
+  - vertical_parameter_alignment_on_call
+  - vertical_whitespace_closing_braces
   - vertical_whitespace_opening_braces
   - yoda_condition
 

@@ -21,7 +21,8 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 **Baseline inventory (2026-10-30):** **1334** violations across **40** rules (see inventory md). Soft config disables remaining backlog rules + `nesting` and keeps opt-ins that already pass.
 
-**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Iteration 4 `trailing_closure` (~45 → 0; soft-enabled 2026-10-30). Iteration 5 style/low-risk batch (~33 → 0; soft-enabled 2026-10-30): `opening_brace`, `vertical_whitespace`, `trailing_newline`, `implicit_optional_initialization`, `unneeded_synthesized_initializer`, `modifier_order`, `redundant_type_annotation`. Iteration 6 Force/unsafe (2026-10-30): `force_try` + `force_cast` → 0 and soft-enabled; production `force_unwrapping` cleared (~76 → 0). Iteration 7 (2026-10-30): test `force_unwrapping` **123 → 0** (`Data(…).utf8`, `XCTUnwrap` / `#require`, `TimeZone.gmt`); soft-enabled. Iteration 8 (2026-10-30): `line_length` — fixed 2 errors + all lines >160; soft-enabled with warning **160** / error **200** (strict inventory still ~150 at 120). Next: size/complexity (`type_body_length` / `file_length` / …) or lower soft `line_length` warning toward 120.
+**Progress:** Iteration 1 `trailing_comma` (−109). Iteration 2 `sorted_imports` (−90). Iteration 3 `number_separator` (−69 → soft-enabled). Iteration 4 `trailing_closure` (~45 → 0; soft-enabled 2026-10-30). Iteration 5 style/low-risk batch (~33 → 0; soft-enabled 2026-10-30): `opening_brace`, `vertical_whitespace`, `trailing_newline`, `implicit_optional_initialization`, `unneeded_synthesized_initializer`, `modifier_order`, `redundant_type_annotation`. Iteration 6 Force/unsafe (2026-10-30): `force_try` + `force_cast` → 0 and soft-enabled; production `force_unwrapping` cleared (~76 → 0). Iteration 7 (2026-10-30): test `force_unwrapping` **123 → 0** (`Data(…).utf8`, `XCTUnwrap` / `#require`, `TimeZone.gmt`); soft-enabled. Iteration 8 (2026-10-30): `line_length` — fixed 2 errors + all lines >160; soft-enabled with warning **160** / error **200** (strict inventory still ~150 at 120). Iteration 9 (2026-10-31): multiline/layout + tiny leftovers → 0 and soft-enabled: `empty_string`, `for_where`, `legacy_multiple`, `multiline_arguments`, `multiline_function_chains`, `multiline_literal_brackets`, `multiple_closures_with_trailing_closure`, `optional_data_string_conversion`, `vertical_parameter_alignment_on_call`, `vertical_whitespace_closing_braces`. Left `static_over_final_class` disabled (`URLProtocol` needs `class` overrides). Next: size/complexity (`type_body_length` / `file_length` / …) or lower soft `line_length` toward 120.
+
 
 ## How to re-enable a rule
 
@@ -57,16 +58,17 @@ Keep **soft** SwiftLint green in CI (`.swiftlint.yml`), then iteratively re-enab
 
 - [ ] `identifier_name` / `type_name` / `file_name` / `file_header`
 - [ ] `required_deinit` (~215 — evaluate whether to keep or drop from strict)
-- [ ] `attributes` / `pattern_matching_keywords` / `static_over_final_class`
+- [ ] `attributes` / `pattern_matching_keywords`
+- [ ] `static_over_final_class` (4 left — keep disabled: `URLProtocol` mock overrides require `class func`)
 
 ### String / Data
 
-- [ ] `non_optional_string_data_conversion` (~94)
-- [ ] `optional_data_string_conversion` / `empty_string`
+- [ ] `non_optional_string_data_conversion` (2 left on soft path; was ~94)
+- [x] `optional_data_string_conversion` / `empty_string` (soft-enabled 2026-10-31)
 
 ### Multiline / layout opt-ins
 
-- [ ] `multiline_arguments` / `multiline_function_chains` / `multiline_literal_brackets` / `vertical_parameter_alignment_on_call` / `vertical_whitespace_closing_braces` / `multiple_closures_with_trailing_closure` / `for_where` / `legacy_multiple`
+- [x] `multiline_arguments` / `multiline_function_chains` / `multiline_literal_brackets` / `vertical_parameter_alignment_on_call` / `vertical_whitespace_closing_braces` / `multiple_closures_with_trailing_closure` / `for_where` / `legacy_multiple` (soft-enabled 2026-10-31)
 
 ## Subtasks — remaining Swift compiler warnings (Swift 6 path)
 

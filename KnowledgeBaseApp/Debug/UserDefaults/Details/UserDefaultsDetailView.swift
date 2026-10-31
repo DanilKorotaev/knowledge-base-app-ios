@@ -133,11 +133,15 @@ struct UserDefaultsDetailView: View {
         Menu {
             copyButton(value: viewModel.key, title: L10n.string("ud.copy_key"))
 
-            Button(role: .destructive, action: {
-                viewModel.didDeleteActionRequested()
-            }, label: {
-                Label("ud.delete_key", systemImage: "trash")
-            })
+            Button(
+                role: .destructive,
+                action: {
+                    viewModel.didDeleteActionRequested()
+                },
+                label: {
+                    Label("ud.delete_key", systemImage: "trash")
+                }
+            )
         } label: {
             Image(systemName: "ellipsis.circle")
         }

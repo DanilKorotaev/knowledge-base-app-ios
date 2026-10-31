@@ -239,7 +239,8 @@ struct StructuredUIChartNodeView: View {
         let footer = StructuredUIChartDisplay.sparseAxisValues(
             from: points.map(\.label),
             count: 3
-        ).map(StructuredUIChartDisplay.compactAxisLabel(from:))
+        )
+        .map(StructuredUIChartDisplay.compactAxisLabel(from:))
         return VStack(alignment: .leading, spacing: 6) {
             Chart(points, id: \.id) { point in
                 LineMark(

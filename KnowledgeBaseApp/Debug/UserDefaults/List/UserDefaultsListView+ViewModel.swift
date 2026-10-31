@@ -136,7 +136,8 @@ extension UserDefaultsListView {
                         return true
                     }
                     return lhs < rhs
-                }.map { category in
+                }
+                .map { category in
                     let sectionItems = (grouped[category] ?? []).sorted {
                         $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending
                     }
