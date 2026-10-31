@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 2.0.10 | 266 | `ios/v2.0.10` | 2026-10-31 | TestFlight release |
 | 2.0.9 | 265 | `ios/v2.0.9` | 2026-10-31 | TestFlight release |
 | 2.0.8 | 262 | `ios/v2.0.8` | 2026-10-31 | TestFlight release |
 | 2.0.7 | 261 | `ios/v2.0.7` | 2026-10-31 | Enable soft line_length (160/200) after clearing errors and long lines. |
