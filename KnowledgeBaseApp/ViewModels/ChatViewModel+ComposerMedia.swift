@@ -242,6 +242,9 @@ extension ChatViewModel {
     }
 
     func transcribePendingVoiceCapture(id: String) async {
+        guard inFlightTranscriptionIDs.insert(id).inserted else { return }
+        defer { inFlightTranscriptionIDs.remove(id) }
+
         guard let index = pendingVoiceCaptures.firstIndex(where: { $0.id == id }) else { return }
         let audioURL = pendingVoiceCaptures[index].audioURL
         pendingVoiceCaptures[index].state = .transcribing
@@ -249,12 +252,16 @@ extension ChatViewModel {
 
         do {
             let transcription = try await client.transcribeVoiceRecording(audioFileURL: audioURL)
+            guard !Task.isCancelled else { return }
             guard pendingVoiceCaptures.contains(where: { $0.id == id }) else { return }
             pendingVoiceCaptures.removeAll { $0.id == id }
             let clip = PendingVoiceClip(audioURL: audioURL, transcriptionSegment: transcription)
             composerDraft.voiceClips.append(clip)
             composerDraft.appendTranscription(transcription)
+        } catch is CancellationError {
+            return
         } catch {
+            guard pendingVoiceCaptures.contains(where: { $0.id == id }) else { return }
             guard let failedIndex = pendingVoiceCaptures.firstIndex(where: { $0.id == id }) else { return }
             pendingVoiceCaptures[failedIndex].state = .failed(
                 message: VoicePipelineErrorMessage.forTranscription(error)

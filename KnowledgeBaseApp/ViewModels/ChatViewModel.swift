@@ -183,6 +183,12 @@ final class ChatViewModel {
     /// Draft-store session folders kept alive until send finishes (promote copies media
     /// under the new id but in-flight upload URLs may still point at the old folder).
     var deferredComposerDraftCleanupIds: [String] = []
+    /// Ensures interrupted `.transcribing` captures resume at most once per VM lifetime.
+    /// Must not run from `init`: SwiftUI re-evaluates `ChatView`/`State(initialValue:)` on
+    /// parent re-renders and would otherwise spawn unbounded parallel `/voice/transcribe` calls.
+    private var didResumeInterruptedTranscriptions = false
+    /// Single-flight guard so the same capture id cannot hit the network twice on one VM.
+    var inFlightTranscriptionIDs = Set<String>()
 
     /// Backward-compatible alias for tests and legacy call sites.
     var draft: String {
@@ -223,11 +229,12 @@ final class ChatViewModel {
         self.sessionKBModeStore = sessionKBModeStore
         self.inFlightReplyStore = inFlightReplyStore
         self.useKnowledgeBase = sessionKBModeStore.useKnowledgeBase(for: session)
+        // Draft UI only — never resume network transcription from init (see flag above).
         restoreComposerDraftIfNeeded()
-        restoreInFlightReplyUIIfNeeded()
     }
 
     func load() async {
+        resumeInterruptedTranscriptionsIfNeeded()
         if session.isLocalDraft {
             isLoading = false
             syncStatus = .idle
@@ -762,10 +769,12 @@ final class ChatViewModel {
         composerDraft = loaded.draft
         pendingVoiceCaptures = loaded.pendingVoiceCaptures
         syncTranscribingVoiceFlag()
-        resumeInterruptedTranscriptions()
     }
 
-    private func resumeInterruptedTranscriptions() {
+    /// Resumes stuck `.transcribing` captures after chat becomes active (`.task` → `load`).
+    func resumeInterruptedTranscriptionsIfNeeded() {
+        guard !didResumeInterruptedTranscriptions else { return }
+        didResumeInterruptedTranscriptions = true
         let transcribingIDs = pendingVoiceCaptures.compactMap { capture -> String? in
             if case .transcribing = capture.state { return capture.id }
             return nil

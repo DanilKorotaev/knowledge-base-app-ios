@@ -99,6 +99,97 @@ final class ChatViewModelVoiceRetryTests: XCTestCase {
         XCTAssertTrue(viewModel.pendingVoiceCaptures.isEmpty)
         XCTAssertFalse(FileManager.default.fileExists(atPath: audioURL.path))
     }
+
+    /// Regression: SwiftUI re-creates throwaway ChatViewModels; init must not start transcription.
+    func testInitDoesNotResumeInterruptedTranscription() async throws {
+        let store = InMemoryKBStore(demoSession: false)
+        let session = KBSession(id: "voice-resume-init-1", title: "Chat", messageCount: 0, updatedAt: nil)
+
+        let source = FileManager.default.temporaryDirectory
+            .appendingPathComponent("voice-resume-init-\(UUID().uuidString).m4a")
+        try Data("voice-bytes".utf8).write(to: source)
+        let persisted = try PendingVoiceStore.persistRecording(from: source)
+
+        let capture = PendingVoiceCapture(audioURL: persisted, state: .transcribing)
+        _ = draftStore.save(
+            sessionId: session.id,
+            draft: ChatComposerDraft(),
+            pendingVoiceCaptures: [capture]
+        )
+
+        let client = CountingTranscribeChatAPIClient(store: store)
+        _ = ChatViewModel(
+            session: session,
+            client: client,
+            composerDraftStore: draftStore
+        )
+        // Give any accidental Task a chance to schedule.
+        try await Task.sleep(for: .milliseconds(50))
+
+        XCTAssertEqual(client.transcribeCallCount, 0)
+    }
+
+    func testLoadResumesInterruptedTranscriptionOnceAcrossRepeatedLoads() async throws {
+        let store = InMemoryKBStore(demoSession: false)
+        let session = KBSession(id: "voice-resume-load-1", title: "Chat", messageCount: 0, updatedAt: nil)
+
+        let source = FileManager.default.temporaryDirectory
+            .appendingPathComponent("voice-resume-load-\(UUID().uuidString).m4a")
+        try Data("voice-bytes".utf8).write(to: source)
+        let persisted = try PendingVoiceStore.persistRecording(from: source)
+
+        let capture = PendingVoiceCapture(audioURL: persisted, state: .transcribing)
+        _ = draftStore.save(
+            sessionId: session.id,
+            draft: ChatComposerDraft(),
+            pendingVoiceCaptures: [capture]
+        )
+
+        let client = CountingTranscribeChatAPIClient(store: store)
+        let viewModel = ChatViewModel(
+            session: session,
+            client: client,
+            composerDraftStore: draftStore
+        )
+        XCTAssertEqual(viewModel.pendingVoiceCaptures.count, 1)
+
+        await viewModel.load()
+        await viewModel.load()
+        // Resume spawns a Task; wait until transcription finishes.
+        for _ in 0..<40 where client.transcribeCallCount == 0 || !viewModel.pendingVoiceCaptures.isEmpty {
+            try await Task.sleep(for: .milliseconds(25))
+        }
+
+        XCTAssertEqual(client.transcribeCallCount, 1)
+        XCTAssertTrue(viewModel.pendingVoiceCaptures.isEmpty)
+        XCTAssertEqual(viewModel.composerDraft.voiceClips.count, 1)
+    }
+
+    func testTranscribePendingVoiceCaptureIsSingleFlight() async throws {
+        let store = InMemoryKBStore(demoSession: false)
+        let session = KBSession(id: "voice-single-flight-1", title: "Chat", messageCount: 0, updatedAt: nil)
+
+        let source = FileManager.default.temporaryDirectory
+            .appendingPathComponent("voice-single-flight-\(UUID().uuidString).m4a")
+        try Data("voice-bytes".utf8).write(to: source)
+        let persisted = try PendingVoiceStore.persistRecording(from: source)
+
+        let client = SlowCountingTranscribeChatAPIClient(store: store, delayNanoseconds: 80_000_000)
+        let viewModel = ChatViewModel(
+            session: session,
+            client: client,
+            composerDraftStore: draftStore
+        )
+        let capture = PendingVoiceCapture(audioURL: persisted, state: .transcribing)
+        viewModel.pendingVoiceCaptures = [capture]
+
+        async let first: Void = viewModel.transcribePendingVoiceCapture(id: capture.id)
+        async let second: Void = viewModel.transcribePendingVoiceCapture(id: capture.id)
+        _ = await (first, second)
+
+        XCTAssertEqual(client.transcribeCallCount, 1)
+        XCTAssertTrue(viewModel.pendingVoiceCaptures.isEmpty)
+    }
 }
 
 @MainActor
@@ -178,6 +269,113 @@ private final class FailingTranscribeThenSuccessChatAPIClient: ChatAPIClientProt
             throw URLError(.timedOut)
         }
         return "Привет из повторной транскрибации"
+    }
+
+    func sendVoiceRecording(sessionId: String, audioFileURL: URL, transcriptionHint: String, useKnowledgeBase: Bool) async throws -> VoiceRecordingSendResult {
+        VoiceRecordingSendResult(messages: [], transcription: transcriptionHint)
+    }
+
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        AsyncThrowingStream { $0.finish() }
+    }
+
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
+    }
+}
+
+@MainActor
+private final class CountingTranscribeChatAPIClient: ChatAPIClientProtocol, @unchecked Sendable {
+    let store: InMemoryKBStore
+    private(set) var transcribeCallCount = 0
+
+    init(store: InMemoryKBStore) {
+        self.store = store
+    }
+
+    func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
+        KBMessagesPage(messages: store.messages(for: sessionId), total: 0, hasMoreOlder: false)
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func sendAttachment(sessionId: String, fileURL: URL, filename: String, mimeType: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        transcribeCallCount += 1
+        return "Возобновлённая транскрипция"
+    }
+
+    func sendVoiceRecording(sessionId: String, audioFileURL: URL, transcriptionHint: String, useKnowledgeBase: Bool) async throws -> VoiceRecordingSendResult {
+        VoiceRecordingSendResult(messages: [], transcription: transcriptionHint)
+    }
+
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        AsyncThrowingStream { $0.finish() }
+    }
+
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
+    }
+}
+
+@MainActor
+private final class SlowCountingTranscribeChatAPIClient: ChatAPIClientProtocol, @unchecked Sendable {
+    let store: InMemoryKBStore
+    let delayNanoseconds: UInt64
+    private(set) var transcribeCallCount = 0
+
+    init(store: InMemoryKBStore, delayNanoseconds: UInt64) {
+        self.store = store
+        self.delayNanoseconds = delayNanoseconds
+    }
+
+    func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
+        KBMessagesPage(messages: store.messages(for: sessionId), total: 0, hasMoreOlder: false)
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func sendAttachment(sessionId: String, fileURL: URL, filename: String, mimeType: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+        transcribeCallCount += 1
+        try await Task.sleep(nanoseconds: delayNanoseconds)
+        return "Single-flight transcription"
     }
 
     func sendVoiceRecording(sessionId: String, audioFileURL: URL, transcriptionHint: String, useKnowledgeBase: Bool) async throws -> VoiceRecordingSendResult {
