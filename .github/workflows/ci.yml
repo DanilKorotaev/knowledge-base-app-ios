@@ -67,9 +67,9 @@ jobs:
       - name: Install gems
         run: bundle install --jobs 4 --retry 3
 
-      - name: SwiftLint (soft CI config)
+      # Hard gate: lint must pass before any XcodeGen / tests (fail-fast).
+      - name: SwiftLint
         id: lint
-        continue-on-error: true
         run: bundle exec fastlane lint
 
       - name: Generate Xcode project (XcodeGen)
@@ -101,16 +101,12 @@ jobs:
         if: always()
         run: >
           python3 scripts/ci/telegram_notify.py tests
-          --outcome ${{ steps.tests.outcome }}
+          --outcome ${{ steps.ci_outcome.outputs.outcome }}
           --ui-outcome ${{ steps.ui_tests.outcome || 'skipped' }}
 
       - name: Notify KB App ingress (tests)
         if: always()
         run: python3 scripts/ci/kbapp_ingress_notify.py tests --outcome ${{ steps.ci_outcome.outputs.outcome }}
-
-      - name: Fail if SwiftLint failed
-        if: steps.lint.outcome != 'success'
-        run: exit 1
 
       - name: Fail if unit tests failed
         if: steps.tests.outcome != 'success'

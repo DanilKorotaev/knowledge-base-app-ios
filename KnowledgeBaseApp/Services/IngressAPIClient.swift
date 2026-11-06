@@ -134,8 +134,11 @@ struct IngressRule: Codable, Identifiable, Equatable, Hashable {
         let key = action["session_key"]?.stringValue
         let sid = action["session_id"]?.stringValue
         var parts = [kind]
-        if let key, !key.isEmpty { parts.append(key) }
-        else if let sid, !sid.isEmpty { parts.append("#\(sid)") }
+        if let key, !key.isEmpty {
+            parts.append(key)
+        } else if let sid, !sid.isEmpty {
+            parts.append("#\(sid)")
+        }
         if !policy.isEmpty { parts.append(policy) }
         return parts.joined(separator: " · ")
     }

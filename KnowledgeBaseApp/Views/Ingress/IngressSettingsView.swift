@@ -146,7 +146,7 @@ struct IngressSettingsView: View {
                 }
                 Button("ingress.settings.add_alerts_binding") {
                     editingBindingKey = "alerts"
-                    bindingSessionDraft = bindings.first(where: { $0.bindingKey == "alerts" }).map { String($0.sessionId) } ?? ""
+                    bindingSessionDraft = bindings.first { $0.bindingKey == "alerts" }.map { String($0.sessionId) } ?? ""
                     if !bindings.contains(where: { $0.bindingKey == "alerts" }) {
                         bindings.append(IngressBinding(bindingKey: "alerts", sessionId: 0, updatedAt: nil))
                     }
