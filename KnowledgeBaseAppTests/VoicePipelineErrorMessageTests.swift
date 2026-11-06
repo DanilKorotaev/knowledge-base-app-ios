@@ -2,18 +2,42 @@
 import XCTest
 
 final class VoicePipelineErrorMessageTests: XCTestCase {
-    func testTimeoutUsesHumanCopy() {
-        let message = VoicePipelineErrorMessage.forTranscription(URLError(.timedOut))
-        XCTAssertFalse(message.localizedCaseInsensitiveContains("alamofire"))
-        XCTAssertNotEqual(message, "Timed out.")
-        XCTAssertFalse(message.isEmpty)
+    override func tearDown() {
+        AppLanguageStore.shared.resetForTesting()
+        super.tearDown()
     }
 
-    func testGatewayUsesTranscriptionTimeoutCopy() {
-        let err = KnowledgeBaseAPIError.invalidResponse(statusCode: 502, apiMessage: "VPN check on server…")
-        let message = VoicePipelineErrorMessage.forTranscription(err)
-        XCTAssertFalse(message.contains("VPN"))
+    func testGatewayUsesHumanTranscriptionTimeoutCopy() {
+        AppLanguageStore.shared.setOverride(.english)
+        let message = VoicePipelineErrorMessage.forTranscription(
+            KnowledgeBaseAPIError.invalidResponse(statusCode: 504, apiMessage: "VPN check on server…")
+        )
         XCTAssertEqual(message, L10n.string("error.transcription_timeout"))
+        XCTAssertFalse(message.contains("VPN"))
+        XCTAssertFalse(message.contains("504"))
+    }
+
+    func testGatewayRussianCopy() {
+        AppLanguageStore.shared.setOverride(.russian)
+        let message = VoicePipelineErrorMessage.forTranscription(
+            KnowledgeBaseAPIError.invalidResponse(statusCode: 502, apiMessage: nil)
+        )
+        XCTAssertEqual(message, L10n.string("error.transcription_timeout"))
+    }
+
+    func testURLErrorTimedOutUsesTranscriptionTimeout() {
+        AppLanguageStore.shared.setOverride(.english)
+        let message = VoicePipelineErrorMessage.forTranscription(URLError(.timedOut))
+        XCTAssertEqual(message, L10n.string("error.transcription_timeout"))
+        XCTAssertNotEqual(message, "Timed out.")
+    }
+
+    func testURLErrorNotConnectedIsShort() {
+        AppLanguageStore.shared.setOverride(.russian)
+        let message = VoicePipelineErrorMessage.forTranscription(URLError(.notConnectedToInternet))
+        XCTAssertEqual(message, "Нет подключения к интернету.")
+        XCTAssertFalse(message.contains("Повторить"))
+        XCTAssertFalse(message.contains("VPN"))
     }
 
     func testTransientDetection() {
