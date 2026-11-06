@@ -8,6 +8,7 @@ enum SettingsRoute: Hashable {
     case health
     case boards
     case kbFolder
+    case ingress
 }
 
 struct SettingsView: View {
@@ -112,6 +113,9 @@ struct SettingsView: View {
                 }
                 NavigationLink(value: SettingsRoute.health) {
                     Text("health.settings.title")
+                }
+                NavigationLink(value: SettingsRoute.ingress) {
+                    Text("ingress.settings.title")
                 }
             } header: {
                 Text("settings.features_section")

@@ -130,6 +130,9 @@ struct MainView: View {
                         case .kbFolder:
                             KnowledgeBaseFolderSettingsView()
                                 .toolbar(.hidden, for: .tabBar)
+                        case .ingress:
+                            IngressSettingsView()
+                                .toolbar(.hidden, for: .tabBar)
                         }
                     }
             }
