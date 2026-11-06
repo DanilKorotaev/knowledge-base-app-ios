@@ -86,6 +86,17 @@ jobs:
         continue-on-error: true
         run: bundle exec fastlane ui_test
 
+      - name: Compute overall CI outcome
+        id: ci_outcome
+        if: always()
+        run: |
+          outcome=success
+          if [[ "${{ steps.lint.outcome }}" != "success" ]]; then outcome=failure; fi
+          if [[ "${{ steps.tests.outcome }}" != "success" ]]; then outcome=failure; fi
+          if [[ "${{ steps.ui_tests.outcome }}" == "failure" ]]; then outcome=failure; fi
+          echo "outcome=${outcome}" >> "$GITHUB_OUTPUT"
+          echo "CI overall outcome: ${outcome} (lint=${{ steps.lint.outcome }}, tests=${{ steps.tests.outcome }}, ui=${{ steps.ui_tests.outcome }})"
+
       - name: Notify Telegram (tests)
         if: always()
         run: >
@@ -95,7 +106,7 @@ jobs:
 
       - name: Notify KB App ingress (tests)
         if: always()
-        run: python3 scripts/ci/kbapp_ingress_notify.py tests --outcome ${{ steps.tests.outcome }}
+        run: python3 scripts/ci/kbapp_ingress_notify.py tests --outcome ${{ steps.ci_outcome.outputs.outcome }}
 
       - name: Fail if SwiftLint failed
         if: steps.lint.outcome != 'success'

@@ -2,7 +2,6 @@
 import XCTest
 
 final class KBMessageTests: XCTestCase {
-
     func testDecodeExternalMessageJSON() throws {
         let json = """
         {
