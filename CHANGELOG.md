@@ -12,6 +12,18 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [2.0.12] - 2026-11-06
+
+### Changed
+
+- Add external ingress message bubbles with cached avatars.
+- Wire CI/TestFlight notifies to KB App ingress URL secret.
+
+### Fixed
+
+- Fix external bubble project membership and relative avatars.
+- Fix SwiftLint blank line and report overall CI to ingress.
+
 ## [2.0.11] - 2026-11-06
 
 ### Changed
@@ -1049,7 +1061,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v2.0.11...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v2.0.12...HEAD
+[2.0.12]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.12
 [2.0.11]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.11
 [2.0.10]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.10
 [2.0.9]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.9

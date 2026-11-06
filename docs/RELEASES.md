@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 2.0.12 | 272 | `ios/v2.0.12` | 2026-11-06 | Fix SwiftLint blank line and report overall CI to ingress. |
 | 2.0.11 | 268 | `ios/v2.0.11` | 2026-11-06 | Restore in-flight reply UI from ChatViewModel init. |
 | 2.0.10 | 266 | `ios/v2.0.10` | 2026-10-31 | TestFlight release |
 | 2.0.9 | 265 | `ios/v2.0.9` | 2026-10-31 | TestFlight release |
