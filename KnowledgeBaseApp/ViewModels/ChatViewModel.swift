@@ -229,8 +229,9 @@ final class ChatViewModel {
         self.sessionKBModeStore = sessionKBModeStore
         self.inFlightReplyStore = inFlightReplyStore
         self.useKnowledgeBase = sessionKBModeStore.useKnowledgeBase(for: session)
-        // Draft UI only — never resume network transcription from init (see flag above).
+        // UI restore only — never resume network transcription from init (see flag above).
         restoreComposerDraftIfNeeded()
+        restoreInFlightReplyUIIfNeeded()
     }
 
     func load() async {
