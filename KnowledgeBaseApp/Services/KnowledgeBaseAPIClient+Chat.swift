@@ -521,7 +521,7 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         return try await messagesFromPostResponse(data: data, sessionId: sessionId)
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         let url = baseURL
             .appendingPathComponent("api")
             .appendingPathComponent("query")
@@ -538,7 +538,8 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
         request.httpBody = Self.multipartTranscribeBody(
             boundary: boundary,
             fileData: fileData,
-            filename: filename
+            filename: filename,
+            clientTranscriptionId: clientTranscriptionId
         )
 
         let data = try await performData(request)
@@ -643,11 +644,18 @@ extension URLSessionKnowledgeBaseAPIClient: ChatAPIClientProtocol {
     private static func multipartTranscribeBody(
         boundary: String,
         fileData: Data,
-        filename: String
+        filename: String,
+        clientTranscriptionId: String? = nil
     ) -> Data {
         var data = Data()
         let crlf = "\r\n"
         let mime = "audio/mp4"
+
+        if let clientTranscriptionId, !clientTranscriptionId.isEmpty {
+            data.append(Data("--\(boundary)\(crlf)".utf8))
+            data.append(Data("Content-Disposition: form-data; name=\"client_transcription_id\"\(crlf)\(crlf)".utf8))
+            data.append(Data("\(clientTranscriptionId)\(crlf)".utf8))
+        }
 
         data.append(Data("--\(boundary)\(crlf)".utf8))
         data.append(

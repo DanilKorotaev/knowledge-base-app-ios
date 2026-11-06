@@ -138,7 +138,7 @@ final class ChatAPIClientTests: XCTestCase {
         try Data([0, 1, 2]).write(to: temp)
         defer { try? FileManager.default.removeItem(at: temp) }
 
-        let text = try await client.transcribeVoiceRecording(audioFileURL: temp)
+        let text = try await client.transcribeVoiceRecording(audioFileURL: temp, clientTranscriptionId: nil)
         XCTAssertTrue(text.contains("Stub Whisper"))
     }
 

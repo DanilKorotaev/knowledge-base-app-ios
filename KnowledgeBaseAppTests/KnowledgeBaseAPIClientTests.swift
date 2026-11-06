@@ -159,7 +159,7 @@ final class KnowledgeBaseAPIClientTests: XCTestCase {
 
         let base = URL(string: "https://kb.test")!
         let client = URLSessionKnowledgeBaseAPIClient(baseURL: base, authToken: "tok", urlSession: URLSession(configuration: config))
-        let text = try await client.transcribeVoiceRecording(audioFileURL: temp)
+        let text = try await client.transcribeVoiceRecording(audioFileURL: temp, clientTranscriptionId: nil)
         XCTAssertEqual(text, "Recognized phrase")
 
         MockURLProtocol.requestHandler = nil

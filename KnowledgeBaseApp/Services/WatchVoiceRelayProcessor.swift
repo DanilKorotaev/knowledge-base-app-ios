@@ -34,7 +34,11 @@ enum WatchVoiceRelayProcessor {
         }
         WatchRelayLogger.info("Relay target sessionId=\(sessionID)")
 
-        let transcription = try await chatClient.transcribeVoiceRecording(audioFileURL: audioURL)
+        let transcription = try await VoiceTranscriptionRetry.transcribe(
+            client: chatClient,
+            audioURL: audioURL,
+            clientTranscriptionId: UUID().uuidString
+        )
         let trimmed = transcription.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             WatchRelayLogger.error("Empty transcription")

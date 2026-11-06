@@ -211,7 +211,7 @@ private final class RelayWatchChatAPIClient: ChatAPIClientProtocol {
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage] { [] }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         transcription
     }
 

@@ -212,7 +212,7 @@ private final class SuccessTranscribeChatAPIClient: ChatAPIClientProtocol, @unch
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         "Транскрипция после handoff"
     }
 
@@ -263,7 +263,7 @@ private final class FailingTranscribeThenSuccessChatAPIClient: ChatAPIClientProt
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         attempts += 1
         if attempts == 1 {
             throw URLError(.timedOut)
@@ -318,7 +318,7 @@ private final class CountingTranscribeChatAPIClient: ChatAPIClientProtocol, @unc
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         transcribeCallCount += 1
         return "Возобновлённая транскрипция"
     }
@@ -372,7 +372,7 @@ private final class SlowCountingTranscribeChatAPIClient: ChatAPIClientProtocol, 
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         transcribeCallCount += 1
         try await Task.sleep(nanoseconds: delayNanoseconds)
         return "Single-flight transcription"
@@ -424,7 +424,7 @@ private final class AlwaysFailingTranscribeChatAPIClient: ChatAPIClientProtocol,
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         throw URLError(.notConnectedToInternet)
     }
 

@@ -48,6 +48,8 @@ final class VoiceRecordingViewModel {
     private var lockedByGesture = false
     private var recordingStartDate: Date?
     private var didStartTranscriptionForReview = false
+    /// Stable id for post-sheet Whisper retries (server-side cache key).
+    private var reviewTranscriptionId: String?
 
     private let impactLight = UIImpactFeedbackGenerator(style: .light)
     private let impactMedium = UIImpactFeedbackGenerator(style: .medium)
@@ -192,12 +194,18 @@ final class VoiceRecordingViewModel {
         guard let url = lastRecordedFileURL else { return }
         guard !didStartTranscriptionForReview else { return }
         didStartTranscriptionForReview = true
+        let clientId = reviewTranscriptionId ?? UUID().uuidString
+        reviewTranscriptionId = clientId
         isTranscribing = true
         transcriptionPhase = .loading
         errorMessage = nil
         defer { isTranscribing = false }
         do {
-            transcriptionDraft = try await chatClient.transcribeVoiceRecording(audioFileURL: url)
+            transcriptionDraft = try await VoiceTranscriptionRetry.transcribe(
+                client: chatClient,
+                audioURL: url,
+                clientTranscriptionId: clientId
+            )
             transcriptionPhase = .ready
         } catch {
             transcriptionPhase = .failed(VoicePipelineErrorMessage.forTranscription(error))

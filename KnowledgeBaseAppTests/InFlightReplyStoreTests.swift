@@ -159,7 +159,7 @@ private final class DropAfterPartialStreamChatAPIClient: ChatAPIClientProtocol, 
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage] { [] }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String { "" }
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String { "" }
 
     func sendVoiceRecording(
         sessionId: String,

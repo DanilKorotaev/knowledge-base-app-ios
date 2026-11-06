@@ -192,7 +192,7 @@ private final class OfflineThrowingChatAPIClient: ChatAPIClientProtocol, @unchec
         mimeType: String,
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage] { [] }
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String { "" }
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String { "" }
     func sendVoiceRecording(
         sessionId: String,
         audioFileURL: URL,
@@ -245,7 +245,7 @@ private final class DelayedFetchChatAPIClient: ChatAPIClientProtocol, @unchecked
         mimeType: String,
         useKnowledgeBase: Bool
     ) async throws -> [KBMessage] { [] }
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String { "" }
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String { "" }
     func sendVoiceRecording(
         sessionId: String,
         audioFileURL: URL,

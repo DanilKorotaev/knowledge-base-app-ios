@@ -668,8 +668,8 @@ private final class ActivityStreamChatAPIClient: ChatAPIClientProtocol {
         )
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
-        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL)
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
+        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL, clientTranscriptionId: clientTranscriptionId)
     }
 
     func sendVoiceRecording(
@@ -791,8 +791,8 @@ private final class DelayedAssistantReplyChatAPIClient: ChatAPIClientProtocol, @
         )
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
-        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL)
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
+        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL, clientTranscriptionId: clientTranscriptionId)
     }
 
     func sendVoiceRecording(
@@ -879,7 +879,7 @@ private struct SlowConnectStreamChatAPIClient: ChatAPIClientProtocol {
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String { "" }
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String { "" }
 
     func sendVoiceRecording(
         sessionId: String,
@@ -950,7 +950,7 @@ private struct FailingStreamChatAPIClient: ChatAPIClientProtocol {
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String { "" }
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String { "" }
 
     func sendVoiceRecording(
         sessionId: String,
@@ -1006,7 +1006,7 @@ private struct FailingFetchChatAPIClient: ChatAPIClientProtocol {
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String { "" }
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String { "" }
 
     func sendVoiceRecording(
         sessionId: String,
@@ -1071,7 +1071,7 @@ private struct FailingOlderFetchChatAPIClient: ChatAPIClientProtocol {
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String { "" }
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String { "" }
 
     func sendVoiceRecording(
         sessionId: String,
@@ -1161,8 +1161,8 @@ private struct LimitProbeChatAPIClient: ChatAPIClientProtocol {
         )
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
-        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL)
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
+        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL, clientTranscriptionId: clientTranscriptionId)
     }
 
     func sendVoiceRecording(

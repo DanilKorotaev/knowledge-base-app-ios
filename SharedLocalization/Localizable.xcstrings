@@ -406,13 +406,13 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Timed out."
+            "value": "This took too long. Your recording is saved — try again."
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Таймаут."
+            "value": "Слишком долго. Запись на месте — можно повторить."
           }
         }
       }
@@ -9016,6 +9016,38 @@
           "stringUnit": {
             "state": "translated",
             "value": "Укажи корректный ID сессии"
+          }
+        }
+      }
+    },
+    "error.transcription_timeout": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recognition took too long. Your recording is still here — retry when ready."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Распознавание заняло слишком много времени. Запись на месте — можно повторить."
+          }
+        }
+      }
+    },
+    "error.transcription_failed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Could not recognize the voice note. Please try again."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось распознать голосовое. Попробуйте ещё раз."
           }
         }
       }

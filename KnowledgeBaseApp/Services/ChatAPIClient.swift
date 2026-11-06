@@ -19,7 +19,8 @@ protocol ChatAPIClientProtocol: Sendable {
     ) async throws -> [KBMessage]
 
     /// Whisper only — `POST /api/query/voice/transcribe` (no session / no assistant reply).
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String
+    /// Pass a stable `clientTranscriptionId` so server retries can reuse / coalesce Whisper.
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String
 
     /// Voice note: multipart to `POST /api/query/voice` (KB App API); optional `transcription` from Whisper.
     func sendVoiceRecording(
@@ -150,7 +151,8 @@ struct StubChatAPIClient: ChatAPIClientProtocol {
         return list
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
+        _ = clientTranscriptionId
         let size = (try? FileManager.default.attributesOfItem(atPath: audioFileURL.path)[.size] as? NSNumber)?.int64Value ?? 0
         try await Task.sleep(nanoseconds: 200_000_000)
         return "Stub Whisper transcription (\(size) bytes)"

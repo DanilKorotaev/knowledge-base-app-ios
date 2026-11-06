@@ -345,7 +345,7 @@ private final class FailingStreamChatAPIClient: ChatAPIClientProtocol, @unchecke
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         "ok"
     }
 
@@ -399,7 +399,7 @@ private final class SlowStreamChatAPIClient: ChatAPIClientProtocol, @unchecked S
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         "ok"
     }
 
@@ -454,7 +454,7 @@ private final class InMemoryChatAPIClient: ChatAPIClientProtocol, @unchecked Sen
         []
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         "ok"
     }
 

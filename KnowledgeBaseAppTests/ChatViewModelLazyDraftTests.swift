@@ -168,8 +168,8 @@ private final class FileRequiringVoiceChatAPIClient: ChatAPIClientProtocol, @unc
         )
     }
 
-    func transcribeVoiceRecording(audioFileURL: URL) async throws -> String {
-        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL)
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
+        try await StubChatAPIClient(store: store).transcribeVoiceRecording(audioFileURL: audioFileURL, clientTranscriptionId: clientTranscriptionId)
     }
 
     func sendVoiceRecording(

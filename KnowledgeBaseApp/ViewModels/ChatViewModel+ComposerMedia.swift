@@ -251,7 +251,11 @@ extension ChatViewModel {
         syncTranscribingVoiceFlag()
 
         do {
-            let transcription = try await client.transcribeVoiceRecording(audioFileURL: audioURL)
+            let transcription = try await VoiceTranscriptionRetry.transcribe(
+                client: client,
+                audioURL: audioURL,
+                clientTranscriptionId: id
+            )
             guard !Task.isCancelled else { return }
             guard pendingVoiceCaptures.contains(where: { $0.id == id }) else { return }
             pendingVoiceCaptures.removeAll { $0.id == id }
