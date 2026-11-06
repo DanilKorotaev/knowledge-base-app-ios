@@ -56,7 +56,8 @@ enum VoicePipelineErrorMessage {
                 return false
             }
         }
-        if case let KnowledgeBaseAPIError.invalidResponse(statusCode, _) = unwrapped as? KnowledgeBaseAPIError {
+        if let api = unwrapped as? KnowledgeBaseAPIError,
+           case .invalidResponse(let statusCode, _) = api {
             return statusCode == 502 || statusCode == 504 || statusCode == 408
         }
         return false
