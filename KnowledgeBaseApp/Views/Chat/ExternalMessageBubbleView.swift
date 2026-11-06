@@ -43,13 +43,27 @@ struct ExternalMessageBubbleView: View {
         return base.appendingPathComponent(trimmed)
     }
 
+    private var eventTimeText: String? {
+        guard let createdAt = message.createdAt else { return nil }
+        return createdAt.formatted(date: .abbreviated, time: .shortened)
+    }
+
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             avatar
             VStack(alignment: .leading, spacing: 6) {
-                Text(participantLabel)
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(participantLabel)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                    if let eventTimeText {
+                        Text(eventTimeText)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                            .accessibilityIdentifier("chat.message.external.time.\(message.id)")
+                    }
+                }
                 Text(summary)
                     .font(.body.weight(.medium))
                     .foregroundStyle(.primary)
