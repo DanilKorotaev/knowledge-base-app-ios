@@ -478,3 +478,60 @@ private final class AlwaysFailingTranscribeChatAPIClient: ChatAPIClientProtocol,
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
+
+
+@MainActor
+private final class TransientThenSuccessTranscribeChatAPIClient: ChatAPIClientProtocol, @unchecked Sendable {
+    let store: InMemoryKBStore
+    private(set) var attempts = 0
+
+    init(store: InMemoryKBStore) {
+        self.store = store
+    }
+
+    func fetchMessagesPage(sessionId: String, limit: Int, beforeMessageId: String?) async throws -> KBMessagesPage {
+        KBMessagesPage(messages: store.messages(for: sessionId), total: 0, hasMoreOlder: false)
+    }
+
+    func sendTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func sendAttachment(sessionId: String, fileURL: URL, filename: String, mimeType: String, useKnowledgeBase: Bool) async throws -> [KBMessage] {
+        []
+    }
+
+    func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
+        attempts += 1
+        if attempts == 1 {
+            throw URLError(.timedOut)
+        }
+        return "Авто-ретрай ок"
+    }
+
+    func sendVoiceRecording(sessionId: String, audioFileURL: URL, transcriptionHint: String, useKnowledgeBase: Bool) async throws -> VoiceRecordingSendResult {
+        VoiceRecordingSendResult(messages: [], transcription: transcriptionHint)
+    }
+
+    func streamTextMessage(sessionId: String, text: String, useKnowledgeBase: Bool) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        AsyncThrowingStream { $0.finish() }
+    }
+
+    func streamVoiceMessage(
+        sessionId: String,
+        audioFileURL: URL,
+        text: String,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: text, useKnowledgeBase: useKnowledgeBase)
+    }
+
+    func streamComposedMessage(
+        sessionId: String,
+        draft: ChatComposerDraft,
+        useKnowledgeBase: Bool
+    ) async throws -> AsyncThrowingStream<AssistantStreamEvent, Error> {
+        try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
+    }
+}
+
