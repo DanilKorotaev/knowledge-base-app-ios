@@ -479,7 +479,6 @@ private final class AlwaysFailingTranscribeChatAPIClient: ChatAPIClientProtocol,
     }
 }
 
-
 @MainActor
 private final class TransientThenSuccessTranscribeChatAPIClient: ChatAPIClientProtocol, @unchecked Sendable {
     let store: InMemoryKBStore
@@ -534,4 +533,3 @@ private final class TransientThenSuccessTranscribeChatAPIClient: ChatAPIClientPr
         try await streamTextMessage(sessionId: sessionId, text: draft.trimmedText, useKnowledgeBase: useKnowledgeBase)
     }
 }
-
