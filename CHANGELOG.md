@@ -12,6 +12,21 @@ On each successful **main → TestFlight** deploy, CI auto-bumps **PATCH** (unle
 
 ## [Unreleased]
 
+## [2.0.16] - 2026-11-06
+
+### Added
+
+- Human errors, client transcription id, auto-retry
+
+### Fixed
+
+- Sort imports in VoicePipelineErrorMessageTests
+- Compile VoicePipelineErrorMessage transient check
+- Remove duplicate VoicePipelineErrorMessageTests
+- Align voice retry tests with silent timeout retries
+- Add TransientThenSuccess stub for auto-retry test
+- SwiftLint whitespace in voice retry tests
+
 ## [2.0.15] - 2026-11-06
 
 ### Changed
@@ -1083,7 +1098,8 @@ Baseline SemVer for TestFlight builds that previously shipped as marketing `1.0`
 - Hard send failures: Retry bar instead of restoring the draft into the composer.
 - Message copy sheet uses a plain text view so partial selection pastes as text.
 
-[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v2.0.15...HEAD
+[Unreleased]: https://github.com/DanilKorotaev/knowledge-base-app-ios/compare/ios/v2.0.16...HEAD
+[2.0.16]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.16
 [2.0.15]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.15
 [2.0.14]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.14
 [2.0.13]: https://github.com/DanilKorotaev/knowledge-base-app-ios/releases/tag/ios/v2.0.13
