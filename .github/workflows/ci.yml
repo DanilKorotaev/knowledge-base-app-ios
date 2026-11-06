@@ -15,6 +15,7 @@ jobs:
       MIN_COVERAGE: "35"
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      KBAPP_INGRESS_URL: ${{ secrets.KBAPP_INGRESS_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,6 +92,10 @@ jobs:
           python3 scripts/ci/telegram_notify.py tests
           --outcome ${{ steps.tests.outcome }}
           --ui-outcome ${{ steps.ui_tests.outcome || 'skipped' }}
+
+      - name: Notify KB App ingress (tests)
+        if: always()
+        run: python3 scripts/ci/kbapp_ingress_notify.py tests --outcome ${{ steps.tests.outcome }}
 
       - name: Fail if SwiftLint failed
         if: steps.lint.outcome != 'success'

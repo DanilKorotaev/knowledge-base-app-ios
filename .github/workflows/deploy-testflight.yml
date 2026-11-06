@@ -42,6 +42,7 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      KBAPP_INGRESS_URL: ${{ secrets.KBAPP_INGRESS_URL }}
       DELIVER_ALTOOL_ADDITIONAL_UPLOAD_PARAMETERS: "--use-old-altool"
     steps:
       - name: Checkout
@@ -124,6 +125,10 @@ jobs:
           python3 scripts/ci/telegram_notify.py testflight \
             --outcome "${{ steps.beta.outcome }}" \
             --release-git-outcome "${RELEASE_GIT_OUTCOME}"
+
+      - name: Notify KB App ingress (TestFlight)
+        if: always()
+        run: python3 scripts/ci/kbapp_ingress_notify.py testflight --outcome ${{ steps.beta.outcome }}
 
       - name: Fail if TestFlight deploy failed
         if: steps.beta.outcome != 'success'
