@@ -2,6 +2,33 @@
 import XCTest
 
 final class KBMessageTests: XCTestCase {
+
+    func testDecodeExternalMessageJSON() throws {
+        let json = """
+        {
+          "id": "e1",
+          "role": "external",
+          "content": "CI failed",
+          "created_at": "2026-11-06T12:00:00Z",
+          "external": {
+            "summary": "CI failed",
+            "detail": "1 test",
+            "participant": {"key": "ci", "label": "CI", "avatar_url": null},
+            "links": [{"title": "Run", "url": "https://example.com"}]
+          }
+        }
+        """
+        let data = Data(json.utf8)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let message = try decoder.decode(KBMessage.self, from: data)
+        XCTAssertEqual(message.role, .external)
+        XCTAssertEqual(message.externalSummary, "CI failed")
+        XCTAssertEqual(message.external?.detail, "1 test")
+        XCTAssertEqual(message.external?.participant?.label, "CI")
+        XCTAssertEqual(MessageCopyContent.text(for: message)?.contains("https://example.com"), true)
+    }
+
     func testDecodeMessageJSON() throws {
         let json = Data("""
         {"id":"m1","role":"user","content":"Hello","created_at":"2026-04-04T12:00:00Z"}

@@ -4,6 +4,46 @@ enum MessageRole: String, Codable, Sendable, Equatable {
     case user
     case assistant
     case system
+    /// External ingress / automation participant (not the human user).
+    case external
+}
+
+struct KBExternalParticipant: Codable, Equatable, Sendable {
+    let key: String?
+    let label: String?
+    let avatarURL: URL?
+
+    enum CodingKeys: String, CodingKey {
+        case key
+        case label
+        case avatarURL = "avatar_url"
+    }
+}
+
+struct KBExternalEvent: Codable, Equatable, Sendable {
+    let summary: String?
+    let detail: String?
+    let participant: KBExternalParticipant?
+    let source: String?
+    let type: String?
+    let links: [KBExternalLink]?
+    let eventId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case summary
+        case detail
+        case participant
+        case source
+        case type
+        case links
+        case eventId = "event_id"
+    }
+}
+
+struct KBExternalLink: Codable, Equatable, Sendable, Identifiable {
+    var id: String { url }
+    let title: String?
+    let url: String
 }
 
 enum ContentFormat: String, Codable, Sendable, Equatable {
@@ -24,6 +64,7 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
     let relatedChangedFilesSource: String?
     let structuredUI: KBStructuredUIDocument?
     let clientMessageId: String?
+    let external: KBExternalEvent?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -37,6 +78,7 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         case relatedChangedFilesSource = "related_changed_files_source"
         case structuredUI = "structured_ui"
         case clientMessageId = "client_message_id"
+        case external
     }
 
     init(
@@ -50,7 +92,8 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         relatedChangedFiles: [KBChangedFile]? = nil,
         relatedChangedFilesSource: String? = nil,
         structuredUI: KBStructuredUIDocument? = nil,
-        clientMessageId: String? = nil
+        clientMessageId: String? = nil,
+        external: KBExternalEvent? = nil
     ) {
         self.id = id
         self.role = role
@@ -63,6 +106,15 @@ struct KBMessage: Identifiable, Codable, Equatable, Sendable {
         self.relatedChangedFilesSource = relatedChangedFilesSource
         self.structuredUI = structuredUI
         self.clientMessageId = clientMessageId
+        self.external = external
+    }
+
+    /// Title shown for external bubbles / session previews.
+    var externalSummary: String {
+        if let summary = external?.summary?.trimmingCharacters(in: .whitespacesAndNewlines), !summary.isEmpty {
+            return summary
+        }
+        return content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var imageAttachments: [KBAttachment] {

@@ -17,6 +17,15 @@ struct RichMessageBubbleView: View {
     @State private var copySheetText: IdentifiableCopyText?
 
     var body: some View {
+        if message.role == .external {
+            ExternalMessageBubbleView(message: message)
+                .accessibilityIdentifier("chat.message.external.\(message.id)")
+        } else {
+            legacyBubble
+        }
+    }
+
+    private var legacyBubble: some View {
         HStack(alignment: .bottom, spacing: 0) {
             if message.role == .user {
                 Spacer(minLength: 16)

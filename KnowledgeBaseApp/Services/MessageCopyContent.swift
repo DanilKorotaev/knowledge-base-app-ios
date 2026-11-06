@@ -4,6 +4,19 @@ import UIKit
 enum MessageCopyContent {
     /// Full message text for clipboard / copy sheet (source markdown/plain; no attachments).
     static func text(for message: KBMessage) -> String? {
+        if message.role == .external {
+            var parts: [String] = [message.externalSummary]
+            if let detail = message.external?.detail?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !detail.isEmpty {
+                parts.append(detail)
+            }
+            for link in message.external?.links ?? [] {
+                parts.append(link.url)
+            }
+            let joined = parts.joined(separator: "\n\n")
+            return joined.isEmpty ? nil : joined
+        }
+
         if message.isVoiceOnly,
            let transcription = message.composedVoiceTranscription?
             .trimmingCharacters(in: .whitespacesAndNewlines),

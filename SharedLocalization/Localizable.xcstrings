@@ -113,6 +113,54 @@
         }
       }
     },
+    "chat.external_participant": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "External"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Внешний источник"
+          }
+        }
+      }
+    },
+    "chat.external_show_details": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show details"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать детали"
+          }
+        }
+      }
+    },
+    "chat.external_hide_details": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hide details"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скрыть детали"
+          }
+        }
+      }
+    },
     "chat.open_to_copy": {
       "localizations": {
         "en": {
