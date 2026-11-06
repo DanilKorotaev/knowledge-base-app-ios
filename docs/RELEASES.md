@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 2.0.15 | 276 | `ios/v2.0.15` | 2026-11-06 | TestFlight release |
 | 2.0.14 | 275 | `ios/v2.0.14` | 2026-11-06 | Fail-fast on SwiftLint and align notify outcomes. |
 | 2.0.13 | 273 | `ios/v2.0.13` | 2026-11-06 | Show event time on external ingress bubbles. |
 | 2.0.12 | 272 | `ios/v2.0.12` | 2026-11-06 | Fix SwiftLint blank line and report overall CI to ingress. |
