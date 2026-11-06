@@ -10,6 +10,8 @@ struct KBClientMetadata: Equatable, Sendable {
     static let platformHeader = "X-KB-App-Platform"
     static let osHeader = "X-KB-App-OS"
     static let logSessionHeader = "X-KB-App-Log-Session"
+    static let timezoneHeader = "X-KB-App-Timezone"
+    static let localeHeader = "X-KB-App-Locale"
     static let structuredUIHeader = StructuredUIPreference.headerName
 
     let appVersion: String
@@ -18,6 +20,10 @@ struct KBClientMetadata: Equatable, Sendable {
     let osVersion: String
     /// Matches `LogSession.shared.id` / on-disk log file naming.
     let logSessionId: String
+    /// IANA timezone id from the device (e.g. `Europe/Moscow`).
+    let timeZoneIdentifier: String
+    /// App UI locale identifier (respects in-app language override).
+    let localeIdentifier: String
 
     var userAgent: String {
         "KnowledgeBaseApp/\(appVersion) (\(platform) \(osVersion); build \(buildNumber))"
@@ -41,12 +47,15 @@ struct KBClientMetadata: Equatable, Sendable {
         #endif
         let resolvedVersion = version.flatMap { $0.isEmpty ? nil : $0 } ?? "0"
         let resolvedBuild = build.flatMap { $0.isEmpty ? nil : $0 } ?? "0"
+        let localeId = AppLanguageStore.shared.resolvedLocale.identifier
         return KBClientMetadata(
             appVersion: resolvedVersion,
             buildNumber: resolvedBuild,
             platform: "ios",
             osVersion: os,
-            logSessionId: LogSession.shared.id
+            logSessionId: LogSession.shared.id,
+            timeZoneIdentifier: TimeZone.current.identifier,
+            localeIdentifier: localeId.isEmpty ? "en" : localeId
         )
     }
 
@@ -57,6 +66,12 @@ struct KBClientMetadata: Equatable, Sendable {
         request.setValue(osVersion, forHTTPHeaderField: Self.osHeader)
         if !logSessionId.isEmpty {
             request.setValue(logSessionId, forHTTPHeaderField: Self.logSessionHeader)
+        }
+        if !timeZoneIdentifier.isEmpty {
+            request.setValue(timeZoneIdentifier, forHTTPHeaderField: Self.timezoneHeader)
+        }
+        if !localeIdentifier.isEmpty {
+            request.setValue(localeIdentifier, forHTTPHeaderField: Self.localeHeader)
         }
         request.setValue(StructuredUIPreference.headerValue, forHTTPHeaderField: Self.structuredUIHeader)
         request.setValue(userAgent, forHTTPHeaderField: "User-Agent")

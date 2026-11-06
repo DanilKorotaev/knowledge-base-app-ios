@@ -10,7 +10,9 @@ final class KBClientMetadataTests: XCTestCase {
             buildNumber: "99",
             platform: "ios",
             osVersion: "18.5",
-            logSessionId: "log-session-abc"
+            logSessionId: "log-session-abc",
+            timeZoneIdentifier: "Europe/Moscow",
+            localeIdentifier: "ru"
         )
         meta.apply(to: &request)
 
@@ -19,6 +21,8 @@ final class KBClientMetadataTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.platformHeader), "ios")
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.osHeader), "18.5")
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.logSessionHeader), "log-session-abc")
+        XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.timezoneHeader), "Europe/Moscow")
+        XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.localeHeader), "ru")
         XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.structuredUIHeader), StructuredUIPreference.headerValue)
         XCTAssertEqual(
             request.value(forHTTPHeaderField: "User-Agent"),
@@ -32,7 +36,9 @@ final class KBClientMetadataTests: XCTestCase {
             buildNumber: "90",
             platform: "ios",
             osVersion: "18.7",
-            logSessionId: "s"
+            logSessionId: "s",
+            timeZoneIdentifier: "UTC",
+            localeIdentifier: "en"
         )
         XCTAssertEqual(meta.versionBuildLabel, "1.0.0 (90)")
     }
@@ -44,7 +50,9 @@ final class KBClientMetadataTests: XCTestCase {
             buildNumber: "7",
             platform: "ios",
             osVersion: "26.0",
-            logSessionId: "sess-7"
+            logSessionId: "sess-7",
+            timeZoneIdentifier: "America/Los_Angeles",
+            localeIdentifier: "en_US"
         )
         let interceptor = KBRequestInterceptor(
             requestId: "test",
@@ -61,6 +69,8 @@ final class KBClientMetadataTests: XCTestCase {
                 XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer secret")
                 XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.versionHeader), "2.0.0")
                 XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.buildHeader), "7")
+                XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.timezoneHeader), "America/Los_Angeles")
+                XCTAssertEqual(request.value(forHTTPHeaderField: KBClientMetadata.localeHeader), "en_US")
                 XCTAssertEqual(
                     request.value(forHTTPHeaderField: "User-Agent"),
                     "KnowledgeBaseApp/2.0.0 (ios 26.0; build 7)"
