@@ -50,6 +50,30 @@ final class ChatViewModelVoiceRetryTests: XCTestCase {
         XCTAssertFalse(viewModel.composerDraft.trimmedText.isEmpty)
     }
 
+    func testTransientTimeoutAutoRetriesWithoutManualRetry() async throws {
+        let store = InMemoryKBStore(demoSession: false)
+        _ = store.createSession(title: "Chat")
+        let session = KBSession(id: "voice-auto-retry-1", title: "Chat", messageCount: 0, updatedAt: nil)
+
+        let source = FileManager.default.temporaryDirectory
+            .appendingPathComponent("voice-auto-retry-\(UUID().uuidString).m4a")
+        try Data("voice-bytes".utf8).write(to: source)
+
+        let client = TransientThenSuccessTranscribeChatAPIClient(store: store)
+        let viewModel = ChatViewModel(
+            session: session,
+            client: client,
+            composerDraftStore: draftStore
+        )
+
+        await viewModel.enqueueVoiceRecording(audioURL: source)
+
+        XCTAssertTrue(viewModel.pendingVoiceCaptures.isEmpty)
+        XCTAssertEqual(viewModel.composerDraft.voiceClips.count, 1)
+        XCTAssertEqual(client.attempts, 2)
+        XCTAssertFalse(viewModel.composerDraft.trimmedText.isEmpty)
+    }
+
     func testEnqueueVoiceRecordingAcceptsAlreadyPersistedURL() async throws {
         let store = InMemoryKBStore(demoSession: false)
         let session = KBSession(id: "voice-handoff-1", title: "Chat", messageCount: 0, updatedAt: nil)
@@ -266,7 +290,8 @@ private final class FailingTranscribeThenSuccessChatAPIClient: ChatAPIClientProt
     func transcribeVoiceRecording(audioFileURL: URL, clientTranscriptionId: String?) async throws -> String {
         attempts += 1
         if attempts == 1 {
-            throw URLError(.timedOut)
+            // Non-transient: auto-retry must not swallow this before the manual Retry UI.
+            throw KnowledgeBaseAPIError.invalidResponse(statusCode: 422, apiMessage: nil)
         }
         return "Привет из повторной транскрибации"
     }
