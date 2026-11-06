@@ -26,7 +26,21 @@ struct ExternalMessageBubbleView: View {
     }
 
     private var avatarURL: URL? {
-        message.external?.participant?.avatarURL
+        guard let raw = message.external?.participant?.avatarURL?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+            !raw.isEmpty
+        else { return nil }
+        if raw.hasPrefix("http://") || raw.hasPrefix("https://") {
+            return URL(string: raw)
+        }
+        guard let base = AppConfiguration.url(for: AppConfiguration.Keys.apiBaseURL) else {
+            return URL(string: raw)
+        }
+        var trimmed = raw
+        if trimmed.hasPrefix("/") {
+            trimmed.removeFirst()
+        }
+        return base.appendingPathComponent(trimmed)
     }
 
     var body: some View {

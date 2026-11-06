@@ -11,7 +11,8 @@ enum MessageRole: String, Codable, Sendable, Equatable {
 struct KBExternalParticipant: Codable, Equatable, Sendable {
     let key: String?
     let label: String?
-    let avatarURL: URL?
+    /// Absolute `https://…` or API-relative `/api/ingress/avatars/{id}`.
+    let avatarURL: String?
 
     enum CodingKeys: String, CodingKey {
         case key

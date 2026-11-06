@@ -274,6 +274,7 @@
 		A5B4038A0776699A2065EE18 /* TodayPreviewSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9835C92439B0701A5602E466 /* TodayPreviewSection.swift */; };
 		A61622DA3760F0BA55D89D6F /* AppLanguageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D184EFF645B89B6C09863A2 /* AppLanguageStore.swift */; };
 		A74FCC98379B4D0414AA32EB /* ClipboardMediaImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8A16E93E2D9DED30575E17 /* ClipboardMediaImporter.swift */; };
+		88448981FF7A4B0B8C11F6FA /* ExternalMessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C2DFD6468624FA3B4B5B4A6 /* ExternalMessageBubbleView.swift */; };
 		A867FD23A4453EF75FE60CD4 /* RichMessageBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75DCAA284E519E800019228F /* RichMessageBubbleView.swift */; };
 		A88A09095153BB75818C149C /* VoiceRecordingPauseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E44F76443DF5EAE121CDD13D /* VoiceRecordingPauseTests.swift */; };
 		A8DE74F64572F5CB9E1F44FD /* KBAppActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9BEA5D42D5EBACC1982902 /* KBAppActionTests.swift */; };
@@ -673,6 +674,7 @@
 		749B674A93832F603A6199D9 /* FilesAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilesAPIClient.swift; sourceTree = "<group>"; };
 		75687D5A2220A17EFB71BDA5 /* ComposerFileChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerFileChipView.swift; sourceTree = "<group>"; };
 		7597BE0C87DD8C9F0AF11186 /* FailedSendRetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FailedSendRetry.swift; sourceTree = "<group>"; };
+		0C2DFD6468624FA3B4B5B4A6 /* ExternalMessageBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalMessageBubbleView.swift; sourceTree = "<group>"; };
 		75DCAA284E519E800019228F /* RichMessageBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RichMessageBubbleView.swift; sourceTree = "<group>"; };
 		760FA0C4797DF8C5BFB38201 /* StreamingAssistantBubbleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingAssistantBubbleView.swift; sourceTree = "<group>"; };
 		766F34B08A17FB796CFEDA57 /* CalendarDayFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarDayFormatter.swift; sourceTree = "<group>"; };
@@ -1488,6 +1490,7 @@
 				7906A1DBDAB3EFD9574CB68E /* MessageCopySheet.swift */,
 				D10F211F0E64B798F71AC421 /* MessageDocumentAttachmentsView.swift */,
 				0F42910FE39F9C612ED1D468 /* MessageSendRetryBar.swift */,
+				0C2DFD6468624FA3B4B5B4A6 /* ExternalMessageBubbleView.swift */,
 				75DCAA284E519E800019228F /* RichMessageBubbleView.swift */,
 				760FA0C4797DF8C5BFB38201 /* StreamingAssistantBubbleView.swift */,
 				741E64BFEDA932BE74BE489C /* StructuredUIBoardNodes.swift */,
@@ -2120,6 +2123,7 @@
 				E51CDD36096138B18824C798 /* RemoteUIHostView.swift in Sources */,
 				852177D7F981CF98651C58A1 /* RemoteUIURLBuilder.swift in Sources */,
 				CD986D067953F5EBF0B52B87 /* RenameSessionSheet.swift in Sources */,
+				88448981FF7A4B0B8C11F6FA /* ExternalMessageBubbleView.swift in Sources */,
 				A867FD23A4453EF75FE60CD4 /* RichMessageBubbleView.swift in Sources */,
 				5B9168AE69C0902FCBE170A1 /* SSEventParser.swift in Sources */,
 				E7E467C3DF7A692A2EEBEC74 /* SavedAccountsStore.swift in Sources */,

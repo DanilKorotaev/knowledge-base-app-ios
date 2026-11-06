@@ -13,7 +13,7 @@ final class KBMessageTests: XCTestCase {
           "external": {
             "summary": "CI failed",
             "detail": "1 test",
-            "participant": {"key": "ci", "label": "CI", "avatar_url": null},
+            "participant": {"key": "ci", "label": "CI", "avatar_url": "/api/ingress/avatars/abc"},
             "links": [{"title": "Run", "url": "https://example.com"}]
           }
         }
@@ -26,6 +26,7 @@ final class KBMessageTests: XCTestCase {
         XCTAssertEqual(message.externalSummary, "CI failed")
         XCTAssertEqual(message.external?.detail, "1 test")
         XCTAssertEqual(message.external?.participant?.label, "CI")
+        XCTAssertEqual(message.external?.participant?.avatarURL, "/api/ingress/avatars/abc")
         XCTAssertEqual(MessageCopyContent.text(for: message)?.contains("https://example.com"), true)
     }
 
