@@ -38,6 +38,8 @@ struct MainView: View {
     @State private var pinnedStore = PinnedSessionsStore.shared
     @State private var debugQuickActions = DebugQuickActionsController.shared
     @State private var appActions = KBAppActionCenter.shared
+    @State private var notificationBadge = NotificationBadgeStore.shared
+    @State private var showNotifications = false
     @AppStorage("kb.health.sync_enabled") private var healthSyncEnabled = false
     @AppStorage("kb.boards.enabled") private var boardsOverviewEnabled = true
     private let sessionCache: SessionCacheStoreProtocol
@@ -283,6 +285,9 @@ struct MainView: View {
 
     private var mainListWithSessionChrome: some View {
         mainListBase
+            .sheet(isPresented: $showNotifications) {
+                notificationsSheet
+            }
             .sheet(isPresented: $showRenameSheet) {
                 RenameSessionSheet(
                     title: $renameTitle,
@@ -352,6 +357,15 @@ struct MainView: View {
                     .disabled(isLoading)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showNotifications = true
+                    } label: {
+                        Label("notifications.title", systemImage: "bell")
+                    }
+                    .badge(notificationBadge.unreadCount)
+                    .accessibilityIdentifier("main.notifications")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     NavigationLink {
                         SessionsArchiveView(client: apiClient)
                     } label: {
@@ -418,12 +432,31 @@ struct MainView: View {
         guard newPhase == .active else { return }
         voiceRouting.refreshExpiryIfNeeded()
         Task { await loadSessions(showFullScreenLoading: false) }
+        Task { await notificationBadge.refresh() }
     }
 
     private func configureMainListOnAppear() {
         // Voice recording lives in Chat composer and Apple Watch — not on the session list.
         voiceViewModel.recordingFinishedOutsideChatHandler = nil
         updateMainScreenDebugGesture(isOnMainList: navigationPath.isEmpty)
+        Task { await notificationBadge.refresh() }
+    }
+
+    private var notificationsSheet: some View {
+        NavigationStack {
+            NotificationsListView { sessionId in
+                showNotifications = false
+                selectedTab = .sessions
+                Task { @MainActor in
+                    await openSessionFromDeepLink(sessionId: String(sessionId))
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("common.close") { showNotifications = false }
+                }
+            }
+        }
     }
 
     private func openDeepLinkedSessionIfNeeded(_ sessionId: String?) {

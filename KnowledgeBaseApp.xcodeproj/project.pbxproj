@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		347F4B6BD88CFE09368C5535 /* IngressAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0E78D1468C8E72DFF6B42E3 /* IngressAPIClient.swift */; };
+		B94F75F5ABA96760C1D299A0 /* NotificationsAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F612F42C43C8CAA000BC865 /* NotificationsAPIClient.swift */; };
+		1589364874A0F4AE20EC909F /* IngressSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A515667ED4616D100096C93C /* IngressSettingsView.swift */; };
+		4953AEF82663D1E4A45C7D0D /* NotificationsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36D0814860A3DF8CB18BD1A9 /* NotificationsListView.swift */; };
 		00543EEFFC3C42A06BC4D2A0 /* KnowledgeBaseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120ACA3751D4BA6BA15A924B /* KnowledgeBaseApp.swift */; };
 		00B4A333B4837D7EBF57046A /* StreamTextRevealEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 772CE82B329B59277B55FD6D /* StreamTextRevealEngineTests.swift */; };
 		015A76E1EF60C2CED7C2E577 /* VoiceAudioMerger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FB6B5CAE96EEAB57B2C07F2 /* VoiceAudioMerger.swift */; };
@@ -497,6 +501,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C0E78D1468C8E72DFF6B42E3 /* IngressAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngressAPIClient.swift; sourceTree = "<group>"; };
+		0F612F42C43C8CAA000BC865 /* NotificationsAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsAPIClient.swift; sourceTree = "<group>"; };
+		A515667ED4616D100096C93C /* IngressSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngressSettingsView.swift; sourceTree = "<group>"; };
+		36D0814860A3DF8CB18BD1A9 /* NotificationsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsListView.swift; sourceTree = "<group>"; };
 		00B6DE7CE3DEB1F152DD7DAD /* DefaultVoiceSessionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultVoiceSessionPreference.swift; sourceTree = "<group>"; };
 		010024768DA53950B806E3C6 /* KBHealthSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KBHealthSyncService.swift; sourceTree = "<group>"; };
 		010424FAF1561A8D3CA6DEDA /* UserDefaultPropertyWrapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultPropertyWrapperTests.swift; sourceTree = "<group>"; };
@@ -956,6 +964,8 @@
 				F5C45B490F123F09BA78E280 /* Boards */,
 				AB4237D1CA9CF89EFCE515B3 /* Chat */,
 				1972AC088F52FE879183406E /* Files */,
+				F4F425AD0E213729E050B01A /* Ingress */,
+				FF75DDF4226632F0325F553E /* Notifications */,
 				43F4D61856BF31659F96758C /* Recording */,
 				EB0DDA968F627DB8959D69D8 /* Session */,
 				13E8507F60F3F1F8BE4CB3FB /* MainView.swift */,
@@ -1442,6 +1452,23 @@
 			path = Actions;
 			sourceTree = "<group>";
 		};
+		F4F425AD0E213729E050B01A /* Ingress */ = {
+			isa = PBXGroup;
+			children = (
+				A515667ED4616D100096C93C /* IngressSettingsView.swift */,
+			);
+			path = Ingress;
+			sourceTree = "<group>";
+		};
+		FF75DDF4226632F0325F553E /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				36D0814860A3DF8CB18BD1A9 /* NotificationsListView.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
+
 		A7418B0F9F502329DEDE2C4D /* List */ = {
 			isa = PBXGroup;
 			children = (
@@ -1570,6 +1597,8 @@
 				749B674A93832F603A6199D9 /* FilesAPIClient.swift */,
 				DC6790618C9E17AA1D85BD7F /* InFlightReplyStore.swift */,
 				F8CEF44EAD6C02EC094CD944 /* InMemoryKBStore.swift */,
+				C0E78D1468C8E72DFF6B42E3 /* IngressAPIClient.swift */,
+				0F612F42C43C8CAA000BC865 /* NotificationsAPIClient.swift */,
 				23A2E84461D4F497E84180FD /* KBAppActionCenter.swift */,
 				FD8A15F6500D1B708191407C /* KBAttachmentLoader.swift */,
 				CF339918A28F765CB084A562 /* KnowledgeBaseAPIClient.swift */,
@@ -2047,6 +2076,10 @@
 				A20F3680AAD62B498CD7240D /* ImagePreviewSheet.swift in Sources */,
 				F4FFDE2CFF5F81F3D0A43192 /* InFlightReplyStore.swift in Sources */,
 				0E2B7DFE50C54B6A35500572 /* InMemoryKBStore.swift in Sources */,
+				347F4B6BD88CFE09368C5535 /* IngressAPIClient.swift in Sources */,
+				1589364874A0F4AE20EC909F /* IngressSettingsView.swift in Sources */,
+				B94F75F5ABA96760C1D299A0 /* NotificationsAPIClient.swift in Sources */,
+				4953AEF82663D1E4A45C7D0D /* NotificationsListView.swift in Sources */,
 				4ABB3CC63F64B5DF9BFE4DD6 /* KBApiLogger.swift in Sources */,
 				AF705776208378A8B67EDDBB /* KBApiLoggerBase.swift in Sources */,
 				A3E55D43F150612FC94BAAB4 /* KBAppAPIErrorMessage.swift in Sources */,
