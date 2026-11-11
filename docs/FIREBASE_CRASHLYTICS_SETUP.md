@@ -49,6 +49,8 @@ Crashlytics в консоли бесплатный. Чтобы забирать 
 
 Локально достаточно открыть проект: plist уже в Resources. Для TestFlight секрет `FIREBASE_GOOGLE_SERVICE_INFO_PLIST_BASE64` должен появиться до запуска Deploy. Workflow сам запишет plist в рабочую копию. Если секрета нет, сборка не падает, в этот билд Crashlytics не входит.
 
+dSYM уходит в Crashlytics после экспорта архива, и шаг ждёт окончания загрузки. Строка `Successfully exported and compressed dSYM file` — это только локальный zip, не отправка в Firebase.
+
 ## 6. Куда слать крэш
 
 Один раз, после того как приём логов и читатель BigQuery уже есть:

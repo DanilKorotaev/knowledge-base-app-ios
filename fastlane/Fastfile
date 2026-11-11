@@ -182,6 +182,8 @@ platform :ios do
       }
     )
 
+    upload_crashlytics_dsyms!
+
     asc_app_id = ENV["ASC_APPLE_ID"].to_s.strip
     asc_app_id = "6768027088" if asc_app_id.empty?
     configure_deliver_altool_for_xcode26!(platform: "ios", apple_id: asc_app_id)
@@ -209,6 +211,20 @@ platform :ios do
       target: "KnowledgeBaseApp"
     )
   end
+end
+
+def upload_crashlytics_dsyms!
+  gsp = File.expand_path("../KnowledgeBaseApp/Resources/GoogleService-Info.plist", __dir__)
+  unless File.file?(gsp)
+    UI.important("GoogleService-Info.plist missing; Crashlytics symbol upload skipped")
+    return
+  end
+
+  dsym = lane_context[SharedValues::DSYM_OUTPUT_PATH].to_s
+  UI.user_error!("Crashlytics dSYM was not exported") if dsym.empty? || !File.exist?(dsym)
+
+  script = File.expand_path("../scripts/ci/upload_crashlytics_dsyms.sh", __dir__)
+  sh("bash", script, dsym)
 end
 
 # Xcode 26+ new altool breaks fastlane's `--upload-app -f` + `-t ios` combo.
