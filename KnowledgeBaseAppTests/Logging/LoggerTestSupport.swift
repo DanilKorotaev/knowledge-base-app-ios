@@ -4,6 +4,7 @@ import Foundation
 final class MockLoggerSettings: LoggerSettingsProviderDescription {
     var isDebugLogger = true
     var isFileLoggerEnabled = false
+    var isCrashlyticsLoggingEnabled = true
     var isVerboseLog = false
     var truncateLargeHTTPBodies = true
     var maxHTTPBodyLogBytes = 4_096

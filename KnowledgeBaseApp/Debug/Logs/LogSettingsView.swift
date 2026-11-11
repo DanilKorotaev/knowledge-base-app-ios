@@ -26,6 +26,17 @@ final class LogSettingsViewModel: ObservableObject {
         }
     }
 
+    @Published var isCrashLogUploadEnabled: Bool {
+        didSet {
+            settings.isCrashLogUploadEnabled = isCrashLogUploadEnabled
+            CrashLogUploadCoordinator.setUploadEnabled(isCrashLogUploadEnabled)
+        }
+    }
+
+    @Published var isCrashlyticsLoggingEnabled: Bool {
+        didSet { settings.isCrashlyticsLoggingEnabled = isCrashlyticsLoggingEnabled }
+    }
+
     @Published var isDebugLogger: Bool {
         didSet { settings.isDebugLogger = isDebugLogger }
     }
@@ -68,6 +79,8 @@ final class LogSettingsViewModel: ObservableObject {
 
     init() {
         isFileLoggerEnabled = settings.isFileLoggerEnabled
+        isCrashLogUploadEnabled = settings.isCrashLogUploadEnabled
+        isCrashlyticsLoggingEnabled = settings.isCrashlyticsLoggingEnabled
         isDebugLogger = settings.isDebugLogger
         isVerboseLog = settings.isVerboseLog
         truncateLargeHTTPBodies = settings.truncateLargeHTTPBodies
@@ -87,6 +100,12 @@ struct LogSettingsView: View {
     var body: some View {
         Form {
             Toggle("logs.logging_into_file", isOn: $viewModel.isFileLoggerEnabled)
+            Toggle("logs.upload_after_crash", isOn: $viewModel.isCrashLogUploadEnabled)
+            Section {
+                Toggle("logs.logging_into_crashlytics", isOn: $viewModel.isCrashlyticsLoggingEnabled)
+            } footer: {
+                Text("logs.logging_into_crashlytics_footer")
+            }
             Toggle("logs.logging_into_console", isOn: $viewModel.isDebugLogger)
             Toggle("logs.verbose_network", isOn: $viewModel.isVerboseLog)
 

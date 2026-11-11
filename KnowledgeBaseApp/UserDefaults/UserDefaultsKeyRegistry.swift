@@ -88,8 +88,32 @@ enum UserDefaultsKeyRegistry {
             valueType: .bool
         ),
         .init(
+            key: .loggerCrashLogUpload,
+            description: "Upload the crashed session log file on next launch",
+            category: .logs,
+            valueType: .bool
+        ),
+        .init(
+            key: .loggerSettingsVersion,
+            description: "One-shot logger default migration version",
+            category: .logs,
+            valueType: .integer
+        ),
+        .init(
+            key: .loggerPendingCrashSessions,
+            description: "Log session ids waiting to upload after a crash",
+            category: .logs,
+            valueType: .json
+        ),
+        .init(
             key: .loggerFileEnabled,
             description: "Log to file",
+            category: .logs,
+            valueType: .bool
+        ),
+        .init(
+            key: .loggerCrashlyticsLogging,
+            description: "Copy log lines to Crashlytics breadcrumbs",
             category: .logs,
             valueType: .bool
         ),

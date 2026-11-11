@@ -81,14 +81,15 @@ private final class LoggerImpl: Logger, @unchecked Sendable {
 
     func log(_ message: Any?, level: LogLevel, buildLevel: LogBuildLevel) {
         let isDebugLogger = config.settings.isDebugLogger
-        guard let message,
-              !tags.contains(where: config.excludedTagProvider.excludedTags.contains)
-                || level == .nonFatal || level == .critical,
-              !(buildLevel == .debug && !isDebugLogger)
-        else { return }
-
+        guard let message, !(buildLevel == .debug && !isDebugLogger) else { return }
+        let tagExcluded = tags.contains(where: config.excludedTagProvider.excludedTags.contains)
+            && level != .nonFatal
+            && level != .critical
         let targetMessage = prepare(message, level: level, isDebugLogger: isDebugLogger)
-        activeBackends().forEach { $0.log(targetMessage, level: level, buildLevel: buildLevel) }
+        if !tagExcluded {
+            activeBackends().forEach { $0.log(targetMessage, level: level, buildLevel: buildLevel) }
+        }
+        mirrorToCrashlytics(targetMessage, level: level, buildLevel: buildLevel)
     }
 
     func tag(_ tag: LoggerTag) -> Logger {
@@ -104,6 +105,17 @@ private final class LoggerImpl: Logger, @unchecked Sendable {
             backends.append(FileLogger.shared)
         }
         return backends
+    }
+
+    private func mirrorToCrashlytics(_ message: Any, level: LogLevel, buildLevel: LogBuildLevel) {
+        guard CrashBreadcrumbPolicy.shouldMirror(
+            tags: tags,
+            level: level,
+            buildLevel: buildLevel,
+            loggingEnabled: config.settings.isCrashlyticsLoggingEnabled
+        ) else { return }
+        guard let text = CrashBreadcrumbPolicy.sanitized("\(message)") else { return }
+        CrashReporting.log(text)
     }
 
     private func prepare(_ message: Any, level: LogLevel, isDebugLogger: Bool) -> Any {

@@ -3,6 +3,8 @@ import Foundation
 protocol LoggerSettingsProviderDescription: AnyObject {
     var isDebugLogger: Bool { get }
     var isFileLoggerEnabled: Bool { get }
+    /// When false, log lines are not copied to Crashlytics. Crashes still report.
+    var isCrashlyticsLoggingEnabled: Bool { get }
     var isVerboseLog: Bool { get }
     /// When true, large HTTP request/response bodies are truncated in verbose logs.
     var truncateLargeHTTPBodies: Bool { get }

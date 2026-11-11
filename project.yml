@@ -6,6 +6,9 @@ packages:
   ZIPFoundation:
     url: https://github.com/weichsel/ZIPFoundation.git
     from: 0.9.19
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk.git
+    from: 11.6.0
 options:
   bundleIdPrefix: com.coredan
   developmentLanguage: en
@@ -45,15 +48,24 @@ targets:
           - "**/(conflicted copy)*"
     resources:
       - path: KnowledgeBaseApp/Resources/ru.lproj
+      - path: KnowledgeBaseApp/Resources/GoogleService-Info.plist
+        optional: true
     dependencies:
       - package: Alamofire
       - package: ZIPFoundation
+      - package: Firebase
+        product: FirebaseCrashlytics
       - target: KnowledgeBaseWidgetExtension
         embed: true
       - target: KnowledgeBaseShareExtension
         embed: true
       - target: KnowledgeBaseWatchApp
         embed: true
+    postBuildScripts:
+      - name: Upload Crashlytics dSYMs
+        basedOnDependencyAnalysis: false
+        script: |
+          "${SRCROOT}/scripts/ci/upload_crashlytics_dsyms.sh"
     settings:
       base:
         CODE_SIGN_STYLE: Automatic

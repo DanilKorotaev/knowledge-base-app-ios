@@ -8,6 +8,7 @@ xcuserdata/
 # Secrets
 .env
 Config/Secrets.xcconfig
+KnowledgeBaseApp/Resources/GoogleService-Info.plist
 
 # macOS
 .DS_Store

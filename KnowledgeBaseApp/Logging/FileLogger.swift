@@ -42,10 +42,22 @@ final class FileLogger: Logger, @unchecked Sendable {
         defer { lock.unlock() }
         if cachedWriterURL != url {
             cachedWriter?.close()
-            cachedWriter = FileBatchWriter(url: url, batchCapacity: 1)
+            let created = FileBatchWriter(url: url, batchCapacity: 1)
+            cachedWriter = created
             cachedWriterURL = url
+            if Self.fileIsEmpty(url) {
+                created.write(LogFileHeader.current(sessionId: LogSession.shared.id) + "\n")
+            }
         }
         return cachedWriter
+    }
+
+    private static func fileIsEmpty(_ url: URL) -> Bool {
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let size = attributes[.size] as? NSNumber else {
+            return true
+        }
+        return size.int64Value == 0
     }
 
     private func prepare(_ message: Any) -> String {

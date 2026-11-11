@@ -14,6 +14,7 @@ final class UserDefaultsInspectorLogger {
     private let ignoredKeys: [UserDefaultsKey] = [
         .loggerDebugConsole,
         .loggerFileEnabled,
+        .loggerCrashlyticsLogging,
         .loggerVerboseNetwork,
         .loggerMaxLogFiles,
         .loggerSessionId

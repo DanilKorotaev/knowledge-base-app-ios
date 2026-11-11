@@ -8,11 +8,17 @@ final class KBLoggerSettings: LoggerSettingsProviderDescription {
     static let minMaxHTTPBodyLogBytes = 1_024
     static let maxMaxHTTPBodyLogBytes = 10 * 1_024 * 1_024
 
-    @UserDefault(key: .loggerDebugConsole, defaultValue: true)
+    @UserDefault(key: .loggerDebugConsole, defaultValue: false)
     var isDebugLogger: Bool
+
+    @UserDefault(key: .loggerCrashLogUpload, defaultValue: true)
+    var isCrashLogUploadEnabled: Bool
 
     @UserDefault(key: .loggerFileEnabled, defaultValue: true)
     var isFileLoggerEnabled: Bool
+
+    @UserDefault(key: .loggerCrashlyticsLogging, defaultValue: true)
+    var isCrashlyticsLoggingEnabled: Bool
 
     @UserDefault(key: .loggerVerboseNetwork, defaultValue: false)
     var isVerboseLog: Bool

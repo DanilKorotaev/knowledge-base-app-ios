@@ -11,9 +11,15 @@ struct KnowledgeBaseApp: App {
 
     init() {
         UserDefaultsService.shared = UserDefaultsService(settings: UserDefaultsInspectorSettings.shared)
+        LoggerDefaultsMigration.apply()
         UserDefaultsInspectorLogger.shared.start()
         _ = LogFilesProvider.shared
         _ = LogSession.shared
+        CrashReporting.start()
+        CrashLogUploadCoordinator.handleLaunch(
+            didCrash: CrashReporting.didCrashDuringPreviousExecution(),
+            previousSessionId: LogSession.shared.previousId
+        )
         #if canImport(WatchConnectivity)
         WatchVoiceSessionContextSync.shared.activateIfNeeded()
         WatchRelayLog.localSink = { line in

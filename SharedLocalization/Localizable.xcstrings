@@ -465,6 +465,214 @@
         }
       }
     },
+    "logs.crashlytics": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crashlytics"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crashlytics"
+          }
+        }
+      }
+    },
+    "logs.crashlytics_fatal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crash"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Крэш"
+          }
+        }
+      }
+    },
+    "logs.crashlytics_fatal_confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close the app with a test crash?"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть приложение тестовым крэшем?"
+          }
+        }
+      }
+    },
+    "logs.crashlytics_fatal_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app closes immediately. Open it again without the Xcode debugger so the report can upload."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложение сразу закрывается. Откройте его снова без отладчика Xcode, чтобы отчёт ушёл."
+          }
+        }
+      }
+    },
+    "logs.crashlytics_nonfatal": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send non-fatal"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправить non-fatal"
+          }
+        }
+      }
+    },
+    "logs.crashlytics_nonfatal_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app stays open. The report is uploaded in the background or on the next launch."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приложение не закрывается. Отчёт уходит в фоне или при следующем запуске."
+          }
+        }
+      }
+    },
+    "logs.crashlytics_nonfatal_sent": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправлено"
+          }
+        }
+      }
+    },
+    "logs.crashlytics_note": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Заметка"
+          }
+        }
+      }
+    },
+    "logs.crashlytics_note_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attached to this test report as the custom key test_note."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попадает в этот тестовый отчёт как ключ test_note."
+          }
+        }
+      }
+    },
+    "logs.crashlytics_unconfigured": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crashlytics is off until GoogleService-Info.plist is in the app bundle."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crashlytics выключен, пока в сборке нет GoogleService-Info.plist."
+          }
+        }
+      }
+    },
+    "logs.logging_into_crashlytics": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write to Crashlytics"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запись в Crashlytics"
+          }
+        }
+      }
+    },
+    "logs.logging_into_crashlytics_footer": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log lines are copied to Crashlytics as breadcrumbs. A crash and a non-fatal are sent from the Crashlytics screen."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Строки логов копируются в Crashlytics как breadcrumbs. Крэш и non-fatal отправляются с экрана Crashlytics."
+          }
+        }
+      }
+    },
+    "logs.upload_after_crash": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send log file after a crash"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отправлять файл лога после крэша"
+          }
+        }
+      }
+    },
     "network.no_connection": {
       "localizations": {
         "en": {
