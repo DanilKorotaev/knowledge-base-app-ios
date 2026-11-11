@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 2.0.18 | 285 | `ios/v2.0.18` | 2026-11-11 | Report crashes and log breadcrumbs through Crashlytics |
 | 2.0.17 | 284 | `ios/v2.0.17` | 2026-11-07 | Notifications inbox bell with unread badge |
 | 2.0.16 | 283 | `ios/v2.0.16` | 2026-11-06 | SwiftLint whitespace in voice retry tests |
 | 2.0.15 | 276 | `ios/v2.0.15` | 2026-11-06 | TestFlight release |
