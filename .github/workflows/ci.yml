@@ -11,6 +11,8 @@ env:
 jobs:
   test-and-coverage:
     runs-on: macos-latest
+    # Full green runs are ~20–35m; without a cap a hung simulator can sit for hours.
+    timeout-minutes: 60
     env:
       MIN_COVERAGE: "35"
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -89,6 +91,8 @@ jobs:
         id: ui_tests
         if: steps.tests.outcome == 'success'
         continue-on-error: true
+        # Prior green UI smoke ~15m; hang beyond this is a stuck sim/xcodebuild, not a slow suite.
+        timeout-minutes: 25
         run: bundle exec fastlane ui_test
 
       - name: Compute overall CI outcome

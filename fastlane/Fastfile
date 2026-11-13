@@ -53,7 +53,9 @@ platform :ios do
       result_bundle: true,
       output_directory: output_dir,
       buildlog_path: File.expand_path("build_logs", __dir__),
-      only_testing: ["KnowledgeBaseAppUITests"]
+      only_testing: ["KnowledgeBaseAppUITests"],
+      # Fail hung UI tests instead of parking the GitHub-hosted runner for hours.
+      xcargs: "-test-timeouts-enabled YES -default-test-execution-time-allowance 120 -maximum-test-execution-time-allowance 300"
     )
   end
 
