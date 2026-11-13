@@ -6,6 +6,7 @@ Rows are written by `scripts/ci/prepare_release.py` during Deploy TestFlight and
 
 | Version | Build (CI) | Git tag | Date | Notes |
 |---------|------------|---------|------|-------|
+| 2.0.20 | 288 | `ios/v2.0.20` | 2026-11-13 | Bound hung UI smoke tests so Actions cannot stall for hours |
 | 2.0.19 | 286 | `ios/v2.0.19` | 2026-11-11 | Wait for the Crashlytics dSYM upload to finish |
 | 2.0.18 | 285 | `ios/v2.0.18` | 2026-11-11 | Report crashes and log breadcrumbs through Crashlytics |
 | 2.0.17 | 284 | `ios/v2.0.17` | 2026-11-07 | Notifications inbox bell with unread badge |
