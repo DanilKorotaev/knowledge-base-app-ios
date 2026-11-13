@@ -94,6 +94,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         UILaunchStoryboardName: LaunchScreen
         NSMicrophoneUsageDescription: Микрофон нужен, чтобы записать голосовое сообщение, распознать речь и отправить его в чат.
+        NSCameraUsageDescription: Камера нужна, чтобы сфотографировать документ или еду и прикрепить снимок к сообщению в чате.
         CFBundleURLTypes:
           - CFBundleURLName: com.coredan.KnowledgeBaseApp
             CFBundleURLSchemes:

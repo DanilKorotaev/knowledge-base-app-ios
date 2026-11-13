@@ -51,4 +51,4 @@ Optional override per session: **Edit Scheme → Run → Environment Variables**
 
 ## Microphone
 
-`NSMicrophoneUsageDescription` is present for the upcoming voice capture flow; recording UI is not implemented yet.
+`NSMicrophoneUsageDescription` covers voice capture; `NSCameraUsageDescription` is required for `UIImagePickerController` camera (missing it crashes with TCC privacy violation).
